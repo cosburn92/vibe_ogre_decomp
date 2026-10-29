@@ -69,3 +69,12 @@ osAppNMIBuffer        = 0x8000031C;
 
 /* jal into an unmapped region (likely overlay/garbage target) */
 func_840010BC         = 0x840010BC;
+
+RI_MODE_REG           = 0xA4700000;
+RI_CONFIG_REG         = 0xA4700004;
+RI_CURRENT_LOAD_REG   = 0xA4700008;
+RI_SELECT_REG         = 0xA470000C;
+RI_REFRESH_REG        = 0xA4700010;
+RI_LATENCY_REG        = 0xA4700014;
+RI_RERROR_REG         = 0xA4700018;
+RI_WERROR_REG         = 0xA470001C;
