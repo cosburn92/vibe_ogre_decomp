@@ -1,0 +1,15 @@
+# Copyrighted / ROM-derived content — never commit
+baserom/
+*.z64
+*.n64
+*.v64
+asm/
+assets/
+build/
+
+# splat-generated
+ogrebattle64.ld
+ogrebattle64.d
+undefined_funcs_auto.txt
+undefined_syms_auto.txt
+__pycache__/
