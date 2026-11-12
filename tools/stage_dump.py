@@ -5,8 +5,10 @@ chapters; the data after 0x42 belongs to something else.
 
   0x00  chapter, 0x01 map, 0x02 variant (0 none, 1-4 = a-d). These match the eset file names for most
         stages; the eset itself is chosen through a separate table (D_8018F5A8[stage * 9])
-  0x03  ? (4 in the first maps, 1 later, 0 in chapter 9; read with story flag 0x11)
-  0x04  ? (2, 3, 5, 6 or 7)
+  0x03  value for liberated locations, 0x04 for enemy-held ones: func_801DC634(location) returns
+        (+3, side 1) or (+4, side 2), or (-1, 0) for neutral ones, and the location window in
+        ovl_14EBE0 draws it; after story flag 0x11 a liberated one gives 1, or 4 without item 0x6B.
+        +3 is 4 in the first maps, 1 later, 0 in chapter 9; +4 is 2, 3, 5, 6 or 7. Meaning ?
   0x05  scincsv member (0-based in archive 0x21B0F2A, so 1 = scincsv1a): the map's locations
   0x06  maizo member (0-based in archive 0x21AFA08): the map's buried treasure
   0x07  music track (0x11-0x19), started with SoundPlayFade(…, track, 10) when the map starts

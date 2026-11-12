@@ -579,6 +579,8 @@ ChaosFrameOnLiberate = 0x801DB478; // type:func rom:0x12FBB8
 ChaosFrameOnCapture = 0x801DB6BC; // type:func rom:0x12FDFC
 // LocationsLiberatedSize: sum of gLocations +0x20 (ktenmain +0x16) over liberated locations
 LocationsLiberatedSize = 0x801D34BC; // type:func rom:0x127BFC
+// LocationGetStageValue: (location, &value, &side) -> gStageTable +3 if liberated (side 1), +4 if enemy-held (side 2), else -1/0
+LocationGetStageValue = 0x801DC634; // type:func rom:0x130D74
 // Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline
 StageHQHeld = 0x801E5548; // type:func rom:0x139C88
 StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8
