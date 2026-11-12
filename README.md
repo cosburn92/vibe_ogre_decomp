@@ -52,9 +52,11 @@ the wrong size shifts everything after it, so fix the first size mismatch first.
 `include/tables.h` has the class, item, consumable, attack and character record structs. Table
 accesses need real struct fields to match: byte-offset casts let GCC share the base address.
 
-Decompiled so far: about 250 functions (5% of them, 0.5% of the code bytes), mostly in
-`ovl_040E80`: `src/43100.c` (table getters, `ClassAtLevel`, `AttackGetElement`), `src/46090.c`
-(script accessors), `src/4D5C0.c` (scene table), `src/45CB0.c`, `src/49510.c`, `src/5C060.c`.
+Decompiled so far: about 380 functions (7.6% of them, 0.8% of the code bytes, since they are
+mostly small): table getters and `ClassAtLevel`/`AttackGetElement` (`src/43100.c`), script
+accessors (`src/46090.c`), the scene table (`src/4D5C0.c`), the event-script opcode handlers
+(`src/1BA050.c`, with a `ScriptCtx` whose `pc` is volatile), battle helpers (`src/20BCE0.c`,
+`src/201430.c`), UI widgets (`src/FA5E0.c`), map helpers (`src/145290.c`) and smaller files.
 Functions that are close but not matching are kept as `#ifdef NON_MATCHING` C with a note.
 
 ### Data, rodata and BSS
