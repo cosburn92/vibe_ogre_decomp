@@ -615,3 +615,6 @@ SetDeadEnd = 0x801D0B58; // type:func rom:0x125298
 // FPS counter in main 1060 data: retraces and frames since the last sample
 D_800A81FE = 0x800A81FE; // size:0x1
 D_800A81FF = 0x800A81FF; // size:0x1
+// LHa unpack thread (main A370 bss): OSThread and its 0x80-byte stack
+D_800AF0D0 = 0x800AF0D0; // size:0x1B0
+D_800AF280 = 0x800AF280; // size:0x80

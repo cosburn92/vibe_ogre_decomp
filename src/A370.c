@@ -86,7 +86,41 @@ extern u8 D_800AF3C4;
 extern u8 D_800AF3C5;
 extern s32 D_800AF398;
 extern ArcFile *D_800AF36C;
+typedef struct {
+    /* 0x00 */ void *name;
+    /* 0x04 */ u8 unk04[4];
+    /* 0x08 */ u8 *buf;
+    /* 0x0C */ s32 size;
+} ArcReq;
+
+typedef struct {
+    /* 0x000 */ u8 unk00[8];
+    /* 0x008 */ s32 packed_size;
+    /* 0x00C */ u8 unk0C[0x124];
+} LzHeader; /* size 0x130 */
+
+typedef struct {
+    void **ptr;
+    s32 size;
+} BufDesc;
+
+extern BufDesc D_800A884C[];
 extern u8 D_800AF320[];
+extern u8 D_800AF300[];
+extern u8 D_800AF0D0[0x1B0]; /* OSThread */
+extern u64 D_800AF280[0x80 / 8]; /* its stack */
+extern u8 D_800AE0A8[];
+void UnpackProc(void *arg);
+void osCreateMesgQueue(void *mq, void *msgs, s32 n);
+void osCreateThread(void *t, s32 id, void (*entry)(void *), void *arg, void *sp, s32 pri);
+void osStartThread(void *t);
+void *HMalloc(s32 size);
+void *HFree(void *p);
+s32 get_header(ArcFile *f, LzHeader *h);
+void func_8007AF3C(s32 alloc);
+void func_8007C204(void);
+void func_8007BBC0(s32 a);
+ArcFile *func_8007F4E4(void *name, u8 *mode, u8 *buf, s32 size);
 extern u8 *D_800AF390;
 extern u16 *D_800AF3F8;
 extern s16 D_800AF3C6;
@@ -108,9 +142,86 @@ u16 func_8007C25C(u8 n);
 
 void func_8007C438(void);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_80079F70);
+/* memcpy with word-aligned bulk copy */
+void *func_80079F70(void *dst, void *src, u32 n) {
+    u8 *d;
+    u8 *s;
+    u32 i;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007A070);
+    if (n == 0) {
+        return dst;
+    }
+    d = dst;
+    s = src;
+    if (((u32)s - (u32)d) & 3) {
+        while (n-- != 0) {
+            *d++ = *s++;
+        }
+        return dst;
+    }
+    if ((u32)d & 1) {
+        *d++ = *s++;
+        n--;
+    }
+    if (n >= 2 && ((u32)d & 2)) {
+        *(u16 *)d = *(u16 *)s;
+        s += 2;
+        n -= 2;
+        d += 2;
+    }
+    i = n >> 2;
+    while (i-- != 0) {
+        *(u32 *)d = *(u32 *)s;
+        s += 4;
+        d += 4;
+    }
+    if (n & 2) {
+        *(u16 *)d = *(u16 *)s;
+        s += 2;
+        d += 2;
+    }
+    if (n & 1) {
+        *d = *s;
+    }
+    return dst;
+}
+
+/* memset with word-aligned bulk fill */
+void *func_8007A070(void *dst, s32 c, u32 n) {
+    u8 *d;
+    u32 i;
+
+    if (n == 0) {
+        return dst;
+    }
+    c &= 0xFF;
+    c |= c << 8;
+    c |= c << 16;
+    d = dst;
+    if ((u32)d & 1) {
+        *d = c;
+        d++;
+        n--;
+    }
+    if (n >= 2 && ((u32)d & 2)) {
+        *(u16 *)d = c;
+        d += 2;
+        n -= 2;
+    }
+    i = n >> 2;
+    while (i-- != 0) {
+        *(u32 *)d = c;
+        d += 4;
+    }
+    if (n & 2) {
+        *(u16 *)d = c;
+        d += 2;
+    }
+    if (n & 1) {
+        *d = c;
+    }
+    return dst;
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", DecodeLZ);
 
@@ -135,15 +246,53 @@ void func_8007AB7C(ArcMsg *m) {
     osSendMesg(&D_800AF320, m, 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007ABAC);
+/* Starts the unpack thread. */
+void func_8007ABAC(s32 id, s32 pri) {
+    osCreateMesgQueue(D_800AF320, D_800AF300, 8);
+    osCreateThread(D_800AF0D0, id, UnpackProc, NULL, D_800AF280 + 0x80 / 8, pri);
+    osStartThread(D_800AF0D0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", UnpackProc);
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007ACB0);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007AE9C);
+/* Counts the files in an LHa archive held in memory. */
+s32 func_8007AE9C(ArcReq *r) {
+    LzHeader hdr;
+    ArcFile *f;
+    s32 n;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007AF3C);
+    func_8007AF3C(1);
+    func_8007C204();
+    f = func_8007F4E4(r->name, D_800AE0A8, r->buf, r->size);
+    if (f == NULL) {
+        func_8007BBC0((s32)r->name);
+    }
+    n = 0;
+    while (get_header(f, &hdr)) {
+        f->pos += hdr.packed_size;
+        n++;
+    }
+    f->open = 0;
+    func_8007AF3C(0);
+    return n;
+}
+
+/* Allocates (alloc != 0) or frees the decoder work buffers. */
+void func_8007AF3C(s32 alloc) {
+    s32 i;
+
+    if (alloc) {
+        for (i = 0; D_800A884C[i].ptr != NULL; i++) {
+            *D_800A884C[i].ptr = HMalloc(D_800A884C[i].size);
+        }
+    } else {
+        for (i = 0; D_800A884C[i].ptr != NULL; i++) {
+            HFree(*D_800A884C[i].ptr);
+        }
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE060);
 
