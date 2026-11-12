@@ -454,6 +454,10 @@ BattleDrawUnitSprite = 0x801B21C4; // type:func rom:0x1F5654
 // SoundRequest: inferred: (channel object in ovl_03F1B0's data, id) -> queues a sound
 SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 
+// ovl_1F0A30
+// IsDragon: inferred: (battle unit) -> class (+0x4C) is 56-68 (Young Dragon..Tiamat) or 164 (Death Bahamut)
+IsDragon = 0x801C8D84; // type:func rom:0x20C214
+
 // ovl_29A4C0
 // BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)
 BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218

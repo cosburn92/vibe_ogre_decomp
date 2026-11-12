@@ -246,14 +246,18 @@ The fields come from the getters in `ovl_040E80` (one function per field) and fr
 which builds a unit of a given class and level:
 
 - **`gClassTable`** (165 × 0x48 bytes, 0 = None) holds:
-  - gender;
+  - gender, unit size (small/large), and leadership (whether the class can lead a squad);
   - the seven stats as a u16 base plus a growth grade (HP, STR, VIT, INT, MEN, AGI, DEX);
-  - alignment;
+  - alignment and luck;
   - seven resistances (Physical, Wind, Flame, Earth, Water, Virtue, Bane; 50 = neutral);
-  - a movement type;
-  - four default equipment items;
+  - a movement type, which battle code uses to index a terrain-modifier table;
+  - four default equipment items, and a mask of equipment slots the player can't change
+    (the Soldier's spear and armour, the Princess's tiara);
   - the attack type and count for each row (front, middle, rear);
+  - base physical attack, magic attack, physical defence and magic defence. The formation screen
+    combines them with stats and equipment;
   - the unit's element (0xFF = random);
+  - how many item slots the unit adds to its squad (the squad's total is capped at 10);
   - a base class, for named and special variants;
   - a promotion path: two (class, level) pairs. `ClassAtLevel` uses them so that a Paladin made at
     level 5 is a Fighter, and one made at level 14 is a Knight. `UnitSetupForLevel` levels a unit up
@@ -262,19 +266,21 @@ which builds a unit of a given class and level:
   - category (1–13 and 24 are weapons);
   - element;
   - price;
-  - signed stat modifiers (STR, INT, AGI, DEX, VIT, MEN);
-  - signed modifiers for the seven resistances (Physical is the armour value);
+  - signed modifiers for the stats, luck, and the seven resistances (Physical is the armour value);
   - level-up growth modifiers in 2-bit fields;
-  - flags. Bit 0 of `+0x1B` is set on the dragon-slaying weapons (Fafnir, Balmung, Gram, …).
-- **`gConsumableTable`** follows the items: 45 × 12 bytes for healing items, stat items and key
-  items (name, price, and four bytes not decoded yet).
+  - effects a weapon inflicts and effects armour blocks, using the same bits. Bit 0 is dragons:
+    dragon-slaying weapons, or a Dragoon, get a bonus against dragons (`IsDragon`). The other bits
+    are status effects that battle code masks by the target's armour and class.
+- **`gConsumableTable`** follows the items: 45 × 12 bytes for battle items, stat-raising items,
+  map items and key items, with a kind byte and a price.
 - **`gAttackTable`** has 159 × 16 bytes for attacks and spells. Class attack ids are 1-based into
   it; entry 0 is "－".
 - **`gElementNames`** lists the element names.
 
 Still unknown:
-- class bytes `+0x04`, `+0x06`, `+0x23`, `+0x36`, `+0x3D`–`+0x40` and `+0x47`;
-- item bytes `+0x06`, `+0x10` and `+0x1C`;
+- item byte `+0x06` (a 0–11 tier) and the `+0x1A` bit-7 flag (on a few unique items);
+- which growth field goes with which stat, and which status effect goes with each bit;
+- the consumables' last bytes (target and where usable, by the look of them);
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
@@ -385,6 +391,6 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Pin down the remaining class/item bytes from their callers (the level-up code `UnitLevelUp`, the
-   battle code). Then decode the other data tables (`maizo`, `scincsv`, headerless chunks), and confirm the text control codes against the text
-   engine. Callers of `LoadChunk` show what each handle is.
+3. Map the item growth fields and status bits (`UnitLevelUp`, the battle code in `ovl_22A280`).
+   Then decode the other data tables (`maizo`, `scincsv`, headerless chunks), and confirm the text
+   control codes against the text engine. Callers of `LoadChunk` show what each handle is.
