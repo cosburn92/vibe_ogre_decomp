@@ -17,6 +17,8 @@ u16 func_8016FA34_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
 u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
 u8 ItemGetElement(u16 id);
 
+extern u16 (*D_8018B494_ovl_040E80[])(u8 cls, u8 baseCls);
+
 typedef struct {
     u16 sprite[2]; /* (chunk index << 3) | sub-image, for the two variants */
     u8 flags;
@@ -418,9 +420,42 @@ u8 AttackGetElement(u8 atk, u16 i0, u16 i1, u16 i2, u16 i3) {
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E50C_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/43100", ClassAtLevel);
+/* The class a character of this class line has at the given level (promotion path). */
+u8 ClassAtLevel(u8 cls, u8 other, u8 level) {
+    if (gClassTable[cls].baseClass != other) {
+        cls = other;
+    }
+    if (gClassTable[cls].promotions[1] != 0xFF && level < gClassTable[cls].promotions[1]) {
+        cls = gClassTable[cls].promotions[0];
+    } else if (gClassTable[cls].promotions[3] != 0xFF && level < gClassTable[cls].promotions[3]) {
+        cls = gClassTable[cls].promotions[2];
+    }
+    return cls;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016EAEC_ovl_040E80);
+/* The item in an equipment slot, or the class's default for that slot when it is empty. */
+u16 func_8016EAEC_ovl_040E80(Character *c, u8 slot) {
+    u16 item = 0;
+
+    switch (slot) {
+        case 0:
+            item = c->items[0];
+            break;
+        case 1:
+            item = c->items[1];
+            break;
+        case 2:
+            item = c->items[2];
+            break;
+        case 3:
+            item = c->items[3];
+            break;
+    }
+    if (item == 0) {
+        item = D_8018B494_ovl_040E80[slot](c->cls, c->baseCls);
+    }
+    return item;
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", UnitLevelUp);
 

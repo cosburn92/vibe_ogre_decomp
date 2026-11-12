@@ -80,6 +80,29 @@ typedef struct {
     /* 0x0A */ u8 effect2[4];
 } AttackData; /* size 0x10 */
 
+/* Character record: player 0x80193BC0 (0x38 bytes), enemy 0x80195560 (0x34 bytes) */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x11];
+    /* 0x11 */ u8 cls;
+    /* 0x12 */ u8 baseCls;
+    /* 0x13 */ u8 level;
+    /* 0x14 */ u8 gender;
+    /* 0x16 */ u16 maxHp;
+    /* 0x18 */ u16 hp;
+    /* 0x1A */ u8 element;
+    /* 0x1B */ u8 alignment;
+    /* 0x1C */ u16 str;
+    /* 0x1E */ u16 vit;
+    /* 0x20 */ u16 intl;
+    /* 0x22 */ u16 men;
+    /* 0x24 */ u16 agi;
+    /* 0x26 */ u16 dex;
+    /* 0x28 */ u8 luck;
+    /* 0x2A */ u16 items[4];
+    /* 0x32 */ u8 fatigue;
+    /* 0x33 */ u8 status;
+} Character;
+
 extern ClassData gClassTable[];
 extern ItemData gItemTable[];
 extern ConsumableData gConsumableTable[];
