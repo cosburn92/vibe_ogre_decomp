@@ -206,6 +206,7 @@ extern Gfx *D_800E9BA0;
 extern u8 D_80186E70[];
 extern u8 D_801869C8[];
 void bzero(void *p, s32 n);
+void osSyncPrintf(const char *fmt, ...);
 void _bcopy(void *src, void *dst, s32 n);
 void osViSetMode(void *m);
 
@@ -278,7 +279,45 @@ void func_80070C60(u32 start, s32 size) {
     gHeaps[0].end = gHeaps[0].start->next;
 }
 
+#ifdef NON_MATCHING
+/* Matches except the closing gHeapCount increment: the original masks a copy of the count (andi) before indexing. */
+s32 AddHeap(u32 start, u32 end) {
+    s32 i;
+
+    if (gHeapCount >= 4) {
+        osSyncPrintf("AddHeap(): Can't create heap. start:%0x0x length:%d\n", start, end);
+        for (;;) {
+        }
+    }
+    end = (start + end) & ~0xF; /* the length parameter becomes the end address */
+    start = (start + 0xF) & ~0xF;
+    for (i = 0; i < gHeapCount; i++) {
+        if ((start >= (u32)gHeaps[i].start && start < (u32)gHeaps[i].end) ||
+            ((u32)gHeaps[i].start < end && end <= (u32)gHeaps[i].end)) {
+            osSyncPrintf("AddHeap(): Overlap heap address. adr: 0x%0X - 0x%0X\n", start, end);
+            osSyncPrintf("Heap[%d]: 0x%0X - 0x%0X\n", i, gHeaps[i].start, gHeaps[i].end);
+            for (;;) {
+            }
+        }
+    }
+    gHeaps[gHeapCount].start = (HeapNode *)start;
+    bzero((void *)start, 0x20);
+    gHeaps[gHeapCount].start->next = (HeapNode *)end;
+    gHeaps[gHeapCount].start->free = end - start - 0x20;
+    gHeaps[gHeapCount].root = NULL;
+    func_800719E8(&gHeaps[gHeapCount].root, gHeaps[gHeapCount].start);
+    {
+        u16 n = gHeapCount;
+
+        gHeaps[n].end = gHeaps[n].start->next;
+        gHeapCount = n + 1;
+    }
+}
+
+const char D_800ADD8C[] = "HMalloc3";
+#else
 INCLUDE_ASM("asm/nonmatchings/1060", AddHeap);
+#endif
 
 void func_80070F14(void) {
     gHeapCount = 1;
