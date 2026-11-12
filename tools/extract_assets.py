@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Extract the assets stored in the ROM's asset region (0x2B8BA0 onward).
 
-- 0x2B8BA0-0x636780: libmus sound data (two sample banks' .ptr/.wbk, a table, and songs), split
+- 0x2B8BA0-0x594280: libmus sound data (two sample banks' .ptr/.wbk, a table, and songs), split
   into <outdir>/sound/ at the boundaries the sound overlay ovl_03F1B0 DMAs.
-- 0x636780 to the version string "ORGE3_ROM_VER_...": one chain of size-prefixed chunks,
-  [u32 BE size][payload], each starting on a 2-byte boundary. A payload is one of:
+- 0x594280 to the version string "ORGE3_ROM_VER_...": the asset archive, [u32 chunk count][index of
+  handles][chunk chain]. The game addresses chunks by handle (offset from 0x594280). Each chunk is
+  [u32 BE size][payload] on a 2-byte boundary (size may be 0), and a payload is one of:
   - an LHA archive (level 1/2 headers, -lh5-/-lh0-; the game embeds a port of LHa for UNIX). Every
     member is decompressed, checked against its header's CRC-16, and written to
     <outdir>/lha/<original name>, with <outdir>/lha/manifest.tsv;
   - the game's "format 1" LZ (decoded by func_8007A110, run by the UnpackProc thread):
     [u32 BE unpacked size][stream];
   - stored data (images tagged HU/B5, tables, ...).
-  LZ and stored chunks are written to <outdir>/chunks/<ROM offset>.<type>, with
-  <outdir>/chunks/manifest.tsv.
+  LZ and stored chunks are written to <outdir>/chunks/<handle>.<type>, with
+  <outdir>/chunks/manifest.tsv (handle, ROM offset, sizes, kind) and index.tsv.
 
 This is for looking at the assets; the ROM build keeps using the original bytes.
 
@@ -24,9 +25,10 @@ import struct
 import sys
 
 ASSET_START = 0x2B8BA0
-# From here to the ROM version string, the asset region is one chain of [u32 BE size][payload] chunks
-# (payload: format-1 LZ, stored data, or an LHA archive). Before it: libmus sound data.
-CHAIN_START = 0x636780
+# The asset archive: [u32 chunk count][index of handles][chunk chain up to the ROM version string].
+# The game addresses every chunk by its handle = offset from ARCHIVE_BASE (func_8009DD38 reads the
+# chunk's u32 size at ARCHIVE_BASE + (handle & 0x0FFFFFFF)). Before it: libmus sound data.
+ARCHIVE_BASE = 0x594280
 VERSION_PREFIX = b"ORGE3_ROM_VER_"
 
 # ---- CRC-16 (LHA uses CRC-16/ARC: reflected poly 0xA001, init 0) ----
@@ -229,11 +231,13 @@ def lz_decode(src, size):
     return bytes(out[:size]), i
 
 
-def _walk(rom, o, end):
+def _walk(rom, o, end, allow_empty=False):
     out = []
     while o + 8 <= end:
+        if rom[o:o + len(VERSION_PREFIX)] == VERSION_PREFIX:
+            break
         size = struct.unpack_from(">I", rom, o)[0]
-        if size == 0 or o + 4 + size > end:
+        if (size == 0 and not allow_empty) or o + 4 + size > end:
             break
         out.append((o, size))
         o = (o + 4 + size + 1) & ~1
@@ -341,29 +345,49 @@ def extract_lha(rom, outdir, members):
     return bad
 
 
+def archive_index(rom):
+    """(chunk count from the header, [handles in the index]). The index runs up to its first handle."""
+    count, first = struct.unpack_from(">II", rom, ARCHIVE_BASE)
+    n = (first - 4) // 4
+    return count, list(struct.unpack_from(f">{n}I", rom, ARCHIVE_BASE + 4))
+
+
 def extract_chunks(rom, outdir):
-    """Walk the chunk chain from CHAIN_START to the version string. LHA-archive chunks are left to
-    extract_lha; the rest are written decoded (LZ) or as stored."""
+    """Walk the archive's chunk chain to the version string. LHA-archive chunks are left to
+    extract_lha; the rest are written decoded (LZ) or as stored, named by handle."""
     os.makedirs(outdir, exist_ok=True)
-    rows, kinds, bad = [], {"lz": 0, "raw": 0, "lha": 0}, []
-    found = _walk(rom, CHAIN_START, len(rom))
+    rows, kinds, bad = [], {"lz": 0, "raw": 0, "lha": 0, "empty": 0}, []
+    count, index = archive_index(rom)
+    found = _walk(rom, ARCHIVE_BASE + index[0], len(rom), allow_empty=True)
     end = found[-1][0] + 4 + found[-1][1]
     if not rom[end:end + 32].lstrip(b"\0").startswith(VERSION_PREFIX):
         bad.append(f"chunk chain ended at 0x{end:07X}, not at the version string")
+    if len(found) != count + 1:
+        bad.append(f"archive header says {count} chunks, walked {len(found)}")
+    starts = {o for o, _ in found}
+    bad += [f"index handle 0x{h:X} is not a chunk start" for h in index if h and ARCHIVE_BASE + h not in starts]
     for o, size in found:
+        handle = o - ARCHIVE_BASE
+        if size == 0:
+            kinds["empty"] += 1
+            rows.append(f"0x{handle:07X}\t0x{o:07X}\t0\t0\tempty\t")
+            continue
         if re.match(rb"..-l[hz][0-9sd]-", rom[o + 4:o + 11], re.S):
             kinds["lha"] += 1
-            rows.append(f"0x{o:07X}\t{size}\t\tlha\t(see lha/manifest.tsv)")
+            rows.append(f"0x{handle:07X}\t0x{o:07X}\t{size}\t\tlha\t(see lha/manifest.tsv)")
             continue
         data, kind = unpack_chunk(rom, o, size)
         kinds[kind] += 1
-        name = f"{o:07X}.{chunk_ext(data)}"
+        name = f"{handle:07X}.{chunk_ext(data)}"
         open(os.path.join(outdir, name), "wb").write(data)
-        rows.append(f"0x{o:07X}\t{size}\t{len(data)}\t{kind}\t{name}")
+        rows.append(f"0x{handle:07X}\t0x{o:07X}\t{size}\t{len(data)}\t{kind}\t{name}")
     with open(os.path.join(outdir, "manifest.tsv"), "w", encoding="utf-8", newline="\n") as f:
-        f.write("rom_offset\tsize\tunpacked\tkind\tname\n" + "\n".join(rows) + "\n")
-    print(f"chunks: {len(rows)} from 0x{CHAIN_START:X} to 0x{end:X} "
-          f"({kinds['lz']} LZ, {kinds['raw']} stored, {kinds['lha']} LHA archives) -> {outdir}")
+        f.write("handle\trom_offset\tsize\tunpacked\tkind\tname\n" + "\n".join(rows) + "\n")
+    with open(os.path.join(outdir, "index.tsv"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("slot\thandle\n" + "".join(f"{i}\t0x{h:07X}\n" for i, h in enumerate(index)))
+    print(f"chunks: {len(rows)} in the archive at 0x{ARCHIVE_BASE:X} (header: {count}; index: {len(index)} "
+          f"handles), up to 0x{end:X}: {kinds['lz']} LZ, {kinds['raw']} stored, {kinds['lha']} LHA archives, "
+          f"{kinds['empty']} empty -> {outdir}")
     return bad
 
 
@@ -374,7 +398,7 @@ SOUND_FILES = [
     (0x423FF0, 0x429CD0, "bank2.ptr"),
     (0x429CD0, 0x4E3140, "bank2.wbk"),
     (0x4E3140, 0x4F0FB0, "4E3140.bin"),  # loaded at boot by ovl_03F1B0 (effects?)
-    (0x4F0FB0, CHAIN_START, "songs.bin"),  # starts with an offset table
+    (0x4F0FB0, ARCHIVE_BASE, "songs.bin"),  # starts with an offset table
 ]
 
 

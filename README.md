@@ -80,14 +80,20 @@ The whole asset region is mapped, and `make extract-assets` (`tools/extract_asse
 
 | ROM range | Contents | Extracted to |
 |---|---|---|
-| `0x2B8BA0`–`0x636780` | libmus sound data: two sample banks (`.ptr` + `.wbk`), a table, songs | `sound/` |
-| `0x636780`–`0x275DD0F` | one chain of 25,764 size-prefixed chunks (below) | `lha/`, `chunks/` |
+| `0x2B8BA0`–`0x594280` | libmus sound data: two sample banks (`.ptr` + `.wbk`), a table, songs | `sound/` |
+| `0x594280`–`0x275DD0F` | the asset archive (below) | `lha/`, `chunks/` |
 | `0x275DD0F` | version string `ORGE3_ROM_VER_99/05/30_22:47:42`, then `0xFF` padding | |
 
 The sound overlay `ovl_03F1B0` DMAs the libmus pieces by literal start/end ROM addresses, which give
 the boundaries.
 
-Each chunk is `[u32 BE size][payload]` on a 2-byte boundary, and the payload is one of:
+The asset archive is `[u32 chunk count (25,794)][index: 79 handle slots][chain of 25,795 chunks]`.
+The game addresses every chunk by its **handle**, its offset from `0x594280`. `LoadChunk(handle)`
+reads the size at `0x594280 + (handle & 0x0FFFFFFF)`, DMAs the payload and LZ-decodes it, and
+`LoadChunkRaw` skips the decoding. The top 4 bits of a handle are flags. Stored chunks that hold handle
+lists tie assets together. Extracted chunks are named by handle.
+
+Each chunk is `[u32 BE size][payload]` on a 2-byte boundary (size may be 0), and the payload is one of:
 - **An LHA archive** (524): 828 members in all, mostly `-lh5-`, with their original filenames
   (`.bin` ×565, `.n64` ×119, `.bg2`, `.k64`, some Shift-JIS). Each is verified against its
   header's CRC-16. Many `.n64` files are 153,608 bytes: a 320×240 16-bit image plus an 8-byte header.
@@ -104,9 +110,26 @@ Each chunk is `[u32 BE size][payload]` on a 2-byte boundary, and the payload is 
   | `00` `LL` `DDDD` | copy `L+5` bytes from `D+1` back (16-bit distance) |
   | `01` `LL` / `02` `LL` | `L+3` bytes of `0xFF` / zero |
 
-  Two-thirds of them decompress to data starting `UT` (16,957: probably sprite or unit graphics).
+  Two-thirds of them decompress to `UT` sprite graphics (16,957, below).
 - **Stored data** (658): uncompressed images tagged `HU` (320×240, `HUFF`) or `B5`, offset tables,
   and similar.
+
+### UT sprites
+
+`UT` chunks hold unit sprite graphics: each part is a pose or body piece with one or more frames, as
+CI8 colour indices plus a 4bpp alpha plane, coloured by a separate palette chunk of 256-colour
+RGBA5551 palettes. A unit set is a stored table of handles, `[?, ?, ?, palette, UT part, ...]` (231
+of them), and the loader in `ovl_1CE070` converts parts to textures with `UtCreateTexture`. The
+byte layout is in `tools/ut2png.py`, which renders them:
+
+```sh
+python3 tools/ut2png.py set 0x3BAC1C out.png   # every part of a unit set, in colour
+python3 tools/ut2png.py all extracted/ut/      # all sets
+```
+
+Each part is drawn with palette 0, so parts that use another palette (chosen per part by data not yet
+decoded) come out miscoloured. Entries 0–2 of a set table (probably part layout and animation) aren't
+decoded yet.
 
 ## Game code
 
@@ -208,5 +231,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Work out the decompressed formats (`UT` graphics, `.n64` images, `HU`/`B5` images, tables) and how
-   the game indexes the chunk chain (the stored offset tables, and callers of `RomRead`/`UnpackProc`).
+3. Decode the rest of the unit-set tables (entries 0–2, per-part palette choice) and the other
+   formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.

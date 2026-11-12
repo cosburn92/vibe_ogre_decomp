@@ -389,8 +389,22 @@ UnpackProc = 0x8007AC30; // type:func
 DecodeLZ = 0x8007A110; // type:func
 // ReadU32BE: inferred: unaligned big-endian u32 load
 ReadU32BE = 0x8007A7E0; // type:func
+
+// asset archive at ROM 0x594280: chunks are addressed by handle = offset from there
+// ChunkSize: inferred: (handle) -> stored size of the chunk
+ChunkSize = 0x8009DAF4; // type:func
+// LoadChunkRaw: inferred: (dst or NULL to HMalloc, handle) -> payload, not decompressed
+LoadChunkRaw = 0x8009DBB8; // type:func
+// LoadChunk: inferred: (handle) -> HMalloc'd, LZ-decoded payload
+LoadChunk = 0x8009DD38; // type:func
+gChunkSizeCache = 0x800ABD70; // size:0x4
+gChunkSizeCacheHandle = 0x800ABD74; // size:0x4
 get_header = 0x8007AFE4; // type:func
 extract_one = 0x8007B88C; // type:func
+
+// ovl_1CE070
+// UtCreateTexture: inferred: (UT data, frame, palette, ?) -> RGBA16 texture via the palette
+UtCreateTexture = 0x8019ABA4; // type:func rom:0x1D10A4
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
