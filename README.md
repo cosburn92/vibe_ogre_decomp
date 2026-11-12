@@ -391,6 +391,15 @@ location order. `MapSetupLocations` builds `gLocations` from the two, so the add
 location's starting state: `0x04` held by the enemy, `0x02` liberated, `0x10` the player's
 headquarters (`0x2012` on the starting base). `tools/location_dump.py` prints both.
 
+### Map overviews and siege grids
+
+- **`s_map*.n64`** (38) are the per-map overview images (e.g. 152×148), numbered by map like
+  `scincsv` and `maizo`; `tools/img2png.py` converts them.
+- **`spmap46`–`48`** are 64×64 byte grids of area numbers (0 on walls and borders) for the castle
+  sieges. They are the second entry of the indirection chunk `0x21AF9F8`, loaded at map start only
+  for stages `0x27` (spmap48), `0x2F`/`0x30`/`0x3C`/`0x3D` (spmap46) and `0x33` (spmap47), which
+  are the six stages with a 19:00 deadline. What the area numbers drive is not traced yet.
+
 ### Stage table
 
 `gStageTable` (`0x801E7E10`, 12 bytes per stage id) gives each stage's chapter, map and variant,
