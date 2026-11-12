@@ -554,7 +554,59 @@ void func_8007D7BC(void) {
     nextcount = 64;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007D8A8);
+/* reconst: rebuilds the dynamic Huffman tree between start and end after halving the frequencies. */
+void func_8007D8A8(s32 start, s32 end) {
+    s32 i, j, k, l, b;
+    u32 f, g;
+
+    b = block[start];
+    for (i = j = start; i < end; i++) {
+        if ((k = child[i]) < 0) {
+            freq[j] = (freq[i] + 1) / 2;
+            child[j] = k;
+            j++;
+        }
+        if (edge[b = block[i]] == i) {
+            stock[--avail] = b;
+        }
+    }
+    j--;
+    i = end - 1;
+    l = end - 2;
+    while (i >= start) {
+        while (i >= l) {
+            freq[i] = freq[j];
+            child[i] = child[j];
+            i--, j--;
+        }
+        f = freq[l] + freq[l + 1];
+        for (k = start; f < freq[k]; k++) {
+        }
+        while (j >= k) {
+            freq[i] = freq[j];
+            child[i] = child[j];
+            i--, j--;
+        }
+        freq[i] = f;
+        child[i] = l + 1;
+        i--;
+        l -= 2;
+    }
+    f = 0;
+    for (i = start; i < end; i++) {
+        if ((j = child[i]) < 0) {
+            s_node[~j] = i;
+        } else {
+            parent[j] = parent[j - 1] = i;
+        }
+        if ((g = freq[i]) == f) {
+            block[i] = b;
+        } else {
+            edge[b = block[i] = stock[avail++]] = i;
+            f = g;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007DBF4);
 
