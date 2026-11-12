@@ -251,7 +251,118 @@ u32 ReadU32BE(u8 *p) {
     return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
+#ifdef NON_MATCHING
+/* Same code, different register allocation (src should reuse a2, the idx register). */
+/* Decodes block idx of a compressed resource into dst; the header gives the mode (0-4) and
+ * the length-field width, and the bytes after it are the preset dictionary. Returns the size. */
+s32 func_8007A80C(u8 *dst, ArcCtx *ctx, s32 idx) {
+    u8 *dict = ctx->hdr;
+    u8 *src = ctx->ptrs[idx];
+    u8 *out = dst;
+    s32 done = 0;
+    u8 mode = dict[0];
+    u8 bits = dict[1];
+    u16 mask = 0xFFFF;
+    s32 size;
+    s32 shift;
+    s32 len;
+    u8 *p;
+
+    if (mode == 0 || mode == 1 || mode == 2) {
+        size = (dict[2] << 8) + dict[3];
+        dict += 4;
+    } else {
+        dict += 2;
+        size = (src[0] << 8) + src[1];
+        src += 2;
+    }
+    if (mode == 0 || mode == 3) {
+        mask = mask >> (bits + 1);
+    } else {
+        mask = mask >> bits;
+    }
+    if (mode == 0 || mode == 3) {
+        if (done != size) {
+            shift = 8 - bits;
+            do {
+                u8 b = *src;
+
+                if (b & 0x80) {
+                    len = (b & 0x7F) + 1;
+                    done += len;
+                    src++;
+                    while (len-- != 0) {
+                        *out++ = *src++;
+                    }
+                } else {
+                    len = ((b << 1) >> shift) + 3;
+                    done += len;
+                    p = dict + (((b << 8) + src[1]) & mask);
+                    while (len-- != 0) {
+                        *out++ = *p++;
+                    }
+                    src += 2;
+                }
+            } while (done != size);
+        }
+    } else if (mode == 1 || mode == 4) {
+        u16 flags = 0;
+
+        if (done != size) {
+            shift = 8 - bits;
+            do {
+                flags <<= 1;
+                if ((flags & 0xFE) == 0) {
+                    flags = (*src++ << 8) | 0xFF;
+                }
+                if (flags & 0x8000) {
+                    *out++ = *src++;
+                    done++;
+                } else {
+                    len = (src[0] >> shift) + 3;
+                    p = dict + (((src[0] << 8) + src[1]) & mask);
+                    done += len;
+                    while (len-- != 0) {
+                        *out++ = *p++;
+                    }
+                    src += 2;
+                }
+            } while (done != size);
+        }
+    } else {
+        if (done != size) {
+            shift = 8 - bits;
+            do {
+                u8 b = *src;
+                u8 lit, refs;
+
+                if (b == 0) {
+                    break;
+                }
+                refs = b & 7;
+                lit = b >> 3;
+                src++;
+                done += lit;
+                while (lit-- != 0) {
+                    *out++ = *src++;
+                }
+                while (refs-- != 0) {
+                    len = (src[0] >> shift) + 3;
+                    p = dict + (((src[0] << 8) + src[1]) & mask);
+                    done += len;
+                    while (len-- != 0) {
+                        *out++ = *p++;
+                    }
+                    src += 2;
+                }
+            } while (done != size);
+        }
+    }
+    return size;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007A80C);
+#endif
 
 s32 func_8007AB30(ArcCtx *c, s32 i) {
     u8 *h = c->hdr;
