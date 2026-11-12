@@ -324,9 +324,13 @@ INCLUDE_ASM("asm/nonmatchings/43100", func_8016E230_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E338_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/43100", AttackGetName);
+char * AttackGetName(u8 id) {
+    return gAttackTable[id].name;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016E458_ovl_040E80);
+u8 func_8016E458_ovl_040E80(u8 id) {
+    return gAttackTable[id].kind;
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", AttackGetElement);
 
@@ -430,23 +434,41 @@ s8 func_8016F8CC_ovl_040E80(u16 id) {
     return gItemTable[id].resist[6];
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F8E4_ovl_040E80);
+u8 func_8016F8E4_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[0] >> 6);
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F900_ovl_040E80);
+u8 func_8016F900_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[0] >> 4) & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F920_ovl_040E80);
+u8 func_8016F920_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[0] >> 2) & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F940_ovl_040E80);
+u8 func_8016F940_ovl_040E80(u16 id) {
+    return gItemTable[id].growth[0] & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F95C_ovl_040E80);
+u8 func_8016F95C_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[1] >> 6);
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F978_ovl_040E80);
+u8 func_8016F978_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[1] >> 4) & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F998_ovl_040E80);
+u8 func_8016F998_ovl_040E80(u16 id) {
+    return (gItemTable[id].growth[1] >> 2) & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F9B8_ovl_040E80);
+u8 func_8016F9B8_ovl_040E80(u16 id) {
+    return gItemTable[id].growth[1] & 3;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", ItemGetFlag80);
+u8 ItemGetFlag80(u16 id) {
+    return (gItemTable[id].flags >> 7);
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", ItemIsWeapon);
 
