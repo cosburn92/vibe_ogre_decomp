@@ -612,3 +612,6 @@ gStageTriggersPending = 0x801F0EBC; // size:0x2 segment:ovl_101CE0
 // gEnemySquadsOnMap: inferred: count from MapCountEnemySquads
 gEnemySquadsOnMap = 0x801F0FDE; // size:0x1 segment:ovl_101CE0
 SetDeadEnd = 0x801D0B58; // type:func rom:0x125298
+// FPS counter in main 1060 data: retraces and frames since the last sample
+D_800A81FE = 0x800A81FE; // size:0x1
+D_800A81FF = 0x800A81FF; // size:0x1

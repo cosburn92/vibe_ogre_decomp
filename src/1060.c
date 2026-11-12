@@ -45,7 +45,46 @@ typedef struct {
     /* 0x0C */ u32 count;
 } SaveDesc; /* list ends at base NULL */
 
+typedef struct {
+    /* 0x00 */ void *unk0;
+    /* 0x04 */ void (*update)(void);
+    /* 0x08 */ void (*draw)(FbSet *);
+} SceneFuncs;
+
 extern FbSet D_800A81C0[2];
+extern SceneFuncs *D_800E8294;
+extern u8 D_800C4800;
+extern u8 D_800AEF98;
+extern volatile u16 D_800C4C26;
+extern u8 D_800E810C;
+extern u8 D_800E7A0C;
+extern u8 D_800C4CE4;
+extern u8 D_800A81FE; /* retraces since the last FPS sample */
+extern u8 D_800A81FF; /* frames drawn since the last FPS sample */
+extern u8 D_800A8200;
+extern u8 D_800A8214;
+extern u8 D_800A81FC;
+extern u8 D_800AEFA0;
+extern u32 D_800AEFA4;
+extern u8 gPlayTime[];
+u8 func_80072944(void);
+void func_80089BC0(void);
+void func_80073ED8(void);
+void func_800EAC24(void);
+void func_800E9E34(void);
+void func_800EAF1C(void);
+void func_800733F8(void);
+void func_80073BD0(void);
+void func_80073AE4(void);
+void func_80076AE8(void);
+void func_80180BDC(void);
+void func_8007297C(void);
+void func_8016CB44(void *t);
+void func_8007FD10(void);
+void func_80076DC8(void);
+void func_800765D8(void);
+void func_8017F490(void);
+void func_801841F4(void);
 extern u16 D_800C4C08;
 extern u16 D_800E7D68;
 extern u16 D_800C4A18;
@@ -592,7 +631,85 @@ HeapNode *func_80071E74(HeapNode *n, u32 size) {
 
 INCLUDE_ASM("asm/nonmatchings/1060", MainThreadEntry);
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80072398);
+/* Per-retrace frame driver: fades, draws when a new frame is due, and runs the game update. */
+void func_80072398(s32 retrace) {
+    if (D_800C4800 == 1) {
+        D_800AEF98 = 1;
+    } else if (D_800AEF98 == 0) {
+        if (func_80072944()) {
+            D_800AEF98 = 2;
+        } else if (D_800AEF98 == 0 && D_800C4C26 == 0xFFFD) {
+            D_800AEF98 = 3;
+        }
+    }
+    if (D_800AEF99 != 0) {
+        if (++D_800AEF99 > 12) {
+            D_800AEF99 = 12;
+            func_80089BC0();
+            if (D_800AEF98 == 2 || D_800AEF98 == 3 || D_800AEF98 == 4) {
+                if (retrace == 0) {
+                    D_800C4C26 = 0xFFFC;
+                }
+            }
+            return;
+        }
+    } else if (D_800AEF98 != 0) {
+        D_800AEF99 = 1;
+        func_80073ED8();
+    }
+    if (D_800C4C26 == 0xFFFF || D_800C4C26 == 0xFFFD) {
+        func_800EAC24();
+        func_800E9E34();
+        func_800EAF1C();
+        if (D_800E810C && retrace < (D_800E7A0C & 1) + 1) {
+            Gfx *g;
+
+            func_800733F8();
+            func_80073BD0();
+            D_800E9BA0->w0 = 0xDE000000;
+            D_800E9BA0->w1 = (u32)D_801869C8;
+            D_800E9BA0++;
+            if (D_800E8294->draw != NULL) {
+                D_800E8294->draw(D_800E9BE0);
+            }
+            func_80076AE8();
+            g = D_800E9BA0;
+            D_800E9BA0 = g + 1;
+            g->w0 = 0xDE000000;
+            g->w1 = (u32)D_801869C8;
+            func_80180BDC();
+            func_80073AE4();
+            D_800C4CE4 = 1;
+            D_800E810C = 0;
+            D_800A81FF++;
+        }
+        if ((s32)(D_800C4BCC - D_800AEFA4) >= 2 || D_800A8214) {
+            if (!D_800A81FC || D_800C4CE4) {
+                func_8007297C();
+                if (D_800AEFA0 == 0 || D_800AEFA0 == 0x83) {
+                    func_8016CB44(&gPlayTime);
+                    func_8007FD10();
+                    if (D_800E8294->update != NULL) {
+                        D_800E8294->update();
+                    }
+                    func_80076DC8();
+                    func_800765D8();
+                    func_8017F490();
+                    func_801841F4();
+                    D_800C4CE4 = 0;
+                    D_800E810C = 1;
+                    D_800A81FE += D_800C4BCC - D_800AEFA4;
+                    D_800AEFA4 = D_800C4BCC;
+                }
+                if (D_800A81FE >= 60) {
+                    D_800A8200 = D_800A81FF;
+                    D_800A81FE = 0;
+                    D_800A81FF = 0;
+                }
+            }
+        }
+    }
+}
 
 void func_80072710(void) {
     if (osTvType != 1 && osTvType != 2) {
