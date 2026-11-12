@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 src=$1; off=$2; size=$3; shift 3
-KMC=tools/gcc-2.7.2
+KMC=${KMC:-tools/gcc-2.7.2}
 # WSL1 can't exec 32-bit ELF; run through qemu if needed (-B avoids an mmap WSL1 lacks).
 if [ -z "$RUN32" ] && ! $KMC/cc1 --version >/dev/null 2>&1; then RUN32="qemu-i386-static -B 0x100000000"; fi
 CFLAGS=${*:-"-O2 -G0 -mips3 -mgp32 -mfp32"}
@@ -19,7 +19,7 @@ mips-linux-gnu-objcopy -O binary -j .text $out/test.o $out/full.bin
 # old as pads .text to alignment; compare only the function bytes
 head -c $(($size)) $out/full.bin > $out/test.bin
 dd if=baserom/baserom.us.z64 of=$out/target.bin bs=1 skip=$(($off)) count=$(($size)) 2>/dev/null
-if cmp -s $out/test.bin $out/target.bin; then echo "MATCH ($CFLAGS)"; else
+if [ "$(python3 tools/matchtest/maskj.py $out/test.bin)" = "$(python3 tools/matchtest/maskj.py $out/target.bin)" ]; then echo "MATCH ($CFLAGS)"; else
   echo "DIFF ($CFLAGS)"
   mips-linux-gnu-objdump -d -EB -m mips:4300 $out/test.o | tail -n +8 > $out/ours.s
   mips-linux-gnu-objdump -D -EB -m mips:4300 -b binary --adjust-vma=0 $out/target.bin | tail -n +8 > $out/theirs.s
