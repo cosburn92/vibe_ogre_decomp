@@ -362,8 +362,16 @@ reaches one gets it through `InventoryAdd`, and `TreasureDowse` (from the field 
 an unfound one, preferring equipment. `tools/maizo_dump.py` lists them, with the stage → file
 table.
 
-Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
-and about 7,000 headerless LZ chunks. Many assets are reached
+### Towns and strongholds (`ktenmain`, `scincsv*`)
+
+`ktenmain.bin` (拠点, "stronghold") lists all 316 towns, churches and castles in 28-byte records:
+a 21-byte name, base flags, and three fields not yet identified. Each map has a `scincsv*.bin`
+list (59 of them, binary despite the name) of `(ktenmain id, flags to add)` pairs in the map's
+location order. `MapSetupLocations` builds `gLocations` from the two, so the added flags set each
+location's starting state: `0x04` held by the enemy, `0x02` liberated, `0x10` the player's
+headquarters (`0x2012` on the starting base). `tools/location_dump.py` prints both.
+
+Still not decoded: about 7,000 headerless LZ chunks. Many assets are reached
 the same way: overlays load handles with `lui`/`ori` immediates and call `LoadAsset`, sometimes
 through a 4-byte chunk holding the real handle.
 

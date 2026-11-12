@@ -557,6 +557,8 @@ InventoryAdd = 0x801DC720; // type:func rom:0x130E60
 gTreasureFound = 0x80196A38;
 // TreasureDowse (ovl_1A9290, field item menu): picks an unfound treasure on the map, 76% an item one, marks it found
 TreasureDowse = 0x8021B5E0; // type:func rom:0x1AF8F0
+// MapSetupLocations: fills gLocations from ktenmain.bin and the map's scincsv list (tools/location_dump.py)
+MapSetupLocations = 0x801D30F0; // type:func rom:0x127830
 // Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline
 StageHQHeld = 0x801E5548; // type:func rom:0x139C88
 StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8
