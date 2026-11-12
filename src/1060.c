@@ -122,7 +122,85 @@ extern u8 D_800AB9B0[];
 extern u8 D_800ABA50[];
 extern u16 D_800AEF10[4][16];
 extern u16 D_800AEE90[4][16];
-extern u8 D_800AEE78[];
+typedef struct {
+    u8 b[6];
+} Unk6;
+
+typedef struct {
+    s16 v[9];
+} Unk12;
+
+extern Unk6 D_800AEE78[4];
+extern Unk6 *D_800C47F0[4];
+extern Unk12 D_800E9C08;
+extern Unk12 D_800ABD80;
+extern u8 D_800E82C4;
+extern u8 D_80243DB0[];
+extern u8 ovl_03F1B0_VRAM[];
+extern u8 ovl_03F1B0_TEXT_START[];
+extern u8 ovl_03F1B0_TEXT_END[];
+extern u8 ovl_03F1B0_DATA_START[];
+extern u8 ovl_03F1B0_RODATA_END[];
+extern u8 ovl_03F1B0_BSS_START[];
+extern u8 ovl_03F1B0_BSS_END[];
+extern u8 ovl_03F1B0_ROM_START[];
+extern u8 ovl_03F1B0_ROM_END[];
+extern u8 ovl_040E80_VRAM[];
+extern u8 ovl_040E80_TEXT_START[];
+extern u8 ovl_040E80_TEXT_END[];
+extern u8 ovl_040E80_DATA_START[];
+extern u8 ovl_040E80_RODATA_END[];
+extern u8 ovl_040E80_BSS_START[];
+extern u8 ovl_040E80_BSS_END[];
+extern u8 ovl_040E80_ROM_START[];
+extern u8 ovl_040E80_ROM_END[];
+extern u8 D_800A8204[];
+extern u16 D_800E8214;
+extern u16 D_800E79B0;
+extern s32 D_8018FDC0;
+extern u8 gFlags[];
+void func_800E9C20(void);
+void osAiSetFrequency(u32 f);
+void osInvalICache(void *p, s32 n);
+void osInvalDCache(void *p, s32 n);
+void RomRead(void *rom, void *dst, s32 size);
+void MusSetMasterVolume(s32 flags, s32 volume);
+void func_8008A1B0(void);
+void func_80089C60(void);
+u8 func_8008A260(void);
+void func_8008A660(void (*f)(void));
+void func_8008A040(void);
+void func_800E9CEC(void);
+void func_800EA714(void);
+void func_80089AB0(void *a, s32 b);
+void func_800899D0(void (*f)(FrameMsg *));
+void func_8009DAEC(void);
+void func_80079380(void);
+void func_80179060(void);
+void func_800EA8E0(void);
+void func_80173610(void);
+void func_80080280(Gfx **head);
+void func_8017BDC0(void);
+void func_80184D70(void);
+void func_8016C900(void);
+void func_800746C8(void);
+void func_800749C0(s32 a);
+void func_800764E0(void);
+void func_8016CD50(s32 a);
+void func_80075BC0(void);
+void func_80089A30(s32 n);
+s32 func_80073F58(void);
+void func_80073FD4(void);
+s32 func_800819D4(s32 a);
+void func_80072710(void);
+void func_80072738(s32 mode);
+u8 func_80072900(void);
+u8 func_800728BC(void);
+void func_800727D8(void);
+void func_8007284C(void);
+void func_8007307C(FrameMsg *msg);
+void func_80073164(u8 relative, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f);
+void func_80070C60(u32 start, s32 size);
 extern u16 D_800C4BF0;
 extern Gfx *D_800E9BA0;
 extern u8 D_80186E70[];
@@ -629,7 +707,119 @@ HeapNode *func_80071E74(HeapNode *n, u32 size) {
     return n->free >= size ? n : NULL;
 }
 
+#ifdef NON_MATCHING
+/* Matches except the frame-rate ternary result lands in v1 instead of v0. */
+void MainThreadEntry(void *arg) {
+    s32 i;
+
+    osAiSetFrequency(32000);
+    func_8008A1B0();
+    bzero(ovl_03F1B0_VRAM, 0x80400000 - (u32)ovl_03F1B0_VRAM);
+    func_80089C60();
+    D_800E82C4 = func_8008A260();
+    for (i = 3; i >= 0; i--) {
+        D_800C47F0[i] = &D_800AEE78[i];
+    }
+    D_800AEF9A = 0;
+    func_8008A660(func_8007284C);
+    func_8008A040();
+    osInvalICache(ovl_03F1B0_TEXT_START, ovl_03F1B0_TEXT_END - ovl_03F1B0_TEXT_START);
+    osInvalDCache(ovl_03F1B0_DATA_START, ovl_03F1B0_RODATA_END - ovl_03F1B0_DATA_START);
+    RomRead(ovl_03F1B0_ROM_START, ovl_03F1B0_VRAM, ovl_03F1B0_ROM_END - ovl_03F1B0_ROM_START);
+    if (ovl_03F1B0_BSS_START != ovl_03F1B0_BSS_END) {
+        bzero(ovl_03F1B0_BSS_START, ovl_03F1B0_BSS_END - ovl_03F1B0_BSS_START);
+    }
+    func_800E9CEC();
+    func_800E9C20();
+    MusSetMasterVolume(1, 0x67FF);
+    MusSetMasterVolume(2, 0x7FFF);
+    D_800AEF98 = 0;
+    for (;;) {
+        func_800EA714();
+        func_80073FD4();
+        osInvalICache(ovl_040E80_TEXT_START, ovl_040E80_TEXT_END - ovl_040E80_TEXT_START);
+        osInvalDCache(ovl_040E80_DATA_START, ovl_040E80_RODATA_END - ovl_040E80_DATA_START);
+        RomRead(ovl_040E80_ROM_START, ovl_040E80_VRAM, ovl_040E80_ROM_END - ovl_040E80_ROM_START);
+        if (ovl_040E80_BSS_START != ovl_040E80_BSS_END) {
+            bzero(ovl_040E80_BSS_START, ovl_040E80_BSS_END - ovl_040E80_BSS_START);
+        }
+        bzero(ovl_040E80_BSS_START, ovl_040E80_BSS_END - ovl_040E80_BSS_START);
+        func_80089AB0(D_800A8204, 3);
+        func_800899D0(func_8007307C);
+        bzero(D_800A81C0, 0x30);
+        D_800A81F0 = 0;
+        D_800A8210[0] = 0;
+        D_800A8210[1] = 0;
+        D_800A8210[2] = 0;
+        D_800A8213 = 0;
+        D_800E7A0C = 1;
+        D_800C4808 = 0;
+        D_800E810C = 0;
+        D_800C4CE4 = 1;
+        D_800AEFA0 = 0;
+        D_800A81F4 = 0;
+        D_800AEFA4 = D_800C4BCC;
+        if (D_800AEF98 != 3) {
+            D_800E9C08 = D_800ABD80;
+        }
+        D_800AEF98 = 0;
+        D_800AEF99 = 0;
+        func_800727D8();
+        func_80070C60((u32)D_80243DB0, 0x80400000 - (u32)D_80243DB0);
+        func_8009DAEC();
+        func_80079380();
+        func_80072710();
+        func_8007297C();
+        D_800E8214 = (D_800E79B0 & 0x1000) ? 24 : 9;
+        func_80179060();
+        func_800EA8E0();
+        func_80173610();
+        func_80073164(0, 8, 2, 0x40, 0x40, 0x100, 0x1000);
+        D_800AEF9C = NULL;
+        D_800C4B20 = 0;
+        D_800A8213 = 0;
+        D_800A8210[2] = 0;
+        D_800A8210[1] = 0;
+        D_800A8210[0] = 0;
+        func_80080280(&D_800E9BA0);
+        D_8018FDC0 = 0;
+        func_8017BDC0();
+        func_80184D70();
+        func_8016C900();
+        bzero(gFlags, 0x10);
+        func_800746C8();
+        func_800749C0(0xE);
+        func_800764E0();
+        if (D_800C4800) {
+            for (;;) {
+            }
+        }
+        func_80072900();
+        func_80089BC0();
+        func_80072738(2);
+        func_8016CD50(0);
+        func_80089BC0();
+        func_800728BC();
+        func_80075BC0();
+        func_80072900();
+        func_80089BC0();
+        func_80089A30(5);
+        func_80072738(2);
+        func_8016CD50(0);
+        func_80089BC0();
+        do {
+            func_80089A30(1);
+        } while (func_80073F58());
+        func_80073FD4();
+        func_80081908(3, 8);
+        while (func_800819D4(3)) {
+            func_80089A30(1);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1060", MainThreadEntry);
+#endif
 
 /* Per-retrace frame driver: fades, draws when a new frame is due, and runs the game update. */
 void func_80072398(s32 retrace) {
