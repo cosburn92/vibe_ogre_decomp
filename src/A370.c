@@ -6,9 +6,13 @@ typedef struct {
     /* 0x04 */ u8 *ptrs[1];
 } ArcCtx;
 
+/* Request to the unpack thread; it replies on reply with the same message. */
 typedef struct {
-    /* 0x00 */ u8 unk00[8];
-    /* 0x08 */ u8 done;
+    /* 0x00 */ u8 unk00[4];
+    /* 0x04 */ void *reply;
+    /* 0x08 */ u8 type; /* 1 = LZ (DecodeLZ) */
+    /* 0x0C */ u8 *src;
+    /* 0x10 */ u8 *dst;
 } ArcMsg;
 
 /* In-memory FILE used by the LHa code: fopen/fread/fwrite/getc work on buf. */
@@ -192,6 +196,8 @@ void UnpackProc(void *arg);
 void osCreateMesgQueue(void *mq, void *msgs, s32 n);
 void osCreateThread(void *t, s32 id, void (*entry)(void *), void *arg, void *sp, s32 pri);
 void osStartThread(void *t);
+s32 osRecvMesg(void *mq, void *msg, s32 flag);
+u32 DecodeLZ(u8 *dst, u8 *src);
 void *HMalloc(s32 size);
 void *HFree(void *p);
 s32 get_header(ArcFile *f, LzHeader *h);
@@ -497,7 +503,7 @@ s32 func_8007AB30(ArcCtx *c, s32 i) {
 }
 
 void func_8007AB7C(ArcMsg *m) {
-    m->done = 1;
+    m->type = 1;
     osSendMesg(&D_800AF320, m, 1);
 }
 
@@ -508,7 +514,21 @@ void func_8007ABAC(s32 id, s32 pri) {
     osStartThread(D_800AF0D0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", UnpackProc);
+void UnpackProc(void *arg) {
+    ArcMsg *msg = NULL;
+
+    for (;;) {
+        osRecvMesg(D_800AF320, &msg, 1);
+        if (msg->type == 1) {
+            DecodeLZ(msg->dst, msg->src);
+            osSendMesg(msg->reply, msg, 1);
+        } else {
+            osSyncPrintf("UnpackProc: no supported format %d\n", msg->type);
+        }
+    }
+}
+
+const char D_800AE05C[] = "";
 
 #ifdef NON_MATCHING
 /* Same code; the saved registers are assigned in a different order (n should be s2). */
