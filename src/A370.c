@@ -87,6 +87,9 @@ extern u16 D_800AF3C0;
 extern s32 D_800AF3AC;
 extern u16 D_800AF3B0;
 void func_8007C378(u8 *p, u32 n, ArcFile *f);
+extern Interface D_800AF378;
+void func_8007BF10(Interface *iface);
+s32 func_8007C590(ArcFile *f1, ArcFile *f2, s32 size, s32 crc_flg);
 #define left D_800AF3FC
 #define right D_800AF400
 #define blocksize D_800AF3C6
@@ -693,7 +696,35 @@ INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE2AC);
 
 INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE2D4);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007BA98);
+/* decode_lzhuf */
+u16 func_8007BA98(ArcFile *infp, ArcFile *outfp, s32 original_size, s32 packed_size, char *name, s32 method) {
+    D_800AF378.dicbit = 13;
+    D_800AF378.infile = infp;
+    D_800AF378.outfile = outfp;
+    D_800AF378.original = original_size;
+    D_800AF378.packed = packed_size;
+    D_800AF378.method = method;
+    switch (method) {
+        case 0:
+        case 8:
+            func_8007C590(infp, outfp, original_size, 2);
+            break;
+        case 6:
+            D_800AF378.dicbit = 11;
+            func_8007BF10(&D_800AF378);
+            break;
+        case 1:
+        case 4:
+        case 7:
+            D_800AF378.dicbit = 12;
+            func_8007BF10(&D_800AF378);
+            break;
+        default:
+            func_8007BF10(&D_800AF378);
+            break;
+    }
+    return crc;
+}
 
 /* Swaps ':' and '/' in a path. */
 void func_8007BB48(u8 *s, s32 n) {
@@ -730,7 +761,75 @@ INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE324);
 
 INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE334);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007BC24);
+/* make_table */
+void func_8007BC24(s16 nchar, u8 *bitlen, s16 tablebits, u16 *table) {
+    u16 count[17];
+    u16 weight[17];
+    u16 start[17];
+    u16 total;
+    u32 i, l;
+    s32 j, k, m, n, avail;
+    u16 *p;
+
+    avail = nchar;
+    for (i = 1; i <= 16; i++) {
+        count[i] = 0;
+        weight[i] = 1 << (16 - i);
+    }
+    for (i = 0; i < nchar; i++) {
+        count[bitlen[i]]++;
+    }
+    total = 0;
+    for (i = 1; i <= 16; i++) {
+        start[i] = total;
+        total += weight[i] * count[i];
+    }
+    if ((total & 0xFFFF) != 0) {
+        osSyncPrintf(D_800AE30C, D_800AE31C, "Bad table (5)\n", D_800AE334);
+    }
+    m = 16 - tablebits;
+    for (i = 1; i <= tablebits; i++) {
+        start[i] >>= m;
+        weight[i] >>= m;
+    }
+    j = start[tablebits + 1] >> m;
+    k = 1 << tablebits;
+    if (j != 0) {
+        for (i = j; i < k; i++) {
+            table[i] = 0;
+        }
+    }
+    for (j = 0; j < nchar; j++) {
+        k = bitlen[j];
+        if (k == 0) {
+            continue;
+        }
+        l = start[k] + weight[k];
+        if (k <= tablebits) {
+            for (i = start[k]; i < l; i++) {
+                table[i] = j;
+            }
+        } else {
+            p = &table[(i = start[k]) >> m];
+            i <<= tablebits;
+            n = k - tablebits;
+            while (--n >= 0) {
+                if (*p == 0) {
+                    right[avail] = left[avail] = 0;
+                    *p = avail++;
+                }
+                if (i & 0x8000) {
+                    p = &right[*p];
+                } else {
+                    p = &left[*p];
+                }
+                i <<= 1;
+            }
+            *p = j;
+        }
+        start[k] = l;
+    }
+}
 
 /* decode: the LHa slide-dictionary driver for one archive member */
 void func_8007BF10(Interface *iface) {
