@@ -1292,7 +1292,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x24BCA0, asm]
+      - [0x24BCA0, c]
       - [0x24EA70, asm]
       - [0x2522E0, asm]
       - [0x256410, asm]
@@ -1304,7 +1304,7 @@ segments:
       - [0x25E9C0, data, 256410]
       - [0x25EBA0, data, 25A0B0]
       - [0x25EDA0, data, 25DD90]
-      - [0x25EDC0, rodata, 24BCA0]
+      - [0x25EDC0, .rodata, 24BCA0]
       - [0x25EE00, rodata, 24EA70]
       - [0x25EE10, rodata, 2522E0]
       - [0x25EE30, rodata, 256410]
