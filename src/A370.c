@@ -51,6 +51,11 @@ typedef struct {
 #define nn D_800AF3E0
 #define nextcount D_800AF3E4
 #define dicbit D_800AF39C
+#define n1 D_800AF3D8
+#define parent D_800AF41C
+
+extern s32 D_800AF3D8;
+extern s16 *D_800AF41C;
 
 extern u8 *D_800AF404;
 extern u16 *D_800AF40C;
@@ -126,7 +131,7 @@ extern u16 *D_800AF3F8;
 extern s16 D_800AF3C6;
 extern s32 D_800AF3CC;
 extern s16 D_800AF3C8;
-extern s16 D_800AF39E;
+extern u16 D_800AF39E;
 extern u32 D_800AF3E8;
 extern u32 D_800AF3F4;
 extern u16 D_800AF3A4;
@@ -501,7 +506,37 @@ void func_8007D594(void) {
     D_800AF3C6 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007D5B8);
+/* start_c_dyn */
+void func_8007D5B8(void) {
+    s32 i, j, f;
+
+    n1 = (n_max >= 256 + maxmatch - 3 + 1) ? 512 : n_max - 1;
+    for (i = 0; i < 628; i++) {
+        stock[i] = i;
+        block[i] = 0;
+    }
+    for (i = 0, j = n_max * 2 - 2; i < n_max; i++, j--) {
+        freq[j] = 1;
+        child[j] = ~i;
+        s_node[i] = j;
+        block[j] = 1;
+    }
+    avail = 2;
+    edge[1] = n_max - 1;
+    i = n_max * 2 - 2;
+    while (j >= 0) {
+        f = freq[j] = freq[i] + freq[i - 1];
+        child[j] = i;
+        parent[i] = parent[i - 1] = j;
+        if (f == freq[j + 1]) {
+            edge[block[j] = block[j + 1]] = j;
+        } else {
+            edge[block[j] = stock[avail++]] = j;
+        }
+        i -= 2;
+        j--;
+    }
+}
 
 /* decode_start_dyn, with start_p_dyn inlined */
 void func_8007D7BC(void) {
