@@ -10,18 +10,34 @@ typedef struct {
     /* 0x08 */ u8 done;
 } ArcMsg;
 
+/* In-memory FILE used by the LHa code: fopen/fread/fwrite/getc work on buf. */
 typedef struct {
-    /* 0x00 */ u8 unk00[8];
+    /* 0x00 */ u8 open;
+    /* 0x04 */ void *name;
     /* 0x08 */ u8 *buf;
-    /* 0x0C */ u8 unk0C[4];
+    /* 0x0C */ s32 size;
     /* 0x10 */ s32 pos;
-} ArcFile;
+    /* 0x14 */ s32 unk14;
+} ArcFile; /* size 0x18 */
+
+#define getc(f) ((f)->buf[(f)->pos++])
 
 #define bitbuf D_800AF3C2
 #define subbitbuf D_800AF3C4
 #define bitcount D_800AF3C5
 #define compsize D_800AF398
 #define infile D_800AF36C
+#define flagcnt D_800AF3F0
+#define flag D_800AF3EC
+#define matchpos D_800AF3F4
+#define text D_800AF3A8
+
+extern s32 D_800AF3F0;
+extern s32 D_800AF3EC;
+extern u8 *D_800AF3A8;
+extern ArcFile D_800AF340;
+extern ArcFile D_800AF358;
+void *func_8007F4B0(void *d, s32 c, u32 n);
 
 extern u16 D_800AF3C2;
 extern u8 D_800AF3C4;
@@ -344,13 +360,48 @@ void func_8007F218(void) {
     func_8007C438();
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F234);
+/* decode_c_lz5 */
+u16 func_8007F234(void) {
+    s32 c;
+
+    if (flagcnt == 0) {
+        flagcnt = 8;
+        flag = getc(infile);
+    }
+    flagcnt--;
+    c = getc(infile);
+    if ((flag & 1) == 0) {
+        matchpos = c;
+        c = getc(infile);
+        matchpos += (c & 0xF0) << 4;
+        c &= 0x0F;
+        c += 0x100;
+    }
+    flag >>= 1;
+    return c;
+}
 
 u16 func_8007F314(void) {
     return (D_800AF3A4 - D_800AF3F4 - 0x13) & 0xFFF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F334);
+/* decode_start_lz5 */
+void func_8007F334(void) {
+    s32 i;
+
+    flagcnt = 0;
+    for (i = 0; i < 256; i++) {
+        func_8007F4B0(&text[i * 13 + 18], i, 13);
+    }
+    for (i = 0; i < 256; i++) {
+        text[256 * 13 + 18 + i] = i;
+    }
+    for (i = 0; i < 256; i++) {
+        text[256 * 13 + 256 + 18 + i] = 255 - i;
+    }
+    func_8007F4B0(&text[256 * 13 + 512 + 18], 0, 128);
+    func_8007F4B0(&text[256 * 13 + 512 + 128 + 18], ' ', 128 - 18);
+}
 
 u8 *func_8007F408(u8 *d, u8 *s) {
     u8 *p = d;
@@ -388,7 +439,7 @@ s32 func_8007F47C(u8 *a, u8 *b) {
     return func_8007F47C(a, b);
 }
 
-void *func_8007F4B0(void *d, u8 c, u32 n) {
+void *func_8007F4B0(void *d, s32 c, u32 n) {
     u8 *p = d;
 
     while (n-- != 0) {
@@ -397,11 +448,57 @@ void *func_8007F4B0(void *d, u8 c, u32 n) {
     return d;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F4E4);
+/* fopen on an in-memory buffer: mode "r" uses the read slot, anything else the write slot. */
+ArcFile *func_8007F4E4(void *name, u8 *mode, u8 *buf, s32 size) {
+    if (mode[0] == 'r') {
+        if (D_800AF340.open) {
+            return NULL;
+        }
+        D_800AF340.name = name;
+        D_800AF340.buf = buf;
+        D_800AF340.size = size;
+        D_800AF340.pos = 0;
+        return &D_800AF340;
+    }
+    if (D_800AF358.open) {
+        return NULL;
+    }
+    D_800AF358.name = name;
+    D_800AF358.buf = buf;
+    D_800AF358.size = size;
+    D_800AF358.pos = 0;
+    return &D_800AF358;
+}
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F570);
+/* fread */
+s32 func_8007F570(u8 *dst, s32 size, s32 n, ArcFile *f) {
+    s32 i, j;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F5D8);
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < size; j++) {
+            if (f->pos >= f->size) {
+                return i;
+            }
+            *dst++ = f->buf[f->pos++];
+        }
+    }
+    return i;
+}
+
+/* fwrite */
+s32 func_8007F5D8(u8 *src, s32 size, s32 n, ArcFile *f) {
+    s32 i, j;
+
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < size; j++) {
+            if (f->pos >= f->size) {
+                return i;
+            }
+            f->buf[f->pos++] = *src++;
+        }
+    }
+    return i;
+}
 
 void func_8007F640(void) {
 }
