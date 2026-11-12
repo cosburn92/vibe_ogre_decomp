@@ -3,36 +3,38 @@
 
 usage: python3 tools/funcdiff.py src/45CB0.c
 
-Reads the function names defined in the file (C definitions and INCLUDE_ASM stubs), finds each one's
-ROM range in build/ogrebattle64.map (the next symbol or section end bounds it), and compares those
-bytes of build/ogrebattle64.us.z64 against baserom/baserom.us.z64. Functions after a size mismatch
-shift, so fix the first failing one first.
+Reads the function names defined in the file (C definitions and INCLUDE_ASM stubs), finds each one
+in build/ogrebattle64.map under this file's object (build/src/<OFF>.o; overlays share VRAM, so only
+that object's symbols count), bounds it by the next function symbol of the same object, and compares
+those bytes of build/ogrebattle64.us.z64 against baserom/baserom.us.z64. The ROM address comes from
+the file name, which is the segment's ROM offset. Functions after a size mismatch shift, so fix the
+first failing one first.
 """
+import os
 import re
 import sys
 
+SECTION = re.compile(r"^ (\.text|\.data|\.rodata|\.bss)\s+0x([0-9a-f]+)\s+0x([0-9a-f]+)\s+(\S+)")
+SYMBOL = re.compile(r"^\s+0x([0-9a-f]+)\s+([A-Za-z_][A-Za-z0-9_]*)$")
+NOT_FUNC = re.compile(r"(L[0-9A-F]{8}|jtbl_|D_)")
 
-def map_symbols():
-    """[(vram, name)] for every symbol in .text sections, plus the ROM offset of each section."""
-    syms, text = [], open("build/ogrebattle64.map").read().splitlines()
-    sect = None
-    for line in text:
-        m = re.match(r"^ (\.text|\.data|\.rodata|\.bss)\s+0x([0-9a-f]+)\s+0x([0-9a-f]+)\s+(\S+)", line)
+
+def object_text(obj):
+    """(VRAM start, size, [(vram, name)]) of obj's .text, from the link map."""
+    start = size = None
+    syms = []
+    current = None
+    for line in open("build/ogrebattle64.map"):
+        m = SECTION.match(line)
         if m:
-            sect = (m.group(1), int(m.group(2), 16), int(m.group(3), 16), m.group(4))
+            current = (m.group(1), m.group(4))
+            if current == (".text", obj):
+                start, size = int(m.group(2), 16), int(m.group(3), 16)
             continue
-        m = re.match(r"^\s+0x([0-9a-f]+)\s+([A-Za-z_][A-Za-z0-9_]*)$", line)
-        if m and sect and sect[0] == ".text":
-            syms.append((int(m.group(1), 16), m.group(2), sect))
-    return syms
-
-
-def load_addresses():
-    """[(vram, rom)] of every segment, from the linker script's <seg>_ROM_START / <seg>_VRAM symbols."""
-    m = open("build/ogrebattle64.map").read()
-    rom = dict((n, int(v, 16)) for v, n in re.findall(r"\s+0x([0-9a-f]+)\s+(\w+)_ROM_START\b", m))
-    vram = dict((n, int(v, 16)) for v, n in re.findall(r"\s+0x([0-9a-f]+)\s+(\w+)_VRAM\b", m))
-    return [(vram[n], rom[n]) for n in rom if n in vram]
+        m = SYMBOL.match(line)
+        if m and current == (".text", obj) and not NOT_FUNC.match(m.group(2)):
+            syms.append((int(m.group(1), 16), m.group(2)))
+    return start, size, sorted(set(syms))
 
 
 def main():
@@ -40,12 +42,13 @@ def main():
     text = open(src).read()
     names = re.findall(r"INCLUDE_ASM\([^,]+,\s*(\w+)\)", text)
     names += re.findall(r"^[A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)\s*\{", text, re.M)
-    # only function-like symbols bound a function (labels, jump tables and data in .text would
-    # otherwise make the next 'symbol' come too early)
-    syms = sorted({(v, n) for v, n, _ in map_symbols()
-                   if not re.match(r"(L[0-9A-F]{8}|jtbl_|D_|\.)", n)})
+    seg = os.path.splitext(os.path.basename(src))[0]
+    start, size, syms = object_text(f"build/src/{seg}.o")
+    if start is None:
+        print(f"build/src/{seg}.o: no .text in the map")
+        return 1
+    rom_start = int(seg, 16)
     addr = {n: v for v, n in syms}
-    segs = sorted(load_addresses())
     built = open("build/ogrebattle64.us.z64", "rb").read()
     base = open("baserom/baserom.us.z64", "rb").read()
     for n in sorted(set(names), key=lambda n: addr.get(n, 0)):
@@ -53,12 +56,8 @@ def main():
             print(f"  {n}: not in map")
             continue
         v = addr[n]
-        nxt = min([w for w, _ in syms if w > v] or [v + 4])
-        seg = max([s for s in segs if s[0] <= v], default=None)
-        if not seg:
-            print(f"  {n}: no segment")
-            continue
-        r0, r1 = seg[1] + v - seg[0], seg[1] + nxt - seg[0]
+        nxt = min([w for w, _ in syms if w > v] or [start + size])
+        r0, r1 = rom_start + v - start, rom_start + nxt - start
         ok = built[r0:r1] == base[r0:r1]
         print(f"  {'OK  ' if ok else 'DIFF'} {n}  rom 0x{r0:X} size 0x{r1 - r0:X}")
     return 0
