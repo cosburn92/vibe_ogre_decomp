@@ -4,8 +4,8 @@ main = 0x8007F880; // type:func
 sqrtf = 0x800907E0; // type:func
 sqrt = 0x8009D3C0; // type:func
 
-// main thread stack (0x2000); main() passes its end (0x800B17A0) to osCreateThread
-D_800AF7A0 = 0x800AF7A0; // size:0x2000
+// idle thread stack (0x2000); main() passes its end (0x800B17A0) to osCreateThread
+gIdleThreadStack = 0x800AF7A0; // size:0x2000
 
 // libultra (identified by hand)
 bzero = 0x80093380; // type:func
@@ -348,3 +348,45 @@ __osSetFpcCsr = 0x8009A710; // type:func
 __osPfsRequestData = 0x8009B50C; // type:func
 __osPfsGetInitData = 0x8009B5B0; // type:func
 _Ldunscale = 0x8009BD0C; // type:func
+
+// ---- Game ----
+// Names from the developers' own debug strings are used as-is. Names marked (inferred) describe what
+// the code does, in the same CamelCase / H-prefix style; replace them if better evidence turns up.
+
+// boot (main.c): main() starts the idle thread, which starts the main game thread
+gIdleThread = 0x800AF440; // size:0x1B0
+gMainThread = 0x800AF5F0; // size:0x1B0
+// IdleThreadEntry: inferred
+IdleThreadEntry = 0x8007F8E4; // type:func
+// MainThreadEntry: inferred
+MainThreadEntry = 0x80071EB0; // type:func
+
+// heap: blocks carry a 0x20-byte header; gHeaps is {start, end, ?} per heap
+gHeaps = 0x800AEDB0; // size:0x30
+gHeapCount = 0x800AEDE0; // size:0x2
+gHeapAllocFlags = 0x800AEDE2; // size:0x2
+AddHeap = 0x80070D20; // type:func
+// HMalloc: inferred: rounds size to 16, searches heaps per gHeapAllocFlags
+HMalloc = 0x80070F30; // type:func
+// HMallocBack: inferred: HMalloc with the from-back flag; string "HMallocBack" exists
+HMallocBack = 0x80071288; // type:func
+// HFree: inferred
+HFree = 0x800712C4; // type:func
+HIsAllocatedPointer = 0x800714D4; // type:func
+// HFindHeap: inferred: index of the heap containing an address
+HFindHeap = 0x80071B9C; // type:func
+
+// ROM access
+// PiDmaRead: inferred: blocking PI DMA
+PiDmaRead = 0x80089F80; // type:func
+// RomRead: inferred: (rom, dst, size), bounces sizes < 16 through the stack
+RomRead = 0x8009DA50; // type:func
+
+// LHA decompression (an embedded port of LHa for UNIX; assets are LHA archives)
+UnpackProc = 0x8007AC30; // type:func
+get_header = 0x8007AFE4; // type:func
+extract_one = 0x8007B88C; // type:func
+
+// ovl_101CE0
+Magnetic = 0x801B44DC; // type:func rom:0x108C1C
+SetDeadEnd = 0x801D0B58; // type:func rom:0x125298

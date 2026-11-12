@@ -67,11 +67,26 @@ linker's COMMON area: uninitialized non-static globals, which GCC 2.7.2 emits as
 linker allocates in its own order. That area stays one asm chunk (`common`), and the linker script
 has no `*(COMMON)` rule, so C files must declare those globals `extern` rather than define them.
 Watch for one-past-the-end addresses: `main()` passes its thread stack top, which equals the next
-file's first BSS symbol, so `reloc_addrs.txt` rewrites it as `D_800AF7A0 + 0x2000`.
+file's first BSS symbol, so `reloc_addrs.txt` rewrites it as `gIdleThreadStack + 0x2000`.
 
 Every input already carries its own padding, so the linker script uses `SUBALIGN(4)` and asm files are
 assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialized globals
 (`s32 x = 0;`) in `.data`, not `.bss`.
+
+## Game code
+
+Game names come first from the developers' own debug strings (`AddHeap()`, `HIsAllocatedPointer()`,
+`UnpackProc`, `SetDeadEnd()`), which use CamelCase and an `H` prefix for the heap module. Names inferred
+from behaviour follow the same style and are marked `inferred` in `symbol_addrs.txt`. Overlay
+functions need a `rom:` attribute there, because overlay VRAM addresses collide.
+
+Known so far:
+- **Boot:** `main` → `IdleThreadEntry` (idle thread) → `MainThreadEntry` (main game thread).
+- **Heap:** `HMalloc`/`HMallocBack`/`HFree` over `gHeaps` (blocks carry a 0x20-byte header), with
+  `AddHeap` and `HIsAllocatedPointer`.
+- **ROM access:** `RomRead(rom, dst, size)` on top of the PI DMA `PiDmaRead`.
+- **Decompression:** an embedded port of LHa for UNIX (`UnpackProc`, `get_header`, `extract_one`, and
+  its `lh0`–`lh5` and `lzs`/`lz4`/`lz5` decoders). Assets are LHA archives.
 
 ## Libraries
 
@@ -110,7 +125,7 @@ structure. They're listed at the end of `symbol_addrs.txt`.
 | `0x0001060`–`0x002E570` | `main` .text — split into ~228 files |
 | `0x002E570`–`0x003F1B0` | `main` .data / .rodata (BSS `0x800AEDB0`, size `0x3AE70`) |
 | `0x003F1B0`–`0x02B8BA0` | 46 code overlays (`ovl_<ROM>` segments), plus two data blobs at `0xDDF60` and `0x1C3300` |
-| `0x02B8BA0`–`~0x2750000` | High-entropy data: compressed or packed assets |
+| `0x02B8BA0`–`~0x2750000` | Assets: LHA archive members (828 headers, mostly `-lh5-`, some stored `-lh0-`), with filenames |
 | `~0x2750000`–`0x2800000` | `0xFF` padding |
 
 ### Overlays
@@ -151,9 +166,10 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
 
 ## Next steps
 
-1. Start naming game functions.
+1. Keep naming game functions, starting from the LHa port (match it against LHa for UNIX's source)
+   and the callers of `HMalloc`/`RomRead`/`UnpackProc`.
 2. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Identify the asset compression format.
+3. Extract the assets: walk the LHA member headers in the asset region and unpack them by name.
