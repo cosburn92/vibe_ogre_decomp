@@ -459,6 +459,9 @@ SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 IsDragon = 0x801C8D84; // type:func rom:0x20C214
 // BattleCalcDamage: (attacker, defender, power, ...) -> (power - defence + luck diff) * (100 - resistance) / 100 * (100 + rand 10) / 100
 BattleCalcDamage = 0x801F36AC; // type:func rom:0x23697C
+// BattleAlignmentChange: (attacker, target) -> alignment delta for a player unit's action, -5..+5:
+// table on (attacker - target alignment) + table on (attacker - target +0x31, probably level) + D_801F6A00[battle state]
+BattleAlignmentChange = 0x801EFF40; // type:func rom:0x233210
 
 // ovl_29A4C0
 // BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)

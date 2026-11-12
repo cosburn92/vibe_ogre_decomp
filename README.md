@@ -334,6 +334,12 @@ which builds a unit of a given class and level:
   0–100, and damage is multiplied by (100 − resistance) / 100 (`BattleCalcDamage`). Higher is
   better, so an element's own armour really does leave its wearer weaker to that element (Flame
   Leather: Flame −3, Water +8).
+- **Alignment changes in battle** (`BattleAlignmentChange`): a player unit's alignment moves by
+  up to ±5 when it acts against an enemy, regardless of the attack's element. Hitting a target
+  more chaotic than you raises it (difference 1–5: +1, up to +5 at 76 or more) and hitting a more
+  lawful one lowers it; a second table adds up to +5 for targets above you in `+0x31` (probably
+  level) and takes up to 5 for weaker ones, plus a −1..+1 term from the battle state. The result
+  stays within 0–100.
 - **Class status immunities** are a separate asset, chunk `0x3188AE`: one byte per class with Poison,
   Sleep, Paralyze and Petrify bits. Undead and golems ignore Poison, Sleep and Paralyze, Ghosts and
   Stone/Baldr Golems everything, Gorgons Poison, Cockatrices Petrify.
