@@ -514,6 +514,10 @@ gFlags = 0x80197168;
 FlagGet = 0x80186210; // type:func rom:0x5C110
 // FlagSet: (flag, value) -> sets or clears the bit
 FlagSet = 0x80186190; // type:func rom:0x5C090
+// Second flag bitfield at 0x80193686 (inside the block at 0x80193678 that NewGameInit clears)
+// ProfileFlagSet: (flag, value); ProfileFlagTest: (flag) -> bit, or its inverse for a negative flag
+ProfileFlagSet = 0x8016FE78; // type:func rom:0x45D78
+ProfileFlagTest = 0x8016FEF4; // type:func rom:0x45DF4
 ConsumableGetKind = 0x8016F500; // type:func rom:0x45400
 ConsumableGetTarget = 0x8016F540; // type:func rom:0x45440
 ConsumableGetUse = 0x8016F560; // type:func rom:0x45460
