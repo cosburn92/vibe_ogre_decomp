@@ -76,7 +76,7 @@ gItemTable (0x8018C40C): 278 records of 0x20 bytes; id 0 = None.
         ones the target's armour or class immunities block (Purify is never blocked).
 
 Class status immunities are not in gClassTable but in asset chunk 0x3188AE (loaded by
-func_801CD3FC_ovl_1F0A30): one byte per class (class id - 1), 0x01 Poison, 0x02 Sleep, 0x04 Paralyze,
+CombinationTablesLoad): one byte per class (class id - 1), 0x01 Poison, 0x02 Sleep, 0x04 Paralyze,
 0x08 Petrify (func_801CD19C_ovl_1F0A30 also checks the byte for battle unit +0x48). Bits 0x10/0x20
 are set on most player classes; their use is unknown.
 

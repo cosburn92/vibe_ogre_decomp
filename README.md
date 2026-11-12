@@ -346,6 +346,12 @@ which builds a unit of a given class and level:
 - **Class status immunities** are a separate asset, chunk `0x3188AE`: one byte per class with Poison,
   Sleep, Paralyze and Petrify bits. Undead and golems ignore Poison, Sleep and Paralyze, Ghosts and
   Stone/Baldr Golems everything, Gorgons Poison, Cockatrices Petrify.
+- **Combination tables**, chunk `0x31823A` (loaded with the immunities by `CombinationTablesLoad`): three
+  sections of tries. The first is keyed by the sorted elements (1–6) of two or three attackers and
+  returns a bitmask of which of them combine (3 the first two, 5 first and third, 6 the last two,
+  7 all three), 47 entries; the battle code (`func_801F6504_ovl_22A280`) keeps those
+  attackers. The second, keyed by other per-attacker ids, returns two bytes (the first looks like
+  an attack id: Shock Bolt, Thunderbird, Ice Blast…); the third is not decoded yet.
 
 Still unknown:
 - what the `+0x1A` bit-7 item flag means (the Organize list marks those items), and the exact
