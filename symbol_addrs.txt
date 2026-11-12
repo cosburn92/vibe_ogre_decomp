@@ -496,4 +496,24 @@ StageSetupUnits = 0x80215C18; // type:func rom:0x1960A8
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
+// MapCountEnemySquads: inferred: per frame; counts enemy squads on the map (D_801F0FDE) and calls StageTriggerUpdate
+MapCountEnemySquads = 0x801B4D7C; // type:func rom:0x1094BC
+// StageTriggerScanUnit: inferred: sets pending bits (D_801F0EBC) for the eset section D conditions a unit satisfies
+StageTriggerScanUnit = 0x801B5FD8; // type:func rom:0x10A718
+// StageTriggerUpdate: inferred: (enemy squad count) scans 3 units a frame; after a full pass latches pending bits into gStageTriggers
+StageTriggerUpdate = 0x801B6678; // type:func rom:0x10ADB8
+// UnitStartOrder: inferred: starts unit +0xBA's order (0-3 built in, 4+ from eset section C)
+UnitStartOrder = 0x801CD668; // type:func rom:0x121DA8
+// UnitStartScriptOrder: inferred: (unit, section C record) hold / move along waypoints
+UnitStartScriptOrder = 0x801CD7F8; // type:func rom:0x121F38
+// OrderCheckCondition: inferred: (section D id, unit) -> condition holds
+OrderCheckCondition = 0x801CED18; // type:func rom:0x123458
+// OrderCheckNext: inferred: (unit) -> next order id once the current order's condition holds, else 0
+OrderCheckNext = 0x801CF0B0; // type:func rom:0x1237F0
+// gStageTriggers: inferred: u16 latched trigger bits, one per eset section D entry
+gStageTriggers = 0x801F0EBA; // size:0x2 segment:ovl_101CE0
+// gStageTriggersPending: inferred: u16 bits set by StageTriggerScanUnit during a pass
+gStageTriggersPending = 0x801F0EBC; // size:0x2 segment:ovl_101CE0
+// gEnemySquadsOnMap: inferred: count from MapCountEnemySquads
+gEnemySquadsOnMap = 0x801F0FDE; // size:0x1 segment:ovl_101CE0
 SetDeadEnd = 0x801D0B58; // type:func rom:0x125298

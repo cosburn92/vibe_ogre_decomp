@@ -48,9 +48,26 @@ eset file:
                 0x1A  func_801DD2B0(unit) and the unit's flag 0x1000000 (cleared when read)
                 0x1B  unit +0x74 equals byte 6 - 1
                 0x14  on stage 0x36: story flags (func_80186210/func_80186190)
-                other trigger bit (id - 1) of D_801F0EBA is set; type 9 clears it when read, and
-                      starting a kind-2 order clears all type-9 bits. Types seen: 1, 2, 4, 5, 6,
-                      8, 9, 0xA, 0xC, 0x13 (bytes 2-9 are rectangles/values like the types above).
+                other trigger bit (id - 1) of gStageTriggers (D_801F0EBA); type 9 clears it when read.
+        Trigger types (StageTriggerScanUnit / StageTriggerUpdate in ovl_101CE0): every frame 3 map units
+        are checked against each condition and matching ones set a pending bit; after a pass over all
+        units the pending bits are latched into gStageTriggers. Most triggers stay set once fired;
+        types 5, 9, 0xC and 0xE are re-evaluated every pass. "Player" = unit flag 0x8 set, "enemy" =
+        clear; a "location" is a town/stronghold (unit +0x74 = location - 1):
+                1     a player unit is in the rectangle x0, y0, x1, y1 (bytes 2-5)
+                2     no enemy unit is in the rectangle
+                3     no enemy unit is near map point byte 6
+                4     a player unit is at location byte 6
+                5     unit slot byte 6 is in the rectangle (bytes 8-9: a point near it)
+                6     story flag: byte 6 (1, 6-0x12, 0x17) selects func_80186210(0-0xE)
+                7     a player unit is near map point byte 6
+                8     unit slot byte 6 is in the rectangle
+                9     at most byte 6 enemy squads are left on the map (gEnemySquadsOnMap)
+                0xA   the squad in slot byte 6 is gone (its flag 0x10 is clear)
+                0xC   location byte 6 has flag 0x4 (D_801951CC, 0x24-byte records)
+                0xD   a player unit is at location byte 6 or byte 7
+                0x13  the squad in slot byte 6 is gone or inactive (func_801D92D0)
+                Unused by the eset files: 0xB, 0xE, 0xF (0xB and 0xF are scanned but never latched).
         Four files (eset4_08b, eset4_14_, eset5_02, eset5_04) have conditions but no section D.
 
 enemydat.bin: 556 squad templates of 35 bytes (eset ids go up to 554):
@@ -106,7 +123,12 @@ def template(d, tid):
 
 COND_TYPES = {0x10: "unit in area", 0x17: "slot in area", 0x15: "unit flag 31", 0x16: "stage param",
               0x18: "unit +0x20 == +0x24", 0x19: "squad healthy", 0x1A: "unit event",
-              0x1B: "unit +0x74", 0x14: "story flags", 0x09: "trigger (one-shot)"}
+              0x1B: "unit +0x74", 0x14: "story flags",
+              0x01: "player unit in area", 0x02: "no enemy in area", 0x03: "no enemy near point",
+              0x04: "player at location", 0x05: "slot in area (live)", 0x06: "story flag",
+              0x07: "player near point", 0x08: "slot in area", 0x09: "enemy squads left <=",
+              0x0A: "squad gone", 0x0C: "location flag 4", 0x0D: "player at location",
+              0x13: "squad gone or inactive"}
 
 
 def point(x, y):
@@ -145,10 +167,21 @@ def dump_conditions(d, off):
         r = d[off + 1 + 10 * i:off + 11 + 10 * i]
         name = COND_TYPES.get(r[1], "trigger")
         extra = ""
-        if r[1] == 0x10:
-            extra = f" ({r[2]},{r[3]})-({r[4]},{r[5]})"
-        elif r[1] == 0x17:
-            extra = f" slot {r[6]} in ({r[2]},{r[3]})-({r[4]},{r[5]})"
+        rect = f"({r[2]},{r[3]})-({r[4]},{r[5]})"
+        if r[1] in (0x10, 0x01, 0x02):
+            extra = f" {rect}"
+        elif r[1] in (0x17, 0x05, 0x08):
+            extra = f" slot {r[6]} in {rect}"
+        elif r[1] in (0x03, 0x07):
+            extra = f" point {r[6]}"
+        elif r[1] in (0x04, 0x0C):
+            extra = f" {r[6]}"
+        elif r[1] == 0x0D:
+            extra = f" {r[6]} or {r[7]}"
+        elif r[1] in (0x09, 0x06):
+            extra = f" {r[6]}"
+        elif r[1] in (0x0A, 0x13):
+            extra = f" slot {r[6]}"
         print(f"  cond D{r[0]}: type {r[1]:#04x} {name}{extra}  [{r[2:].hex(' ')}]")
 
 

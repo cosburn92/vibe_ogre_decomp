@@ -242,7 +242,15 @@ prints them, with the byte layouts in its header:
   - "the unit is inside this rectangle" or "another unit is";
   - "the squad is fully healed";
   - unit event flags;
-  - otherwise a numbered trigger bit set elsewhere in the stage code, which may be one-shot.
+  - otherwise a trigger bit in `gStageTriggers`. Each frame, `StageTriggerUpdate` checks three map
+    units against every condition (`StageTriggerScanUnit`). After a full pass it latches the results:
+    - a player unit in an area, at a town/stronghold, or near a map point;
+    - no enemy left in an area;
+    - a given squad in an area, or defeated;
+    - at most N enemy squads left on the map;
+    - a story flag, or a location flag.
+
+    Most triggers stay set once fired; a few are re-evaluated every pass.
 - **`enemydat.bin`:** 556 squad templates of 35 bytes, each a leader plus up to two member groups.
   Each has a class, a level relative to the stage's base level, four values that are probably
   equipment, and positions on the 3×3 formation grid. Every eset template id is in range, every
@@ -301,8 +309,8 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet in the eset files: who sets the trigger bits; order kind 2; the squad record's
-byte 9 and behaviour bytes 10–17.
+Not decoded yet in the eset files: order kind 2, the location flag that trigger type 0xC tests,
+the squad record's byte 9, and behaviour bytes 10–17.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
