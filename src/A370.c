@@ -499,7 +499,46 @@ u8 *func_8007C538(u8 *s, u8 sep) {
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007C590);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007C74C);
+/* read_pt_len */
+void func_8007C74C(s16 nn, u8 nbit, s16 i_special) {
+    s16 i, c, n;
+
+    n = func_8007C25C(nbit);
+    if (n == 0) {
+        c = func_8007C25C(nbit);
+        for (i = 0; i < nn; i++) {
+            pt_len[i] = 0;
+        }
+        for (i = 0; i < 256; i++) {
+            pt_table[i] = c;
+        }
+    } else {
+        i = 0;
+        while (i < n) {
+            c = bitbuf >> (16 - 3);
+            if (c == 7) {
+                u16 mask = 1 << (16 - 4);
+
+                while (mask & bitbuf) {
+                    mask >>= 1;
+                    c++;
+                }
+            }
+            fillbuf((c < 7) ? 3 : c - 3);
+            pt_len[i++] = c;
+            if (i == i_special) {
+                c = func_8007C25C(2);
+                while (--c >= 0) {
+                    pt_len[i++] = 0;
+                }
+            }
+        }
+        while (i < nn) {
+            pt_len[i++] = 0;
+        }
+        func_8007BC24(nn, pt_len, 8, pt_table);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007CAB8);
 
