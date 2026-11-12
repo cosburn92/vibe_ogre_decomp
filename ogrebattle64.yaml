@@ -1515,9 +1515,9 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x2A8D20, asm]
+      - [0x2A8D20, c]
       - [0x2ADA80, asm]
-      - [0x2AE340, rodata, 2A8D20]
+      - [0x2AE340, .rodata, 2A8D20]
 
   - name: ovl_2AE3C0
     type: code
