@@ -608,7 +608,42 @@ void func_8007D8A8(s32 start, s32 end) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007DBF4);
+/* swap_inc */
+s32 func_8007DBF4(s32 p) {
+    s32 b, q, r, s;
+
+    b = block[p];
+    if ((q = edge[b]) != p) {
+        r = child[p];
+        s = child[q];
+        child[p] = s;
+        child[q] = r;
+        if (r >= 0) {
+            parent[r] = parent[r - 1] = q;
+        } else {
+            s_node[~r] = q;
+        }
+        if (s >= 0) {
+            parent[s] = parent[s - 1] = p;
+        } else {
+            s_node[~s] = p;
+        }
+        p = q;
+        goto Adjust;
+    } else if (b == block[p + 1]) {
+    Adjust:
+        edge[b]++;
+        if (++freq[p] == freq[p - 1]) {
+            block[p] = block[p - 1];
+        } else {
+            edge[block[p] = stock[avail++]] = p;
+        }
+    } else if (++freq[p] == freq[p - 1]) {
+        stock[--avail] = b;
+        block[p] = block[p - 1];
+    }
+    return parent[p];
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007DDF0);
 
