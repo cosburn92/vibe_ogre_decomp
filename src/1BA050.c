@@ -4,7 +4,7 @@
 typedef struct {
     /* 0x00 */ u8 unk00[4];
     /* 0x04 */ u8 *base;
-    /* 0x08 */ u8 *pc;
+    /* 0x08 */ u8 *volatile pc;
     /* 0x0C */ u16 depth;
     /* 0x0E */ u8 unk0E[2];
     /* 0x10 */ u8 *stack[7];
@@ -145,8 +145,6 @@ INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222468_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_802224BC_ovl_1BA050);
 
-#ifdef NON_MATCHING
-/* The original reads ctx->pc twice; GCC merges the reads here. */
 s32 func_80222564_ovl_1BA050(ScriptCtx *ctx) {
     s32 v = *(s32 *)(ctx->pc + 4);
 
@@ -154,9 +152,6 @@ s32 func_80222564_ovl_1BA050(ScriptCtx *ctx) {
     D_8022A82C_ovl_1BA050 = v;
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222564_ovl_1BA050);
-#endif
 
 /* wait until D_8022A82C equals the operand */
 s32 func_80222588_ovl_1BA050(ScriptCtx *ctx) {
@@ -189,21 +184,12 @@ s32 func_8022268C_ovl_1BA050(ScriptCtx *ctx) {
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_802226B4_ovl_1BA050);
 
-#ifdef NON_MATCHING
-/* The original reads ctx->pc twice; GCC merges the reads here. */
 s32 func_802226F8_ovl_1BA050(ScriptCtx *ctx) {
-    u16 bits = *(u16 *)(ctx->pc + 2);
-
+    D_8022A256_ovl_1BA050 |= *(u16 *)(ctx->pc + 2);
     ctx->pc += 4;
-    D_8022A256_ovl_1BA050 |= bits;
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802226F8_ovl_1BA050);
-#endif
 
-#ifdef NON_MATCHING
-/* The original reads ctx->pc twice; GCC merges the reads here. */
 s32 func_80222728_ovl_1BA050(ScriptCtx *ctx) {
     u16 bits = *(u16 *)(ctx->pc + 2);
 
@@ -211,9 +197,6 @@ s32 func_80222728_ovl_1BA050(ScriptCtx *ctx) {
     D_8022A256_ovl_1BA050 &= ~bits;
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222728_ovl_1BA050);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022275C_ovl_1BA050);
 
