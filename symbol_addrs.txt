@@ -1,3 +1,5 @@
 // Visit https://github.com/ethteck/splat/wiki/Adding-Symbols for documentation about this file
 entrypoint = 0x80070C00; // type:func
 main = 0x8007F880; // type:func
+sqrtf = 0x800907E0; // type:func
+sqrt = 0x8009D3C0; // type:func

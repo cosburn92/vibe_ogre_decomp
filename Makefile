@@ -50,7 +50,9 @@ $(KMC_AS):
 	@mkdir -p $(dir $@)
 	curl -sSL $(BINUTILS_URL) | tar -xz -C $(dir $@) as
 
-build/src/%.o: src/%.c $(KMC_DIR)/cc1 $(KMC_AS)
+# Rebuild when any INCLUDE_ASM'd file changes too.
+.SECONDEXPANSION:
+build/src/%.o: src/%.c $$(wildcard asm/nonmatchings/$$*/*.s) $(KMC_DIR)/cc1 $(KMC_AS)
 	@mkdir -p $(dir $@)
 	$(CPP) $(CPPFLAGS) $< > build/src/$*.i
 	$(CC1) $(CFLAGS) -o build/src/$*.s build/src/$*.i

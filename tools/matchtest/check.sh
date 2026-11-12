@@ -11,7 +11,8 @@ CFLAGS=${*:-"-O2 -G0 -mips3 -mgp32 -mfp32"}
 out=build/matchtest; mkdir -p $out
 # KMC's own cpp aborts under qemu; preprocessing doesn't affect codegen, so use the host cpp.
 cpp -P -undef -nostdinc -Iinclude -D_LANGUAGE_C -D__GNUC__=2 -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 "$src" > $out/test.i
-$RUN32 $KMC/cc1 -quiet $CFLAGS -o $out/test.s $out/test.i
+rm -f $out/test.s $out/test.o
+$RUN32 $KMC/cc1 -quiet $CFLAGS -o $out/test.s $out/test.i || { echo "COMPILE ERROR ($CFLAGS)"; exit 1; }
 # KMC-era GNU as 2.6: inserts a nop between back-to-back FP multiplies (VR4300 mulmul errata).
 tools/binutils-2.6/as -EB -mcpu=vr4300 -mips3 -G0 $ASFLAGS -o $out/test.o $out/test.s
 mips-linux-gnu-objcopy -O binary -j .text $out/test.o $out/full.bin
