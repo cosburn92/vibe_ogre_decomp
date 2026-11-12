@@ -366,7 +366,7 @@ from `UnitSetupForLevel`, `UnitLevelUp`, `CharacterEquipItem` and `SquadUpkeep`:
 | `+0x1A` | element |
 | `+0x1B` | alignment |
 | `+0x1C`–`+0x26` | STR, VIT, INT, MEN, AGI, DEX (u16 each) |
-| `+0x28` | luck |
+| `+0x28` | probably luck (0–100; level-ups add to it) |
 | `+0x2A`–`+0x30` | four equipped items (u16) |
 | `+0x32` | fatigue |
 | `+0x33` | status bits |
