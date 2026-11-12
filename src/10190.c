@@ -7,8 +7,8 @@ f64 func_8009CAF0(f64);
 f64 func_8009C9A0(f64);
 
 s32 D_800A88E0 = 0;        /* nonzero: a cached value is pending */
-extern f64 D_800B17A0;     /* radius */
-extern f64 D_800B17A8;     /* angle */
+static f64 D_800B17A0;     /* radius */
+static f64 D_800B17A8;     /* angle */
 
 /* Normally distributed random number (Box-Muller); produces values in pairs. */
 f64 func_8007FD90(void) {

@@ -43,15 +43,16 @@ make                            # still matches; now replace stubs with C one at
 tools/romdiff.sh 0xFDC0 0x150   # disassembly diff of a ROM range when it doesn't
 ```
 
-### Data and rodata
+### Data, rodata and BSS
 
-Each source file's `.data` and `.rodata` sit in one chunk per section, and the chunks appear in the
-same order as the files' `.text`. `tools/section_chunks.py` assigns chunks to text files by which
+Each source file's `.data`, `.rodata` and `.bss` sit in one chunk per section, and the chunks appear
+in the same order as the files' `.text`. `tools/section_chunks.py` assigns chunks to text files by which
 file references their symbols and emits the yaml subsegments:
 
 ```sh
 python3 tools/section_chunks.py data   2E570 3E100 --cut 38CF0
 python3 tools/section_chunks.py rodata 3E100 3F1B0 --cut 3EE70
+python3 tools/section_chunks.py bss 800AEDB0 800C47F0 --own 800B17A0=10190   # VRAM, no ROM
 ```
 
 Rodata ownership is unambiguous. Data is noisier, because shared globals are referenced from many
@@ -60,6 +61,13 @@ between two asm chunks doesn't matter, but **check a file's chunk by hand before
 (`-v` lists every symbol with its referencing files), and use `--cut` where the chunk should end
 earlier. Once a file is C, its chunks become `.data`/`.rodata` so they're linked from the C object;
 for `INCLUDE_ASM` functions splat migrates the rodata into the function's `.s`.
+
+Main's BSS is per-file `static` variables (`.lcomm`) from `0x800AEDB0`, then from `0x800C47F0` the
+linker's COMMON area: uninitialized non-static globals, which GCC 2.7.2 emits as `.comm` and the
+linker allocates in its own order. That area stays one asm chunk (`common`), and the linker script
+has no `*(COMMON)` rule, so C files must declare those globals `extern` rather than define them.
+Watch for one-past-the-end addresses: `main()` passes its thread stack top, which equals the next
+file's first BSS symbol, so `reloc_addrs.txt` rewrites it as `D_800AF7A0 + 0x2000`.
 
 Every input already carries its own padding, so the linker script uses `SUBALIGN(4)` and asm files are
 assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialized globals
@@ -96,7 +104,7 @@ Many overlays share a VRAM address (twelve load at `0x80214F80`), so overlay sym
 
 ## Next steps
 
-1. Split main's `.bss` per file, and the overlays' data sections into data/rodata/BSS.
+1. Split the overlays' data sections into data/rodata/BSS the same way.
 2. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
 3. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.

@@ -3,3 +3,6 @@ entrypoint = 0x80070C00; // type:func
 main = 0x8007F880; // type:func
 sqrtf = 0x800907E0; // type:func
 sqrt = 0x8009D3C0; // type:func
+
+// main thread stack (0x2000); main() passes its end (0x800B17A0) to osCreateThread
+D_800AF7A0 = 0x800AF7A0; // size:0x2000

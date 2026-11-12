@@ -9,9 +9,11 @@ Prints yaml subsegment lines; files that are already C (src/<name>.c) get the do
 Shared globals make .data references noisy, so owners are taken from the longest run of symbols whose
 owners increase in ROM order; symbols off that run stay in the current chunk. A wrong boundary
 between two asm chunks is harmless, but files converted to C need their chunk checked by hand;
---cut forces an unnamed chunk to start at the given offsets.
+--cut forces an unnamed chunk to start at the given offsets; --own pins a symbol's owner, e.g. when a
+file only takes the address one past the end of its own array (a thread stack top), which equals the
+next file's first symbol.
 
-usage: python3 tools/section_chunks.py {data|rodata} START END [-v] [--cut ROM,ROM,...]
+usage: python3 tools/section_chunks.py {data|rodata|bss} START END   (bss: VRAM addresses) [-v] [--cut ROM,...] [--own ROM=FILE,...]
   -v  list every symbol with its referencing main files instead
 """
 import bisect
@@ -29,6 +31,11 @@ verbose = "-v" in sys.argv
 cuts = set()
 if "--cut" in sys.argv:
     cuts = {int(x, 16) for x in sys.argv[sys.argv.index("--cut") + 1].split(",")}
+owns = {}
+if "--own" in sys.argv:
+    for pair in sys.argv[sys.argv.index("--own") + 1].split(","):
+        a, f = pair.split("=")
+        owns[int(a, 16)] = int(f, 16)
 
 # symbol -> main text files (ROM offsets) that reference it
 pat = re.compile(r"\b((?:D|jtbl)_[0-9A-F]{8})\b")
@@ -43,7 +50,8 @@ for path in glob.glob("asm/*.s") + glob.glob("asm/nonmatchings/*/*.s") + glob.gl
 # symbols in ROM order, from the split data files and from migrated INCLUDE_ASM files
 syms = {}
 lab_re = re.compile(r"^dlabel ((?:D|jtbl)_[0-9A-F]{8})")
-rom_re = re.compile(r"/\* ([0-9A-F]+) [0-9A-F]{8}")
+# data/rodata lines carry "/* ROM VRAM ... */"; bss lines only "/* VRAM */", so bss is keyed by VRAM
+rom_re = re.compile(r"/\* ([0-9A-F]{8}) \*/" if kind == "bss" else r"/\* ([0-9A-F]+) [0-9A-F]{8}")
 for path in glob.glob("asm/data/*.s") + glob.glob("asm/nonmatchings/*/*.s"):
     pending = None
     for line in open(path):
@@ -59,6 +67,16 @@ for path in glob.glob("asm/data/*.s") + glob.glob("asm/nonmatchings/*/*.s"):
                     syms[rom] = pending
                 pending = None
 
+# chunks already linked from C objects: their symbols live in the C file, so keep them as-is
+yaml = open("ogrebattle64.yaml").read()
+for a, f in re.findall(r"\[0x([0-9A-F]+), \." + kind + r", ([0-9A-F]+)\]", yaml):
+    owns.setdefault(int(a, 16), int(f, 16))
+for a, f in re.findall(r"type: \." + kind + r", vram: 0x([0-9A-F]+), name: ([0-9A-F]+)", yaml):
+    owns.setdefault(int(a, 16), int(f, 16))
+for a in owns:
+    if start <= a < end:
+        syms.setdefault(a, f"(C:{owns[a]:X})")
+
 if verbose:
     for rom in sorted(syms):
         users = " ".join(f"{u:X}" for u in sorted(refs.get(syms[rom], ())))
@@ -66,7 +84,8 @@ if verbose:
     sys.exit()
 
 # owner candidates in ROM order, then the longest non-decreasing run of owners
-cand = [(rom, min(refs[syms[rom]])) for rom in sorted(syms) if refs.get(syms[rom])]
+cand = [(rom, owns.get(rom, min(refs.get(syms[rom], [0])))) for rom in sorted(syms)
+        if rom in owns or refs.get(syms[rom])]
 tails, tail_idx, prev = [], [], [None] * len(cand)
 for i, (_, o) in enumerate(cand):
     k = bisect.bisect_right(tails, o)
@@ -94,8 +113,11 @@ for rom in sorted(set(backbone) | cuts):
         chunks.pop()
     chunks.append((rom, o))
 for rom, o in chunks:
-    if o is None:
+    dot = "." if o is not None and os.path.exists(f"src/{o:X}.c") else ""
+    if kind == "bss":  # no ROM offset: splat's dict form, keyed by VRAM
+        name = f", name: {o:X}" if o is not None else ""
+        print(f"      - {{ type: {dot}bss, vram: 0x{rom:X}{name} }}")
+    elif o is None:
         print(f"      - [0x{rom:X}, {kind}]")
     else:
-        dot = "." if os.path.exists(f"src/{o:X}.c") else ""
         print(f"      - [0x{rom:X}, {dot}{kind}, {o:X}]")

@@ -388,7 +388,36 @@ segments:
       - [0x3F140, rodata, 2D3E0]
       - [0x3F170, rodata, 2D680]
       - [0x3F180, rodata, 2D7F0]
-      - { type: bss, vram: 0x800AEDB0 }
+      # .bss: per-file statics in text order (tools/section_chunks.py bss 800AEDB0 800C47F0
+      # --own 800B17A0=10190), then the linker's COMMON area for uninitialized globals.
+      - { type: bss, vram: 0x800AEDB0, name: 1060 }
+      - { type: bss, vram: 0x800AEFD0, name: 4AC0 }
+      - { type: bss, vram: 0x800AEFE0, name: 5FC0 }
+      - { type: bss, vram: 0x800AF090, name: 68E0 }
+      - { type: bss, vram: 0x800AF0C0, name: 8700 }
+      - { type: bss, vram: 0x800AF0D0, name: A370 }
+      - { type: bss, vram: 0x800AF440, name: FC80 }
+      - { type: .bss, vram: 0x800B17A0, name: 10190 }
+      - { type: bss, vram: 0x800B17B0, name: 10680 }
+      - { type: bss, vram: 0x800B17D0, name: 11170 }
+      - { type: bss, vram: 0x800B17F0, name: 114F0 }
+      - { type: bss, vram: 0x800B1860, name: 155C0 }
+      - { type: bss, vram: 0x800B18A0, name: 15A20 }
+      - { type: bss, vram: 0x800B18B0, name: 15BD0 }
+      - { type: bss, vram: 0x800B1A70, name: 15E90 }
+      - { type: bss, vram: 0x800B3A90, name: 19050 }
+      - { type: bss, vram: 0x800BBE60, name: 1A050 }
+      - { type: bss, vram: 0x800BE190, name: 1A660 }
+      - { type: bss, vram: 0x800BE1A0, name: 1B3E0 }
+      - { type: bss, vram: 0x800C2374, name: 1B650 }
+      - { type: bss, vram: 0x800C2380, name: 1B940 }
+      - { type: bss, vram: 0x800C3550, name: 1C670 }
+      - { type: bss, vram: 0x800C3560, name: 23DF0 }
+      - { type: bss, vram: 0x800C35A0, name: 24B70 }
+      - { type: bss, vram: 0x800C35B0, name: 25620 }
+      - { type: bss, vram: 0x800C47D0, name: 2CBC0 }
+      - { type: bss, vram: 0x800C47E0, name: 2DE10 }
+      - { type: bss, vram: 0x800C47F0, name: common }
 
   - name: ovl_03F1B0
     type: code
