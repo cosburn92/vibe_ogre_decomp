@@ -1,17 +1,5 @@
 #include "common.h"
-
-/* Scene slots: six 0xA8-byte records, flag 0x8000 = in use. */
-typedef struct {
-    /* 0x00 */ u16 flags;
-    /* 0x02 */ u8 unk02[0xE];
-    /* 0x10 */ void *owner;
-    /* 0x14 */ u8 unk14[0x24];
-    /* 0x38 */ void *slotsA[10];
-    /* 0x60 */ void *slotsB[10];
-    /* 0x88 */ u8 unk88[0x20];
-} Scene;
-
-extern Scene D_800E82C8[];
+#include "scene.h"
 extern u16 D_800C49D0;
 extern void *D_800AF0B0;
 extern void *D_800E7A68[];

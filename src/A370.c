@@ -1,4 +1,5 @@
 #include "common.h"
+#include "scene.h"
 
 typedef struct {
     /* 0x00 */ u8 *hdr;
@@ -142,6 +143,8 @@ extern u8 D_800AF300[];
 extern u8 D_800AF0D0[0x1B0]; /* OSThread */
 extern u64 D_800AF280[0x80 / 8]; /* its stack */
 extern u8 D_800AE0A8[];
+extern s32 D_800E79A0;
+s32 func_80076F5C(s32 a, s32 b, s16 x, s16 y, s16 x2, s16 y2, s32 c);
 extern char D_800AE0AC[];
 extern char D_800AE0C8[];
 void extract_one(ArcFile *f, LzHeader *h);
@@ -1482,7 +1485,35 @@ s32 func_8007F5D8(u8 *src, s32 size, s32 n, ArcFile *f) {
 void func_8007F640(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007F648);
+/* Opens a scene box at (x, y), keeping it on the 320x240 screen; boxes low on the screen move up. */
+s32 func_8007F648(s32 a, s16 x, s16 y, s16 b, u16 c) {
+    s32 i = func_80076F5C(0xC800, a, x, y, x, y, 0xF000);
+
+    D_800E82C8[i].x2 = D_800E82C8[i].x + D_800E79A0 - 1;
+    if (D_800E82C8[i].x2 >= 320) {
+        D_800E82C8[i].x2 = 319;
+        D_800E82C8[i].x = 320 - D_800E79A0;
+    }
+    if (D_800E82C8[i].x < 0) {
+        D_800E82C8[i].x = 0;
+    }
+    D_800E82C8[i].y2 = D_800E82C8[i].y + D_800E79A0 - 1;
+    if (D_800E82C8[i].y2 >= 240) {
+        D_800E82C8[i].y2 = 239;
+        D_800E82C8[i].y = 240 - D_800E79A0;
+    }
+    if (D_800E82C8[i].y < 0) {
+        D_800E82C8[i].y = 0;
+    }
+    if (D_800E82C8[i].y >= 0x80) {
+        D_800E82C8[i].flags2 |= 0x10;
+        D_800E82C8[i].y -= 0x1C;
+        D_800E82C8[i].y2 -= 0x1C;
+    }
+    D_800E82C8[i].unk28 = b;
+    D_800E82C8[i].unk2A = c;
+    return i;
+}
 
 /* Counts characters in a Shift-JIS string (lead bytes >= 0x80 take two bytes). */
 s32 func_8007F844(u8 *s) {
