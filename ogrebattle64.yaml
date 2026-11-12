@@ -498,7 +498,7 @@ segments:
       - [0x49A30, asm]
       - [0x4D5C0, c]
       - [0x4EF10, c]
-      - [0x514B0, asm]
+      - [0x514B0, c]
       - [0x5AC70, asm]
       - [0x5AFF0, asm]
       - [0x5C060, c]
@@ -522,7 +522,7 @@ segments:
       - [0x66B60, rodata, 49A30]
       - [0x66B80, .rodata, 4D5C0]
       - [0x66B88, .rodata, 4EF10]
-      - [0x66D00, rodata, 514B0]
+      - [0x66D00, .rodata, 514B0]
       - [0x66DB8, rodata, 5AC70]
       - { type: bss, vram: 0x80190F10, name: 46090 }
       - { type: bss, vram: 0x80190F20, name: 49820 }
