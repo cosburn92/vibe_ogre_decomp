@@ -382,8 +382,13 @@ PiDmaRead = 0x80089F80; // type:func
 // RomRead: inferred: (rom, dst, size), bounces sizes < 16 through the stack
 RomRead = 0x8009DA50; // type:func
 
-// LHA decompression (an embedded port of LHa for UNIX; assets are LHA archives)
+// decompression. UnpackProc is a thread: requests on D_800AF320 name a format, and format 1 is the
+// game's own LZ (see tools/extract_assets.py). LHA archives use an embedded port of LHa for UNIX.
 UnpackProc = 0x8007AC30; // type:func
+// DecodeLZ: inferred: (dst, src) where src = [u32 BE unpacked size][stream]; returns the size
+DecodeLZ = 0x8007A110; // type:func
+// ReadU32BE: inferred: unaligned big-endian u32 load
+ReadU32BE = 0x8007A7E0; // type:func
 get_header = 0x8007AFE4; // type:func
 extract_one = 0x8007B88C; // type:func
 

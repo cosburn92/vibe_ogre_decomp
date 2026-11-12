@@ -40,9 +40,9 @@ all: check
 extract:
 	$(PYTHON) -m splat split $(BASENAME).yaml
 
-# Unpack the LHA archive members in the asset region to extracted/lha/ (for inspection; not a build input)
+# Unpack the asset region (LHA members and LZ chunks) to extracted/ (for inspection; not a build input)
 extract-assets:
-	$(PYTHON) tools/extract_assets.py $(BASEROM) extracted/lha
+	$(PYTHON) tools/extract_assets.py $(BASEROM) extracted
 
 toolchain: $(KMC_DIR)/cc1 $(KMC_AS)
 

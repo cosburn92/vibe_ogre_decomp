@@ -75,21 +75,38 @@ assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialize
 
 ## Assets
 
-The asset region (`0x2B8BA0` onward) mixes LHA archive members with other formats.
+The whole asset region is mapped, and `make extract-assets` (`tools/extract_assets.py`) unpacks it to
+`extracted/` (gitignored, about 30 s). The build keeps the original bytes.
 
-- **LHA members:** 828 of them (776 `-lh5-`, 52 stored `-lh0-`; level 1 and 2 headers) holding
-  12.5 MB uncompressed, with their original filenames (`.bin` ×565, `.n64` ×119, `.bg2`, `.k64`,
-  some Shift-JIS names). `make extract-assets` (`tools/extract_assets.py`) unpacks them to
-  `extracted/lha/`, checks each against its header's CRC-16, and writes `extracted/lha/manifest.tsv`.
-  Many `.n64` files are 153,608 bytes: a 320×240 16-bit image plus an 8-byte header. The build keeps
-  the original compressed bytes, since another LHA encoder wouldn't reproduce them exactly.
-- **libmus sound data:** `0x2B8BA0` starts with `N64 PtrTablesV2` (a libmus sample-bank pointer
-  table). The sound overlay `ovl_03F1B0` DMAs it and the banks at `0x423FF0` and `0x4E3140`.
-- **Not yet identified:** about 27 MB between and around the LHA members. The largest stretches
-  are `0x9254EF`–`0x1C4801C` (19 MB) and `0x2027BBE`–`0x26FF9F0` (7 MB). Chunks often start with a
-  4-byte size followed by tags such as `HU` (`48 55 fe`), `B5`/`OB5`, `G64` or `K64`. Small offset
-  tables after the last LHA member (`0x2754160`, `0x2757EBC`) index into the 7 MB region, and a
-  build timestamp sits near `0x275DD20`.
+| ROM range | Contents | Extracted to |
+|---|---|---|
+| `0x2B8BA0`–`0x636780` | libmus sound data: two sample banks (`.ptr` + `.wbk`), a table, songs | `sound/` |
+| `0x636780`–`0x275DD0F` | one chain of 25,764 size-prefixed chunks (below) | `lha/`, `chunks/` |
+| `0x275DD0F` | version string `ORGE3_ROM_VER_99/05/30_22:47:42`, then `0xFF` padding | |
+
+The sound overlay `ovl_03F1B0` DMAs the libmus pieces by literal start/end ROM addresses, which give
+the boundaries.
+
+Each chunk is `[u32 BE size][payload]` on a 2-byte boundary, and the payload is one of:
+- **An LHA archive** (524): 828 members in all, mostly `-lh5-`, with their original filenames
+  (`.bin` ×565, `.n64` ×119, `.bg2`, `.k64`, some Shift-JIS). Each is verified against its
+  header's CRC-16. Many `.n64` files are 153,608 bytes: a 320×240 16-bit image plus an 8-byte header.
+- **The game's own LZ, "format 1"** (24,582): `[u32 BE unpacked size][stream]`, decoded by
+  `DecodeLZ` (`func_8007A110`) on the `UnpackProc` thread. Every one decodes to exactly its stated
+  size. Control bytes:
+
+  | byte | meaning |
+  |---|---|
+  | `1LLLLDDD` `DD` | copy `L+3` bytes from `D+1` back (11-bit distance) |
+  | `01NNNNNN` | `N+1` literal bytes follow |
+  | `001NNNNN` | `N+2` zero bytes |
+  | `0001LLLL` `HHDDDDDD` `DD` | copy `(L \| HH<<4)+4` bytes from `D+1` back (14-bit distance) |
+  | `00` `LL` `DDDD` | copy `L+5` bytes from `D+1` back (16-bit distance) |
+  | `01` `LL` / `02` `LL` | `L+3` bytes of `0xFF` / zero |
+
+  Two-thirds of them decompress to data starting `UT` (16,957: probably sprite or unit graphics).
+- **Stored data** (658): uncompressed images tagged `HU` (320×240, `HUFF`) or `B5`, offset tables,
+  and similar.
 
 ## Game code
 
@@ -140,11 +157,12 @@ structure. They're listed at the end of `symbol_addrs.txt`.
 | `0x0000000`–`0x0000040` | Header (`NOBE`, entry `0x80070C00`) |
 | `0x0000040`–`0x0001000` | IPL3 boot code |
 | `0x0001000`–`0x0001060` | Entrypoint (clears BSS, jumps to `main` @ `0x8007F880`) |
-| `0x0001060`–`0x002E570` | `main` .text — split into ~228 files |
-| `0x002E570`–`0x003F1B0` | `main` .data / .rodata (BSS `0x800AEDB0`, size `0x3AE70`) |
+| `0x0001060`–`0x002E570` | `main` .text, split into 265 files |
+| `0x002E570`–`0x003E100` | `main` .data, per-file chunks |
+| `0x003E100`–`0x003F1B0` | `main` .rodata, per-file chunks (BSS follows at `0x800AEDB0`, size `0x3AE70`) |
 | `0x003F1B0`–`0x02B8BA0` | 46 code overlays (`ovl_<ROM>` segments), plus two data blobs at `0xDDF60` and `0x1C3300` |
-| `0x02B8BA0`–`~0x2750000` | Assets: LHA archive members (828 headers, mostly `-lh5-`, some stored `-lh0-`), with filenames |
-| `~0x2750000`–`0x2800000` | `0xFF` padding |
+| `0x02B8BA0`–`0x275DD0F` | Assets (see below) |
+| `0x275DD0F`–`0x2800000` | ROM version string, then `0xFF` padding |
 
 ### Overlays
 
@@ -190,5 +208,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Identify the non-LHA asset formats (libmus banks; the `HU`/`B5`/`OB5`/`G64`/`K64` chunks) and how
-   the game locates assets (callers of `RomRead`/`UnpackProc`).
+3. Work out the decompressed formats (`UT` graphics, `.n64` images, `HU`/`B5` images, tables) and how
+   the game indexes the chunk chain (the stored offset tables, and callers of `RomRead`/`UnpackProc`).
