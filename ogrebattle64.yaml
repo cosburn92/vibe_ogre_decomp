@@ -490,7 +490,7 @@ segments:
       - [0x42C30, asm]
       - [0x42C90, asm]
       - [0x43100, asm]
-      - [0x45CB0, asm]
+      - [0x45CB0, c]
       - [0x46090, asm]
       - [0x49510, asm]
       - [0x495E0, asm]
