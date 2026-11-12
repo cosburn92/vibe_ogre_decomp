@@ -221,9 +221,28 @@ insertion, `@T###` pause, …) are inferred from context, not yet from the game'
 python3 tools/text_dump.py --plain extracted/lha/serifu_00_0.bin
 ```
 
-Other named data, not decoded yet: `eset*` (62, probably enemy encounter sets), `scincsv*` (59,
-binary `(index, value)` tables despite the name), `maizo*` (40, 埋蔵 "buried treasure"), and about
-7,000 headerless LZ chunks.
+### Enemy sets (`eset*`, partly decoded)
+
+The 63 `eset<chapter>_<map>[variant].bin` files (one LHA archive, handle `0x21B35BA`, reached through
+the 4-byte indirection chunk `0x21B35B2`) are per-stage enemy setups. `ovl_0EBBB0` loads the stage's
+member with `LoadAsset(0x21B35B2, 0, -4, D_8018F5A8[stage * 9])`, and `StageSetupUnits` in
+`ovl_195410` reads it together with `enemydat.bin` (handle `0x21AE74C`, also 18-byte records):
+
+- header: four s16 offsets to sections A–D (0 = absent)
+- A: stage parameters (3 bytes, then single bytes and a pair), copied to globals
+- B: a count byte, then 18-byte records: a lead byte (active/team?) and 16 bytes read from
+  record + 2: `[0]` unit id (the index into per-unit tables), `[3]`/`[4]` probably map position,
+  `[6]`/`[7]` stored in the unit struct at `0xBA`/`0xBB`, `[8]`/`[9]` per-unit table bytes,
+  `[0xD]`–`[0xF]` passed to `func_8021590C`
+- C, D: further tables, not decoded
+
+The field meanings need `StageSetupUnits`' callees (`func_801DA340`, `func_801CC480`,
+`func_8021590C`, …).
+
+Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
+`maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
+the same way: overlays load handles with `lui`/`ori` immediates and call `LoadAsset`, sometimes
+through a 4-byte chunk holding the real handle.
 
 ## Game code
 
@@ -325,5 +344,6 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the game-data tables (`eset`, `maizo`, `scincsv`, headerless chunks) and confirm the text
-   control codes against the text engine. Callers of `LoadChunk` show what each handle is.
+3. Finish the enemy-set fields by reading `StageSetupUnits`' callees, then the other data tables
+   (`maizo`, `scincsv`, headerless chunks), and confirm the text control codes against the text
+   engine. Callers of `LoadChunk` show what each handle is.

@@ -393,6 +393,10 @@ gHuDcTableC = 0x800AA0E0; // size:0x40
 gHuAcTableY = 0x800AA120; // size:0x170
 gHuAcTableC = 0x800AA290; // size:0x170
 
+// LoadAsset: inferred: (handle, index, kind, member) -> loads an asset; kind -3/-4 select LHA archives,
+// member selects the archive member (e.g. the stage's eset file from the per-stage table D_8018F5A8)
+LoadAsset = 0x8007938C; // type:func
+
 // ROM access
 // PiDmaRead: inferred: blocking PI DMA
 PiDmaRead = 0x80089F80; // type:func
@@ -453,6 +457,10 @@ SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 // ovl_29A4C0
 // BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)
 BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218
+
+// ovl_195410
+// StageSetupUnits: inferred: reads the stage's eset (enemy set) and enemydat.bin and sets up units
+StageSetupUnits = 0x80215C18; // type:func rom:0x196AB0
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
