@@ -11,10 +11,28 @@ No game content is included in this repository. You must supply your own ROM.
 ## Setup (Windows + WSL Ubuntu, or Linux)
 
 ```sh
-sudo apt install -y binutils-mips-linux-gnu make python3-pip
+sudo apt install -y binutils-mips-linux-gnu make python3-pip qemu-user-static
 pip install "splat64[mips]"
+make toolchain # fetch KMC GCC 2.7.2 + KMC binutils 2.6 into tools/
 make extract   # split the ROM into asm/ and assets/
 make           # rebuild and verify the ROM matches
+```
+
+`qemu-user-static` is only needed on WSL1, which can't run the 32-bit `cc1`; the Makefile uses it
+automatically when `cc1` won't run natively.
+
+## Compiler
+
+The game was built with **KMC GCC 2.7.2** (`-O2 -G0 -mips3 -mgp32 -mfp32`) and assembled with the
+KMC-era GNU `as` 2.6. The old assembler matters: it inserts a `nop` between back-to-back FP multiplies
+(the VR4300 "mulmul" errata fix), which modern binutils doesn't do. C files in `src/` are
+preprocessed with the host `cpp` (KMC's `cpp` crashes under qemu, and preprocessing doesn't affect
+codegen), compiled with `cc1`, and assembled with the KMC `as`.
+
+To test a candidate C function against the ROM without touching the build:
+
+```sh
+tools/matchtest/check.sh candidate.c <rom_offset> <size>   # prints MATCH or an asm diff
 ```
 
 ## ROM layout (as currently understood)
@@ -50,5 +68,6 @@ Many overlays share a VRAM address (twelve load at `0x80214F80`), so overlay sym
 
 1. Split the overlays' data sections into data and rodata, and add BSS segments.
 2. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
-3. Choose a compiler. The game likely used KMC GCC 2.7.2, or IDO 5.3 if it doesn't, and should be confirmed by matching a small function. Then add C build rules and start converting `asm/` functions into `src/` C using `INCLUDE_ASM`.
+3. Convert `asm/` functions into `src/` C (first match: `src/102E0.c`). Mixed files with
+   `INCLUDE_ASM` still need checking against the KMC `as`, which may not accept `include/macro.inc`.
 4. Identify the asset compression format.

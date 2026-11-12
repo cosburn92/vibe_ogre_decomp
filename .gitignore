@@ -13,3 +13,7 @@ ogrebattle64.d
 undefined_funcs_auto.txt
 undefined_syms_auto.txt
 __pycache__/
+
+# Toolchain binaries (make toolchain)
+tools/gcc-2.7.2/
+tools/binutils-2.6/
