@@ -333,7 +333,7 @@ which builds a unit of a given class and level:
 
 Still unknown:
 - item byte `+0x06` (a 0–11 tier) and the `+0x1A` bit-7 flag (on a few unique items);
-- the consumables' last bytes (target and where usable, by the look of them);
+- consumable use bits `0x2` and `0x4` (`0x1` = usable from the Organize screen);
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 

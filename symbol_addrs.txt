@@ -490,6 +490,9 @@ ItemGetElement = 0x8016F5E0; // type:func rom:0x454E0
 ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
 // ItemIsWeapon: inferred: category 1-13 or 24
 ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
+ConsumableGetKind = 0x8016F500; // type:func rom:0x45400
+ConsumableGetTarget = 0x8016F540; // type:func rom:0x45440
+ConsumableGetUse = 0x8016F560; // type:func rom:0x45460
 // Location flags (gLocations + n*0x24 + 0x1C): 0x2 liberated by the player, 0x4 taken by the enemy
 LocationSetLiberated = 0x801704D8; // type:func rom:0x463D8
 LocationSetCaptured = 0x80170504; // type:func rom:0x46404

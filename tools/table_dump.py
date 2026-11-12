@@ -79,7 +79,13 @@ gConsumableTable (0x8018E6CC, right after the items): 45 records of 12 bytes:
         Love and Peace), 3 the eight items from Medal of Vigor to Charge Horn, 4 key items
   0x05  1 on map and key items ?
   0x06  u16 price
-  0x08  target ? (1 one unit, 2 a squad, ...), 0x09 where usable ? (bit mask; 7 for battle items)
+  0x08  target (ConsumableGetTarget): 0 none (key items and passive items like the Medal of
+        Vigor), 1 one character (the Organize screen and the field item menu ask for a character
+        when bit 0 is set), 2 the whole unit (Heal Pack, fruit, Quit Gate, Flag of Unity; the field
+        item menu special-cases the Flag of Unity, raising harmony by 1-5), 3 Love and Peace
+  0x09  where usable, bits (ConsumableGetUse): 0x01 the Organize screen (unusable items are greyed
+        out there); 0x02 and 0x04 are never tested through the accessor (heal and stat items 7,
+        Quit Gate 4, the other map items 2, key and passive items 0)
 
 gAttackTable (0x8018AA7C): 16-byte records, name pointer first; id 0 = none.
 
@@ -198,11 +204,14 @@ def dump_items(rom, names):
               + ("  " + "; ".join(extra) if extra else ""))
 
 
+TARGETS = {0: "-", 1: "character", 2: "unit", 3: "L&P"}
+
+
 def dump_consumables(rom, names):
     print("=== consumables (gConsumableTable)")
     for i, (name, d) in enumerate(records(rom, CONSUMABLES, 12)):
         price, = struct.unpack_from(">H", d, 6)
-        print(f"{i:3} {name:26} kind {d[4]:3} [5] {d[5]:3}  price {price:5}  [8] {d[8]} [9] {d[9]}")
+        print(f"{i:3} {name:26} kind {d[4]:3} [5] {d[5]:3}  price {price:5}  target {TARGETS.get(d[8], d[8])}  use {d[9]}")
 
 
 def dump_attacks(rom, names):
