@@ -6,7 +6,7 @@ f64 func_8009CCF0(f64);    /* log */
 f64 func_8009CAF0(f64);
 f64 func_8009C9A0(f64);
 
-extern s32 D_800A88E0;     /* nonzero: a cached value is pending */
+s32 D_800A88E0 = 0;        /* nonzero: a cached value is pending */
 extern f64 D_800B17A0;     /* radius */
 extern f64 D_800B17A8;     /* angle */
 

@@ -43,14 +43,27 @@ make                            # still matches; now replace stubs with C one at
 tools/romdiff.sh 0xFDC0 0x150   # disassembly diff of a ROM range when it doesn't
 ```
 
-### Rodata
+### Data and rodata
 
-Each source file's `.rodata` (strings, jump tables, float/double constants) sits in one chunk, and
-the chunks appear in the same order as the files' `.text`. `tools/rodata_chunks.py 3E100 3F1B0`
-assigns each chunk to the text file that references it and emits the yaml subsegments. Once a file is
-C, its chunk becomes `.rodata` so it's linked from the C object; for `INCLUDE_ASM` functions splat
-migrates the constants into the function's `.s`. The linker script uses `SUBALIGN(4)` because every
-input already carries its own padding.
+Each source file's `.data` and `.rodata` sit in one chunk per section, and the chunks appear in the
+same order as the files' `.text`. `tools/section_chunks.py` assigns chunks to text files by which
+file references their symbols and emits the yaml subsegments:
+
+```sh
+python3 tools/section_chunks.py data   2E570 3E100 --cut 38CF0
+python3 tools/section_chunks.py rodata 3E100 3F1B0 --cut 3EE70
+```
+
+Rodata ownership is unambiguous. Data is noisier, because shared globals are referenced from many
+files, so the script follows the longest run of owners that increases in ROM order. A wrong boundary
+between two asm chunks doesn't matter, but **check a file's chunk by hand before converting it to C**
+(`-v` lists every symbol with its referencing files), and use `--cut` where the chunk should end
+earlier. Once a file is C, its chunks become `.data`/`.rodata` so they're linked from the C object;
+for `INCLUDE_ASM` functions splat migrates the rodata into the function's `.s`.
+
+Every input already carries its own padding, so the linker script uses `SUBALIGN(4)` and asm files are
+assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialized globals
+(`s32 x = 0;`) in `.data`, not `.bss`.
 
 ## ROM layout (as currently understood)
 
@@ -83,7 +96,7 @@ Many overlays share a VRAM address (twelve load at `0x80214F80`), so overlay sym
 
 ## Next steps
 
-1. Split main's `.data` per file the same way, and the overlays' data sections into data/rodata/BSS.
+1. Split main's `.bss` per file, and the overlays' data sections into data/rodata/BSS.
 2. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
 3. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
