@@ -459,6 +459,8 @@ SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218
 
 // ovl_195410
+// gStageBaseLevel: inferred: from the eset file's section A; enemy levels are relative to it
+gStageBaseLevel = 0x801F1035; // size:0x1
 // StageSetupUnits: inferred: reads the stage's eset (enemy set) and enemydat.bin and sets up units
 StageSetupUnits = 0x80215C18; // type:func rom:0x196AB0
 
