@@ -172,8 +172,8 @@ to unit actions.
 
 ### Images
 
-`tools/img2png.py` converts the two main image formats (343 files; the byte layouts are in its
-header comment):
+`tools/img2png.py` converts the three image formats (387 files; the byte layouts are in its header
+comment):
 
 - **`"64"` textures** (`.n64` files and LZ chunks, 263 of them): the header holds the RDP image
   format (RGBA / CI / I) and pixel size (4/8/16/32-bit) in the N64's own encoding, then width and
@@ -184,13 +184,21 @@ header comment):
   plane. All 571 tiles have the predicted sizes. Backgrounds can be larger than the screen (e.g.
   440×330).
 
+- **`"HU"` images** (34 chunks, plus B5 kind-3 tiles): JPEG-style, decoded in two halves. The CPU
+  does the Huffman stage (`HuDecode` in main), and the N64 SDK's JPEG microcode (`M_NJPEGTASK`,
+  submitted by `BgJpegTask`) does dequantization, the IDCT and YUV→RGB. It's baseline JPEG in all
+  but the details: the standard Annex K Huffman tables and luminance quantization table, 16×16
+  4:2:0 macroblocks, and differential DC, but with no `FF` byte stuffing, the zigzag walking a
+  transposed (column-major) block, one quantization table for all components, and chroma stored
+  with a +128 offset. Examples: battle-map ground, a castle throne hall.
+
 ```sh
 python3 tools/img2png.py extracted/lha/camp.n64 camp.png
-python3 tools/img2png.py all extracted/png/
+python3 tools/img2png.py all extracted/png/        # about 45 s
 ```
 
-Not decoded yet: `HU` images (Huffman, `HUFF`; also the B5 kind-3 tiles), B5 kind 5, the `K`
-glyph files (`.k64` and small `.n64`), and the data formats (`.bin`, headerless chunks).
+Not decoded yet: B5 kind 5, the `K` glyph files (`.k64` and small `.n64`), and the data formats
+(`.bin`, headerless chunks).
 
 ## Game code
 
@@ -292,5 +300,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode `HU` images (the Huffman decoder is reached from `func_801B7EF4` in `ovl_1CE070`), the
-   `K` glyphs, and the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Decode the `K` glyph files and the data formats (`.bin` files, headerless chunks). Callers of
+   `LoadChunk` show what each handle is.

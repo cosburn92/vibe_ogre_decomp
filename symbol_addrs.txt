@@ -379,6 +379,20 @@ HFindHeap = 0x80071B9C; // type:func
 // memset: inferred: (dst, value, n) -> dst, byte-wise
 memset = 0x8009C970; // type:func
 
+// HU images (JPEG-style): CPU Huffman stage; the RSP's JPEG microcode does the rest
+// HuDecode: inferred: (HUFF data, coefficient buffer) -> 0 or -1; 6 blocks per 16x16 macroblock
+HuDecode = 0x8008B250; // type:func
+// HuDecodeDC: inferred: one DC value (JPEG-style size + bits)
+HuDecodeDC = 0x8008B3A0; // type:func
+// HuDecodeAC: inferred: one AC (run, value) pair
+HuDecodeAC = 0x8008B540; // type:func
+// HuDecodeBlock: inferred: (DC table, AC table) -> 64 coefficients
+HuDecodeBlock = 0x8008B6E0; // type:func
+gHuDcTableY = 0x800AA0A0; // size:0x40
+gHuDcTableC = 0x800AA0E0; // size:0x40
+gHuAcTableY = 0x800AA120; // size:0x170
+gHuAcTableC = 0x800AA290; // size:0x170
+
 // ROM access
 // PiDmaRead: inferred: blocking PI DMA
 PiDmaRead = 0x80089F80; // type:func
@@ -408,6 +422,12 @@ extract_one = 0x8007B88C; // type:func
 // ovl_1CE070
 // UtCreateTexture: inferred: (UT data, frame, palette, ?) -> RGBA16 texture via the palette
 UtCreateTexture = 0x8019ABA4; // type:func rom:0x1D10A4
+// BgLoad: inferred: (HU or B5 data, ?, ?) -> loads a background for drawing
+BgLoad = 0x801B7EF4; // type:func rom:0x1EE3F4
+// BgDecodeHu: inferred: sets up an HU image's macroblocks, runs HuDecode and queues the JPEG task
+BgDecodeHu = 0x801B7854; // type:func rom:0x1EDD54
+// BgJpegTask: inferred: submits the M_NJPEGTASK (njpgdspMain) for the decoded coefficients
+BgJpegTask = 0x801B6CD0; // type:func rom:0x1EF1D0
 // UnitSetLoad: inferred: loads a unit set's handle table, entries 0-3 and its per-part arrays
 UnitSetLoad = 0x801AD11C; // type:func rom:0x1E361C
 // UnitSetLoadPart: inferred: loads part i on demand and converts it with its part's palette
