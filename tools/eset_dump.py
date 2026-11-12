@@ -228,6 +228,8 @@ def dump_conditions(d, off):
             extra = f" point {r[6]}"
         elif r[1] in (0x04, 0x0C):
             extra = f" {r[6]}"
+        elif r[1] == 0x16:
+            extra = f" {r[6]}:00"
         elif r[1] == 0x0D:
             extra = f" {r[6]} or {r[7]}"
         elif r[1] in (0x09, 0x06):
