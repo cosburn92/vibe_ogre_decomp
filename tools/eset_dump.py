@@ -24,8 +24,10 @@ eset file:
         func_801CD668 starts a unit's order, func_801CD7F8 carries out a section C one, and
         func_801CF0B0 checks each frame whether it is finished and returns the next order.
           0     id (index + 4)
-          1     kind: 0 hold (bytes 2 and 3 go to unit +0x91 / +0x92), 1 move, 2 ? (clears a squad
-                roster flag; starting one counts up D_801F0FDE and resets the type-9 triggers)
+          1     kind: 0 hold (bytes 2 and 3 go to unit +0x91 / +0x92), 1 move, 2 reserve: the squad
+                is taken off the map (clears unit flag 0x1 and bit 0x4 of its roster byte
+                D_801971F1[slot * 25]) until its condition holds; UnitStartOrder sets both again
+                when the next order starts. Off-map squads are not counted in gEnemySquadsOnMap.
           2     move: route mode 0-2 (unit +0x91)
           3     unit +0x92; 2 = return to the waypoint stored in the unit (flag 0x800000)
           4-9   move: up to three waypoints (x, y) in 1/256ths of the map, or (point index, 0); the
@@ -136,7 +138,7 @@ def point(x, y):
 
 
 def dump_orders(d, off):
-    kinds = {0: "hold", 1: "move", 2: "kind 2"}
+    kinds = {0: "hold", 1: "move", 2: "reserve"}
     for i in range(d[off]):
         r = d[off + 1 + 18 * i:off + 19 + 18 * i]
         desc = f"  order {r[0]:2}: {kinds.get(r[1], f'kind {r[1]}')} [{r[2]},{r[3]}]"
