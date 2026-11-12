@@ -208,6 +208,23 @@ python3 tools/img2png.py all extracted/png/        # about 45 s
 Not decoded yet: B5 kind 5 (2 files), one `"64"` file with pixel size 4, and the data formats
 (`.bin` files, headerless chunks).
 
+### Dialogue text
+
+The 348 `serifu*` / `Serifu_*` files (9,138 messages) are dialogue: a table of u32 offsets, then
+NUL-terminated strings. The text is ASCII with inline `@` control codes and `{T##}` glyphs, and some
+untranslated Japanese is left in the US ROM in Shift-JIS. `tools/text_dump.py` dumps it all (every
+message decodes); `--plain` renders newlines, page breaks and ellipses. The control-code meanings in
+its header (`@n` newline, `@p` page, `@c` clear, `@k`/`@F###` speaker, `@l#` colour, `@%#` name
+insertion, `@T###` pause, …) are inferred from context, not yet from the game's text engine.
+
+```sh
+python3 tools/text_dump.py --plain extracted/lha/serifu_00_0.bin
+```
+
+Other named data, not decoded yet: `eset*` (62, probably enemy encounter sets), `scincsv*` (59,
+binary `(index, value)` tables despite the name), `maizo*` (40, 埋蔵 "buried treasure"), and about
+7,000 headerless LZ chunks.
+
 ## Game code
 
 Game names come first from the developers' own debug strings (`AddHeap()`, `HIsAllocatedPointer()`,
@@ -308,5 +325,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the data formats (`.bin` files, headerless chunks). Callers of `LoadChunk` show what
-   each handle is.
+3. Decode the game-data tables (`eset`, `maizo`, `scincsv`, headerless chunks) and confirm the text
+   control codes against the text engine. Callers of `LoadChunk` show what each handle is.
