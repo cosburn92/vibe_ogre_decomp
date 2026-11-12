@@ -150,11 +150,20 @@ python3 tools/ut2png.py all extracted/ut/         # all sets
   | `0D` / `10` | ch v | set channel `ch`'s value / per-step delta (`ch` = `FF`: all 16) |
   | `0E` | n c | repeat from command `n`, `c` times |
 
-  `06`, `0B` and `11`–`14` (and the unused `07`–`0A`, `0F`) do nothing in this player. The bigger
-  interpreters in `ovl_1F0A30` and `ovl_29A4C0` call more game code and are probably where those
-  are handled, as events, sounds and effects.
+  The battle interpreter `BattleAnimStep` (`ovl_1F0A30`, copied as `BattleAnimStep2` in
+  `ovl_29A4C0`) adds:
 
-Not decoded yet: what the event opcodes and the 16 channels drive, the second per-part byte array at
+  | op | args | effect |
+  |---|---|---|
+  | `0F` | a | call animation `a` (`00` returns) |
+  | `11` / `13` | hi lo | play sound `table[hi << 8 \| lo]` on channel A / B (`SoundRequest`) |
+  | `12` / `14` | hi lo | play a sound chosen by the unit's class and weapon, at its position, on channel A / B |
+  | `0B` | | timing marker: `BattleAnimEventTimes` dry-runs an animation and returns when each `0B` is reached (e.g. to sync a hit) |
+
+  `06` does nothing in any interpreter (it's used twice), and `07`–`0A` are never used. Animation
+  numbers seem to come in banks of 50.
+
+Not decoded yet: what the 16 channels drive, the sound ID tables, the second per-part byte array at
 `info + 0x20`, the other piece flag bits (bit 2 may be additive blending, used by glow effects), and how frames map
 to unit actions.
 
@@ -258,5 +267,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Read the battle overlays' animation interpreters (`ovl_1F0A30`, `ovl_29A4C0`) for the event
-   opcodes, and decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Find what the 16 animation channels drive (they're probably colour or alpha per part), and
+   decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.

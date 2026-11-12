@@ -41,8 +41,9 @@ import zlib
 
 CHUNKS = "extracted/chunks"
 
-# Animation opcodes: (argument bytes, meaning), from the player UnitAnimStep (ovl_1CE070) and its
-# fetcher's length table D_801B8098 (which matches the data for every opcode in use). The player keeps
+# Animation opcodes: (argument bytes, meaning), from the players UnitAnimStep (ovl_1CE070) and
+# BattleAnimStep (ovl_1F0A30, which adds sounds and calls), BattleAnimEventTimes, and the fetcher's
+# length table D_801B8098 (which matches the data for every opcode in use). The player keeps
 # a position offset (x, y, z), 16 channel values with per-step deltas (clamped 0-255, i.e. fades),
 # a call stack and a loop stack. Ticks: the counter drops by 2 per step.
 ANIM_OPS = {
@@ -52,21 +53,21 @@ ANIM_OPS = {
     0x03: (1, "wait t ticks"),
     0x04: (1, "jump to command n"),
     0x05: (1, "start animation a"),
-    0x06: (0, "(ignored by UnitAnimStep)"),
+    0x06: (0, "no-op (ignored by every interpreter; used twice)"),
     0x07: (0, "(ignored; unused)"),
     0x08: (0, "(ignored; unused)"),
     0x09: (0, "(ignored; unused)"),
     0x0A: (0, "(ignored; unused)"),
-    0x0B: (0, "(ignored by UnitAnimStep)"),
+    0x0B: (0, "timing marker (BattleAnimEventTimes reports when it is reached)"),
     0x0C: (3, "move x -= a, y += b, z += c"),
     0x0D: (2, "channel[ch] = v (ch 0xFF: all 16)"),
     0x0E: (2, "repeat from command n, c times"),
-    0x0F: (1, "(ignored; unused)"),
+    0x0F: (1, "call animation a (BattleAnimStep; 00 returns)"),
     0x10: (2, "channel delta[ch] = d per step (ch 0xFF: all 16)"),
-    0x11: (2, "(ignored by UnitAnimStep)"),
-    0x12: (2, "(ignored by UnitAnimStep)"),
-    0x13: (2, "(ignored by UnitAnimStep)"),
-    0x14: (2, "(ignored by UnitAnimStep)"),
+    0x11: (2, "play sound table[hi << 8 | lo] on channel A (BattleAnimStep)"),
+    0x12: (2, "play weapon/class-dependent sound at the unit, channel A"),
+    0x13: (2, "play sound table[hi << 8 | lo] on channel B"),
+    0x14: (2, "play weapon/class-dependent sound at the unit, channel B"),
     0x15: (3, "frame lo | hi << 8, ticks t"),
 }
 

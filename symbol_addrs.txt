@@ -419,6 +419,18 @@ UnitAnimStep2 = 0x801B28D8; // type:func rom:0x1E8DD8
 // UnitAnimGetCommand: inferred: (set, anim, command index, args out) -> opcode
 UnitAnimGetCommand = 0x8019B178; // type:func rom:0x1D1678
 
+// ovl_1F0A30 (battle)
+// BattleAnimStep: inferred: UnitAnimStep plus sound opcodes 11-14 and call (0F)
+BattleAnimStep = 0x801ADD88; // type:func rom:0x1F1218
+// BattleAnimEventTimes: inferred: dry-runs an animation, returns the tick times of its 0B markers
+BattleAnimEventTimes = 0x801AE4EC; // type:func rom:0x1F197C
+// SoundRequest: inferred: (channel object in ovl_03F1B0's data, id) -> queues a sound
+SoundRequest = 0x801C5938; // type:func rom:0x208DC8
+
+// ovl_29A4C0
+// BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)
+BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218
+
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
 SetDeadEnd = 0x801D0B58; // type:func rom:0x125298
