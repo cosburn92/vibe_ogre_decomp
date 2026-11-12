@@ -118,20 +118,31 @@ Each chunk is `[u32 BE size][payload]` on a 2-byte boundary (size may be 0), and
 
 `UT` chunks hold unit sprite graphics: each part is a pose or body piece with one or more frames, as
 CI8 colour indices plus a 4bpp alpha plane, coloured by a separate palette chunk of 256-colour
-RGBA5551 palettes. A unit set is a stored table of handles, `[?, ?, info, palettes, UT part, ...]`
+RGBA5551 palettes. A unit set is a stored table of handles, `[frames, animations, info, palettes, UT part, ...]`
 (231 of them). `UnitSetLoad` in `ovl_1CE070` loads it, and `UnitSetLoadPart` converts part `i` to a
 texture with `UtCreateTexture`, using palette `info[u32(info + 0x1C) + i]`. The info chunk starts with
 the part count. In all 231 sets the indices are in range and use every palette. The byte layout is
 in `tools/ut2png.py`, which renders sets with each part's own palette:
 
 ```sh
-python3 tools/ut2png.py set 0x3BAC1C out.png   # every part of a unit set, in colour
-python3 tools/ut2png.py all extracted/ut/      # all sets
+python3 tools/ut2png.py set 0x3BAC1C out.png      # every part of a unit set, in colour
+python3 tools/ut2png.py frames 0xF72D3C out.png   # the set's composite frames
+python3 tools/ut2png.py anims 0x3BAC1C            # disassemble the set's animations
+python3 tools/ut2png.py all extracted/ut/         # all sets
 ```
 
-Not decoded yet: entries 0 and 1 of a set table (probably part layout and animation), the second
-per-part byte array at `info + 0x20`, and how effect parts (glows drawn as opaque squares here) are
-blended in-game.
+- **Frames** (entry 0): composite sprite frames. Each is a list of pieces `{part, x, y, w, h,
+  flags, scale x, scale y}`, with flags bit 0 = mirror horizontally and scale `0x400` = 1.0. All
+  13,402 frames in the 231 sets reference valid parts, with the parts' own sizes.
+- **Animations** (entry 1): byte-code scripts, a command count then commands. The argument sizes of
+  all 17 opcodes are verified (every one of the 8,741 scripts parses exactly). Known so far:
+  `01 f t` shows frame `f` for `t` ticks, `04 n` loops to command `n`, `05 a` continues with
+  animation `a`, and `00` ends. Each of those arguments is always in range. The rest are listed in
+  `ANIM_OPS` with guesses.
+
+Not decoded yet: the remaining animation opcodes, the second per-part byte array at `info + 0x20`,
+the other piece flag bits (bit 2 may be additive blending, used by glow effects), and how frames map
+to unit actions.
 
 ## Game code
 
@@ -233,5 +244,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the rest of the unit-set tables (entries 0–1, the per-part bytes at `info + 0x20`) and the
-   other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Pin down the remaining animation opcodes (by finding the script interpreter in `ovl_1CE070`)
+   and decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
