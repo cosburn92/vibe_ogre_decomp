@@ -379,6 +379,11 @@ which `scincsv` and `maizo` members it uses (both numbered by map, so stage `0x0
 The stage-clear code adds a share of the liberated locations' ktenmain `+0x16` values to that.
 `tools/stage_dump.py` prints the table; three of its bytes are still unknown.
 
+**Reputation (Chaos Frame):** `gChaosFrame` runs 0–100 and starts at 50. Liberating a location
+compares the liberating squad's alignment with the alignment the town favours (ktenmain `+0x18`):
+a close match adds up to 2, a large mismatch takes up to 5 (`ChaosFrameOnLiberate`), and losing a
+location to the enemy takes 2 (`ChaosFrameOnCapture`). The money is `gGoth`.
+
 Still not decoded: about 7,000 headerless LZ chunks. Many assets are reached
 the same way: overlays load handles with `lui`/`ori` immediates and call `LoadAsset`, sometimes
 through a 4-byte chunk holding the real handle.

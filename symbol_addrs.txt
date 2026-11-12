@@ -561,6 +561,14 @@ TreasureDowse = 0x8021B5E0; // type:func rom:0x1AF8F0
 MapSetupLocations = 0x801D30F0; // type:func rom:0x127830
 // gStageTable: 0x43 x 12 bytes per stage id: chapter, map, variant, ?, ?, scincsv member, maizo member, ?, ?, 0, u16 clear money (tools/stage_dump.py)
 gStageTable = 0x801E7E10; // size:0x324 segment:ovl_101CE0
+// gGoth: the player's money (capped at 9,999,999)
+gGoth = 0x80196A6C;
+// gChaosFrame: reputation 0-100, 50 at a new game (func_8016C900_ovl_040E80)
+gChaosFrame = 0x801936A9;
+// ChaosFrameOnLiberate: (squad slot, location) -> -5..+2 by how far the squad's alignment is from the town's (ktenmain +0x18)
+ChaosFrameOnLiberate = 0x801DB478; // type:func rom:0x12FBB8
+// ChaosFrameOnCapture: an enemy takes a location with a preference -> -2
+ChaosFrameOnCapture = 0x801DB6BC; // type:func rom:0x12FDFC
 // LocationsLiberatedSize: sum of gLocations +0x20 (ktenmain +0x16) over liberated locations
 LocationsLiberatedSize = 0x801D34BC; // type:func rom:0x127BFC
 // Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline

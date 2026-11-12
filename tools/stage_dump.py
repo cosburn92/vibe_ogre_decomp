@@ -12,8 +12,8 @@ chapters; the data after 0x42 belongs to something else.
   0x07  ? (0x11-0x19; compared with a value + 1 when the map starts)
   0x08  ? (3-0x30, rising through the game; 0 on a few stages; values below 3 skip something)
   0x0A  u16 base money for clearing the stage. The stage-clear code adds a share of the liberated
-        locations' ktenmain +0x16 values, scaled by how far D_801936A9 is from 50, and adds the
-        total to D_80196A6C (capped at 9,999,999)
+        locations' ktenmain +0x16 values, scaled by how far gChaosFrame (reputation) is from 50, and adds
+        the total to gGoth (capped at 9,999,999)
 
 usage: python3 tools/stage_dump.py
 """
