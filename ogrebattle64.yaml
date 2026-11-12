@@ -625,7 +625,7 @@ segments:
     subsegments:
       - [0x87200, asm]
       - [0xAE2A0, asm]
-      - [0xB48F0, asm]
+      - [0xB48F0, c]
       - [0xB8DE0, asm]
       - [0xBA2C0, asm]
       - [0xC15F0, asm]
@@ -651,7 +651,7 @@ segments:
       - [0xDC2D0, data, D0380]
       - [0xDC2F0, rodata, 87200]
       - [0xDC490, rodata, AE2A0]
-      - [0xDC570, rodata, B48F0]
+      - [0xDC570, .rodata, B48F0]
       - [0xDC5B0, rodata, B8DE0]
       - [0xDC5D0, rodata, BA2C0]
       - [0xDC660, rodata, C3F50]
