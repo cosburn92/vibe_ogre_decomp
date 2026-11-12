@@ -406,7 +406,8 @@ headquarters (`0x2012` on the starting base). `tools/location_dump.py` prints bo
 which `scincsv` and `maizo` members it uses (both numbered by map, so stage `0x0F`, eset2_05a, uses
 `scincsv23a` and `maizo23`), and its base money for clearing it (500 for the first map up to 7,870).
 The stage-clear code adds a share of the liberated locations' ktenmain `+0x16` values to that.
-`tools/stage_dump.py` prints the table; three of its bytes are still unknown.
+`+7` is the map's music track. `tools/stage_dump.py` prints the table; three of its bytes are still
+unknown.
 
 **Time:** `gClock` holds the hour, minute and second (hours 6–17 are day), and `gDate` the year,
 month and day of a 15-month calendar: months of 24, 25, 23, 24, 25, 24, 24, 25, 24, 24, 25, 24, 24,

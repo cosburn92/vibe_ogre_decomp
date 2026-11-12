@@ -9,7 +9,7 @@ chapters; the data after 0x42 belongs to something else.
   0x04  ? (2, 3, 5, 6 or 7)
   0x05  scincsv member (0-based in archive 0x21B0F2A, so 1 = scincsv1a): the map's locations
   0x06  maizo member (0-based in archive 0x21AFA08): the map's buried treasure
-  0x07  ? (0x11-0x19; compared with a value + 1 when the map starts)
+  0x07  music track (0x11-0x19), started with SoundPlayFade(…, track, 10) when the map starts
   0x08  ? (3-0x30, rising through the game; 0 on a few stages; values below 3 skip something)
   0x0A  u16 base money for clearing the stage. The stage-clear code adds a share of the liberated
         locations' ktenmain +0x16 values, scaled by how far gChaosFrame (reputation) is from 50, and adds
@@ -44,7 +44,7 @@ def main():
         eset = f"eset{r[0]}_{r[1]:02}{' abcd'[r[2]].strip()}"
         sc = locs[r[5]] if r[5] < len(locs) else r[5]
         mz = treasure[r[6]] if r[6] < len(treasure) else r[6]
-        print(f"0x{s:02X}  {eset:11} {sc:15} {mz:12} [3] {r[3]} [4] {r[4]} [7] 0x{r[7]:02X} [8] {r[8]:2}"
+        print(f"0x{s:02X}  {eset:11} {sc:15} {mz:12} [3] {r[3]} [4] {r[4]} music 0x{r[7]:02X} [8] {r[8]:2}"
               f"  money {money}")
     return 0
 

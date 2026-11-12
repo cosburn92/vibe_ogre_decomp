@@ -498,6 +498,10 @@ ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
 ItemGetRank = 0x8016F614; // type:func rom:0x45514
 ItemGetFlag80 = 0x8016F9D4; // type:func rom:0x458D4
 // PlayTimeUpdate: (gPlayTime) -> u16 hours, u8 minutes, u8 seconds from osGetTime, capped at 99:59:59
+// SoundPlay (sound overlay ovl_03F1B0): (channel, id); D_800EB1F0 is the effects channel (0x24F = location captured)
+SoundPlay = 0x800EA604; // type:func rom:0x3FB94
+// SoundPlayFade: (channel, id, fade) -> stores id + 1 and requests it; the map's music comes from gStageTable +7
+SoundPlayFade = 0x800EA6B0; // type:func rom:0x3FC40
 PlayTimeUpdate = 0x8016CB44; // type:func rom:0x42A44
 // DateAdvanceDay: (gDate) -> next day of the 15-month calendar (month lengths at 0x80186FFF), stops at 999/15/25
 DateAdvanceDay = 0x8016C5BC; // type:func rom:0x424BC
