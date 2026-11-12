@@ -239,6 +239,12 @@ prints them, with the byte layouts in its header:
   common. Squads also use their Heal Leaves/Seeds/Packs below 25% HP and Power/Angel Fruit at
   fatigue 70 (`SquadUpkeep`, `UnitShouldRetreat`, `SquadUseHealItem`, `SquadUseFatigueItem` in
   `ovl_101CE0`).
+- **The other squad bytes:** byte 10 is the battle strategy (Autonomous, Attack Strongest, Attack
+  Leader, Attack Weakest; `gStrategyNames`) and byte 11 the squad's harmony (0–100; the Flag of
+  Unity raises it). Bytes 12–14 are what the squad drops when beaten, with an 80% chance: an item
+  if byte 12 is set, otherwise a consumable (`InventoryAdd`). Bytes 15–17 pick its starting heal
+  items, Power/Angel Fruit and Revive Stones (`SquadSetupItems`); the mix is repeated to fill the
+  squad's item slots.
 - **Section C, orders:** 18-byte records, one per order id from 4 up. A squad's starting order is
   byte 8 of its record. An order is "hold", "move" (through up to three waypoints given as map
   coordinates or point indexes) or "reserve". A reserve squad is off the map, and not counted
@@ -324,7 +330,7 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet in the eset files: the squad record's behaviour bytes 10–17.
+Not decoded yet in the eset files: squad byte 1, which `StageSetupUnits` never reads.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached

@@ -22,9 +22,18 @@ eset file:
                 4 never, 0 fatigue > 100 only (UnitShouldRetreat). Every squad also uses its
                 consumables (SquadUseHealItem / SquadUseFatigueItem): Heal Leaf/Seed/Pack when a
                 member is under 25% HP (35% with setting 1), Power/Angel Fruit at fatigue >= 70
-          10    per-unit byte (stored as v-1), 11 per-unit byte
-          12    flag (sets bit 15 of D_8019367C[slot]), 13-14 u16 stored in D_8019367C[slot]
-          15-17 passed to func_8021590C(slot, a, b, c) (builds a 20-byte list; each value 1-6)
+          10    battle strategy, stored as v-1 in the squad roster (D_801971F0[slot * 25] +0x17):
+                1 Autonomous, 2 Attack Strongest, 3 Attack Leader, 4 Attack Weakest
+                (StrategyGetName)
+          11    harmony 0-100 (roster +0xC; the Flag of Unity raises it by 1-5, and a
+                battle outcome in ovl_213B10 adds 5 for player squads)
+          12-14 drop (D_8019367C[slot], enemy squads only): byte 12 set = an item (gItemTable id),
+                clear = a consumable (gConsumableTable id); 13-14 u16 id, 0 = none. Dropped with
+                an 80% chance when the squad is beaten (InventoryAdd)
+          15-17 starting consumables (SquadSetupItems): 15 heals 1 Leaf, 2 Leaf x2,
+                3 Leaf x2 + Seed, 4 Seed x2, 5 Seed x2 + Pack, 6 Pack x2; 16 fruit 1 Power x2,
+                2 Power + Angel, 3 Angel x2; 17 Revive Stones x1 or x2. The mix repeats until the
+                squad's item slots (roster +0xD, up to 10) are full
   C     orders (ovl_101CE0). u8 count, then 18-byte records copied to D_801F0EBE; order id = index + 4.
         func_801CD668 starts a unit's order, func_801CD7F8 carries out a section C one, and
         func_801CF0B0 checks each frame whether it is finished and returns the next order.
@@ -145,6 +154,20 @@ def point(x, y):
     return "-" if not x else f"point {x}" if not y else f"({x},{y})"
 
 
+STRATEGY = {1: "autonomous", 2: "strongest", 3: "leader", 4: "weakest"}
+CONSUMABLES = ["None", "Heal Leaf", "Heal Seed", "Heal Pack", "Power Fruit", "Angel Fruit",
+               "Revive Stone", "Altar of Resurrection", "Quit Gate"]
+
+
+def drop(r, items):
+    v = r[13] << 8 | r[14]
+    if not v:
+        return ""
+    if r[12]:
+        return f"  drops {items[v] if v < len(items) else v}"
+    return f"  drops consumable {CONSUMABLES[v] if v < len(CONSUMABLES) else v}"
+
+
 RETREAT = {0: "fatigued", 1: "HP<75%", 2: "HP<50%", 3: "HP<25%", 4: "never"}
 
 
@@ -213,7 +236,8 @@ def dump(path, enemydat, classes, items):
         tid, = struct.unpack_from(">H", r, 3)
         pos = f"spawn point {r[5]}" if r[6] == 0 else f"x={r[5]}/256 y={r[6]}/256"
         print(f"  squad {r[0]:2} slot {r[2] & 0x7F:2} template {tid:3}  {pos:22} scale {r[7]}  "
-              f"order {r[8]:2} retreat {RETREAT.get(r[9], r[9])}  misc {list(r[10:15])} {list(r[15:18])}")
+              f"order {r[8]:2} retreat {RETREAT.get(r[9], r[9])}  {STRATEGY.get(r[10], r[10])}  harmony {r[11]}"
+              f"  heal/fruit/revive {r[15]}/{r[16]}/{r[17]}{drop(r, items)}")
         for g in template(enemydat, tid):
             lv = f"{g['level']:+d}"
             cls = classes[g["class"]] if g["class"] < len(classes) else f"#{g['class']}"

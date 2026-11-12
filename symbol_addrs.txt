@@ -473,6 +473,9 @@ gConsumableTable = 0x8018E6CC; // size:0x21C rom:0x645CC
 gAttackTable = 0x8018AA7C; // size:0x9F0 rom:0x6097C
 // gElementNames: inferred: 16 name pointers: Physical, Wind, Flame, Earth, Water, Virtue, Bane, ...
 gElementNames = 0x80187BD4; // size:0x40 rom:0x5DAD4
+// gStrategyNames: Autonomous, Attack Strongest, Attack Leader, Attack Weakest
+gStrategyNames = 0x80186FC4; // size:0x10 rom:0x5CEC4
+StrategyGetName = 0x8016B070; // type:func rom:0x40F70
 // AttackGetName: inferred: (attack id) -> gAttackTable[id].name
 AttackGetName = 0x8016E440; // type:func rom:0x44340
 // ClassAtLevel: inferred: (class, base, level) -> the class on the promotion path (+0x41..+0x44) for that level
@@ -498,6 +501,8 @@ gLocations = 0x801951B0;
 gStageBaseLevel = 0x801F1035; // size:0x1 segment:ovl_101CE0
 // StageSetupUnits: inferred: reads the stage's eset (enemy set) and enemydat.bin and sets up units
 StageSetupUnits = 0x80215C18; // type:func rom:0x1960A8
+// SquadSetupItems: (slot, heals, fruit, revives) -> fills the squad's consumable slots (eset bytes 15-17)
+SquadSetupItems = 0x8021590C; // type:func rom:0x195D9C
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
@@ -521,6 +526,8 @@ SquadUseHealItem = 0x801CF8D8; // type:func rom:0x124018
 SquadUseFatigueItem = 0x801CFBE8; // type:func rom:0x124328
 UnitShouldRetreat = 0x801CFDE0; // type:func rom:0x124520
 SquadUpkeep = 0x801D0458; // type:func rom:0x124B98
+// InventoryAdd: (v, ?) -> bit 15 set: item v & 0x7FFF into the item stock, else consumable v (max 99 each)
+InventoryAdd = 0x801DC720; // type:func rom:0x130E60
 // gStageTriggers: inferred: u16 latched trigger bits, one per eset section D entry
 gStageTriggers = 0x801F0EBA; // size:0x2 segment:ovl_101CE0
 // gStageTriggersPending: inferred: u16 bits set by StageTriggerScanUnit during a pass
