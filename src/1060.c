@@ -98,7 +98,10 @@ extern s32 D_800EB26C;
 extern s32 D_800EB2BC;
 extern s32 *D_800A8218[];
 void osViSetSpecialFeatures(u32 f);
-void func_80073CB0(u8 level);
+void func_80073CB0(u8 alpha);
+u8 func_8016CD30(void);
+extern u8 D_80186358[];
+extern u8 D_80186610[];
 void func_80081908(s32 a, s32 b);
 void *HMalloc(s32 size);
 void *HFree(void *p);
@@ -533,7 +536,36 @@ void func_8007307C(FrameMsg *msg) {
     osViSwapBuffer(msg->fb);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80073164);
+void func_80073164(u8 relative, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f) {
+    if (!relative) {
+        if (a >= 0) {
+            D_800C4C08 = a;
+        }
+        if (b >= 0) {
+            D_800E7D68 = b;
+        }
+        if (c >= 0) {
+            D_800C4A18 = c;
+        }
+        if (d >= 0) {
+            D_800E7A1C = d;
+        }
+        if (e >= 0) {
+            D_800C4BCA = e;
+        }
+        if (f >= 0) {
+            D_800C4AD8 = f;
+        }
+    } else {
+        D_800C4C08 += a;
+        D_800E7D68 += b;
+        D_800C4A18 += c;
+        D_800E7A1C += d;
+        D_800C4BCA += e;
+        D_800C4AD8 += f;
+    }
+    D_800AEE72 = 2;
+}
 
 void func_8007328C(void) {
     s32 i;
@@ -648,7 +680,79 @@ void func_80073C48(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80073CB0);
+void func_80073CB0(u8 alpha) {
+    if (alpha != 0) {
+        {
+            Gfx *g = D_800E9BA0;
+
+            D_800E9BA0 = g + 1;
+            g[0].w0 = 0xE7000000;
+            g[0].w1 = 0;
+            D_800E9BA0 = g + 2;
+            g[1].w0 = 0xDE000000;
+            g[1].w1 = (u32)D_801869C8;
+            D_800E9BA0 = g + 3;
+            g[2].w0 = 0xD9000000;
+            g[2].w1 = 0;
+            D_800E9BA0 = g + 4;
+            g[3].w0 = 0xE7000000;
+            g[3].w1 = 0;
+            D_800E9BA0 = g + 5;
+            g[4].w0 = 0xE7000000;
+            g[4].w1 = 0;
+            D_800E9BA0 = g + 6;
+            g[5].w0 = 0xE3000A01;
+            g[5].w1 = 0;
+            D_800E9BA0 = g + 7;
+            g[6].w0 = 0xE7000000;
+            g[6].w1 = 0;
+            D_800E9BA0 = g + 8;
+            g[7].w0 = 0xFCFFFFFF;
+            g[7].w1 = 0xFFFDF6FB;
+            D_800E9BA0 = g + 9;
+            g[8].w0 = 0xE200001C;
+            g[8].w1 = 0x504340;
+            D_800E9BA0 = g + 10;
+            g[9].w0 = 0xFA000000;
+            g[9].w1 = alpha;
+        }
+        if (!func_8016CD30()) {
+            Gfx *g = D_800E9BA0;
+
+            D_800E9BA0 = g + 1;
+            g[0].w0 = 0xE7000000;
+            g[0].w1 = 0;
+            D_800E9BA0 = g + 2;
+            g[1].w0 = 0xE45003C0;
+            g[1].w1 = 0;
+            D_800E9BA0 = g + 3;
+            g[2].w0 = 0xE1000000;
+            g[2].w1 = 0;
+            D_800E9BA0 = g + 4;
+            g[3].w0 = 0xF1000000;
+            g[3].w1 = 0;
+            D_800E9BA0 = g + 5;
+            g[4].w0 = 0xE7000000;
+            g[4].w1 = 0;
+        } else {
+            Gfx *g = D_800E9BA0;
+
+            D_800E9BA0 = g + 1;
+            g[0].w0 = 0xDE000000;
+            g[0].w1 = (u32)D_80186358;
+            D_800E9BA0 = g + 2;
+            g[1].w0 = 0xDE000000;
+            g[1].w1 = (u32)D_80186610;
+        }
+        {
+            Gfx *g = D_800E9BA0;
+
+            D_800E9BA0 = g + 1;
+            g[0].w0 = 0xE7000000;
+            g[0].w1 = 0;
+        }
+    }
+}
 
 void func_80073ED8(void) {
     if (D_800A81F4 == 0) {
