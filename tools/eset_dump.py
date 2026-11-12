@@ -77,7 +77,7 @@ eset file:
                 0x19  every member of the squad is at full HP with no status
                 0x1A  func_801DD2B0(unit) and the unit's flag 0x1000000 (cleared when read)
                 0x1B  unit +0x74 equals byte 6 - 1
-                0x14  on stage 0x36: story flags (func_80186210/func_80186190)
+                0x14  on stage 0x36: story flags (FlagGet/FlagSet)
                 other trigger bit (id - 1) of gStageTriggers (D_801F0EBA); type 9 clears it when read.
         Trigger types (StageTriggerScanUnit / StageTriggerUpdate in ovl_101CE0): every frame 3 map units
         are checked against each condition and matching ones set a pending bit; after a pass over all
@@ -89,7 +89,7 @@ eset file:
                 3     no enemy unit is near map point byte 6
                 4     a player unit is at location byte 6
                 5     unit slot byte 6 is in the rectangle (bytes 8-9: a point near it)
-                6     story flag: byte 6 (1, 6-0x12, 0x17) selects func_80186210(0-0xE)
+                6     story flag: byte 6 (1, 6-0x12, 0x17) selects FlagGet(0-0xE)
                 7     a player unit is near map point byte 6
                 8     unit slot byte 6 is in the rectangle
                 9     at most byte 6 enemy squads are left on the map (gEnemySquadsOnMap)
