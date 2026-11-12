@@ -183,7 +183,49 @@ void *HMalloc(s32 size) {
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_800710DC);
+/* Same as HMalloc. */
+void *func_800710DC(s32 size) {
+    u16 flags;
+    s32 h, count, i;
+    HeapNode *b, *n;
+    u32 total;
+
+    size = (size + 0xF) & ~0xF;
+    if (size == 0) {
+        return NULL;
+    }
+    flags = gHeapAllocFlags;
+    h = (flags >> 1) & 1;
+    if (h) {
+        count = gHeapCount - (~flags & 1);
+        h = h & -(gHeapCount >= 2);
+    } else {
+        count = flags & 1;
+    }
+    for (i = 0; i < count; i++) {
+        total = size + 0x20;
+        b = func_80071A3C(gHeaps[h].root, total);
+        if (b != NULL) {
+            n = (HeapNode *)((u8 *)b + b->used + 0x20);
+            n->next = b->next;
+            b->next = n;
+            if (n->next < gHeaps[h].end) {
+                n->next->prev = n;
+            }
+            n->prev = b;
+            func_80071950(b);
+            b->free = 0;
+            n->used = size;
+            n->free = (u8 *)n->next - (u8 *)n - total;
+            if (n->free > 0x20) {
+                func_800719E8(&gHeaps[h].root, n);
+            }
+            return n + 1;
+        }
+        h = (h + 1) % gHeapCount;
+    }
+    return NULL;
+}
 
 void *HMallocBack(s32 size) {
     u16 saved = gHeapAllocFlags;
