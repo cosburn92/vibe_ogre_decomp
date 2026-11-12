@@ -1,19 +1,20 @@
 #include "common.h"
 
-/* libmus channel state (channel_t); only the fields the command handlers touch are named. */
+/* libmus channel state (channel_t, 0x13C bytes); only fields the code here touches are named. */
 typedef struct {
-    /* 0x00 */ u8 pad00[0x8];
+    /* 0x00 */ u8 pad00[0x4];
+    /* 0x04 */ s32 unk04;
     /* 0x08 */ void *pdata;
     /* 0x0C */ u8 pad0C[0x18];
     /* 0x24 */ f32 unk24;
     /* 0x28 */ u8 pad28[0x4];
     /* 0x2C */ f32 unk2C;
-    /* 0x30 */ u8 pad30[0x4];
+    /* 0x30 */ f32 unk30;
     /* 0x34 */ s32 unk34;
     /* 0x38 */ s32 unk38;
     /* 0x3C */ u8 pad3C[0x4];
     /* 0x40 */ s32 unk40;
-    /* 0x44 */ s32 unk44;
+    /* 0x44 */ s32 handle;
     /* 0x48 */ u8 pad48[0x8];
     /* 0x50 */ f32 unk50;
     /* 0x54 */ u8 pad54[0x14];
@@ -22,14 +23,18 @@ typedef struct {
     /* 0x70 */ f32 unk70;
     /* 0x74 */ s32 unk74;
     /* 0x78 */ s32 unk78;
-    /* 0x7C */ u8 pad7C[0x8];
+    /* 0x7C */ s32 unk7C;
+    /* 0x80 */ u8 pad80[0x4];
     /* 0x84 */ s32 unk84;
-    /* 0x88 */ u8 pad88[0xC];
+    /* 0x88 */ u8 pad88[0x8];
+    /* 0x90 */ f32 unk90;
     /* 0x94 */ s32 unk94;
-    /* 0x98 */ u8 pad98[0x14];
+    /* 0x98 */ u8 pad98[0x6];
+    /* 0x9E */ u16 unk9E;
+    /* 0xA0 */ u8 padA0[0xC];
     /* 0xAC */ u16 length;
     /* 0xAE */ u16 unkAE;
-    /* 0xB0 */ u8 padB0[0x2];
+    /* 0xB0 */ u16 unkB0;
     /* 0xB2 */ u16 unkB2;
     /* 0xB4 */ u16 unkB4;
     /* 0xB6 */ u8 padB6[0x1];
@@ -40,7 +45,8 @@ typedef struct {
     /* 0xBB */ u8 padBB[0x1];
     /* 0xBC */ u8 unkBC;
     /* 0xBD */ u8 unkBD;
-    /* 0xBE */ u8 padBE[0xC];
+    /* 0xBE */ u8 unkBE;
+    /* 0xBF */ u8 padBF[0xB];
     /* 0xCA */ u8 unkCA;
     /* 0xCB */ u8 padCB[0x3];
     /* 0xCE */ u8 wobble;
@@ -55,8 +61,8 @@ typedef struct {
     /* 0xD8 */ u8 unkD8;
     /* 0xD9 */ u8 sweep_timer;
     /* 0xDA */ u8 unkDA;
-    /* 0xDB */ u8 padDB[0x1];
-} MusChannel;
+    /* 0xDB */ u8 padDB[0x61];
+} MusChannel; /* size 0x13C */
 
 typedef struct {
     /* 0x00 */ u8 pad00[0x10];
@@ -83,19 +89,22 @@ typedef struct {
 
 extern s16 D_800B181C;
 extern s16 D_800B181E;
-extern MusBank *D_800B1828;
+extern void *D_800B1828;
 extern MusBank *D_800B182C;
 extern s32 D_800B1830;
 extern s32 D_800B1834;
-extern s32 D_800B1838;
-extern s32 D_800B183C;
+extern MusFxBank *D_800B1838;
+extern MusFxBank *D_800B183C;
 extern s32 D_800B1840;
+extern s32 D_800B1804;
+extern MusChannel *D_800B180C;
+s32 func_80083B24(MusFxBank *bank, void *addr, s32 a, s32 b, s32 c);
 extern s32 D_800A9B8C;
 extern u8 D_800A99D8[];
 s32 func_80083CCC(void *addr);
 void MusHandleUnPause(s32 handle);
 void func_8008350C(void *bank);
-void func_80082214(MusCommand *cmd);
+s32 func_80082214(MusCommand *cmd);
 void ChangeCustomEffect(s32 fx);
 
 
@@ -124,23 +133,120 @@ s32 MusStartSong(void *addr) {
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081520);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081770);
+s32 func_80081770(void *addr) {
+    MusFxBank *bank = D_800B183C;
+    s32 ret;
+
+    if (bank != NULL) {
+        D_800B183C = NULL;
+    } else {
+        bank = D_800B1838;
+        if (bank == NULL) {
+            D_800B1828 = NULL;
+            return 0;
+        }
+    }
+    if (D_800B1828 == NULL) {
+        D_800B1828 = bank->ptrbank;
+    }
+    ret = func_80083B24(bank, addr, 0x80, 0x80, -1);
+    D_800B1828 = NULL;
+    return ret;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800817F0);
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081908);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800819D4);
+s32 func_800819D4(u32 flags) {
+    s32 i;
+    s32 n = 0;
+    MusChannel *cp = D_800B180C;
+
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->unk04 != 0) {
+            if ((cp->unk78 != 0 && (flags & 1)) || (cp->unk78 == 0 && (flags & 2))) {
+                n++;
+            }
+        }
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081A54);
 
+#ifdef NON_MATCHING
+/* Same code; i/cp/count load order differs (register assignment). */
+s32 func_80081B08(s32 handle) {
+    s32 i, n;
+
+    if (handle == 0) {
+        return 0;
+    }
+    n = 0;
+    for (i = 0; i < D_800B1804; i++) {
+        n += (D_800B180C[i].handle == handle);
+    }
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081B08);
+#endif
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081B60);
+s32 func_80081B60(s32 handle, u16 value) {
+    s32 i, n;
+    MusChannel *cp;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081BC0);
+    if (handle == 0) {
+        return 0;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            cp->unk9E = value;
+            n++;
+        }
+    }
+    return n;
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081C30);
+s32 func_80081BC0(s32 handle, u16 value) {
+    s32 i, n;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            n++;
+            cp->unkB0 = value;
+            cp->unkBE = 0xFF;
+        }
+    }
+    return n;
+}
+
+s32 func_80081C30(s32 handle, f32 value) {
+    s32 i, n;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            cp->unk30 = value + cp->unk90;
+            n++;
+        }
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081CA0);
 
@@ -170,7 +276,21 @@ MusBank *func_80081E3C(void) {
     return D_800B182C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081E48);
+s32 func_80081E48(s32 handle) {
+    s32 i;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            return cp->unk7C;
+        }
+    }
+    return 0;
+}
 
 void MusHandlePause(s32 handle) {
     MusCommand cmd;
@@ -188,16 +308,25 @@ void MusHandleUnPause(s32 handle) {
     func_80082214(&cmd);
 }
 
-void MusSetFxType(s32 type) {
+inline s32 MusSetFxType(s32 type) {
     MusCommand cmd;
 
     cmd.type = 2;
     cmd.value = type;
     D_800B1834 = type;
-    func_80082214(&cmd);
+    return func_80082214(&cmd);
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081F20);
+void func_80081F20(s32 type) {
+    s32 ok = 1;
+
+    if (type == 0) {
+        ok = MusSetFxType(D_800B1834);
+    }
+    if (ok) {
+        D_800B1830 = type;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081F7C);
 
@@ -205,15 +334,15 @@ s32 MusFxBankNumberOfEffects(MusFxBank *bank) {
     return bank->count;
 }
 
-void func_80082008(s32 a) {
+void func_80082008(MusFxBank *a) {
     D_800B1838 = a;
 }
 
-void func_80082014(s32 a) {
+void func_80082014(MusFxBank *a) {
     D_800B183C = a;
 }
 
-s32 func_80082020(void) {
+MusFxBank *func_80082020(void) {
     return D_800B1838;
 }
 
@@ -298,7 +427,7 @@ u8 *Fstop(MusChannel *cp, u8 *ptr) {
     cp->unk34 = 0;
     cp->unk74 = 0;
     cp->unk78 = 0;
-    cp->unk44 = 0;
+    cp->handle = 0;
     cp->pdata = NULL;
     return NULL;
 }
