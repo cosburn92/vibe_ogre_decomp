@@ -47,6 +47,25 @@ void func_80076E00(void);
 void func_801792BC_ovl_040E80(void);
 void func_8017BF10_ovl_040E80(void);
 void func_80073398(void);
+extern void *D_8018FC10_ovl_040E80;
+extern u8 D_8018FC30_ovl_040E80[];
+extern u8 D_8018FC44_ovl_040E80[];
+extern u8 D_80243DB0[];
+extern s32 D_8018FB4C_ovl_040E80;
+extern u16 D_8018F1A0_ovl_040E80;
+extern u8 *D_8018FDC0_ovl_040E80;
+void func_80178CCC_ovl_040E80(s32 flags);
+void func_80070F14(void);
+void func_80070C60(void *start, s32 size);
+void func_8009DAEC(void);
+void func_801EE480(void);
+void func_80178D3C_ovl_040E80(void);
+void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+void func_8022681C(s32 a, s32 b);
+void func_80227348(void);
+void __rmonMaskIdleThreadInts(void);
+void func_8022F264(void);
+void HFree(void *p);
 
 extern u8 D_8018FAE4_ovl_040E80[];
 extern u8 D_8018FAF8_ovl_040E80[];
@@ -163,7 +182,10 @@ void func_80177D04_ovl_040E80(void) {
     func_801EE718();
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80177D20_ovl_040E80);
+void func_80177D20_ovl_040E80(void) {
+    func_801EE480();
+    D_8018FB4C_ovl_040E80 = (D_8018FB4C_ovl_040E80 + 1) % 3;
+}
 
 void *func_80177D74_ovl_040E80(void) {
     return D_8018FB50_ovl_040E80;
@@ -353,9 +375,23 @@ void *func_80178460_ovl_040E80(void) {
     return D_8018FC1C_ovl_040E80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_8017846C_ovl_040E80);
+void *func_8017846C_ovl_040E80(void) {
+    D_8018FC10_ovl_040E80 = NULL;
+    func_80178CCC_ovl_040E80(1);
+    func_80070F14();
+    func_80070C60(D_80243DB0, (u8 *)0x80400000 - D_80243DB0);
+    func_8009DAEC();
+    return D_8018FC30_ovl_040E80;
+}
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_801784BC_ovl_040E80);
+void *func_801784BC_ovl_040E80(void) {
+    D_8018FC10_ovl_040E80 = NULL;
+    func_80178CCC_ovl_040E80(1);
+    func_80070F14();
+    func_80070C60(D_80243DB0, (u8 *)0x80400000 - D_80243DB0);
+    func_8009DAEC();
+    return D_8018FC44_ovl_040E80;
+}
 
 void func_8017850C_ovl_040E80(void) {
     if (D_800C4BBC != NULL && D_800C4BBC->state == 13) {
@@ -369,7 +405,14 @@ void func_80178534_ovl_040E80(void) {
 
 INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178548_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178898_ovl_040E80);
+void func_80178898_ovl_040E80(void) {
+    u16 *p = &D_8018F1A0_ovl_040E80;
+
+    *p = 0;
+    func_80178D3C_ovl_040E80();
+    func_80073164(0, 8, 8, 0x80, 8, 0x80, 0x2800);
+    func_8022681C(-5, *p & 0xFFF);
+}
 
 void func_80178900_ovl_040E80(void) {
     D_8018FC18_ovl_040E80 = 0;
@@ -390,7 +433,18 @@ void func_80178B20_ovl_040E80(s32 arg) {
 
 INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178B5C_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178BF4_ovl_040E80);
+void func_80178BF4_ovl_040E80(void) {
+    func_80227348();
+    __rmonMaskIdleThreadInts();
+    func_8022F264();
+    D_8018FDC0_ovl_040E80[0xD2] = 0;
+    if (D_800C4BBC != NULL && D_800C4BBC->state == 13) {
+        D_800C4BBC->state = 2;
+    }
+    if (D_8018FC10_ovl_040E80 != NULL) {
+        HFree(D_8018FC10_ovl_040E80);
+    }
+}
 
 #ifdef NON_MATCHING
 /* Register allocation differs: the original keeps the state in a0 and the constant in v1. */
