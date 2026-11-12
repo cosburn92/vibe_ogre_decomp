@@ -1,6 +1,16 @@
 #include "common.h"
 #include "tables.h"
 
+extern u8 D_80193C12_ovl_040E80;
+extern u16 D_80193C14_ovl_040E80;
+extern u16 D_80193C16_ovl_040E80;
+extern u16 D_80193C18_ovl_040E80;
+extern u16 D_80193C1A_ovl_040E80;
+extern u16 D_80193C1C_ovl_040E80;
+extern u16 D_80193C1E_ovl_040E80;
+
+char *AttackGetName(u8 id);
+
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -233,7 +243,12 @@ u8 func_8016DC80_ovl_040E80(u8 cls, u8 other) {
     return gClassTable[other].attacks[0][1];
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016DCD4_ovl_040E80);
+u8 func_8016DCD4_ovl_040E80(u8 cls, u8 other) {
+    if (gClassTable[cls].baseClass == other) {
+        return gClassTable[gClassTable[cls].baseClass].attacks[1][0];
+    }
+    return gClassTable[other].attacks[1][0];
+}
 
 u8 func_8016DD20_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -309,7 +324,14 @@ u16 func_8016E084_ovl_040E80(u8 cls, u8 other) {
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E0D8_ovl_040E80);
 
+#ifdef NON_MATCHING
+/* Only the prologue's `sw ra` is scheduled later than in the original. */
+char *func_8016E140_ovl_040E80(u8 unused, u8 cls) {
+    return AttackGetName(gClassTable[cls].attacks[1][0]);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E140_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E174_ovl_040E80);
 
@@ -380,7 +402,15 @@ u8 ItemGetCategory(u16 id) {
     return gItemTable[id].category;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", ItemGetElement);
+/* Element 16 (Gallant Doll) takes the lord's element. */
+u8 ItemGetElement(u16 id) {
+    u8 e = gItemTable[id].element;
+
+    if (e == 16) {
+        e = D_80193C12_ovl_040E80;
+    }
+    return e;
+}
 
 u8 ItemGetRank(u16 id) {
     return gItemTable[id].rank;
@@ -394,17 +424,77 @@ s8 func_8016F644_ovl_040E80(u16 id) {
     return gItemTable[id].luck;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F65C_ovl_040E80);
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F65C_ovl_040E80(u16 id) {
+    u8 v;
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F6AC_ovl_040E80);
+    if (id == 132) {
+        v = D_80193C14_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].str;
+    }
+    return v;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F6FC_ovl_040E80);
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F6AC_ovl_040E80(u16 id) {
+    u8 v;
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F74C_ovl_040E80);
+    if (id == 132) {
+        v = D_80193C16_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].vit;
+    }
+    return v;
+}
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F79C_ovl_040E80);
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F6FC_ovl_040E80(u16 id) {
+    u8 v;
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016F7EC_ovl_040E80);
+    if (id == 132) {
+        v = D_80193C18_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].intl;
+    }
+    return v;
+}
+
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F74C_ovl_040E80(u16 id) {
+    u8 v;
+
+    if (id == 132) {
+        v = D_80193C1A_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].men;
+    }
+    return v;
+}
+
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F79C_ovl_040E80(u16 id) {
+    u8 v;
+
+    if (id == 132) {
+        v = D_80193C1C_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].agi;
+    }
+    return v;
+}
+
+/* Item 132 (Gallant Doll) gives the lord's stat / 20. */
+s8 func_8016F7EC_ovl_040E80(u16 id) {
+    u8 v;
+
+    if (id == 132) {
+        v = D_80193C1E_ovl_040E80 / 20;
+    } else {
+        v = gItemTable[id].dex;
+    }
+    return v;
+}
 
 s8 func_8016F83C_ovl_040E80(u16 id) {
     return gItemTable[id].resist[0];
@@ -470,7 +560,25 @@ u8 ItemGetFlag80(u16 id) {
     return (gItemTable[id].flags >> 7);
 }
 
+#ifdef NON_MATCHING
+/* Same logic; GCC lays out the branches differently (the original tests c == 24 with bne/j). */
+s32 ItemIsWeapon(u16 id) {
+    s32 c = gItemTable[id].category;
+
+    if (c != 0) {
+        if (c < 14) {
+            return 1;
+        }
+        if (c != 24) {
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/43100", ItemIsWeapon);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016FA34_ovl_040E80);
 
