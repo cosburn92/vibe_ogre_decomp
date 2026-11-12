@@ -229,7 +229,8 @@ member with `LoadAsset(0x21B35B2, 0, -4, D_8018F5A8[stage * 9])`, and `StageSetu
 `ovl_195410` reads it together with `enemydat.bin` (handle `0x21AE74C`). `tools/eset_dump.py`
 prints them, with the byte layouts in its header:
 
-- **eset file:** four section offsets; stage parameters including the base level; then 18-byte
+- **eset file:** four section offsets; stage parameters (base level, starting time of day, and for
+  six stages a 19:00 deadline); then 18-byte
   squad records giving the legion and its formation, unit slot, template id, position (a spawn point or x/y in
   1/256ths of the map), sprite scale, starting order, retreat setting and behaviour bytes. 891
   records in all.
@@ -272,7 +273,8 @@ prints them, with the byte layouts in its header:
     - a given squad in an area, or defeated;
     - at most N enemy squads left on the map;
     - a story flag, or the enemy holding a town/stronghold. Each location has flags in
-      `gLocations` (0x24-byte records, flags at `+0x1C`): 0x2 liberated by the player, 0x4
+      `gLocations` (0x24-byte records, flags at `+0x1C`): 0x10 the player's headquarters, 0x2
+      liberated by the player, 0x4
       taken by the enemy. An enemy squad heading for a location captures it once it is in range
       with no player unit nearby (in `func_801C2B70`); the player liberating it swaps the bits
       back. `LocationSetLiberated`, `LocationSetCaptured` and `LocationClearOwner` set them

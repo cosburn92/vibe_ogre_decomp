@@ -490,10 +490,12 @@ ItemGetElement = 0x8016F5E0; // type:func rom:0x454E0
 ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
 // ItemIsWeapon: inferred: category 1-13 or 24
 ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
+// PlayTimeUpdate: (gPlayTime) -> u16 hours, u8 minutes, u8 seconds from osGetTime, capped at 99:59:59
+PlayTimeUpdate = 0x8016CB44; // type:func rom:0x42A44
 ConsumableGetKind = 0x8016F500; // type:func rom:0x45400
 ConsumableGetTarget = 0x8016F540; // type:func rom:0x45440
 ConsumableGetUse = 0x8016F560; // type:func rom:0x45460
-// Location flags (gLocations + n*0x24 + 0x1C): 0x2 liberated by the player, 0x4 taken by the enemy
+// Location flags (gLocations + n*0x24 + 0x1C): 0x10 headquarters, 0x2 liberated by the player, 0x4 taken by the enemy
 LocationSetLiberated = 0x801704D8; // type:func rom:0x463D8
 LocationSetCaptured = 0x80170504; // type:func rom:0x46404
 LocationClearOwner = 0x80170530; // type:func rom:0x46430
@@ -535,6 +537,12 @@ UnitShouldRetreat = 0x801CFDE0; // type:func rom:0x124520
 SquadUpkeep = 0x801D0458; // type:func rom:0x124B98
 // InventoryAdd: (v, ?) -> bit 15 set: item v & 0x7FFF into the item stock, else consumable v (max 99 each)
 InventoryAdd = 0x801DC720; // type:func rom:0x130E60
+// Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline
+StageHQHeld = 0x801E5548; // type:func rom:0x139C88
+StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8
+StageBeforeDeadline = 0x801E5634; // type:func rom:0x139D74
+gPlayTime = 0x80196A28;
+gClock = 0x80196A2C;
 // gStageTriggers: inferred: u16 latched trigger bits, one per eset section D entry
 gStageTriggers = 0x801F0EBA; // size:0x2 segment:ovl_101CE0
 // gStageTriggersPending: inferred: u16 bits set by StageTriggerScanUnit during a pass

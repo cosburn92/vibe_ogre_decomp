@@ -5,8 +5,15 @@ Read by StageSetupUnits (ovl_195410). All big-endian.
 
 eset file:
   0x00  s16 offsets to sections A, B, C, D (0 = absent)
-  A     stage parameters, copied to globals: base level (D_801F1035), two more bytes (D_801F1036/37),
-        a byte (D_80196A2C), a byte (D_80196A2E), then two bytes (D_801F0E0C/0D)
+  A     stage parameters, copied to globals:
+          0     base level (gStageBaseLevel)
+          1     D_801F1036 (always 1; use unknown)
+          2     defeat checks (D_801F1037): 1 the stage is lost if the lord dies or the headquarters
+                (location flag 0x10) falls; 2 the same plus a deadline (bytes 5-6)
+          3-4   starting time of day, hour and minute (gClock: u16 hour at 0x80196A2C, then minute
+                and second; hours 6-17 are day). 7:00 for most stages, 18:00 or 21:00 for night ones
+          5-6   deadline hour and minute (D_801F0E0C/0D, 0xFF = none), shown on the HUD;
+                19:00 in the six timed stages
   B     u8 count, then 18-byte squad records:
           0     legion (0 = none). Consecutive records with the same non-zero value form a legion
                 of up to five squads; the first is the legion core, and the others share its
@@ -65,7 +72,7 @@ eset file:
                       map); bytes 6-7 its centre
                 0x17  unit slot byte 6 is inside the rectangle (bytes 8-9: its centre)
                 0x15  the unit's flag bit 31 is set (cleared when read)
-                0x16  D_80196A2C (stage parameter from section A) equals byte 6 (fires once per unit)
+                0x16  the hour of the day (gClock) is byte 6 (fires once per unit)
                 0x18  unit +0x20 equals unit +0x24
                 0x19  every member of the squad is at full HP with no status
                 0x1A  func_801DD2B0(unit) and the unit's flag 0x1000000 (cleared when read)
@@ -147,7 +154,7 @@ def template(d, tid):
     return out
 
 
-COND_TYPES = {0x10: "unit in area", 0x17: "slot in area", 0x15: "unit flag 31", 0x16: "stage param",
+COND_TYPES = {0x10: "unit in area", 0x17: "slot in area", 0x15: "unit flag 31", 0x16: "hour is",
               0x18: "unit +0x20 == +0x24", 0x19: "squad healthy", 0x1A: "unit event",
               0x1B: "unit +0x74", 0x14: "story flags",
               0x01: "player unit in area", 0x02: "no enemy in area", 0x03: "no enemy near point",
@@ -236,7 +243,8 @@ def dump(path, enemydat, classes, items):
     print(f"=== {os.path.basename(path)}  sections {['%#x' % o if o else '-' for o in offs]}")
     if offs[0]:
         a = d[offs[0]:offs[0] + 7]
-        print(f"  stage: base level {a[0]}, params {list(a[1:])}")
+        deadline = f", deadline {a[5]}:{a[6]:02}" if a[2] == 2 else ""
+        print(f"  stage: base level {a[0]}, starts {a[3]}:{a[4]:02}{deadline}  [1] {a[1]}")
     if not offs[1]:
         return
     count = d[offs[1]]
