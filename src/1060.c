@@ -37,6 +37,14 @@ typedef struct {
 } FbSet; /* size 0x18 */
 
 extern void *D_800C4BB8;
+/* Save-data table: records at base, stride apart; fields are (offset, bytes | 0x80 signed, bits) triples ending in bytes 0. */
+typedef struct {
+    /* 0x00 */ u8 *base;
+    /* 0x04 */ s32 stride;
+    /* 0x08 */ u8 *fields;
+    /* 0x0C */ u32 count;
+} SaveDesc; /* list ends at base NULL */
+
 extern FbSet D_800A81C0[2];
 extern u16 D_800C4C08;
 extern u16 D_800E7D68;
@@ -1171,6 +1179,106 @@ void func_8007422C(s32 n, u32 val) {
     D_800AEFC0 |= (val & ((1 << n) - 1)) << D_800AEFBC;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_800742F4);
+static inline void BitInitInline(u8 *a) {
+    D_800AEFB0 = a;
+    D_800AEFB4 = 0;
+    D_800AEFB8 = 0;
+    D_800AEFBC = 8;
+    D_800AEFC0 = 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80074494);
+static inline u32 BitReadInline(s32 n) {
+    u32 r = 0;
+
+    while (D_800AEFB8 < n) {
+        n -= D_800AEFB8;
+        r |= (D_800AEFC0 & ((1 << D_800AEFB8) - 1)) << n;
+        D_800AEFC0 = D_800AEFB0[D_800AEFB4++];
+        D_800AEFB8 = 8;
+    }
+    D_800AEFB8 -= n;
+    return r | ((D_800AEFC0 >> D_800AEFB8) & ((1 << n) - 1));
+}
+
+static inline void BitWriteInline(s32 n, u32 val) {
+    while (n >= D_800AEFBC) {
+        n -= D_800AEFBC;
+        D_800AEFC0 |= (val >> n) & ((1 << D_800AEFBC) - 1);
+        D_800AEFB0[D_800AEFB4++] = D_800AEFC0;
+        D_800AEFC0 = 0;
+        D_800AEFBC = 8;
+    }
+    D_800AEFBC -= n;
+    D_800AEFC0 |= (val & ((1 << n) - 1)) << D_800AEFBC;
+}
+
+/* Unpacks bit-packed records from buf into the tables listed in d (save data). */
+void func_800742F4(u8 *buf, SaveDesc *d) {
+    u8 *base = d->base;
+    u32 i;
+    u8 *f;
+    u8 *p;
+    s32 n;
+    u32 v;
+    s32 j = 0;
+
+    BitInitInline(buf);
+    if (base != NULL) {
+        do {
+            for (i = 0; i < d[j].count; i++) {
+                f = d[j].fields;
+                n = f[1];
+                while (n != 0) {
+                    p = base + f[0];
+                    v = BitReadInline(f[2]);
+                    if (n & 0x80) {
+                        n &= 0x7F;
+                        v |= -(1 << f[2]);
+                    }
+                    while (--n >= 0) {
+                        *p++ = v >> (n * 8);
+                    }
+                    f += 3;
+                    n = f[1];
+                }
+                base += d[j].stride;
+            }
+            j++;
+            base = d[j].base;
+        } while (base != NULL);
+    }
+}
+
+void func_80074494(u8 *buf, SaveDesc *d) {
+    u8 *base = d->base;
+    u32 i;
+    u8 *f;
+    u8 *p;
+    s32 n;
+    u32 v;
+    s32 j = 0;
+
+    BitInitInline(buf);
+    if (base != NULL) {
+        do {
+            for (i = 0; i < d[j].count; i++) {
+                f = d[j].fields;
+                n = f[1] & 0x7F;
+                while (n != 0) {
+                    p = base + f[0];
+                    v = 0;
+                    for (; n > 0; n--) {
+                        v = (v << 8) | *p++;
+                    }
+                    BitWriteInline(f[2], v);
+                    f += 3;
+                    n = f[1] & 0x7F;
+                }
+                base += d[j].stride;
+            }
+            j++;
+            base = d[j].base;
+        } while (base != NULL);
+    }
+    BitWriteInline(7, 0);
+}
