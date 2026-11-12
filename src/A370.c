@@ -684,7 +684,45 @@ void func_8007DDF0(s32 p) {
     update_p_inline(p);
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007DFF0);
+/* update_c */
+static inline void update_c_inline(s32 p) {
+    s32 q;
+
+    if (freq[0] == 0x8000) {
+        func_8007D8A8(0, n_max * 2 - 1);
+    }
+    freq[0]++;
+    q = s_node[p];
+    do {
+        q = func_8007DBF4(q);
+    } while (q != 0);
+}
+
+/* decode_c_dyn */
+u16 func_8007DFF0(void) {
+    s32 c;
+    s16 buf, cnt;
+
+    c = child[0];
+    buf = bitbuf;
+    cnt = 0;
+    do {
+        c = child[c - (buf < 0)];
+        buf <<= 1;
+        if (++cnt == 16) {
+            fillbuf(16);
+            buf = bitbuf;
+            cnt = 0;
+        }
+    } while (c > 0);
+    fillbuf(cnt);
+    c = ~c;
+    update_c_inline(c);
+    if (c == n1) {
+        c += func_8007C25C(8);
+    }
+    return c;
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007E2F8);
 
