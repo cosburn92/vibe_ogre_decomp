@@ -62,6 +62,7 @@ extern u16 *D_800AF3FC;
 extern u16 *D_800AF400;
 void func_8007C74C(s16 nn, u8 nbit, s16 i_special);
 void func_8007CAB8(void);
+void func_8007E6DC(void);
 
 extern u32 D_800AF3A0;
 void func_8007DDF0(s32 p);
@@ -76,6 +77,8 @@ extern u16 *D_800AF414;
 extern u16 *D_800AF410;
 extern s32 D_800A87CC; /* fixed[0][0] */
 extern s32 D_800A87D0[];
+extern s32 D_800A880C; /* fixed[1][0] */
+extern s32 D_800A8810[];
 extern u16 *D_800AF430;
 extern s16 *D_800AF418;
 extern s16 *D_800AF42C;
@@ -144,7 +147,7 @@ extern u8 *D_800AF390;
 extern u16 *D_800AF3F8;
 extern u16 D_800AF3C6;
 extern s32 D_800AF3CC;
-extern s16 D_800AF3C8;
+extern u16 D_800AF3C8;
 extern u16 D_800AF39E;
 extern u32 D_800AF3E8;
 extern u32 D_800AF3F4;
@@ -967,9 +970,98 @@ void func_8007E800(void) {
     func_8007BC24(np, pt_len, 8, pt_table);
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007E8F0);
+/* decode_c_st0, with read_tree_p and ready_made(1) inlined.
+ * Tests D_800AF3C6 but counts down D_800AF3C8, and read_tree_p's escape clears c_len/c_table: kept as in the original. */
+u16 func_8007E8F0(void) {
+    s32 i, j;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007EE2C);
+    if (D_800AF3C6 == 0) {
+        D_800AF3C8 = func_8007C25C(16);
+        func_8007E6DC();
+        if (func_8007C25C(1)) {
+            s32 i2, c;
+
+            i2 = 0;
+            while (i2 < 14) {
+                pt_len[i2] = func_8007C25C(4);
+                if (++i2 == 3 && pt_len[0] == 1 && pt_len[1] == 1 && pt_len[2] == 1) {
+                    c = func_8007C25C(7);
+                    for (i2 = 0; i2 < 14; i2++) {
+                        c_len[i2] = 0;
+                    }
+                    for (i2 = 0; i2 < 256; i2++) {
+                        c_table[i2] = c;
+                    }
+                    break;
+                }
+            }
+        } else {
+            s32 *tbl;
+            s32 k, j2;
+            u32 code, weight;
+
+            j2 = D_800A880C;
+            tbl = D_800A8810;
+            weight = 1 << (16 - j2);
+            code = 0;
+            for (k = 0; k < np; k++) {
+                while (*tbl == k) {
+                    j2++;
+                    tbl++;
+                    weight >>= 1;
+                }
+                pt_len[k] = j2;
+                pt_code[k] = code;
+                code += weight;
+            }
+        }
+        func_8007BC24(14, pt_len, 8, pt_table);
+    }
+    D_800AF3C8--;
+    j = c_table[bitbuf >> 4];
+    if (j < 286) {
+        fillbuf(c_len[j]);
+    } else {
+        fillbuf(12);
+        i = bitbuf;
+        do {
+            if ((s16)i < 0) {
+                j = right[j];
+            } else {
+                j = left[j];
+            }
+            i <<= 1;
+        } while (j >= 286);
+        fillbuf(c_len[j] - 12);
+    }
+    if (j == 286 - 1) {
+        j += func_8007C25C(8);
+    }
+    return j;
+}
+
+/* decode_p_st0 */
+u16 func_8007EE2C(void) {
+    s32 i, j;
+
+    j = pt_table[bitbuf >> 8];
+    if (j < np) {
+        fillbuf(pt_len[j]);
+    } else {
+        fillbuf(8);
+        i = bitbuf;
+        do {
+            if ((s16)i < 0) {
+                j = right[j];
+            } else {
+                j = left[j];
+            }
+            i <<= 1;
+        } while (j >= np);
+        fillbuf(pt_len[j] - 8);
+    }
+    return (j << 6) + func_8007C25C(6);
+}
 
 u16 func_8007F1A0(void) {
     u16 r;
