@@ -13,6 +13,10 @@ char *AttackGetName(u8 id);
 
 extern u8 D_8018ECE4_ovl_040E80[][6];
 
+u16 func_8016FA34_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
+u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
+u8 ItemGetElement(u16 id);
+
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -381,7 +385,24 @@ u8 func_8016E458_ovl_040E80(u8 id) {
     return gAttackTable[id].kind;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", AttackGetElement);
+/* The attack's element, or for 0xFF / 0xF the element of the first matching equipped item. */
+u8 AttackGetElement(u8 atk, u16 i0, u16 i1, u16 i2, u16 i3) {
+    u8 e = gAttackTable[atk].element;
+    u16 item;
+
+    if (e != 0xFF && e != 0xF) {
+        return e;
+    }
+    if (gAttackTable[atk].kind == 3) {
+        item = func_8016FB50_ovl_040E80(i0, i1, i2, i3);
+    } else {
+        item = func_8016FA34_ovl_040E80(i0, i1, i2, i3);
+    }
+    if (item == 0) {
+        return 0;
+    }
+    return ItemGetElement(item);
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E50C_ovl_040E80);
 
@@ -609,7 +630,22 @@ INCLUDE_ASM("asm/nonmatchings/43100", ItemIsWeapon);
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016FA34_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016FB50_ovl_040E80);
+/* The first of the four items with category 23, or 0. */
+u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d) {
+    if (gItemTable[a].category == 23) {
+        return a;
+    }
+    if (gItemTable[b].category == 23) {
+        return b;
+    }
+    if (gItemTable[c].category == 23) {
+        return c;
+    }
+    if (gItemTable[d].category == 23) {
+        return d;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016FBE0_ovl_040E80);
 
