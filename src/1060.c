@@ -80,7 +80,9 @@ extern u8 D_800A8211;
 extern u8 D_800A8212;
 extern u8 D_800A8213;
 extern void *D_800AEF9C;
-extern s32 D_800C4B20;
+extern u32 D_800C4B20;
+extern void *D_800E8210;
+u32 osVirtualToPhysical(void *p);
 extern u8 *D_800AEFB0;
 extern s32 D_800AEFB4;
 extern s32 D_800AEFB8;
@@ -780,7 +782,93 @@ void func_800737A0(void) {
     g->w1 = (u32)D_801869C8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_8007382C);
+/* Clears the depth buffer (when requested) and the color buffer. */
+void func_8007382C(void) {
+    if (func_8016CD30()) {
+        return;
+    }
+    if (D_800A8213) {
+        Gfx *g = D_800E9BA0;
+
+        D_800E9BA0 = g + 1;
+        g[0].w0 = 0xFE000000;
+        g[0].w1 = D_800C4B20 - 0x80000000;
+        D_800E9BA0 = g + 2;
+        g[1].w0 = 0xE7000000;
+        g[1].w1 = 0;
+        D_800E9BA0 = g + 3;
+        g[2].w0 = 0xE7000000;
+        g[2].w1 = 0;
+        D_800E9BA0 = g + 4;
+        g[3].w0 = 0xE3000A01;
+        g[3].w1 = 0x300000;
+        D_800E9BA0 = g + 5;
+        g[4].w0 = 0xE7000000;
+        g[4].w1 = 0;
+        D_800E9BA0 = g + 6;
+        g[5].w0 = 0xE200001C;
+        g[5].w1 = 0;
+        D_800E9BA0 = g + 7;
+        g[6].w0 = 0xFF10013F;
+        g[6].w1 = D_800C4B20 - 0x80000000;
+        D_800E9BA0 = g + 8;
+        g[7].w0 = 0xF7000000;
+        g[7].w1 = 0xFFFCFFFC;
+        D_800E9BA0 = g + 9;
+        g[8].w0 = 0xE7000000;
+        g[8].w1 = 0;
+        D_800E9BA0 = g + 10;
+        g[9].w0 = 0xF64FC3BC;
+        g[9].w1 = 0;
+        D_800E9BA0 = g + 11;
+        g[10].w0 = 0xE7000000;
+        g[10].w1 = 0;
+        D_800E9BA0 = g + 12;
+        g[11].w0 = 0xE7000000;
+        g[11].w1 = 0;
+    }
+    {
+        Gfx *g = D_800E9BA0;
+
+        D_800E9BA0 = g + 1;
+        g[0].w0 = 0xE7000000;
+        g[0].w1 = 0;
+        D_800E9BA0 = g + 2;
+        g[1].w0 = 0xE7000000;
+        g[1].w1 = 0;
+        D_800E9BA0 = g + 3;
+        g[2].w0 = 0xE3000A01;
+        g[2].w1 = 0x300000;
+        D_800E9BA0 = g + 4;
+        g[3].w0 = 0xE7000000;
+        g[3].w1 = 0;
+        D_800E9BA0 = g + 5;
+        g[4].w0 = 0xE200001C;
+        g[4].w1 = 0;
+        D_800E9BA0 = g + 6;
+        g[5].w0 = 0xFF10013F;
+        g[5].w1 = osVirtualToPhysical(D_800E8210);
+    }
+    {
+        Gfx *g = D_800E9BA0;
+
+        D_800E9BA0 = g + 1;
+        g[0].w0 = 0xF7000000;
+        g[0].w1 = 0x10001;
+        D_800E9BA0 = g + 2;
+        g[1].w0 = 0xE7000000;
+        g[1].w1 = 0;
+        D_800E9BA0 = g + 3;
+        g[2].w0 = 0xF64FC3BC;
+        g[2].w1 = 0;
+        D_800E9BA0 = g + 4;
+        g[3].w0 = 0xE7000000;
+        g[3].w1 = 0;
+        D_800E9BA0 = g + 5;
+        g[4].w0 = 0xDE000000;
+        g[4].w1 = (u32)D_801869C8;
+    }
+}
 
 void func_80073AE4(void) {
     Gfx *g;
