@@ -9,13 +9,13 @@ typedef struct {
     /* 0x10 */ s32 unk10;
     /* 0x14 */ u8 pad14[0x8];
     /* 0x1C */ s32 unk1C;
-    /* 0x20 */ u8 pad20[0x4];
+    /* 0x20 */ f32 vib_amount;
     /* 0x24 */ f32 unk24;
     /* 0x28 */ u8 pad28[0x4];
     /* 0x2C */ f32 unk2C;
     /* 0x30 */ f32 unk30;
-    /* 0x34 */ s32 unk34;
-    /* 0x38 */ s32 unk38;
+    /* 0x34 */ u8 *ppitchbend;
+    /* 0x38 */ u8 *pvolume;
     /* 0x3C */ u8 pad3C[0x4];
     /* 0x40 */ s32 unk40;
     /* 0x44 */ s32 handle;
@@ -28,16 +28,20 @@ typedef struct {
     /* 0x74 */ void *unk74;
     /* 0x78 */ void *unk78;
     /* 0x7C */ s32 unk7C;
-    /* 0x80 */ u8 pad80[0x4];
+    /* 0x80 */ u8 *pbase;
     /* 0x84 */ s32 unk84;
-    /* 0x88 */ u8 pad88[0x8];
+    /* 0x88 */ u8 *ppitchbendbase;
+    /* 0x8C */ u8 *pvolumebase;
     /* 0x90 */ f32 unk90;
     /* 0x94 */ s32 unk94;
     /* 0x98 */ u16 unk98;
     /* 0x9A */ u8 pad9A[0x2];
     /* 0x9C */ u16 unk9C;
     /* 0x9E */ u16 unk9E;
-    /* 0xA0 */ u8 padA0[0x8];
+    /* 0xA0 */ u8 padA0[0x2];
+    /* 0xA2 */ u16 unkA2;
+    /* 0xA4 */ u16 unkA4;
+    /* 0xA6 */ u8 padA6[0x2];
     /* 0xA8 */ u16 unkA8;
     /* 0xAA */ u8 padAA[0x2];
     /* 0xAC */ u16 length;
@@ -45,7 +49,7 @@ typedef struct {
     /* 0xB0 */ u16 unkB0;
     /* 0xB2 */ u16 unkB2;
     /* 0xB4 */ u16 unkB4;
-    /* 0xB6 */ u8 padB6[0x1];
+    /* 0xB6 */ u8 vib_delay;
     /* 0xB7 */ u8 unkB7;
     /* 0xB8 */ u8 porta;
     /* 0xB9 */ u8 unkB9;
@@ -65,13 +69,23 @@ typedef struct {
     /* 0xD2 */ u8 velon;
     /* 0xD3 */ u8 unkD3;
     /* 0xD4 */ u8 unkD4;
-    /* 0xD5 */ u8 vib;
+    /* 0xD5 */ u8 vib_speed;
     /* 0xD6 */ u8 env;
     /* 0xD7 */ u8 trigger;
     /* 0xD8 */ u8 unkD8;
     /* 0xD9 */ u8 sweep_timer;
     /* 0xDA */ u8 unkDA;
-    /* 0xDB */ u8 padDB[0x61];
+    /* 0xDB */ u8 depth;
+    /* 0xDC */ f32 vib_precalc;
+    /* 0xE0 */ u8 *loopptr[4];
+    /* 0xF0 */ u8 *loopvol[4];
+    /* 0x100 */ u8 *looppb[4];
+    /* 0x110 */ u16 loopA2[4];
+    /* 0x118 */ u16 loopA4[4];
+    /* 0x120 */ u8 loopcount[4];
+    /* 0x124 */ u8 loopBC[4];
+    /* 0x128 */ f32 loop70[4];
+    /* 0x138 */ u8 pad138[0x4];
 } MusChannel; /* size 0x13C */
 
 typedef struct {
@@ -93,11 +107,16 @@ typedef struct {
 } MusFxBank;
 
 typedef struct {
+    u8 b[6];
+} MusDrum;
+
+typedef struct {
     /* 0x00 */ u8 pad00[8];
     /* 0x08 */ s32 unk08;
     /* 0x0C */ u8 pad0C[8];
     /* 0x14 */ s32 unk14;
-    /* 0x18 */ u8 pad18[8];
+    /* 0x18 */ u8 pad18[4];
+    /* 0x1C */ MusDrum *drums;
     /* 0x20 */ s32 unk20;
 } MusSong;
 
@@ -139,6 +158,7 @@ void MusHandleUnPause(s32 handle);
 void func_8008350C(void *bank);
 s32 func_80082214(MusCommand *cmd);
 void ChangeCustomEffect(s32 fx);
+u8 func_800836A4(s32 range);
 
 
 
@@ -620,8 +640,8 @@ INCLUDE_ASM("asm/nonmatchings/114F0", func_80083CCC);
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083F38);
 
 u8 *Fstop(MusChannel *cp, u8 *ptr) {
-    cp->unk38 = 0;
-    cp->unk34 = 0;
+    cp->pvolume = 0;
+    cp->ppitchbend = 0;
     cp->unk74 = 0;
     cp->unk78 = 0;
     cp->handle = 0;
@@ -670,12 +690,31 @@ u8 *func_80084228(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008424C);
+/* Fvibup */
+u8 *func_8008424C(MusChannel *cp, u8 *ptr) {
+    cp->vib_delay = *ptr++;
+    cp->vib_speed = *ptr++;
+    cp->vib_amount = (f32)*ptr++ / 50.0;
+    cp->vib_precalc = 6.2831852 / (f32)cp->vib_speed;
+    return ptr;
+}
 
+#ifdef NON_MATCHING
+/* The original reloads vib_speed right after storing it; GCC here forwards the stored value. */
+/* Fvibdown */
+u8 *func_800842BC(MusChannel *cp, u8 *ptr) {
+    cp->vib_delay = *ptr++;
+    cp->vib_speed = *ptr++;
+    cp->vib_precalc = 6.2831852 / (f32)cp->vib_speed;
+    cp->vib_amount = -(f32)*ptr++ / 50.0;
+    return ptr;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800842BC);
+#endif
 
 u8 *Fviboff(MusChannel *cp, u8 *ptr) {
-    cp->vib = 0;
+    cp->vib_speed = 0;
     cp->unk68 = 0;
     return ptr;
 }
@@ -707,7 +746,19 @@ u8 *func_80084390(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800843A0);
+/* Fdetune */
+u8 *func_800843A0(MusChannel *cp, u8 *ptr) {
+    s32 det = *ptr++;
+    f32 old;
+
+    if (det & 0x80) {
+        det |= ~0xFF;
+    }
+    old = cp->unk90;
+    cp->unk90 = (f32)det / 100.0;
+    cp->unk30 = cp->unk30 - old + cp->unk90;
+    return ptr;
+}
 
 u8 *func_800843F8(MusChannel *cp, u8 *ptr) {
     cp->env = 1;
@@ -729,9 +780,44 @@ u8 *Ftron(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084430);
+/* Floop: push a repeat frame */
+u8 *func_80084430(MusChannel *cp, u8 *ptr) {
+    s32 i = cp->depth;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008449C);
+    cp->loopcount[i] = *ptr++;
+    cp->loopptr[i] = ptr;
+    cp->loopvol[i] = cp->pvolume;
+    cp->looppb[i] = cp->ppitchbend;
+    cp->loopBC[i] = cp->unkBC;
+    cp->loop70[i] = cp->unk70;
+    cp->loopA2[i] = cp->unkA2;
+    cp->loopA4[i] = cp->unkA4;
+    cp->depth++;
+    return ptr;
+}
+
+/* Floopend: repeat or pop the innermost frame */
+u8 *func_8008449C(MusChannel *cp, u8 *ptr) {
+    s32 i = cp->depth - 1;
+
+    if (cp->loopcount[i] != 0xFF) {
+        if (--cp->loopcount[i] == 0) {
+            cp->depth = i;
+            i = -1;
+        }
+    }
+    if (i >= 0) {
+        ptr = cp->loopptr[i];
+        cp->pvolume = cp->loopvol[i];
+        cp->ppitchbend = cp->looppb[i];
+        cp->unkBC = cp->loopBC[i];
+        cp->unk70 = cp->loop70[i];
+        cp->unkA2 = cp->loopA2[i];
+        cp->unkA4 = cp->loopA4[i];
+        cp->unk24 = cp->unk70 * cp->unk6C;
+    }
+    return ptr;
+}
 
 u8 *func_80084538(MusChannel *cp, u8 *ptr) {
     cp->unkD8 = *ptr++;
@@ -770,7 +856,17 @@ u8 *Fstereo(MusChannel *cp, u8 *ptr) {
     return ptr + 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800845B8);
+u8 *func_800845B8(MusChannel *cp, u8 *ptr) {
+    s32 v = *ptr++;
+
+    if (v >= 0x80) {
+        v &= 0x7F;
+        v <<= 8;
+        v |= *ptr++;
+    }
+    cp->unk84 = (s32)&((MusSong *)cp->unk74)->drums[v];
+    return ptr;
+}
 
 u8 *Fdrumsoff(MusChannel *cp, u8 *ptr) {
     cp->unk84 = 0;
@@ -781,18 +877,50 @@ u8 *Fprint(MusChannel *cp, u8 *ptr) {
     return ptr + 1;
 }
 
+#ifdef NON_MATCHING
+/* Same operations; the original interleaves the byte reads with the stores differently. */
+/* Fgoto */
+u8 *func_80084614(MusChannel *cp, u8 *ptr) {
+    u32 off1, off2, off3;
+
+    off1 = *ptr++ << 8;
+    off1 += *ptr++;
+    off2 = *ptr++ << 8;
+    off2 += *ptr++;
+    cp->unkA2 = 1;
+    cp->pvolume = cp->pvolumebase + off2;
+    off3 = *ptr++ << 8;
+    off3 += *ptr++;
+    cp->unkA4 = 1;
+    cp->ppitchbend = cp->ppitchbendbase + off3;
+    return cp->pbase + off1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80084614);
+#endif
 
 u8 *func_80084684(MusChannel *cp, u8 *ptr) {
     cp->unkCA = *ptr;
     return ptr + 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084694);
+u8 *func_80084694(MusChannel *cp, u8 *ptr) {
+    cp->unkB9 = func_800836A4(*ptr++);
+    cp->unkB9 += *ptr++;
+    return ptr;
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800846E4);
+u8 *func_800846E4(MusChannel *cp, u8 *ptr) {
+    cp->unkBC = func_800836A4(*ptr++);
+    cp->unkBC += *ptr++;
+    return ptr;
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084734);
+u8 *func_80084734(MusChannel *cp, u8 *ptr) {
+    cp->unkBD = func_800836A4(*ptr++);
+    cp->unkBD += *ptr++;
+    return ptr;
+}
 
 u8 *func_80084784(MusChannel *cp, u8 *ptr) {
     cp->unkBC = *ptr;
