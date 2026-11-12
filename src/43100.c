@@ -17,6 +17,18 @@ u16 func_8016FA34_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
 u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d);
 u8 ItemGetElement(u16 id);
 
+typedef struct {
+    u16 sprite[2]; /* (chunk index << 3) | sub-image, for the two variants */
+    u8 flags;
+} ClassSpriteInfo;
+extern ClassSpriteInfo D_8018ECE0_ovl_040E80[];
+
+s32 ChunkSize(s32 handle);
+void *LoadChunkRaw(void *dst, s32 handle);
+void *LoadChunk(s32 handle);
+void *HMalloc(s32 size);
+void HFree(void *p);
+
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -647,6 +659,36 @@ u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016FBE0_ovl_040E80);
+/* Loads a class's sprite sheet (variant 0 or 1) through the handle table in chunk 0x1DFB6EA.
+ * Returns the loaded chunk and stores a pointer to the sub-image's 0xA0-byte record in *out. */
+void *func_8016FBE0_ovl_040E80(u8 cls, u8 variant, void **out) {
+    s32 *handles = HMalloc(ChunkSize(0x1DFB6EA));
+    u16 v;
+    s32 index;
+    s32 sub;
+    u8 *chunk;
+    s32 *entry;
+
+    if (variant == 0) {
+        v = D_8018ECE0_ovl_040E80[cls].sprite[0];
+        index = v >> 3;
+    } else {
+        v = D_8018ECE0_ovl_040E80[cls].sprite[1];
+        index = v >> 3;
+    }
+    sub = v & 7;
+    LoadChunkRaw(handles, 0x1DFB6EA);
+    index *= 4;
+    entry = (s32 *)(index + (s32)handles);
+    if (ChunkSize(*entry) != 0) {
+        chunk = LoadChunk(*entry);
+        *out = chunk + (sub * 0xA0 + 0x780);
+    } else {
+        chunk = NULL;
+        *out = NULL;
+    }
+    HFree(handles);
+    return chunk;
+}
 
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016FCEC_ovl_040E80);
