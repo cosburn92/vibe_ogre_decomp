@@ -267,19 +267,25 @@ which builds a unit of a given class and level:
   - element;
   - price;
   - signed modifiers for the stats, luck, and the seven resistances (Physical is the armour value);
-  - level-up growth modifiers in 2-bit fields;
-  - effects a weapon inflicts and effects armour blocks, using the same bits. Bit 0 is dragons:
-    dragon-slaying weapons, or a Dragoon, get a bonus against dragons (`IsDragon`). The other bits
-    are status effects that battle code masks by the target's armour and class.
+  - level-up growth bonuses, 0–3 per stat (HP, STR, INT, AGI, DEX, VIT, MEN, luck). `UnitLevelUp`
+    adds them for each equipped item, on top of the class's growth grade plus a 0–2 roll. The game
+    reads the HP field for STR too, so the STR field (on the Ogre Blade, Heavy Axe and Ogre armour)
+    never takes effect, and HP-growth items raise STR as well;
+  - effects a weapon inflicts and effects armour blocks, using the same bits: dragons, Sleep,
+    Paralyze, Petrify, Purify (most Virtue weapons) and Poison. Dragon-slaying weapons, or a
+    Dragoon, get a bonus against dragons (`IsDragon`). Battle code drops the statuses the target's
+    armour or class immunities block.
 - **`gConsumableTable`** follows the items: 45 × 12 bytes for battle items, stat-raising items,
   map items and key items, with a kind byte and a price.
 - **`gAttackTable`** has 159 × 16 bytes for attacks and spells. Class attack ids are 1-based into
   it; entry 0 is "－".
 - **`gElementNames`** lists the element names.
+- **Class status immunities** are a separate asset, chunk `0x3188AE`: one byte per class with Poison,
+  Sleep, Paralyze and Petrify bits. Undead and golems ignore Poison, Sleep and Paralyze, Ghosts and
+  Stone/Baldr Golems everything, Gorgons Poison, Cockatrices Petrify.
 
 Still unknown:
 - item byte `+0x06` (a 0–11 tier) and the `+0x1A` bit-7 flag (on a few unique items);
-- which growth field goes with which stat, and which status effect goes with each bit;
 - the consumables' last bytes (target and where usable, by the look of them);
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
@@ -391,6 +397,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Map the item growth fields and status bits (`UnitLevelUp`, the battle code in `ovl_22A280`).
-   Then decode the other data tables (`maizo`, `scincsv`, headerless chunks), and confirm the text
+3. Decode the other data tables (`maizo`, `scincsv`, headerless chunks), and confirm the text
    control codes against the text engine. Callers of `LoadChunk` show what each handle is.

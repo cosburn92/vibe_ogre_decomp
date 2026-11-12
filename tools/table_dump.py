@@ -53,14 +53,24 @@ gItemTable (0x8018C40C): 278 records of 0x20 bytes; id 0 = None.
         0x0C, 0x0D); item 0x84 (Gallant Doll) computes its STR from D_80193C14 / 10
   0x10  s8 luck modifier (see class +0x23)
   0x11  s8 x 7: Physical (armour value), Wind, Flame, Earth, Water, Virtue, Bane
-  0x18  two bytes of four 2-bit fields each: growth modifiers that UnitLevelUp reads from the
-        equipped items (which field goes with which stat is not mapped yet)
+  0x18  eight 2-bit level-up growth bonuses (0-3), high bits first: HP, STR, INT, AGI (+0x18) and
+        DEX, VIT, MEN, luck (+0x19). UnitLevelUp adds them for each equipped item (an empty slot
+        counts the class's default item). Game bug: it calls the HP getter (func_8016F8E4) for STR
+        too, so the STR field (func_8016F900, never called) does nothing and HP items raise STR.
   0x1A  bit 7: flag ? (set on a few unique items; an inventory screen marks them)
-  0x1B  effects the weapon inflicts; 0x1C effects the armour protects against (same bits). Bit 0:
+  0x1B  effects the weapon inflicts; 0x1C effects the armour protects against (same bits):
+        0x01 dragons, 0x02 Sleep, 0x04 Paralyze, 0x08 Petrify, 0x10 Purify (most Virtue weapons),
+        0x20 Poison; the item screens show protect 0x2E as "All" (names from the item screens'
+        status-name tables, indexed by bit number). Bit 0:
         dragons. Against a dragon (IsDragon: class 56-68 or 164), func_801F139C_ovl_22A280 returns 5
         if the unit is a Dragoon or wears an item with +0x1B bit 0; func_801F1444_ovl_22A280 is the
-        same check with +0x1C bit 0 (Dragon armour). Bits 1, 2, 3 and 5 are status effects (func_801F45C0_ovl_22A280 masks the
-        weapon's bits by the target's armour and class immunities). Bit 4 is on most Virtue weapons.
+        same check with +0x1C bit 0. func_801F45C0_ovl_22A280 removes from the weapon's bits the
+        ones the target's armour or class immunities block (Purify is never blocked).
+
+Class status immunities are not in gClassTable but in asset chunk 0x3188AE (loaded by
+func_801CD3FC_ovl_1F0A30): one byte per class (class id - 1), 0x01 Poison, 0x02 Sleep, 0x04 Paralyze,
+0x08 Petrify (func_801CD19C_ovl_1F0A30 also checks the byte for battle unit +0x48). Bits 0x10/0x20
+are set on most player classes; their use is unknown.
 
 gConsumableTable (0x8018E6CC, right after the items): 45 records of 12 bytes:
   0x00  name pointer
@@ -83,6 +93,20 @@ CLASSES, ITEMS = 0x80187C14, 0x8018C40C
 CONSUMABLES, ATTACKS = 0x8018E6CC, 0x8018AA7C
 STATS = ["HP", "STR", "VIT", "INT", "MEN", "AGI", "DEX"]
 RES = ["Phys", "Wind", "Flame", "Earth", "Water", "Virtue", "Bane"]
+EFFECTS = ["Dragon", "Sleep", "Paralyze", "Petrify", "Purify", "Poison"]  # item +0x1B / +0x1C bits
+IMMUNE = ["Poison", "Sleep", "Paralyze", "Petrify"]  # chunk 0x3188AE bits
+GROWTH = ["HP", "STR", "INT", "AGI", "DEX", "VIT", "MEN", "LUK"]  # item +0x18/+0x19, 2 bits each
+ARCHIVE = 0x594280
+
+
+def chunk(rom, handle):
+    o = ARCHIVE + handle
+    size, = struct.unpack_from(">I", rom, o)
+    return rom[o + 4:o + 4 + size]
+
+
+def bits(v, names):
+    return "+".join(n for k, n in enumerate(names) if v >> k & 1) or "-"
 
 
 def rom_off(vram):
@@ -118,6 +142,7 @@ def records(rom, vram, stride, count=None):
 def dump_classes(rom, names):
     cls, items, attacks = names["classes"], names["items"], names["attacks"]
     print("=== classes (gClassTable)")
+    immune = chunk(rom, 0x3188AE)
     for cid, (name, d) in enumerate(records(rom, CLASSES, 0x48, 165)):
         if cid == 0:
             continue
@@ -137,6 +162,7 @@ def dump_classes(rom, names):
         print(f"{cid:3} {name}{base}")
         print(f"      gender {d[5]}  size {d[4]}  leader {d[6]}  move {d[0x2C]}  alignment {d[0x24]}  "
               f"luck {d[0x23]}  element {elem}  locked slots {d[0x36]:#x}  item slots {d[0x47]}")
+        print(f"      immune to {bits(immune[cid - 1] & 0xF, IMMUNE)}  (immunity byte {immune[cid - 1]:#04x})")
         print(f"      phys attack/magic attack/phys defence/magic defence bases {list(d[0x3D:0x41])}")
         print(f"      {stats}")
         print(f"      res {res}")
@@ -157,8 +183,19 @@ def dump_items(rom, names):
         stats = dict(zip(["STR", "INT", "AGI", "DEX", "VIT", "MEN", "LUK"], s[:7]))
         stats.update(zip(RES, s[7:]))
         mods = " ".join(f"{k} {v:+d}" for k, v in stats.items() if v)
-        print(f"{iid:3} {name:24} cat {d[4]:2}  elem {d[5]}  [6] {d[6]:2}  price {price:5}  "
-              f"{mods}  growth {d[0x18:0x1A].hex()}  flags {d[0x1A]:#x} inflict {d[0x1B]:#x} protect {d[0x1C]:#x}")
+        g16, = struct.unpack_from(">H", d, 0x18)
+        growth = " ".join(f"{g}+{g16 >> (14 - 2 * k) & 3}" for k, g in enumerate(GROWTH) if g16 >> (14 - 2 * k) & 3)
+        extra = []
+        if growth:
+            extra.append(f"growth {growth}")
+        if d[0x1B]:
+            extra.append(f"inflicts {bits(d[0x1B], EFFECTS)}")
+        if d[0x1C]:
+            extra.append(f"protects {bits(d[0x1C], EFFECTS)}")
+        if d[0x1A]:
+            extra.append(f"flags {d[0x1A]:#x}")
+        print(f"{iid:3} {name:24} cat {d[4]:2}  elem {d[5]}  [6] {d[6]:2}  price {price:5}  {mods}"
+              + ("  " + "; ".join(extra) if extra else ""))
 
 
 def dump_consumables(rom, names):
