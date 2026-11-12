@@ -118,18 +118,20 @@ Each chunk is `[u32 BE size][payload]` on a 2-byte boundary (size may be 0), and
 
 `UT` chunks hold unit sprite graphics: each part is a pose or body piece with one or more frames, as
 CI8 colour indices plus a 4bpp alpha plane, coloured by a separate palette chunk of 256-colour
-RGBA5551 palettes. A unit set is a stored table of handles, `[?, ?, ?, palette, UT part, ...]` (231
-of them), and the loader in `ovl_1CE070` converts parts to textures with `UtCreateTexture`. The
-byte layout is in `tools/ut2png.py`, which renders them:
+RGBA5551 palettes. A unit set is a stored table of handles, `[?, ?, info, palettes, UT part, ...]`
+(231 of them). `UnitSetLoad` in `ovl_1CE070` loads it, and `UnitSetLoadPart` converts part `i` to a
+texture with `UtCreateTexture`, using palette `info[u32(info + 0x1C) + i]`. The info chunk starts with
+the part count. In all 231 sets the indices are in range and use every palette. The byte layout is
+in `tools/ut2png.py`, which renders sets with each part's own palette:
 
 ```sh
 python3 tools/ut2png.py set 0x3BAC1C out.png   # every part of a unit set, in colour
 python3 tools/ut2png.py all extracted/ut/      # all sets
 ```
 
-Each part is drawn with palette 0, so parts that use another palette (chosen per part by data not yet
-decoded) come out miscoloured. Entries 0–2 of a set table (probably part layout and animation) aren't
-decoded yet.
+Not decoded yet: entries 0 and 1 of a set table (probably part layout and animation), the second
+per-part byte array at `info + 0x20`, and how effect parts (glows drawn as opaque squares here) are
+blended in-game.
 
 ## Game code
 
@@ -231,5 +233,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the rest of the unit-set tables (entries 0–2, per-part palette choice) and the other
-   formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Decode the rest of the unit-set tables (entries 0–1, the per-part bytes at `info + 0x20`) and the
+   other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.

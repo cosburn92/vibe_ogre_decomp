@@ -13,8 +13,10 @@ UT format (decompressed chunk), all big-endian:
   so size = 8 + frames * (8 + height * (roundup(w, 8) + roundup(w, 16) / 2)).
 
 Colours come from a separate palette chunk: 256 RGBA5551 colours (0x200 bytes) per palette. A unit
-set is a stored table of handles: [?, ?, ?, palette chunk, UT part, UT part, ...] (see the loader
-in ovl_1CE070 around 0x801AD1C0).
+set is a stored table of handles: [?, ?, info, palette chunk, UT part, UT part, ...] (see the loader
+func_801AD11C in ovl_1CE070). The info chunk (LZ) starts with u32 part count N; N bytes at
+info + u32@0x1C are each part's palette index, and N bytes at info + 0x20 are another per-part byte
+(not yet known). Part i is drawn with palette info[u32@0x1C + i].
 
 usage: python3 tools/ut2png.py set <set table handle> out.png    # all parts of a set, in colour
        python3 tools/ut2png.py file <chunk.ut> out.png [palette]  # one UT file (grey if no palette)
@@ -68,11 +70,13 @@ def sheet(tiles, pal, path, scale=2, cols=8):
     chh = max(t[1] for t in tiles) * scale + 2
     W, H = cols * cw, ((len(tiles) + cols - 1) // cols) * chh
     img = bytearray(W * H * 3)
-    for k, (w, h, A, s8, B, s2) in enumerate(tiles):
+    for k, t in enumerate(tiles):
+        w, h, A, s8, B, s2 = t[:6]
+        tpal = t[6] if len(t) > 6 else pal
         ox, oy = (k % cols) * cw, (k // cols) * chh
         for py in range(h):
             for px in range(w):
-                r, g, b = rgb_of(pal, A[py * s8 + px])
+                r, g, b = rgb_of(tpal, A[py * s8 + px])
                 if B is not None:
                     nib = B[py * s2 + px // 2]
                     al = (nib >> 4 if px % 2 == 0 else nib & 15) / 15
@@ -111,11 +115,22 @@ def set_tables(rows):
             yield h, hs
 
 
+def part_palettes(rows, hs):
+    """Per-part palette index from the set's info chunk (entry 2)."""
+    info = load(rows, hs[2])
+    n, = struct.unpack_from(">I", info, 0)
+    off, = struct.unpack_from(">I", info, 0x1C)
+    return list(info[off:off + n])
+
+
 def render_set(rows, hs, path):
     pd = load(rows, hs[3])
-    pal = struct.unpack(f">{len(pd) // 2}H", pd)
-    tiles = [next(ut_frames(load(rows, x))) for x in hs[4:] if x]
-    sheet(tiles, pal, path)
+    pals = struct.unpack(f">{len(pd) // 2}H", pd)
+    parts = [x for x in hs[4:] if x]
+    idx = part_palettes(rows, hs)
+    tiles = [next(ut_frames(load(rows, x))) + (pals[256 * idx[i]:256 * idx[i] + 256],)
+             for i, x in enumerate(parts)]
+    sheet(tiles, None, path)
     return len(tiles)
 
 

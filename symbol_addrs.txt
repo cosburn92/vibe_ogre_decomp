@@ -405,6 +405,10 @@ extract_one = 0x8007B88C; // type:func
 // ovl_1CE070
 // UtCreateTexture: inferred: (UT data, frame, palette, ?) -> RGBA16 texture via the palette
 UtCreateTexture = 0x8019ABA4; // type:func rom:0x1D10A4
+// UnitSetLoad: inferred: loads a unit set's handle table, entries 0-3 and its per-part arrays
+UnitSetLoad = 0x801AD11C; // type:func rom:0x1E361C
+// UnitSetLoadPart: inferred: loads part i on demand and converts it with its part's palette
+UnitSetLoadPart = 0x801AD538; // type:func rom:0x1E3A38
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
