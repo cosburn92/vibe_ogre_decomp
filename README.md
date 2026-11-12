@@ -82,6 +82,15 @@ minus its auto-generated local labels and hits outside main. Names that occur tw
 static is in two objects (e.g. `_getRate`), get an address suffix. `osInvalICache` isn't in n64sym's
 database for this SDK version; it was identified by hand.
 
+n64sym masks relocations, so tiny or wrapper-shaped functions can match game code. Six such hits were
+dropped after checking them against the asm (`__udiv_w_sdiv`, `__dummy`, `myfree`,
+`__osGetActiveQueue`, `n_alSynRemovePlayer`, `n_alSeqpDelete`). Treat a short n64sym name that sits
+among game functions with suspicion.
+
+Statics and other functions n64sym can't see (e.g. `__osPackReadData`, `osContInit`, `__scMain`,
+`osInitialize`, `_Putfld`) were named by hand from their source file's function order and call
+structure. They're listed at the end of `symbol_addrs.txt`.
+
 ## ROM layout (as currently understood)
 
 | ROM range | Contents |
@@ -133,8 +142,8 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
 
 ## Next steps
 
-1. Name the libultra statics n64sym can't see (e.g. `func_800903B4` = `__osPackReadData`), and
-   start naming game functions.
+1. Finish main's text file splits (some "files", e.g. `114F0`, still hold several objects, such as
+   libmus plus libultra) and start naming game functions.
 2. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
