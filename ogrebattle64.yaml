@@ -468,11 +468,11 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x3F1B0, asm]
+      - [0x3F1B0, c]
       - [0x3FE70, asm]
       - [0x40640, data, 3F1B0]
       - [0x40C90, data, 3FE70]
-      - [0x40E10, rodata, 3F1B0]
+      - [0x40E10, .rodata, 3F1B0]
       - { type: bss, vram: 0x800EB8F0, name: 3FE70 }
       - { type: bss, vram: 0x800EBB00, name: ovl_03F1B0_common }
 
