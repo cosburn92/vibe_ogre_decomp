@@ -43,6 +43,20 @@ make                            # still matches; now replace stubs with C one at
 tools/romdiff.sh 0xFDC0 0x150   # disassembly diff of a ROM range when it doesn't
 ```
 
+For overlay segments that own a big data chunk (the ovl_040E80 tables), convert only the text: change
+`[0xOFF, asm]` to `[0xOFF, c]` in `ogrebattle64.yaml`, mark its rodata chunk `.rodata` (splat
+migrates it into the `INCLUDE_ASM` functions) and leave its data and bss chunks as asm. C functions
+then must not need new rodata (jump tables, float constants). After `make`,
+`python3 tools/funcdiff.py src/OFF.c` reports which functions match; a function that comes out
+the wrong size shifts everything after it, so fix the first size mismatch first.
+`include/tables.h` has the class, item, consumable, attack and character record structs. Table
+accesses need real struct fields to match: byte-offset casts let GCC share the base address.
+
+Decompiled so far: about 250 functions (5% of them, 0.5% of the code bytes), mostly in
+`ovl_040E80`: `src/43100.c` (table getters, `ClassAtLevel`, `AttackGetElement`), `src/46090.c`
+(script accessors), `src/4D5C0.c` (scene table), `src/45CB0.c`, `src/49510.c`, `src/5C060.c`.
+Functions that are close but not matching are kept as `#ifdef NON_MATCHING` C with a note.
+
 ### Data, rodata and BSS
 
 Each source file's `.data`, `.rodata` and `.bss` sit in one chunk per section, and the chunks appear
