@@ -351,6 +351,26 @@ Still unknown:
 
 Every byte of the eset files is now accounted for.
 
+### Character records
+
+Characters live in two tables: the player's at `0x80193BC0` (0x38 bytes each) and enemies' at
+`0x80195560` (0x34 bytes each; `CharacterCreateFromTemplate` picks the table). The shared fields,
+from `UnitSetupForLevel`, `UnitLevelUp`, `CharacterEquipItem` and `SquadUpkeep`:
+
+| Offset | Field |
+|---|---|
+| `+0x11` | class (read with `+0x12` for classes whose base class is set) |
+| `+0x13` | level (`UnitSetupForLevel` starts at 1 and levels up along the promotion path) |
+| `+0x14` | gender |
+| `+0x16` / `+0x18` | max HP / HP |
+| `+0x1A` | element |
+| `+0x1B` | alignment |
+| `+0x1C`–`+0x26` | STR, VIT, INT, MEN, AGI, DEX (u16 each) |
+| `+0x28` | luck |
+| `+0x2A`–`+0x30` | four equipped items (u16) |
+| `+0x32` | fatigue |
+| `+0x33` | status bits |
+
 ### Buried treasure (`maizo*`)
 
 The 40 `maizo*.bin` files (埋蔵, "buried treasure") are one LHA archive (handle `0x21AFA08`, first
