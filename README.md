@@ -82,10 +82,19 @@ minus its auto-generated local labels and hits outside main. Names that occur tw
 static is in two objects (e.g. `_getRate`), get an address suffix. `osInvalICache` isn't in n64sym's
 database for this SDK version; it was identified by hand.
 
-n64sym masks relocations, so tiny or wrapper-shaped functions can match game code. Six such hits were
+n64sym masks relocations, so tiny or wrapper-shaped functions can match game code. Eight such hits were
 dropped after checking them against the asm (`__udiv_w_sdiv`, `__dummy`, `myfree`,
-`__osGetActiveQueue`, `n_alSynRemovePlayer`, `n_alSeqpDelete`). Treat a short n64sym name that sits
+`__osGetActiveQueue`, `n_alSynRemovePlayer`, `n_alSeqpDelete`, and `osViExtendVStart` with its
+`__additional_scanline`, which is a libmus setter). Treat a short n64sym name that sits
 among game functions with suspicion.
+
+Main's library code is split into its original objects. splat's padding-based splits miss objects
+whose size is a multiple of 16. n64sym's local labels (`<obj>_text_<off>`, mapped to an address)
+give `object start = address - off`; the smallest offset is used, since this SDK's objects drift
+slightly from n64sym's. The rest follow libultra/libaudio's file layout: functions that live in
+separate source files there (e.g. `osSendMesg` / `osSetEventMesg`) start new files here. Every such
+start is 16-aligned, which is independent confirmation. Game code is still only split at padding, so
+some game "files" may hold several objects.
 
 Statics and other functions n64sym can't see (e.g. `__osPackReadData`, `osContInit`, `__scMain`,
 `osInitialize`, `_Putfld`) were named by hand from their source file's function order and call
@@ -142,8 +151,7 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
 
 ## Next steps
 
-1. Finish main's text file splits (some "files", e.g. `114F0`, still hold several objects, such as
-   libmus plus libultra) and start naming game functions.
+1. Start naming game functions.
 2. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
