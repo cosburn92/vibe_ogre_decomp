@@ -461,10 +461,28 @@ BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218
 // ovl_040E80: game tables
 // gClassTable: inferred: 165 class records of 0x48 bytes, name pointer first (0 = None)
 gClassTable = 0x80187C14; // size:0x2E68 rom:0x5DB14
-// gItemTable: inferred: item records of 0x20 bytes: name pointer, category byte, ... (0 = None)
-gItemTable = 0x8018C40C; // size:0x22E0 rom:0x6230C
+// gItemTable: inferred: 278 item records of 0x20 bytes (layout in tools/table_dump.py; 0 = None)
+gItemTable = 0x8018C40C; // size:0x22C0 rom:0x6230C
+// gConsumableTable: inferred: 45 consumable/key item records of 12 bytes, name pointer first
+gConsumableTable = 0x8018E6CC; // size:0x21C rom:0x645CC
+// gAttackTable: inferred: 159 attack records of 16 bytes, name pointer first (0 = none)
+gAttackTable = 0x8018AA7C; // size:0x9F0 rom:0x6097C
+// gElementNames: inferred: 16 name pointers: Physical, Wind, Flame, Earth, Water, Virtue, Bane, ...
+gElementNames = 0x80187BD4; // size:0x40 rom:0x5DAD4
+// AttackGetName: inferred: (attack id) -> gAttackTable[id].name
+AttackGetName = 0x8016E440; // type:func rom:0x44340
+// ClassAtLevel: inferred: (class, base, level) -> the class on the promotion path (+0x41..+0x44) for that level
+ClassAtLevel = 0x8016EA34; // type:func rom:0x44934
+// UnitLevelUp: inferred: called once per level by UnitSetupForLevel; rolls stat growth
+UnitLevelUp = 0x8016EBA4; // type:func rom:0x44AA4
+// UnitSetupForLevel: inferred: (unit, level): gender, base stats, element, alignment from the class, then levels up along the promotion path
+UnitSetupForLevel = 0x8016F11C; // type:func rom:0x4501C
+// ItemGetElement: inferred: (item id) -> gItemTable[id] +5; element 0x10 is read from D_80193C12
+ItemGetElement = 0x8016F5E0; // type:func rom:0x454E0
 // ItemGetCategory: inferred: (item id) -> gItemTable[id].category
 ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
+// ItemIsWeapon: inferred: category 1-13 or 24
+ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
 
 // ovl_195410
 // gStageBaseLevel: inferred: from the eset file's section A; enemy levels are relative to it

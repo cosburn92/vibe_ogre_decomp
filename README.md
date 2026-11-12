@@ -237,14 +237,48 @@ prints them, with the byte layouts in its header:
   equipment, and positions on the 3×3 formation grid. Every eset template id is in range, every
   position is 1–9, and a group's class is 0 exactly when it has no positions.
 
-Class and item ids index tables in `ovl_040E80`'s data, which the dump uses for names:
-`gClassTable` (165 classes, 72-byte records with the name pointer first, 0 = None) and `gItemTable`
-(32-byte records: name pointer, then the category that `ItemGetCategory` returns; 0 = None). The
-same data holds other named tables found the same way, not decoded yet: element names, attacks and
-spells (16-byte records), and character names.
+Class and item ids index tables in `ovl_040E80`'s data, which the dump uses for names.
 
-Not decoded yet: sections C/D of the eset files, the behaviour bytes, and the rest of the class and
-item records (stats, allowed equipment categories at class `+0x2E`…).
+### Class, item and attack tables
+
+`tools/table_dump.py` prints the tables in `ovl_040E80`'s data, with the field layouts in its header.
+The fields come from the getters in `ovl_040E80` (one function per field) and from `UnitSetupForLevel`,
+which builds a unit of a given class and level:
+
+- **`gClassTable`** (165 × 0x48 bytes, 0 = None) holds:
+  - gender;
+  - the seven stats as a u16 base plus a growth grade (HP, STR, VIT, INT, MEN, AGI, DEX);
+  - alignment;
+  - seven resistances (Physical, Wind, Flame, Earth, Water, Virtue, Bane; 50 = neutral);
+  - a movement type;
+  - four default equipment items;
+  - the attack type and count for each row (front, middle, rear);
+  - the unit's element (0xFF = random);
+  - a base class, for named and special variants;
+  - a promotion path: two (class, level) pairs. `ClassAtLevel` uses them so that a Paladin made at
+    level 5 is a Fighter, and one made at level 14 is a Knight. `UnitSetupForLevel` levels a unit up
+    through that path.
+- **`gItemTable`** (278 × 0x20 bytes) holds:
+  - category (1–13 and 24 are weapons);
+  - element;
+  - price;
+  - signed stat modifiers (STR, INT, AGI, DEX, VIT, MEN);
+  - signed modifiers for the seven resistances (Physical is the armour value);
+  - level-up growth modifiers in 2-bit fields;
+  - flags. Bit 0 of `+0x1B` is set on the dragon-slaying weapons (Fafnir, Balmung, Gram, …).
+- **`gConsumableTable`** follows the items: 45 × 12 bytes for healing items, stat items and key
+  items (name, price, and four bytes not decoded yet).
+- **`gAttackTable`** has 159 × 16 bytes for attacks and spells. Class attack ids are 1-based into
+  it; entry 0 is "－".
+- **`gElementNames`** lists the element names.
+
+Still unknown:
+- class bytes `+0x04`, `+0x06`, `+0x23`, `+0x36`, `+0x3D`–`+0x40` and `+0x47`;
+- item bytes `+0x06`, `+0x10` and `+0x1C`;
+- whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
+  the opposite element's.
+
+Not decoded yet: sections C/D of the eset files and the behaviour bytes.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
@@ -351,6 +385,6 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the class and item records' fields, then the other data tables (`maizo`, `scincsv`,
-   headerless chunks), and confirm the text control codes against the text
+3. Pin down the remaining class/item bytes from their callers (the level-up code `UnitLevelUp`, the
+   battle code). Then decode the other data tables (`maizo`, `scincsv`, headerless chunks), and confirm the text control codes against the text
    engine. Callers of `LoadChunk` show what each handle is.

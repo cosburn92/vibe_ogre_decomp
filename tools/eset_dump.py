@@ -29,8 +29,8 @@ enemydat.bin: 556 squad templates of 35 bytes (eset ids go up to 554):
   0x10  group B class, 0x11 level, 0x12-0x15 four values, 0x16-0x18 positions
   0x19-0x22 always zero
 Class ids index the class table (gClassTable, 165 records of 0x48 bytes at 0x80187C14 in ovl_040E80,
-name pointer first; 0 = None). Item ids index the item table (gItemTable, 0x20-byte records at
-0x8018C40C: name pointer, then a category byte; 0 = None). Names are read from the baserom.
+name pointer first; 0 = None). Item ids index the item table (gItemTable, 278 records of 0x20 bytes at
+0x8018C40C; 0 = None). Names are read from the baserom; tools/table_dump.py dumps both tables.
 
 usage: python3 tools/eset_dump.py [eset files...]   # default: all of them
 """
@@ -53,8 +53,9 @@ def name_table(rom, vram, stride, count):
             break
         o = rom_start + ptr - vram_start
         raw = rom[o:rom.index(b"\0", o)]
-        # names may hold formatting bytes: 0x0E/0x0F wrap a two-line name, 0x10 is its line break
-        out.append(raw.replace(b"\x0e", b"").replace(b"\x0f", b"").replace(b"\x10", b"/").decode("latin-1"))
+        # names may hold formatting bytes: 0x0E/0x0F wrap a two-line name, 0x10 "c" is its line break
+        raw = raw.replace(b"\x0e", b"").replace(b"\x0f", b"").replace(b"\x10c", b" ").replace(b"\x10", b" ")
+        out.append(raw.decode("cp932", errors="replace"))
     return out
 
 
@@ -101,7 +102,7 @@ def main():
     enemydat = open("extracted/lha/enemydat.bin", "rb").read()
     rom = open("baserom/baserom.us.z64", "rb").read()
     classes = name_table(rom, 0x80187C14, 0x48, 165)
-    items = name_table(rom, 0x8018C40C, 0x20, 400)
+    items = name_table(rom, 0x8018C40C, 0x20, 278)
     for path in sys.argv[1:] or sorted(glob.glob("extracted/lha/eset*.bin")):
         dump(path, enemydat, classes, items)
     return 0
