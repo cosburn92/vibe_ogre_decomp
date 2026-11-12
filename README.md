@@ -371,6 +371,14 @@ location order. `MapSetupLocations` builds `gLocations` from the two, so the add
 location's starting state: `0x04` held by the enemy, `0x02` liberated, `0x10` the player's
 headquarters (`0x2012` on the starting base). `tools/location_dump.py` prints both.
 
+### Stage table
+
+`gStageTable` (`0x801E7E10`, 12 bytes per stage id) gives each stage's chapter, map and variant,
+which `scincsv` and `maizo` members it uses (both numbered by map, so stage `0x0F`, eset2_05a, uses
+`scincsv23a` and `maizo23`), and its base money for clearing it (500 for the first map up to 7,870).
+The stage-clear code adds a share of the liberated locations' ktenmain `+0x16` values to that.
+`tools/stage_dump.py` prints the table; three of its bytes are still unknown.
+
 Still not decoded: about 7,000 headerless LZ chunks. Many assets are reached
 the same way: overlays load handles with `lui`/`ori` immediates and call `LoadAsset`, sometimes
 through a 4-byte chunk holding the real handle.

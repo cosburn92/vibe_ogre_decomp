@@ -559,6 +559,10 @@ gTreasureFound = 0x80196A38;
 TreasureDowse = 0x8021B5E0; // type:func rom:0x1AF8F0
 // MapSetupLocations: fills gLocations from ktenmain.bin and the map's scincsv list (tools/location_dump.py)
 MapSetupLocations = 0x801D30F0; // type:func rom:0x127830
+// gStageTable: 0x43 x 12 bytes per stage id: chapter, map, variant, ?, ?, scincsv member, maizo member, ?, ?, 0, u16 clear money (tools/stage_dump.py)
+gStageTable = 0x801E7E10; // size:0x324 segment:ovl_101CE0
+// LocationsLiberatedSize: sum of gLocations +0x20 (ktenmain +0x16) over liberated locations
+LocationsLiberatedSize = 0x801D34BC; // type:func rom:0x127BFC
 // Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline
 StageHQHeld = 0x801E5548; // type:func rom:0x139C88
 StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8

@@ -9,8 +9,9 @@ and the map's scincsv member (D_801E7E15[stage * 12], 0-based in archive order),
 ktenmain.bin: 316 records of 28 bytes, one per location in the game (1-based ids):
   0x00  u8 ? (0 for most; 1-12 on twelve locations)
   0x01  name, 21 bytes NUL-padded           -> gLocations +0x00
-  0x16  u16 ?                               -> gLocations +0x20
-  0x18  u8 ? (0xFF on 48)                   -> gLocations +0x1E
+  0x16  u16 size (65-704) -> gLocations +0x20. LocationsLiberatedSize sums it over liberated
+        locations for the stage-clear money
+  0x18  u8 percentage (0xFF on 48 = 50%)    -> gLocations +0x1E; func_801D3510 weights the size by it
   0x19  u16 base flags (0x01 and 0x08 always; 0x20-0x800 vary with the kind of place, e.g. 0x200
         on churches and temples)            -> gLocations +0x1C, plus the scincsv value
   0x1B  u8 ?
