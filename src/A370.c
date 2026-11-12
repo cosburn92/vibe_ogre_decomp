@@ -158,11 +158,19 @@ typedef struct {
 } ArcReq;
 
 typedef struct {
-    /* 0x000 */ u8 unk00[8];
+    /* 0x000 */ u8 header_size; /* 0x80: raw stream, method in the low bits */
+    /* 0x001 */ char method[5];
+    /* 0x006 */ u8 unk06[2];
     /* 0x008 */ s32 packed_size;
     /* 0x00C */ s32 original_size;
     /* 0x010 */ u8 unk10[6];
-    /* 0x016 */ char name[0x11A];
+    /* 0x016 */ u8 name[0x100];
+    /* 0x116 */ u16 crc;
+    /* 0x118 */ s32 has_crc;
+    /* 0x11C */ u8 extend_type;
+    /* 0x11D */ u8 unk11D[7];
+    /* 0x124 */ u16 unix_mode;
+    /* 0x126 */ u8 unk126[0xA];
 } LzHeader; /* size 0x130 */
 
 /* One file to pull out of an archive: by name, or by position when name is NULL. */
@@ -187,6 +195,12 @@ extern u8 D_800AE0A8[];
 extern s32 D_800E79A0;
 s32 func_80076F5C(s32 a, s32 b, s16 x, s16 y, s16 x2, s16 y2, s32 c);
 extern char D_800AE0AC[];
+extern char D_800AE2AC[];
+extern char D_800AE2D4[];
+extern char *D_800A8750[];
+s32 _bcmp(void *a, void *b, s32 n);
+s32 func_8007BA98(ArcFile *infp, ArcFile *outfp, s32 original_size, s32 packed_size, char *name, s32 method);
+u8 *func_8007F450(u8 *d, u8 *s);
 extern char D_800AE0C8[];
 void extract_one(ArcFile *f, LzHeader *h);
 void func_8007BB90(s32 a, s32 b);
@@ -710,14 +724,68 @@ void func_8007B83C(u8 *s, s32 n) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Same flow; GCC keeps &name in s3 across decode_lzhuf where the original rematerializes it, which costs a saved register. */
+void extract_one(ArcFile *afp, LzHeader *hdr) {
+    u8 name[0x108];
+    ArcFile *fp;
+    s32 method;
+    s32 crc;
+    u8 *q = hdr->name;
+    u8 c;
+
+    if (hdr->header_size & 0x80) {
+        fp = func_8007F4E4(name, "wb", HMalloc(hdr->original_size), hdr->original_size);
+        func_8007BA98(afp, fp, hdr->original_size, hdr->packed_size, NULL, hdr->header_size & 0x7F);
+        fp->open = 0;
+        return;
+    }
+    if (hdr->name[0] == '/' && (hdr->extend_type == 'K' || hdr->extend_type == 'X')) {
+        q = hdr->name + 1;
+        do {
+            c = *q++;
+        } while (c != 0 && c != '/');
+        if (c == 0 || *q == 0) {
+            q = ".";
+        }
+    }
+    func_8007F450(name, q);
+    if ((hdr->unix_mode & 0xF000) == 0x8000) {
+        for (method = 0;; method++) {
+            if (D_800A8750[method] == NULL) {
+                func_8007BB90((s32)"Unknown method skiped ...", (s32)name);
+                return;
+            }
+            if (_bcmp(hdr->method, D_800A8750[method], 5) == 0) {
+                break;
+            }
+        }
+        fp = func_8007F4E4(name, "wb", HMalloc(hdr->original_size), hdr->original_size);
+        if (fp != NULL) {
+            crc = func_8007BA98(afp, fp, hdr->original_size, hdr->packed_size, (char *)name, method);
+        }
+        if (fp != NULL) {
+            fp->open = 0;
+            if (hdr->has_crc && crc != hdr->crc) {
+                func_8007BB90((s32)"CRC error", (s32)name);
+            }
+        }
+    } else if ((hdr->unix_mode & 0xF000) == 0x4000) {
+        func_8007BBC0((s32)D_800AE2AC);
+    } else {
+        func_8007BB90((s32)D_800AE2D4, (s32)name);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/A370", extract_one);
+#endif
 
 INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE2AC);
 
 INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE2D4);
 
 /* decode_lzhuf */
-u16 func_8007BA98(ArcFile *infp, ArcFile *outfp, s32 original_size, s32 packed_size, char *name, s32 method) {
+s32 func_8007BA98(ArcFile *infp, ArcFile *outfp, s32 original_size, s32 packed_size, char *name, s32 method) {
     D_800AF378.dicbit = 13;
     D_800AF378.infile = infp;
     D_800AF378.outfile = outfp;
