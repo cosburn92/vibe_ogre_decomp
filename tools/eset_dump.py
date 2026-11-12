@@ -28,7 +28,9 @@ enemydat.bin: 556 squad templates of 35 bytes (eset ids go up to 554):
   0x07  group A class (0 = none), 0x08 level, 0x09-0x0C four values, 0x0D-0x0F positions (0 = unused)
   0x10  group B class, 0x11 level, 0x12-0x15 four values, 0x16-0x18 positions
   0x19-0x22 always zero
-Class and item ids are numbers here: their names aren't decoded yet.
+Class ids index the class table (gClassTable, 165 records of 0x48 bytes at 0x80187C14 in ovl_040E80,
+name pointer first; 0 = None). Item ids index the item table (gItemTable, 0x20-byte records at
+0x8018C40C: name pointer, then a category byte; 0 = None). Names are read from the baserom.
 
 usage: python3 tools/eset_dump.py [eset files...]   # default: all of them
 """
@@ -36,6 +38,24 @@ import glob
 import os
 import struct
 import sys
+
+
+OVL_040E80 = (0x40E80, 0x8016AF80, 0x80190F10)  # ROM start, VRAM start, VRAM end
+
+
+def name_table(rom, vram, stride, count):
+    """[name] for a table of records whose first word points at a NUL-terminated name."""
+    rom_start, vram_start, vram_end = OVL_040E80
+    out = []
+    for i in range(count):
+        ptr, = struct.unpack_from(">I", rom, rom_start + vram + i * stride - vram_start)
+        if not vram_start <= ptr < vram_end:
+            break
+        o = rom_start + ptr - vram_start
+        raw = rom[o:rom.index(b"\0", o)]
+        # names may hold formatting bytes: 0x0E/0x0F wrap a two-line name, 0x10 is its line break
+        out.append(raw.replace(b"\x0e", b"").replace(b"\x0f", b"").replace(b"\x10", b"/").decode("latin-1"))
+    return out
 
 
 def template(d, tid):
@@ -51,7 +71,7 @@ def template(d, tid):
     return out
 
 
-def dump(path, enemydat):
+def dump(path, enemydat, classes, items):
     d = open(path, "rb").read()
     offs = struct.unpack_from(">4h", d, 0)
     print(f"=== {os.path.basename(path)}  sections {['%#x' % o if o else '-' for o in offs]}")
@@ -69,7 +89,9 @@ def dump(path, enemydat):
               f"ai {r[8]},{r[9]}  misc {list(r[10:15])} {list(r[15:18])}")
         for g in template(enemydat, tid):
             lv = f"{g['level']:+d}"
-            print(f"      class {g['class']:3} level {lv:>3} items {g['items']} at {g['positions']}")
+            cls = classes[g["class"]] if g["class"] < len(classes) else f"#{g['class']}"
+            its = [items[i] if i < len(items) else f"#{i}" for i in g["items"] if i]
+            print(f"      {cls:18} level {lv:>3} at {g['positions']}" + (f"  items {its}" if its else ""))
     if offs[2] or offs[3]:
         print(f"  sections C/D: not decoded")
 
@@ -77,8 +99,11 @@ def dump(path, enemydat):
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     enemydat = open("extracted/lha/enemydat.bin", "rb").read()
+    rom = open("baserom/baserom.us.z64", "rb").read()
+    classes = name_table(rom, 0x80187C14, 0x48, 165)
+    items = name_table(rom, 0x8018C40C, 0x20, 400)
     for path in sys.argv[1:] or sorted(glob.glob("extracted/lha/eset*.bin")):
-        dump(path, enemydat)
+        dump(path, enemydat, classes, items)
     return 0
 
 

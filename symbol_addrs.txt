@@ -431,7 +431,7 @@ BgLoad = 0x801B7EF4; // type:func rom:0x1EE3F4
 // BgDecodeHu: inferred: sets up an HU image's macroblocks, runs HuDecode and queues the JPEG task
 BgDecodeHu = 0x801B7854; // type:func rom:0x1EDD54
 // BgJpegTask: inferred: submits the M_NJPEGTASK (njpgdspMain) for the decoded coefficients
-BgJpegTask = 0x801B6CD0; // type:func rom:0x1EF1D0
+BgJpegTask = 0x801B6CD0; // type:func rom:0x1ED1D0
 // UnitSetLoad: inferred: loads a unit set's handle table, entries 0-3 and its per-part arrays
 UnitSetLoad = 0x801AD11C; // type:func rom:0x1E361C
 // UnitSetLoadPart: inferred: loads part i on demand and converts it with its part's palette
@@ -450,7 +450,7 @@ BattleAnimStep = 0x801ADD88; // type:func rom:0x1F1218
 BattleAnimEventTimes = 0x801AE4EC; // type:func rom:0x1F197C
 // BattleDrawUnitSprite: inferred: draws a unit's frame piece by piece; piece k's alpha =
 // unit alpha * anim channel[k] / 255 (SetPrimColor), channel 0 skips the piece, flags bit 0 mirrors
-BattleDrawUnitSprite = 0x801B21C4; // type:func rom:0x1F3BF4
+BattleDrawUnitSprite = 0x801B21C4; // type:func rom:0x1F5654
 // SoundRequest: inferred: (channel object in ovl_03F1B0's data, id) -> queues a sound
 SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 
@@ -458,11 +458,19 @@ SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 // BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)
 BattleAnimStep2 = 0x8022E9E8; // type:func rom:0x29E218
 
+// ovl_040E80: game tables
+// gClassTable: inferred: 165 class records of 0x48 bytes, name pointer first (0 = None)
+gClassTable = 0x80187C14; // size:0x2E68 rom:0x5DB14
+// gItemTable: inferred: item records of 0x20 bytes: name pointer, category byte, ... (0 = None)
+gItemTable = 0x8018C40C; // size:0x22E0 rom:0x6230C
+// ItemGetCategory: inferred: (item id) -> gItemTable[id].category
+ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
+
 // ovl_195410
 // gStageBaseLevel: inferred: from the eset file's section A; enemy levels are relative to it
-gStageBaseLevel = 0x801F1035; // size:0x1
+gStageBaseLevel = 0x801F1035; // size:0x1 segment:ovl_101CE0
 // StageSetupUnits: inferred: reads the stage's eset (enemy set) and enemydat.bin and sets up units
-StageSetupUnits = 0x80215C18; // type:func rom:0x196AB0
+StageSetupUnits = 0x80215C18; // type:func rom:0x1960A8
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C

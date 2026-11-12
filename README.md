@@ -237,8 +237,14 @@ prints them, with the byte layouts in its header:
   equipment, and positions on the 3×3 formation grid. Every eset template id is in range, every
   position is 1–9, and a group's class is 0 exactly when it has no positions.
 
-Not decoded yet: sections C/D of the eset files, the behaviour bytes, and the class and item names
-behind the ids.
+Class and item ids index tables in `ovl_040E80`'s data, which the dump uses for names:
+`gClassTable` (165 classes, 72-byte records with the name pointer first, 0 = None) and `gItemTable`
+(32-byte records: name pointer, then the category that `ItemGetCategory` returns; 0 = None). The
+same data holds other named tables found the same way, not decoded yet: element names, attacks and
+spells (16-byte records), and character names.
+
+Not decoded yet: sections C/D of the eset files, the behaviour bytes, and the rest of the class and
+item records (stats, allowed equipment categories at class `+0x2E`…).
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
@@ -345,6 +351,6 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Find the class and item tables (to name the ids in `eset_dump.py`), then the other data tables
-   (`maizo`, `scincsv`, headerless chunks), and confirm the text control codes against the text
+3. Decode the class and item records' fields, then the other data tables (`maizo`, `scincsv`,
+   headerless chunks), and confirm the text control codes against the text
    engine. Callers of `LoadChunk` show what each handle is.
