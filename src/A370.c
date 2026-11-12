@@ -53,6 +53,10 @@ typedef struct {
 #define dicbit D_800AF39C
 #define n1 D_800AF3D8
 #define parent D_800AF41C
+#define count D_800AF3A0
+
+extern u32 D_800AF3A0;
+void func_8007DDF0(s32 p);
 
 extern s32 D_800AF3D8;
 extern s16 *D_800AF41C;
@@ -73,8 +77,8 @@ extern s16 *D_800AF424;
 extern s32 D_800AF3D4;
 extern s32 D_800AF3DC;
 extern u16 D_800AF3D0;
-extern s32 D_800AF3E0;
-extern s32 D_800AF3E4;
+extern u32 D_800AF3E0;
+extern u32 D_800AF3E4;
 extern u16 D_800AF39C;
 void func_8007BC24(s16 nchar, u8 *bitlen, s16 tablebits, u16 *table);
 void func_8007D5B8(void);
@@ -724,7 +728,34 @@ u16 func_8007DFF0(void) {
     return c;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007E2F8);
+/* decode_p_dyn */
+u16 func_8007E2F8(void) {
+    s32 c;
+    s16 buf, cnt;
+
+    while (count > nextcount) {
+        func_8007DDF0(nextcount / 64);
+        if ((nextcount += 64) >= nn) {
+            nextcount = 0xFFFFFFFF;
+        }
+    }
+    c = child[628];
+    buf = bitbuf;
+    cnt = 0;
+    while (c > 0) {
+        c = child[c - (buf < 0)];
+        buf <<= 1;
+        if (++cnt == 16) {
+            fillbuf(16);
+            buf = bitbuf;
+            cnt = 0;
+        }
+    }
+    fillbuf(cnt);
+    c = (~c) - 314;
+    update_p_inline(c);
+    return (c << 6) + func_8007C25C(6);
+}
 
 void func_8007E698(void) {
     D_800AF3CC = 0x11E;
