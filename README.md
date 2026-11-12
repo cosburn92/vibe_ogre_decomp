@@ -52,11 +52,14 @@ the wrong size shifts everything after it, so fix the first size mismatch first.
 `include/tables.h` has the class, item, consumable, attack and character record structs. Table
 accesses need real struct fields to match: byte-offset casts let GCC share the base address.
 
-Decompiled so far: about 380 functions (7.6% of them, 0.8% of the code bytes, since they are
-mostly small): table getters and `ClassAtLevel`/`AttackGetElement` (`src/43100.c`), script
-accessors (`src/46090.c`), the scene table (`src/4D5C0.c`), the event-script opcode handlers
-(`src/1BA050.c`, with a `ScriptCtx` whose `pc` is volatile), battle helpers (`src/20BCE0.c`,
-`src/201430.c`), UI widgets (`src/FA5E0.c`), map helpers (`src/145290.c`) and smaller files.
+Decompiled so far: about 505 functions (10% of them, 1% of the code bytes, since they are mostly
+small) across 20 files. Among them: table getters and `ClassAtLevel`/`AttackGetElement`
+(`src/43100.c`), script accessors (`src/46090.c`), the scene table (`src/4D5C0.c`), the
+event-script opcode handlers (`src/1BA050.c`, with a `ScriptCtx` whose `pc` is volatile), battle
+helpers (`src/20BCE0.c`, `src/201430.c`, `src/205220.c`, `src/24BCA0.c`), the task pool
+(`src/262450.c`), sound channels (`src/3F1B0.c`), the main scene manager (`src/68E0.c`), UI widgets
+(`src/FA5E0.c`, `src/B48F0.c`) and the text renderer's helpers (`src/4EF10.c`).
+`tools/sizecheck.sh SEG` lists functions whose compiled size differs from the original.
 Functions that are close but not matching are kept as `#ifdef NON_MATCHING` C with a note.
 
 ### Data, rodata and BSS
