@@ -543,6 +543,8 @@ CharacterCreateFromTemplate = 0x802150BC; // type:func rom:0x19554C
 SquadCreateFromTemplate = 0x80215340; // type:func rom:0x1957D0
 // gLegions: 10 x 11 bytes: +0 number, +1 flags (0x01 used, 0x80 enemy), +2-6 squad slots, +8 formation
 gLegions = 0x801969B8;
+// gSquads: 25 bytes per squad slot: +1 flags, +2-6 members, +7-0xB positions?, +0xC harmony, +0xD-0x16 items, +0x17 strategy, +0x18 legion
+gSquads = 0x801971F0;
 // gFormationNames: legion formation names, index 1-8 (0 = blank)
 gFormationNames = 0x8021315C; // size:0x24 segment:ovl_14EBE0
 

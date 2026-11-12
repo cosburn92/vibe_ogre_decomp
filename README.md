@@ -371,6 +371,21 @@ from `UnitSetupForLevel`, `UnitLevelUp`, `CharacterEquipItem` and `SquadUpkeep`:
 | `+0x32` | fatigue |
 | `+0x33` | status bits |
 
+### Squad roster
+
+`gSquads` (`0x801971F0`) holds one 25-byte record per squad slot (player squads below 30, enemy
+squads from 30):
+
+| Offset | Field |
+|---|---|
+| `+0x01` | flags: `0x04` on the map (cleared while a reserve order holds it back), `0x02` set on the first squad of a legion |
+| `+0x02`–`+0x06` | the five members' character ids (0 = empty) |
+| `+0x07`–`+0x0B` | per-member bytes, probably their formation-grid positions |
+| `+0x0C` | harmony (0–100) |
+| `+0x0D`–`+0x16` | ten consumable slots (`SquadSetupItems`, used by `SquadUpkeep`) |
+| `+0x17` | battle strategy (0 Autonomous … 3 Attack Weakest) |
+| `+0x18` | legion number (1-based; index into `gLegions`) |
+
 ### Buried treasure (`maizo*`)
 
 The 40 `maizo*.bin` files (埋蔵, "buried treasure") are one LHA archive (handle `0x21AFA08`, first
