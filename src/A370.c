@@ -78,6 +78,8 @@ extern s32 D_800AF3E4;
 extern u16 D_800AF39C;
 void func_8007BC24(s16 nchar, u8 *bitlen, s16 tablebits, u16 *table);
 void func_8007D5B8(void);
+void func_8007D8A8(s32 start, s32 end);
+s32 func_8007DBF4(s32 p);
 
 extern s32 D_800AF3F0;
 extern s32 D_800AF3EC;
@@ -645,7 +647,42 @@ s32 func_8007DBF4(s32 p) {
     return parent[p];
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007DDF0);
+/* update_p */
+static inline void update_p_inline(s32 p) {
+    s32 q;
+
+    if (total_p == 0x8000) {
+        func_8007D8A8(628, most_p + 1);
+        total_p = freq[628];
+        freq[628] = 0xFFFF;
+    }
+    q = s_node[p + 314];
+    while (q != 628) {
+        q = func_8007DBF4(q);
+    }
+    total_p++;
+}
+
+/* make_new_node */
+void func_8007DDF0(s32 p) {
+    s32 q, r;
+
+    r = most_p + 1;
+    q = r + 1;
+    s_node[~(child[r] = child[most_p])] = r;
+    child[q] = ~(p + 314);
+    child[most_p] = q;
+    freq[r] = freq[most_p];
+    freq[q] = 0;
+    block[r] = block[most_p];
+    if (most_p == 628) {
+        freq[628] = 0xFFFF;
+        edge[block[628]]++;
+    }
+    parent[r] = parent[q] = most_p;
+    edge[block[q] = stock[avail++]] = s_node[p + 314] = most_p = q;
+    update_p_inline(p);
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007DFF0);
 
