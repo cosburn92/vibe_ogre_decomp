@@ -19,6 +19,8 @@ options:
   find_file_boundaries: True
   # Each input (asm chunk or KMC-assembled object) carries its own padding; don't force 16.
   subalign: 4
+  # Overlays' .data/.rodata boundaries aren't 16-aligned; don't pad section ends.
+  ld_align_section_vram_end: False
   header_encoding: ASCII
 
   o_as_suffix: True
@@ -423,67 +425,138 @@ segments:
     type: code
     start: 0x3F1B0
     vram: 0x800E9C20
+    bss_size: 0x7F690
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x3F1B0, asm]
-      - [0x40640, data]
+      - [0x3FE70, asm]
+      - [0x40640, data, 3F1B0]
+      - [0x40C90, data, 3FE70]
+      - [0x40E10, rodata, 3F1B0]
+      - { type: bss, vram: 0x800EB8F0, name: 3FE70 }
+      - { type: bss, vram: 0x800EBB00, name: ovl_03F1B0_common }
 
   - name: ovl_040E80
     type: code
     start: 0x40E80
     vram: 0x8016AF80
+    bss_size: 0x6C60
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x40E80, asm]
+      - [0x420D0, asm]
+      - [0x42C30, asm]
+      - [0x42C90, asm]
+      - [0x43100, asm]
+      - [0x45CB0, asm]
+      - [0x46090, asm]
+      - [0x49510, asm]
+      - [0x495E0, asm]
+      - [0x49820, asm]
+      - [0x49A30, asm]
+      - [0x4D5C0, asm]
+      - [0x4EF10, asm]
+      - [0x514B0, asm]
+      - [0x5AC70, asm]
+      - [0x5AFF0, asm]
+      - [0x5C060, asm]
+      - [0x5C1D0, asm]
       - [0x5C210, data]
+      - [0x5CEBC, data, 40E80]
+      - [0x5CF00, data, 420D0]
+      - [0x5CF20, data, 42C30]
+      - [0x5CF30, data, 42C90]
+      - [0x5DB14, data, 43100]
+      - [0x650A0, data, 46090]
+      - [0x65230, data, 495E0]
+      - [0x65280, data, 49820]
+      - [0x652A0, data, 49A30]
+      - [0x659E4, data, 4D5C0]
+      - [0x65B68, data, 4EF10]
+      - [0x65C50, data, 514B0]
+      - [0x65D30, data, 5C1D0]
+      - [0x65D60, rodata, 40E80]
+      - [0x665C8, rodata, 46090]
+      - [0x66B60, rodata, 49A30]
+      - [0x66B80, rodata, 4D5C0]
+      - [0x66B88, rodata, 4EF10]
+      - [0x66D00, rodata, 514B0]
+      - [0x66DB8, rodata, 5AC70]
+      - { type: bss, vram: 0x80190F10, name: 46090 }
+      - { type: bss, vram: 0x80190F20, name: 49820 }
+      - { type: bss, vram: 0x80190F30, name: 4D5C0 }
+      - { type: bss, vram: 0x80190F40, name: 4EF10 }
+      - { type: bss, vram: 0x80190F80, name: 5AC70 }
+      - { type: bss, vram: 0x80190F84, name: ovl_040E80_common }
 
   - name: ovl_066E10
     type: code
     start: 0x66E10
     vram: 0x80197B70
+    bss_size: 0x10
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x66E10, asm]
-      - [0x694B0, data]
+      - [0x67570, asm]
+      - [0x680F0, asm]
+      - [0x694B0, data, 66E10]
+      - [0x69560, data, 67570]
+      - [0x69610, data, 680F0]
+      - [0x69630, rodata, 66E10]
+      - [0x69790, rodata, 67570]
+      - { type: bss, vram: 0x8019A660, name: 680F0 }
 
   - name: ovl_069900
     type: code
     start: 0x69900
     vram: 0x80197B70
+    bss_size: 0x60
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x69900, asm]
-      - [0x6DF80, data]
+      - [0x6D3D0, asm]
+      - [0x6DF80, data, 69900]
+      - [0x6E2A0, data, 6D3D0]
+      - [0x6E510, rodata, 69900]
+      - [0x6E610, rodata, 6D3D0]
+      - { type: bss, vram: 0x8019C8D0, name: 69900 }
 
   - name: ovl_06E660
     type: code
     start: 0x6E660
     vram: 0x80197B70
+    bss_size: 0x10
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x6E660, asm]
       - [0x70E70, data]
+      - [0x71060, data, 6E660]
+      - [0x71258, rodata, 6E660]
+      - { type: bss, vram: 0x8019A790, name: 6E660 }
 
   - name: ovl_071280
     type: code
     start: 0x71280
     vram: 0x8019A7A0
+    bss_size: 0x40
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x71280, asm]
-      - [0x783A0, data]
+      - [0x783A0, data, 71280]
+      - [0x78698, rodata, 71280]
+      - { type: bss, vram: 0x801A2C50, name: 71280 }
 
   - name: ovl_079730
     type: code
@@ -494,7 +567,15 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x79730, asm]
-      - [0x85820, data]
+      - [0x7E4F0, asm]
+      - [0x83080, asm]
+      - [0x83610, asm]
+      - [0x85820, data, 79730]
+      - [0x86728, data, 7E4F0]
+      - [0x86890, data, 83610]
+      - [0x86A70, rodata, 79730]
+      - [0x87134, rodata, 7E4F0]
+      - [0x871B8, rodata, 83610]
 
   - name: ovl_087200
     type: code
@@ -505,7 +586,44 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x87200, asm]
+      - [0xAE2A0, asm]
+      - [0xB48F0, asm]
+      - [0xB8DE0, asm]
+      - [0xBA2C0, asm]
+      - [0xC15F0, asm]
+      - [0xC2330, asm]
+      - [0xC3F50, asm]
+      - [0xC4A40, asm]
+      - [0xC54C0, asm]
+      - [0xC71E0, asm]
+      - [0xC7D00, asm]
+      - [0xCC460, asm]
+      - [0xD0380, asm]
+      - [0xD21C0, asm]
       - [0xDAB20, data]
+      - [0xDADD0, data, 87200]
+      - [0xDBBC0, data, AE2A0]
+      - [0xDBC40, data, B48F0]
+      - [0xDBD2C, data, BA2C0]
+      - [0xDBED4, data, C2330]
+      - [0xDC188, data, C4A40]
+      - [0xDC210, data, C54C0]
+      - [0xDC220, data, C7D00]
+      - [0xDC260, data, CC460]
+      - [0xDC2D0, data, D0380]
+      - [0xDC2F0, rodata, 87200]
+      - [0xDC490, rodata, AE2A0]
+      - [0xDC570, rodata, B48F0]
+      - [0xDC5B0, rodata, B8DE0]
+      - [0xDC5D0, rodata, BA2C0]
+      - [0xDC660, rodata, C3F50]
+      - [0xDC690, rodata, C4A40]
+      - [0xDC6D0, rodata, C54C0]
+      - [0xDC800, rodata, C71E0]
+      - [0xDC9B8, rodata, C7D00]
+      - [0xDCB80, rodata, CC460]
+      - [0xDCFC0, rodata, D0380]
+      - [0xDD200, rodata, D21C0]
 
   - name: bin_0DDF60
     type: bin
@@ -515,23 +633,39 @@ segments:
     type: code
     start: 0xE48F0
     vram: 0x80197B70
+    bss_size: 0x20
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0xE48F0, asm]
-      - [0xEAF00, data]
+      - [0xE4BE0, asm]
+      - [0xE5960, asm]
+      - [0xEAF00, data, E48F0]
+      - [0xEAF10, data, E5960]
+      - [0xEAF30, rodata, E4BE0]
+      - [0xEAF78, rodata, E5960]
+      - { type: bss, vram: 0x8019EE30, name: E5960 }
 
   - name: ovl_0EBBB0
     type: code
     start: 0xEBBB0
     vram: 0x8019EE50
+    bss_size: 0x310
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0xEBBB0, asm]
-      - [0xF8550, data]
+      - [0xED530, asm]
+      - [0xF6340, asm]
+      - [0xF8550, data, EBBB0]
+      - [0xF86C0, data, ED530]
+      - [0xF96A0, data, F6340]
+      - [0xF9E70, rodata, EBBB0]
+      - [0xF9EA0, rodata, ED530]
+      - { type: bss, vram: 0x801AD290, name: EBBB0 }
+      - { type: bss, vram: 0x801AD550, name: ED530 }
 
   - name: ovl_0F9FF0
     type: code
@@ -557,111 +691,255 @@ segments:
     type: code
     start: 0xFA5E0
     vram: 0x801AD5A0
+    bss_size: 0xA0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0xFA5E0, asm]
-      - [0x1003D0, data]
+      - [0x1003D0, data, FA5E0]
+      - [0x101A40, rodata, FA5E0]
+      - { type: bss, vram: 0x801B4CA0, name: FA5E0 }
 
   - name: ovl_101CE0
     type: code
     start: 0x101CE0
     vram: 0x801AD5A0
+    bss_size: 0x3560
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x101CE0, asm]
-      - [0x13C4A0, data]
+      - [0x105C20, asm]
+      - [0x105CC0, asm]
+      - [0x107850, asm]
+      - [0x108500, asm]
+      - [0x10B040, asm]
+      - [0x110160, asm]
+      - [0x112C00, asm]
+      - [0x113A90, asm]
+      - [0x1172B0, asm]
+      - [0x11A540, asm]
+      - [0x11B430, asm]
+      - [0x120BC0, asm]
+      - [0x124FC0, asm]
+      - [0x126770, asm]
+      - [0x127830, asm]
+      - [0x127F60, asm]
+      - [0x128D50, asm]
+      - [0x12AE10, asm]
+      - [0x132D30, asm]
+      - [0x133EA0, asm]
+      - [0x134830, asm]
+      - [0x1356A0, asm]
+      - [0x139DC0, asm]
+      - [0x13C4A0, data, 101CE0]
+      - [0x13CCC0, data, 105CC0]
+      - [0x13CDB0, data, 107850]
+      - [0x13CDC0, data, 108500]
+      - [0x13D74C, data, 10B040]
+      - [0x13D750, data, 110160]
+      - [0x13D900, data, 112C00]
+      - [0x13D910, data, 113A90]
+      - [0x13F404, data, 11B430]
+      - [0x13F410, data, 127F60]
+      - [0x13F420, data, 12AE10]
+      - [0x13FA20, data, 132D30]
+      - [0x1419D0, data, 134830]
+      - [0x141CF0, data, 1356A0]
+      - [0x141E10, data, 139DC0]
+      - [0x142258, rodata, 101CE0]
+      - [0x1427D0, rodata, 105CC0]
+      - [0x1427E0, rodata, 107850]
+      - [0x142830, rodata, 108500]
+      - [0x142900, rodata, 10B040]
+      - [0x142A30, rodata, 110160]
+      - [0x142A50, rodata, 113A90]
+      - [0x142AE0, rodata, 1172B0]
+      - [0x142B10, rodata, 11A540]
+      - [0x142B50, rodata, 11B430]
+      - [0x142D50, rodata, 120BC0]
+      - [0x142E50, rodata, 124FC0]
+      - [0x142EA0, rodata, 126770]
+      - [0x142F10, rodata, 127830]
+      - [0x142F40, rodata, 127F60]
+      - [0x142F70, rodata, 12AE10]
+      - [0x1432D0, rodata, 133EA0]
+      - [0x1449F8, rodata, 1356A0]
+      - [0x144AD0, rodata, 139DC0]
+      - { type: bss, vram: 0x801F0AD0, name: 10B040 }
+      - { type: bss, vram: 0x801F0B00, name: 113A90 }
+      - { type: bss, vram: 0x801F0B10, name: 11B430 }
+      - { type: bss, vram: 0x801F0B40, name: 134830 }
+      - { type: bss, vram: 0x801F0B50, name: ovl_101CE0_common }
 
   - name: ovl_145210
     type: code
     start: 0x145210
     vram: 0x801F4030
+    bss_size: 0x70
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x145210, asm]
+      - [0x145290, asm]
+      - [0x149A80, asm]
+      - [0x14AB50, asm]
       - [0x14DE90, data]
+      - [0x14DF30, data, 145210]
+      - [0x14E150, data, 145290]
+      - [0x14E370, data, 149A80]
+      - [0x14E460, data, 14AB50]
+      - [0x14EA70, rodata, 145290]
+      - [0x14EBA0, rodata, 149A80]
+      - [0x14EBC0, rodata, 14AB50]
+      - { type: bss, vram: 0x801FDA00, name: 145290 }
+      - { type: bss, vram: 0x801FDA40, name: 149A80 }
+      - { type: bss, vram: 0x801FDA50, name: ovl_145210_common }
 
   - name: ovl_14EBE0
     type: code
     start: 0x14EBE0
     vram: 0x801FDA70
+    bss_size: 0x130
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x14EBE0, asm]
-      - [0x15FBF0, data]
+      - [0x151F40, asm]
+      - [0x15DF10, asm]
+      - [0x15DF70, asm]
+      - [0x15E670, asm]
+      - [0x15FBF0, data, 14EBE0]
+      - [0x1638D8, data, 151F40]
+      - [0x164D60, data, 15DF10]
+      - [0x165010, data, 15DF70]
+      - [0x165BC8, data, 15E670]
+      - [0x165E00, rodata, 14EBE0]
+      - [0x165E34, rodata, 151F40]
+      - [0x165FB8, rodata, 15E670]
+      - { type: bss, vram: 0x80214E50, name: 14EBE0 }
+      - { type: bss, vram: 0x80214E60, name: 151F40 }
+      - { type: bss, vram: 0x80214E88, name: 15E670 }
+      - { type: bss, vram: 0x80214E90, name: ovl_14EBE0_common }
 
   - name: ovl_165FC0
     type: code
     start: 0x165FC0
     vram: 0x80214F80
+    bss_size: 0xD0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x165FC0, asm]
-      - [0x16FB90, data]
+      - [0x167DE0, asm]
+      - [0x16ECA0, asm]
+      - [0x16F990, asm]
+      - [0x16FB90, data, 165FC0]
+      - [0x16FDA0, data, 167DE0]
+      - [0x1701F0, data, 16ECA0]
+      - [0x171C50, rodata, 165FC0]
+      - [0x171C60, rodata, 167DE0]
+      - { type: bss, vram: 0x80220E60, name: 165FC0 }
+      - { type: bss, vram: 0x80220F00, name: 167DE0 }
 
   - name: ovl_171EA0
     type: code
     start: 0x171EA0
     vram: 0x80214F80
+    bss_size: 0x40
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x171EA0, asm]
-      - [0x175F30, data]
+      - [0x173D50, asm]
+      - [0x175F30, data, 171EA0]
+      - [0x177B38, data, 173D50]
+      - [0x177B50, rodata, 173D50]
+      - { type: bss, vram: 0x8021AFB0, name: 171EA0 }
+      - { type: bss, vram: 0x8021AFC0, name: 173D50 }
 
   - name: ovl_177ED0
     type: code
     start: 0x177ED0
     vram: 0x80214F80
+    bss_size: 0x18D0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x177ED0, asm]
-      - [0x17BCD0, data]
+      - [0x1782C0, asm]
+      - [0x178450, asm]
+      - [0x17BCD0, data, 177ED0]
+      - [0x17BCE0, data, 1782C0]
+      - [0x17C500, data, 178450]
+      - [0x17F900, rodata, 177ED0]
+      - [0x17F910, rodata, 178450]
+      - { type: bss, vram: 0x8021CA70, name: 177ED0 }
+      - { type: bss, vram: 0x8021CA80, name: 178450 }
+      - { type: bss, vram: 0x8021E300, name: ovl_177ED0_common }
 
   - name: ovl_17F9C0
     type: code
     start: 0x17F9C0
     vram: 0x80214F80
+    bss_size: 0x10
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x17F9C0, asm]
-      - [0x1822F0, data]
+      - [0x181520, asm]
+      - [0x1822F0, data, 17F9C0]
+      - [0x185600, data, 181520]
+      - [0x188B10, rodata, 17F9C0]
+      - [0x188B40, rodata, 181520]
+      - { type: bss, vram: 0x8021E120, name: 17F9C0 }
 
   - name: ovl_188B60
     type: code
     start: 0x188B60
     vram: 0x80214F80
+    bss_size: 0xD0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x188B60, asm]
-      - [0x18F050, data]
+      - [0x18C2E0, asm]
+      - [0x18F050, data, 188B60]
+      - [0x18F090, data, 18C2E0]
+      - [0x18F0D0, rodata, 188B60]
+      - { type: bss, vram: 0x8021B520, name: 188B60 }
+      - { type: bss, vram: 0x8021B580, name: 18C2E0 }
 
   - name: ovl_18F100
     type: code
     start: 0x18F100
     vram: 0x80214F80
+    bss_size: 0xB0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x18F100, asm]
-      - [0x1952F0, data]
+      - [0x1914D0, asm]
+      - [0x191E50, asm]
+      - [0x1952F0, data, 18F100]
+      - [0x195360, data, 1914D0]
+      - [0x195370, data, 191E50]
+      - [0x195380, rodata, 1914D0]
+      - [0x195390, rodata, 191E50]
+      - { type: bss, vram: 0x8021B290, name: 18F100 }
+      - { type: bss, vram: 0x8021B2C0, name: 1914D0 }
+      - { type: bss, vram: 0x8021B2D0, name: 191E50 }
+      - { type: bss, vram: 0x8021B330, name: ovl_18F100_common }
 
   - name: ovl_195410
     type: code
@@ -672,84 +950,126 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x195410, asm]
-      - [0x197740, data]
+      - [0x197740, data, 195410]
+      - [0x197774, rodata, 195410]
 
   - name: ovl_1977E0
     type: code
     start: 0x1977E0
     vram: 0x80214F80
+    bss_size: 0x240
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1977E0, asm]
       - [0x19BFF0, data]
+      - [0x19C450, data, 1977E0]
+      - [0x19C5C0, rodata, 1977E0]
+      - { type: bss, vram: 0x80219F00, name: 1977E0 }
 
   - name: ovl_19C760
     type: code
     start: 0x19C760
     vram: 0x80214F80
+    bss_size: 0xD0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x19C760, asm]
-      - [0x1A2B70, data]
+      - [0x1A2B70, data, 19C760]
+      - [0x1A2BE0, rodata, 19C760]
+      - { type: bss, vram: 0x8021B440, name: 19C760 }
 
   - name: ovl_1A2C20
     type: code
     start: 0x1A2C20
     vram: 0x80214F80
+    bss_size: 0x20
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1A2C20, asm]
-      - [0x1A4480, data]
+      - [0x1A4270, asm]
+      - [0x1A4480, data, 1A2C20]
+      - [0x1A4BE0, rodata, 1A2C20]
+      - [0x1A4C00, rodata, 1A4270]
+      - { type: bss, vram: 0x80216F70, name: 1A2C20 }
 
   - name: ovl_1A4C10
     type: code
     start: 0x1A4C10
     vram: 0x80214F80
+    bss_size: 0x90
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1A4C10, asm]
+      - [0x1A59F0, asm]
       - [0x1A8F30, data]
+      - [0x1A90B0, data, 1A4C10]
+      - [0x1A91F0, data, 1A59F0]
+      - [0x1A9230, rodata]
+      - [0x1A9238, rodata, 1A4C10]
+      - [0x1A9270, rodata, 1A59F0]
+      - { type: bss, vram: 0x80219600, name: 1A4C10 }
+      - { type: bss, vram: 0x80219610, name: 1A59F0 }
+      - { type: bss, vram: 0x80219634, name: ovl_1A4C10_common }
 
   - name: ovl_1A9290
     type: code
     start: 0x1A9290
     vram: 0x80214F80
+    bss_size: 0x90
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1A9290, asm]
-      - [0x1B2270, data]
+      - [0x1B1510, asm]
+      - [0x1B2270, data, 1A9290]
+      - [0x1B2518, rodata, 1A9290]
+      - [0x1B2640, rodata, 1B1510]
+      - { type: bss, vram: 0x8021E360, name: 1A9290 }
 
   - name: ovl_1B2670
     type: code
     start: 0x1B2670
     vram: 0x80214F80
+    bss_size: 0x1D0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1B2670, asm]
-      - [0x1B9920, data]
+      - [0x1B7630, asm]
+      - [0x1B9920, data, 1B2670]
+      - [0x1B9EF0, data, 1B7630]
+      - [0x1B9F10, rodata, 1B2670]
+      - { type: bss, vram: 0x8021C960, name: 1B2670 }
+      - { type: bss, vram: 0x8021C9E0, name: 1B7630 }
+      - { type: bss, vram: 0x8021C9F0, name: ovl_1B2670_common }
 
   - name: ovl_1BA050
     type: code
     start: 0x1BA050
     vram: 0x80220F40
+    bss_size: 0x650
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1BA050, asm]
-      - [0x1C2DC0, data]
+      - [0x1BBFB0, asm]
+      - [0x1C2DC0, data, 1BA050]
+      - [0x1C3010, data, 1BBFB0]
+      - [0x1C3250, rodata, 1BBFB0]
+      - { type: bss, vram: 0x8022A1F0, name: 1BA050 }
+      - { type: bss, vram: 0x8022A260, name: 1BBFB0 }
+      - { type: bss, vram: 0x8022A824, name: ovl_1BA050_common }
 
   - name: bin_1C3300
     type: bin
@@ -759,23 +1079,77 @@ segments:
     type: code
     start: 0x1CE070
     vram: 0x80197B70
+    bss_size: 0x1E0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1CE070, asm]
-      - [0x1EE580, data]
+      - [0x1D4700, asm]
+      - [0x1D8850, asm]
+      - [0x1DAAB0, asm]
+      - [0x1DBF70, asm]
+      - [0x1E3440, asm]
+      - [0x1E9E00, asm]
+      - [0x1ED1D0, asm]
+      - [0x1EE580, data, 1CE070]
+      - [0x1EE6B0, data, 1D4700]
+      - [0x1EE988, data, 1D8850]
+      - [0x1EEB30, data, 1DAAB0]
+      - [0x1EEF3C, data, 1DBF70]
+      - [0x1EFA20, data, 1E3440]
+      - [0x1EFD20, data, 1E9E00]
+      - [0x1EFE80, data, 1ED1D0]
+      - [0x1EFEA0, rodata, 1CE070]
+      - [0x1EFF50, rodata, 1D4700]
+      - [0x1F0030, rodata, 1D8850]
+      - [0x1F008C, rodata, 1DBF70]
+      - [0x1F0960, rodata, 1E3440]
+      - [0x1F09E0, rodata, 1E9E00]
+      - { type: bss, vram: 0x801BA530, name: 1CE070 }
+      - { type: bss, vram: 0x801BA550, name: 1DAAB0 }
+      - { type: bss, vram: 0x801BA560, name: 1DBF70 }
+      - { type: bss, vram: 0x801BA5E0, name: 1E3440 }
+      - { type: bss, vram: 0x801BA6B0, name: 1E9E00 }
+      - { type: bss, vram: 0x801BA6D0, name: 1ED1D0 }
+      - { type: bss, vram: 0x801BA6E0, name: ovl_1CE070_common }
 
   - name: ovl_1F0A30
     type: code
     start: 0x1F0A30
     vram: 0x801AD5A0
+    bss_size: 0x1C0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x1F0A30, asm]
-      - [0x211D20, data]
+      - [0x1F8D70, asm]
+      - [0x201430, asm]
+      - [0x204EE0, asm]
+      - [0x205220, asm]
+      - [0x208F90, asm]
+      - [0x20BCE0, asm]
+      - [0x20FDC0, asm]
+      - [0x211D20, data, 1F0A30]
+      - [0x211F44, data, 1F8D70]
+      - [0x212180, data, 201430]
+      - [0x212370, data, 204EE0]
+      - [0x212390, data, 205220]
+      - [0x212F00, data, 208F90]
+      - [0x213100, data, 20BCE0]
+      - [0x213150, data, 20FDC0]
+      - [0x213180, rodata, 1F0A30]
+      - [0x213560, rodata, 1F8D70]
+      - [0x213760, rodata, 201430]
+      - [0x213830, rodata, 205220]
+      - [0x213A00, rodata, 208F90]
+      - [0x213A40, rodata, 20BCE0]
+      - [0x213AE0, rodata, 20FDC0]
+      - { type: bss, vram: 0x801D0680, name: 201430 }
+      - { type: bss, vram: 0x801D06B0, name: 205220 }
+      - { type: bss, vram: 0x801D06D0, name: 20FDC0 }
+      - { type: bss, vram: 0x801D06F0, name: ovl_1F0A30_common }
 
   - name: ovl_213B10
     type: code
@@ -786,7 +1160,21 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x213B10, asm]
-      - [0x228D70, data]
+      - [0x213B50, asm]
+      - [0x21C970, asm]
+      - [0x21D7F0, asm]
+      - [0x222190, asm]
+      - [0x224F30, asm]
+      - [0x228D70, data, 213B10]
+      - [0x228D90, data, 213B50]
+      - [0x228F90, data, 21D7F0]
+      - [0x2290F0, data, 222190]
+      - [0x2292C0, data, 224F30]
+      - [0x2298D0, rodata, 213B50]
+      - [0x229DB0, rodata, 21C970]
+      - [0x229F00, rodata, 21D7F0]
+      - [0x22A1D0, rodata, 222190]
+      - [0x22A240, rodata, 224F30]
 
   - name: ovl_22A280
     type: code
@@ -797,7 +1185,11 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x22A280, asm]
-      - [0x239BA0, data]
+      - [0x233210, asm]
+      - [0x239BA0, data, 22A280]
+      - [0x239BE0, data, 233210]
+      - [0x239EC0, rodata, 22A280]
+      - [0x239FA0, rodata, 233210]
 
   - name: ovl_23A3A0
     type: code
@@ -808,51 +1200,154 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x23A3A0, asm]
-      - [0x23B210, data]
+      - [0x23B210, data, 23A3A0]
 
   - name: ovl_23B220
     type: code
     start: 0x23B220
     vram: 0x801E6FB0
+    bss_size: 0x40
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x23B220, asm]
-      - [0x243F20, data]
+      - [0x23B3E0, asm]
+      - [0x23B680, asm]
+      - [0x23D090, asm]
+      - [0x241610, asm]
+      - [0x243F20, data, 23B220]
+      - [0x243F40, data, 23B680]
+      - [0x2440A4, data, 23D090]
+      - [0x244674, data, 241610]
+      - [0x2446E0, rodata, 23B680]
+      - [0x244700, rodata, 23D090]
+      - [0x244770, rodata, 241610]
+      - { type: bss, vram: 0x801F0530, name: 23B3E0 }
+      - { type: bss, vram: 0x801F0540, name: 241610 }
+      - { type: bss, vram: 0x801F0560, name: ovl_23B220_common }
 
   - name: ovl_2447A0
     type: code
     start: 0x2447A0
     vram: 0x801D0840
+    bss_size: 0xAA0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x2447A0, asm]
-      - [0x24B410, data]
+      - [0x2480D0, asm]
+      - [0x24B410, data, 2447A0]
+      - [0x24B4A0, data, 2480D0]
+      - [0x24BA30, rodata, 2447A0]
+      - [0x24BAD0, rodata, 2480D0]
+      - { type: bss, vram: 0x801D7D40, name: 2480D0 }
+      - { type: bss, vram: 0x801D7D60, name: ovl_2447A0_common }
 
   - name: ovl_24BCA0
     type: code
     start: 0x24BCA0
     vram: 0x801F70E0
+    bss_size: 0x10
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x24BCA0, asm]
-      - [0x25E2C0, data]
+      - [0x24EA70, asm]
+      - [0x2522E0, asm]
+      - [0x256410, asm]
+      - [0x25A0B0, asm]
+      - [0x25DD90, asm]
+      - [0x25E2C0, data, 24BCA0]
+      - [0x25E340, data, 24EA70]
+      - [0x25E610, data, 2522E0]
+      - [0x25E9C0, data, 256410]
+      - [0x25EBA0, data, 25A0B0]
+      - [0x25EDA0, data, 25DD90]
+      - [0x25EDC0, rodata, 24BCA0]
+      - [0x25EE00, rodata, 24EA70]
+      - [0x25EE10, rodata, 2522E0]
+      - [0x25EE30, rodata, 256410]
+      - [0x25EE60, rodata, 25A0B0]
+      - { type: bss, vram: 0x8020A2D0, name: ovl_24BCA0_bss_8020A2D0 }
+      - { type: bss, vram: 0x8020A2D4, name: ovl_24BCA0_common }
 
   - name: ovl_25EE90
     type: code
     start: 0x25EE90
     vram: 0x8020A2E0
+    bss_size: 0x420
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x25EE90, asm]
-      - [0x274000, data]
+      - [0x25F6C0, asm]
+      - [0x25F7F0, asm]
+      - [0x260420, asm]
+      - [0x260DA0, asm]
+      - [0x261C90, asm]
+      - [0x261E90, asm]
+      - [0x262450, asm]
+      - [0x262CC0, asm]
+      - [0x263190, asm]
+      - [0x263690, asm]
+      - [0x2638D0, asm]
+      - [0x2639E0, asm]
+      - [0x263F40, asm]
+      - [0x2641B0, asm]
+      - [0x264490, asm]
+      - [0x264770, asm]
+      - [0x264BB0, asm]
+      - [0x264FC0, asm]
+      - [0x2664B0, asm]
+      - [0x2673F0, asm]
+      - [0x267750, asm]
+      - [0x269470, asm]
+      - [0x269F00, asm]
+      - [0x26A510, asm]
+      - [0x26B360, asm]
+      - [0x26B820, asm]
+      - [0x26BE30, asm]
+      - [0x26C070, asm]
+      - [0x26C1F0, asm]
+      - [0x26CCF0, asm]
+      - [0x26D770, asm]
+      - [0x26F1E0, asm]
+      - [0x271E30, asm]
+      - [0x272790, asm]
+      - [0x274000, data, 25F6C0]
+      - [0x274870, data, 263190]
+      - [0x274E00, data, 2639E0]
+      - [0x274ED0, data, 264FC0]
+      - [0x274FC0, data, 2664B0]
+      - [0x275160, data, 2673F0]
+      - [0x2751C0, data, 26C1F0]
+      - [0x275250, data, 26D770]
+      - [0x2754C0, data, 26F1E0]
+      - [0x275650, data, 272790]
+      - [0x2756F0, rodata, 263190]
+      - [0x275710, rodata, 2638D0]
+      - [0x275720, rodata, 264FC0]
+      - [0x275740, rodata, 267750]
+      - [0x275750, rodata, 269470]
+      - [0x275770, rodata, 269F00]
+      - [0x275790, rodata, 26A510]
+      - [0x2757D0, rodata, 26B360]
+      - [0x2757F0, rodata, 26B820]
+      - [0x275810, rodata, 26C070]
+      - [0x275830, rodata, 272790]
+      - { type: bss, vram: 0x80220CA0, name: 260420 }
+      - { type: bss, vram: 0x80220D40, name: 260DA0 }
+      - { type: bss, vram: 0x80220D50, name: 261C90 }
+      - { type: bss, vram: 0x80220D60, name: 261E90 }
+      - { type: bss, vram: 0x80220D80, name: 262450 }
+      - { type: bss, vram: 0x80220DA0, name: 262CC0 }
+      - { type: bss, vram: 0x80220DB0, name: 263190 }
+      - { type: bss, vram: 0x80220E10, name: 263690 }
+      - { type: bss, vram: 0x80220E20, name: ovl_25EE90_common }
 
   - name: ovl_275850
     type: code
@@ -863,51 +1358,116 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x275850, asm]
-      - [0x279DB0, data]
+      - [0x275FF0, asm]
+      - [0x276FE0, asm]
+      - [0x277F90, asm]
+      - [0x278FC0, asm]
+      - [0x279920, asm]
+      - [0x279DB0, data, 275850]
+      - [0x279E3C, data, 275FF0]
+      - [0x279EC0, data, 276FE0]
+      - [0x279F10, data, 277F90]
+      - [0x279FA0, data, 278FC0]
+      - [0x27A000, rodata, 277F90]
+      - [0x27A010, rodata, 279920]
 
   - name: ovl_27A020
     type: code
     start: 0x27A020
     vram: 0x80225890
+    bss_size: 0xA0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x27A020, asm]
-      - [0x280D50, data]
+      - [0x2804E0, asm]
+      - [0x280D50, data, 27A020]
+      - [0x281320, data, 2804E0]
+      - [0x281330, rodata, 27A020]
+      - [0x281840, rodata, 2804E0]
+      - { type: bss, vram: 0x8022D0D0, name: 27A020 }
 
   - name: ovl_281860
     type: code
     start: 0x281860
     vram: 0x80225890
+    bss_size: 0x90
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x281860, asm]
-      - [0x2866F0, data]
+      - [0x282FE0, asm]
+      - [0x283DF0, asm]
+      - [0x2866F0, data, 281860]
+      - [0x286704, data, 282FE0]
+      - [0x286920, data, 283DF0]
+      - [0x286940, rodata, 281860]
+      - [0x286B78, rodata, 282FE0]
+      - [0x286B90, rodata, 283DF0]
+      - { type: bss, vram: 0x8022AC00, name: 282FE0 }
+      - { type: bss, vram: 0x8022AC80, name: ovl_281860_common }
 
   - name: ovl_286BD0
     type: code
     start: 0x286BD0
     vram: 0x8022AC90
+    bss_size: 0x90
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x286BD0, asm]
-      - [0x299D50, data]
+      - [0x289780, asm]
+      - [0x28A7B0, asm]
+      - [0x296CE0, asm]
+      - [0x299D50, data, 286BD0]
+      - [0x299D60, data, 289780]
+      - [0x299D70, data, 28A7B0]
+      - [0x29A030, data, 296CE0]
+      - [0x29A080, rodata, 286BD0]
+      - [0x29A0A0, rodata, 289780]
+      - [0x29A0B8, rodata, 28A7B0]
+      - [0x29A408, rodata, 296CE0]
+      - { type: bss, vram: 0x8023E580, name: 286BD0 }
+      - { type: bss, vram: 0x8023E5A0, name: 28A7B0 }
 
   - name: ovl_29A4C0
     type: code
     start: 0x29A4C0
     vram: 0x8022AC90
+    bss_size: 0xD0
     exclusive_ram_id: overlay
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x29A4C0, asm]
-      - [0x2A82C0, data]
+      - [0x29C950, asm]
+      - [0x2A1860, asm]
+      - [0x2A21E0, asm]
+      - [0x2A3030, asm]
+      - [0x2A3150, asm]
+      - [0x2A3310, asm]
+      - [0x2A3F20, asm]
+      - [0x2A46D0, asm]
+      - [0x2A7010, asm]
+      - [0x2A7060, asm]
+      - [0x2A7D60, asm]
+      - [0x2A8050, asm]
+      - [0x2A82C0, data, 29C950]
+      - [0x2A82D0, data, 2A46D0]
+      - [0x2A8940, data, 2A7010]
+      - [0x2A8960, data, 2A7060]
+      - [0x2A89A0, data, 2A7D60]
+      - [0x2A89B0, rodata, 29A4C0]
+      - [0x2A89E0, rodata, 29C950]
+      - [0x2A8B90, rodata, 2A1860]
+      - [0x2A8BA0, rodata, 2A3310]
+      - [0x2A8BF8, rodata, 2A46D0]
+      - { type: bss, vram: 0x802394F0, name: 29A4C0 }
+      - { type: bss, vram: 0x80239500, name: 2A1860 }
+      - { type: bss, vram: 0x802395B0, name: 2A21E0 }
 
   - name: ovl_2A8D20
     type: code
@@ -918,7 +1478,8 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x2A8D20, asm]
-      - [0x2AE340, data]
+      - [0x2ADA80, asm]
+      - [0x2AE340, rodata, 2A8D20]
 
   - name: ovl_2AE3C0
     type: code
@@ -929,7 +1490,13 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x2AE3C0, asm]
-      - [0x2B89C0, data]
+      - [0x2B5230, asm]
+      - [0x2B6F40, asm]
+      - [0x2B8610, asm]
+      - [0x2B89C0, data, 2B6F40]
+      - [0x2B89F0, rodata, 2AE3C0]
+      - [0x2B8B00, rodata, 2B5230]
+      - [0x2B8B40, rodata, 2B6F40]
 
   - name: bin_2B8BA0
     type: bin

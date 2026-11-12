@@ -102,10 +102,31 @@ python3 tools/find_overlays.py baserom/baserom.us.z64 --yaml   # emit splat segm
 Many overlays share a VRAM address (twelve load at `0x80214F80`), so overlay symbols are named
 `func_<VRAM>_ovl_<ROM>`.
 
+Overlay text is split into files at the alignment padding that ends each source file (178 splits),
+and each overlay's data, rodata and BSS are chunked per file like main's.
+`tools/overlay_sections.py` does it for all overlays at once:
+
+```sh
+python3 tools/overlay_sections.py          # per overlay: rodata start, BSS range, and how each was found
+python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/bss subsegments
+```
+
+- An overlay's data blob is every file's `.data`, then every file's `.rodata`, so the owner sequence
+  restarts at the rodata start. With a single owner, it falls back to the trailing run of strings,
+  jump tables and floats. Jump tables are always rodata, so rodata never starts after the first one.
+- BSS ranges come from the descriptor table, else from the `bzero` right after the overlay's DMA load,
+  else from the highest address the overlay's code references. BSS isn't in the ROM, so a wrong size
+  can't break the match, only symbol layout.
+- BSS chunking follows per-file statics until the owner first drops; from there on it's the
+  linker's COMMON area (one `<ovl>_common` chunk, like main's `common`).
+- Chunk boundaries must be 4-aligned, because of `SUBALIGN(4)`. `ld_align_section_vram_end: False`
+  stops splat padding section ends to 16, since overlays' data/rodata boundaries often aren't.
+
 ## Next steps
 
-1. Split the overlays' data sections into data/rodata/BSS the same way.
-2. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
-3. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
+1. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
+2. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
-4. Identify the asset compression format.
+   Before converting a file, check its data/rodata/BSS chunk boundaries by hand
+   (`tools/section_chunks.py ... -v`); they're heuristic.
+3. Identify the asset compression format.
