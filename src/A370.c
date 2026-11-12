@@ -55,6 +55,37 @@ typedef struct {
 #define n1 D_800AF3D8
 #define parent D_800AF41C
 #define count D_800AF3A0
+#define outfile D_800AF370
+#define origsize D_800AF394
+#define decode_set D_800AF3B4
+#define crc D_800AF3C0
+#define prev_char D_800AF3AC
+#define dicsiz D_800AF3B0
+#define loc D_800AF3A4
+
+typedef struct {
+    u16 (*decode_c)(void);
+    u16 (*decode_p)(void);
+    void (*decode_start)(void);
+} DecodeOption;
+
+typedef struct {
+    /* 0x00 */ ArcFile *infile;
+    /* 0x04 */ ArcFile *outfile;
+    /* 0x08 */ u32 original;
+    /* 0x0C */ s32 packed;
+    /* 0x10 */ s32 dicbit;
+    /* 0x14 */ s32 method;
+} Interface;
+
+extern ArcFile *D_800AF370;
+extern u32 D_800AF394;
+extern DecodeOption D_800AF3B4;
+extern DecodeOption D_800A876C[];
+extern u16 D_800AF3C0;
+extern s32 D_800AF3AC;
+extern u16 D_800AF3B0;
+void func_8007C378(u8 *p, s32 n, ArcFile *f);
 #define left D_800AF3FC
 #define right D_800AF400
 #define blocksize D_800AF3C6
@@ -698,7 +729,56 @@ INCLUDE_RODATA("asm/nonmatchings/A370", D_800AE334);
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007BC24);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007BF10);
+/* decode: the LHa slide-dictionary driver for one archive member */
+void func_8007BF10(Interface *iface) {
+    u32 i;
+    s32 j, k, c;
+    u32 dicsiz1, offset;
+
+    infile = iface->infile;
+    outfile = iface->outfile;
+    dicbit = iface->dicbit;
+    origsize = iface->original;
+    compsize = iface->packed;
+    decode_set = D_800A876C[iface->method];
+    crc = 0;
+    prev_char = -1;
+    dicsiz = 1 << dicbit;
+    text = HMalloc(dicsiz);
+    func_8007F4B0(text, ' ', dicsiz);
+    decode_set.decode_start();
+    dicsiz1 = dicsiz - 1;
+    offset = (iface->method == 6) ? 0x100 - 2 : 0x100 - 3;
+    count = 0;
+    loc = 0;
+    while (count < origsize) {
+        c = decode_set.decode_c();
+        if (c <= 0xFF) {
+            text[loc++] = c;
+            if (loc == dicsiz) {
+                func_8007C378(text, loc, outfile);
+                loc = 0;
+            }
+            count++;
+        } else {
+            j = c - offset;
+            i = (loc - decode_set.decode_p() - 1) & dicsiz1;
+            count += j;
+            for (k = 0; k < j; k++) {
+                c = text[(i + k) & dicsiz1];
+                text[loc++] = c;
+                if (loc == dicsiz) {
+                    func_8007C378(text, loc, outfile);
+                    loc = 0;
+                }
+            }
+        }
+    }
+    if (loc != 0) {
+        func_8007C378(text, loc, outfile);
+    }
+    HFree(text);
+}
 
 /* Builds the CRC-16 (polynomial 0xA001) table. */
 void func_8007C204(void) {
