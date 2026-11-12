@@ -40,7 +40,10 @@ def main():
     text = open(src).read()
     names = re.findall(r"INCLUDE_ASM\([^,]+,\s*(\w+)\)", text)
     names += re.findall(r"^[A-Za-z_][\w \*]*?\b(\w+)\([^;{]*\)\s*\{", text, re.M)
-    syms = sorted({(v, n) for v, n, _ in map_symbols()})
+    # only function-like symbols bound a function (labels, jump tables and data in .text would
+    # otherwise make the next 'symbol' come too early)
+    syms = sorted({(v, n) for v, n, _ in map_symbols()
+                   if not re.match(r"(L[0-9A-F]{8}|jtbl_|D_|\.)", n)})
     addr = {n: v for v, n in syms}
     segs = sorted(load_addresses())
     built = open("build/ogrebattle64.us.z64", "rb").read()
