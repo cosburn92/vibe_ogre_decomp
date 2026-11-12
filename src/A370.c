@@ -54,6 +54,7 @@ typedef struct {
 #define dicbit D_800AF39C
 #define n1 D_800AF3D8
 #define parent D_800AF41C
+#define crctable D_800AF3F8
 #define count D_800AF3A0
 #define outfile D_800AF370
 #define origsize D_800AF394
@@ -85,7 +86,7 @@ extern DecodeOption D_800A876C[];
 extern u16 D_800AF3C0;
 extern s32 D_800AF3AC;
 extern u16 D_800AF3B0;
-void func_8007C378(u8 *p, s32 n, ArcFile *f);
+void func_8007C378(u8 *p, u32 n, ArcFile *f);
 #define left D_800AF3FC
 #define right D_800AF400
 #define blocksize D_800AF3C6
@@ -133,6 +134,8 @@ extern s32 D_800AF3EC;
 extern u8 *D_800AF3A8;
 extern ArcFile D_800AF340;
 extern ArcFile D_800AF358;
+s32 func_8007F570(u8 *dst, s32 size, s32 n, ArcFile *f);
+s32 func_8007F5D8(u8 *src, s32 size, s32 n, ArcFile *f);
 void *func_8007F4B0(void *d, s32 c, u32 n);
 
 extern u16 D_800AF3C2;
@@ -822,7 +825,23 @@ u16 func_8007C25C(u8 n) {
     return x;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007C378);
+#define fatal_error(msg) osSyncPrintf(D_800AE30C, D_800AE324, D_800AE334, msg)
+
+static inline void calccrc(u8 *p, s32 n) {
+    while (n-- != 0) {
+        crc = crctable[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+    }
+}
+
+/* fwrite_crc */
+void func_8007C378(u8 *p, u32 n, ArcFile *fp) {
+    calccrc(p, n);
+    if (fp != NULL) {
+        if (func_8007F5D8(p, 1, n, fp) < n) {
+            fatal_error("File write error\n");
+        }
+    }
+}
 
 /* init_getbits */
 void func_8007C438(void) {
@@ -847,7 +866,35 @@ u8 *func_8007C538(u8 *s, u8 sep) {
     return s;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007C590);
+/* copyfile */
+s32 func_8007C590(ArcFile *f1, ArcFile *f2, s32 size, s32 crc_flg) {
+    u16 xsize;
+    u8 *buf;
+    s32 rsize = 0;
+
+    if ((buf = HMalloc(0x800)) == NULL) {
+        fatal_error("virtual memory exhausted.\n");
+    }
+    crc = 0;
+    while (size > 0) {
+        xsize = (size > 0x800) ? 0x800 : size;
+        if (func_8007F570(buf, 1, xsize, f1) != xsize) {
+            fatal_error("file read error\n");
+        }
+        if (f2 != NULL) {
+            if (func_8007F5D8(buf, 1, xsize, f2) != xsize) {
+                fatal_error("file write error\n");
+            }
+        }
+        if (crc_flg) {
+            calccrc(buf, xsize);
+        }
+        rsize += xsize;
+        size -= xsize;
+    }
+    HFree(buf);
+    return rsize;
+}
 
 /* read_pt_len */
 void func_8007C74C(s16 nn, u8 nbit, s16 i_special) {
