@@ -734,9 +734,9 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0xFA5E0, asm]
+      - [0xFA5E0, c]
       - [0x1003D0, data, FA5E0]
-      - [0x101A40, rodata, FA5E0]
+      - [0x101A40, .rodata, FA5E0]
       - { type: bss, vram: 0x801B4CA0, name: FA5E0 }
 
   - name: ovl_101CE0
