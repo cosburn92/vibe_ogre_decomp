@@ -15,10 +15,29 @@ extern SquadRec D_801971F0_ovl_040E80[];
 extern u8 D_80197B00_ovl_040E80[];
 extern u8 D_801936A8_ovl_040E80;
 extern u16 D_80197B08_ovl_040E80;
+typedef struct { u16 id; u8 count; u8 unk3; } InvEntry;
+extern InvEntry D_80193AC0_ovl_040E80[]; /* consumable stock, 40 entries */
+extern InvEntry D_80196B00_ovl_040E80[]; /* item stock, 278 entries */
+typedef struct { u8 name[0x1C]; u16 flags; u8 pad[6]; } Location;
+extern Location gLocations[];
+extern u8 D_80196A81_ovl_040E80[];
+extern u8 D_80196A86_ovl_040E80[];
+extern void *D_80197B18_ovl_040E80;
+extern void *D_80197B1C_ovl_040E80;
+extern s32 D_8018F2F4_ovl_040E80;
+extern s32 D_80190F10_ovl_040E80;
+extern u8 D_275DD2C[];
+extern s32 D_80197B10_ovl_040E80;
+extern s32 D_80197B0C_ovl_040E80;
+extern u8 D_80197B01_ovl_040E80;
+extern u8 D_80197B02_ovl_040E80;
+extern u8 D_80197B03_ovl_040E80;
+extern u16 D_80197B04_ovl_040E80;
+void HFree(void *p);
+void RomRead(void *rom, void *dst, s32 size);
+void func_80171B94_ovl_040E80(void);
 extern u8 D_801936A6_ovl_040E80;
 
-extern struct { u16 v; u8 pad[2]; } D_80193AC0_ovl_040E80[];
-extern struct { u16 v; u8 pad[2]; } D_80196B00_ovl_040E80[];
 extern struct { u16 v; u8 pad[34]; } D_801951CC_ovl_040E80[];
 extern struct { u16 v; u8 pad[50]; } D_80195578_ovl_040E80[];
 extern struct { u16 v; u8 pad[54]; } D_80193BD8_ovl_040E80[];
@@ -47,7 +66,7 @@ extern u8 D_80195480_ovl_040E80[];
 extern u8 D_8019EE40[];
 
 void FlagGet();
-void func_80170794_ovl_040E80();
+s32 func_80170794_ovl_040E80();
 
 u8 func_80170190_ovl_040E80(s32 squad, s32 i) {
     return D_801971F0_ovl_040E80[squad].members[i];
@@ -169,11 +188,17 @@ void func_801704B8_ovl_040E80(s32 idx, s32 unused, u8 value) {
     D_801971F1_ovl_040E80[idx].v = value;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", LocationSetLiberated);
+void LocationSetLiberated(s32 unused0, s32 unused1, s32 loc) {
+    gLocations[loc].flags |= 2;
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", LocationSetCaptured);
+void LocationSetCaptured(s32 unused0, s32 unused1, s32 loc) {
+    gLocations[loc].flags |= 4;
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", LocationClearOwner);
+void LocationClearOwner(s32 unused0, s32 unused1, s32 loc) {
+    gLocations[loc].flags &= ~6;
+}
 
 void func_8017055C_ovl_040E80(s32 a, s32 unused, s32 b) {
     func_80172B10_ovl_040E80(a, b);
@@ -208,7 +233,7 @@ u8 func_8017060C_ovl_040E80(s32 idx) {
 }
 
 u16 func_80170620_ovl_040E80(s32 idx) {
-    return D_80193AC0_ovl_040E80[idx].v;
+    return D_80193AC0_ovl_040E80[idx].id;
 }
 
 u8 func_80170634_ovl_040E80(s32 idx) {
@@ -224,7 +249,7 @@ u8 func_80170668_ovl_040E80(s32 idx) {
 }
 
 u16 func_8017067C_ovl_040E80(s32 idx) {
-    return D_80196B00_ovl_040E80[idx].v;
+    return D_80196B00_ovl_040E80[idx].id;
 }
 
 u8 func_80170690_ovl_040E80(s32 idx) {
@@ -244,7 +269,7 @@ void func_801706DC_ovl_040E80(s32 idx, s32 unused, u8 value) {
 }
 
 void func_801706F0_ovl_040E80(s32 idx, s32 unused, u16 value) {
-    D_80193AC0_ovl_040E80[idx].v = value;
+    D_80193AC0_ovl_040E80[idx].id = value;
 }
 
 void func_80170704_ovl_040E80(s32 idx, s32 unused, u8 value) {
@@ -256,7 +281,7 @@ void func_80170718_ovl_040E80(s32 idx, s32 unused, u8 value) {
 }
 
 void func_8017072C_ovl_040E80(s32 idx, s32 unused, u16 value) {
-    D_80196B00_ovl_040E80[idx].v = value;
+    D_80196B00_ovl_040E80[idx].id = value;
 }
 
 void func_80170740_ovl_040E80(s32 idx, s32 unused, u8 value) {
@@ -271,9 +296,22 @@ void func_80170774_ovl_040E80(s32 a, s32 unused, s32 b) {
     func_80172BF0_ovl_040E80(a, b);
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170794_ovl_040E80);
+s32 func_80170794_ovl_040E80(s32 mask) {
+    if (!D_8018F2F4_ovl_040E80) {
+        RomRead(D_275DD2C, &D_80190F10_ovl_040E80, 4);
+        D_8018F2F4_ovl_040E80 = 1;
+    }
+    return (u8)mask & D_80190F10_ovl_040E80;
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801707F4_ovl_040E80);
+void func_801707F4_ovl_040E80(void) {
+    void **p = &D_80197B18_ovl_040E80;
+
+    HFree(*p);
+    HFree(D_80197B1C_ovl_040E80);
+    *p = NULL;
+    D_80197B1C_ovl_040E80 = NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
 
@@ -289,7 +327,16 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80172124_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_8017223C_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017230C_ovl_040E80);
+void func_8017230C_ovl_040E80(s16 a, u8 b, u8 c) {
+    D_80197B10_ovl_040E80 = a;
+    D_80197B0C_ovl_040E80 = a;
+    D_80197B03_ovl_040E80 = 1;
+    D_80197B00_ovl_040E80[0] = b;
+    D_80197B01_ovl_040E80 = c;
+    D_80197B02_ovl_040E80 = 0;
+    D_80197B04_ovl_040E80 = 0;
+    func_80171B94_ovl_040E80();
+}
 
 void func_80172368_ovl_040E80(void) {
     bzero(D_80197B00_ovl_040E80, 100);
@@ -302,19 +349,55 @@ void func_801725B4_ovl_040E80(u16 v) {
     D_80197B08_ovl_040E80 = v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801725C0_ovl_040E80);
+s32 func_801725C0_ovl_040E80(u8 c) {
+    s32 r = 0;
+
+    if ((u8)(c - 0x2D) < 2 || c == 0x2F || (u8)(c - 0x24) < 2 || c == 0x30) {
+        r = 1;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172610_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172800_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801728EC_ovl_040E80);
+s32 func_801728EC_ovl_040E80(u8 id) {
+    u16 slot = func_8016B738_ovl_040E80(id);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017293C_ovl_040E80);
+    if (slot < 40) {
+        return D_80193AC0_ovl_040E80[slot].unk3 - D_80193AC0_ovl_040E80[slot].count;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017298C_ovl_040E80);
+s32 func_8017293C_ovl_040E80(u16 id) {
+    u16 slot = func_8016B6FC_ovl_040E80(id);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801729CC_ovl_040E80);
+    if (slot < 278) {
+        return D_80196B00_ovl_040E80[slot].unk3 - D_80196B00_ovl_040E80[slot].count;
+    }
+    return 0;
+}
+
+u8 func_8017298C_ovl_040E80(u16 id) {
+    u16 slot = func_8016B738_ovl_040E80(id);
+
+    if (slot < 40) {
+        return D_80193AC0_ovl_040E80[slot].unk3;
+    }
+    return 0;
+}
+
+/* Indexes the consumable stock with an item slot (likely a bug). */
+u8 func_801729CC_ovl_040E80(u16 id) {
+    u16 slot = func_8016B6FC_ovl_040E80(id);
+
+    if (slot < 278) {
+        return D_80193AC0_ovl_040E80[slot].unk3;
+    }
+    return 0;
+}
 
 u8 func_80172A0C_ovl_040E80(u8 i) {
     return (D_801936A6_ovl_040E80 >> (i * 2)) & 3;
@@ -326,7 +409,11 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80172B10_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172B68_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172BBC_ovl_040E80);
+u8 func_80172BBC_ovl_040E80(u8 n) {
+    s32 i = n - 1;
+
+    return (D_80196A81_ovl_040E80[i / 8] >> (i & 7)) & 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172BF0_ovl_040E80);
 
@@ -340,6 +427,15 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_801732E0_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801733A0_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80173490_ovl_040E80);
+s32 func_80173490_ovl_040E80(u8 v) {
+    u8 i;
+
+    for (i = 0; i < 5; i++) {
+        if (D_8019367C_ovl_040E80[i] == v) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801734D4_ovl_040E80);
