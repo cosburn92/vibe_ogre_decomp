@@ -478,7 +478,61 @@ u32 func_800713EC(void) {
     return max;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", HIsAllocatedPointer);
+s32 HIsAllocatedPointer(void *ptr) {
+    s32 h = HFindHeap((u32)ptr);
+    HeapNode *n;
+    HeapNode *prev;
+    HeapNode *next;
+
+    if ((u32)ptr & 0xF) {
+        osSyncPrintf("HIsAllocatedPointer(): Alignment error. Adr:%08X\n", ptr);
+        return 0;
+    }
+    n = (HeapNode *)ptr - 1;
+    if (n < gHeaps[h].start) {
+        goto bad;
+    }
+    if (gHeaps[h].end < n) {
+        goto bad;
+    }
+    prev = n->prev;
+    if (prev < gHeaps[h].start) {
+        goto bad;
+    }
+    if (gHeaps[h].end < prev) {
+        goto bad;
+    }
+    if ((u32)prev & 0xF) {
+        goto bad;
+    }
+    next = n->next;
+    if (next < gHeaps[h].start) {
+        goto bad;
+    }
+    if (gHeaps[h].end < next) {
+        goto bad;
+    }
+    if ((u32)next & 0xF) {
+        goto bad;
+    }
+    if (gHeaps[h].start < prev && ((u32)prev->next & 0xF)) {
+        goto bad;
+    }
+    if (next < gHeaps[h].end && ((u32)next->prev & 0xF)) {
+    bad:
+        osSyncPrintf("HIsAllocatedPointer(): Invalid TMemBlock Address. Not exist error. Adr:%08X\n", n);
+        return 0;
+    }
+    if (prev->next == n && prev == n->prev && next == n->next) {
+        if (next >= gHeaps[h].end || next->prev == n) {
+            return 1;
+        }
+    }
+    osSyncPrintf("HIsAllocatedPointer(): Invalid TMemBlock Address. Continuous error. Adr:%08X\n", n);
+    return 0;
+}
+
+const char D_800ADE6C[] = "HMallocBack";
 
 s32 func_80071634(s32 *p) {
     return p[-3];
