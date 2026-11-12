@@ -68,6 +68,7 @@ extern Gfx *D_800E9BA0;
 extern u8 D_80186E70[];
 extern u8 D_801869C8[];
 void bzero(void *p, s32 n);
+void _bcopy(void *src, void *dst, s32 n);
 void osViSetMode(void *m);
 
 extern u16 gHeapCount;
@@ -307,7 +308,78 @@ s32 func_8007163C(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80071644);
+static inline void *HFreeInline(void *ptr) {
+    s32 h = HFindHeap((u32)ptr);
+    HeapNode *b;
+
+    if (ptr == NULL) {
+        return NULL;
+    }
+    b = (HeapNode *)ptr - 1;
+    if (b->free > 0x20) {
+        func_80071950(b);
+    }
+    ((HeapNode *)ptr - 1)->prev->next = ((HeapNode *)ptr - 1)->next;
+    if (((HeapNode *)ptr - 1)->next < gHeaps[h].end) {
+        ((HeapNode *)ptr - 1)->next->prev = ((HeapNode *)ptr - 1)->prev;
+    }
+    b = ((HeapNode *)ptr - 1)->prev;
+    if (b->free > 0x20) {
+        func_80071950(b);
+    }
+    b->free = (u8 *)b->next - ((u8 *)b + (b->used + sizeof(HeapNode)));
+    if (b->free > 0x20) {
+        func_800719E8(&gHeaps[h].root, b);
+    }
+    ((HeapNode *)ptr - 1)->next = NULL;
+    ((HeapNode *)ptr - 1)->prev = NULL;
+    if (++D_800C4818 > 0x3FFFF) {
+        func_80071A74();
+        D_800C4818 = 0;
+    }
+    return NULL;
+}
+
+/* HRealloc: resizes in place when possible, otherwise allocates, copies and frees. */
+void *func_80071644(void *ptr, s32 size) {
+    HeapNode *b;
+    s32 d;
+    void *p;
+
+    if (size == 0) {
+        HFreeInline(ptr);
+        return NULL;
+    }
+    if (ptr == NULL) {
+        return HMalloc(size);
+    }
+    size = (size + 0xF) & ~0xF;
+    b = (HeapNode *)ptr - 1;
+    d = size - b->used;
+    if (d >= -0x7F) {
+        if (d <= 0) {
+            return ptr;
+        }
+        if (b->free < d) {
+            goto copy;
+        }
+    }
+    if (((HeapNode *)ptr - 1)->free > 0x20) {
+        func_80071950(b);
+    }
+    ((HeapNode *)ptr - 1)->used = size;
+    ((HeapNode *)ptr - 1)->free = (u8 *)((HeapNode *)ptr - 1)->next - ((u8 *)b + (size + sizeof(HeapNode)));
+    if (((HeapNode *)ptr - 1)->free > 0x20) {
+        func_800719E8(&gHeaps[HFindHeap((u32)b)].root, b);
+    }
+    return ptr;
+
+copy:
+    p = HMalloc(size);
+    _bcopy(ptr, p, ((HeapNode *)ptr - 1)->used);
+    HFreeInline(ptr);
+    return p;
+}
 
 void func_80071950(HeapNode *n) {
     HeapNode *p;
