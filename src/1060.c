@@ -30,26 +30,39 @@ typedef struct {
     /* 0x0C */ void *fb;
 } FrameMsg;
 
+/* Per-frame buffers, double-buffered; sizes come from the counts D_800C4C08.. set by func_80073164. */
 typedef struct {
-    void *p[6];
-} FbSet;
-
-typedef struct {
-    /* 0x00 */ u8 unk00[0x14];
-    /* 0x14 */ Gfx *start;
-} GfxTask;
+    /* 0x00 */ void *p[5];
+    /* 0x14 */ Gfx *gfx;
+} FbSet; /* size 0x18 */
 
 extern void *D_800C4BB8;
 extern FbSet D_800A81C0[2];
-extern s16 D_800C4C08;
-extern s16 D_800E7D68;
-extern s16 D_800C4A18;
-extern s16 D_800E7A1C;
-extern s16 D_800C4BCA;
-extern s16 D_800C4AD8;
+extern u16 D_800C4C08;
+extern u16 D_800E7D68;
+extern u16 D_800C4A18;
+extern u16 D_800E7A1C;
+extern u16 D_800C4BCA;
+extern u16 D_800C4AD8;
 extern u8 D_800AEE72;
 extern u8 D_800A81F0;
-extern GfxTask *D_800E9BE0;
+extern FbSet *D_800E9BE0;
+extern s16 D_800E79E0;
+extern s16 D_800E9BC4;
+extern s16 D_800C4BE4;
+extern s16 D_800C4BC8;
+extern s16 D_800C4C48;
+extern u32 D_800C4BC4;
+extern u32 D_800A9E80;
+extern u8 D_800A8215;
+extern u8 D_800AEDF0[];
+extern u8 D_800AEE30[];
+extern u16 D_800AEE70;
+void *HMallocBack(s32 size);
+void func_800737A0(void);
+void func_8007382C(void);
+void guPerspective(void *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
 extern u8 D_800C4808;
 u8 func_8016CD3C(void);
 void osViSwapBuffer(void *fb);
@@ -75,7 +88,7 @@ extern u16 gHeapCount;
 extern u16 gHeapAllocFlags;
 extern s32 osTvType;
 extern u8 D_800AEF9A;
-extern u8 D_800A8210;
+extern u8 D_800A8210[];
 extern u8 D_800A8211;
 extern u8 D_800A8212;
 extern u8 D_800A8213;
@@ -728,7 +741,7 @@ void func_8007328C(void) {
         HFree(D_800A81C0[i].p[2]);
         HFree(D_800A81C0[i].p[3]);
         HFree(D_800A81C0[i].p[4]);
-        HFree(D_800A81C0[i].p[5]);
+        HFree(D_800A81C0[i].gfx);
     }
     D_800C4C08 = 0;
     D_800E7D68 = 0;
@@ -755,12 +768,75 @@ void func_80073398(void) {
     D_800A8213 = 0;
     D_800A8212 = 0;
     D_800A8211 = 0;
-    D_800A8210 = 0;
+    D_800A8210[0] = 0;
     D_800AEF9C = HFree(D_800AEF9C);
     D_800C4B20 = 0;
 }
 
+#ifdef NON_MATCHING
+/* Matches except v0/v1 swapped for the display-list head in the closing five commands. */
+/* Starts a frame: reallocates the frame buffers after a size change, sets up the depth buffer and camera. */
+void func_800733F8(void) {
+    FbSet *cur = &D_800A81C0[D_800A81F0];
+    Gfx *g;
+
+    D_800E9BE0 = cur;
+    if (D_800AEE72 != 0) {
+        D_800AEE72--;
+        HFree(cur->p[0]);
+        D_800E9BE0->p[0] = HMallocBack(D_800C4C08 * 32);
+        HFree(D_800E9BE0->p[1]);
+        D_800E9BE0->p[1] = HMallocBack(D_800E7D68 * 16);
+        HFree(D_800E9BE0->p[2]);
+        D_800E9BE0->p[2] = HMallocBack(D_800C4A18 * 64);
+        HFree(D_800E9BE0->p[3]);
+        D_800E9BE0->p[3] = HMallocBack(D_800E7A1C * 120);
+        HFree(D_800E9BE0->p[4]);
+        D_800E9BE0->p[4] = HMallocBack(D_800C4BCA * 16);
+        HFree(D_800E9BE0->gfx);
+        D_800E9BE0->gfx = HMallocBack(D_800C4AD8 * 8);
+    }
+    D_800E79E0 = 0;
+    D_800E9BC4 = 0;
+    D_800C4BE4 = 0;
+    D_800C4BC8 = 0;
+    D_800C4C48 = 0;
+    D_800E9BA0 = D_800E9BE0->gfx;
+    if (D_800A8213 && D_800AEF9C == NULL) {
+        D_800AEF9C = HMallocBack(0x2583F);
+        D_800C4B20 = ((u32)D_800AEF9C + 0x3F) & ~0x3F;
+    }
+    D_800A8210[D_800C4BC4 % D_800A9E80] = D_800A8213;
+    if (!D_800A8210[0] && !D_800A8211 && !D_800A8212 && D_800C4B20) {
+        D_800AEF9C = HFree(D_800AEF9C);
+        D_800C4B20 = 0;
+    }
+    func_800737A0();
+    func_8007382C();
+    if (D_800A8215) {
+        guPerspective(D_800AEDF0, &D_800AEE70, 40.0f, 1.3333334f, 10.0f, 100.0f, 1.0f);
+        guLookAt(D_800AEE30, 100.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        D_800A8215 = 0;
+    }
+    g = D_800E9BA0++;
+    g->w0 = 0xDC08000A;
+    g->w1 = (u32)D_800AEE30;
+    g = D_800E9BA0++;
+    g->w0 = 0xDC08030A;
+    g->w1 = (u32)D_800AEE30 + 0x10;
+    g = D_800E9BA0++;
+    g->w0 = 0xDB0E0000;
+    g->w1 = D_800AEE70;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380007;
+    g->w1 = (u32)D_800AEDF0 - 0x80000000;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380005;
+    g->w1 = (u32)D_800AEE30 - 0x80000000;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1060", func_800733F8);
+#endif
 
 void func_800737A0(void) {
     Gfx *g;
@@ -889,7 +965,7 @@ void func_80073AE4(void) {
     g = D_800E9BA0++;
     g->w0 = 0xDF000000;
     g->w1 = 0;
-    func_80089804(D_800E9BE0->start, (D_800E9BA0 - D_800E9BE0->start) * sizeof(Gfx), D_800C4808, 1);
+    func_80089804(D_800E9BE0->gfx, (D_800E9BA0 - D_800E9BE0->gfx) * sizeof(Gfx), D_800C4808, 1);
     D_800A8213 = 0;
     D_800A81F0 ^= 1;
 }
