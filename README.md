@@ -134,14 +134,28 @@ python3 tools/ut2png.py all extracted/ut/         # all sets
 - **Frames** (entry 0): composite sprite frames. Each is a list of pieces `{part, x, y, w, h,
   flags, scale x, scale y}`, with flags bit 0 = mirror horizontally and scale `0x400` = 1.0. All
   13,402 frames in the 231 sets reference valid parts, with the parts' own sizes.
-- **Animations** (entry 1): byte-code scripts, a command count then commands. The argument sizes of
-  all 17 opcodes are verified (every one of the 8,741 scripts parses exactly). Known so far:
-  `01 f t` shows frame `f` for `t` ticks, `04 n` loops to command `n`, `05 a` continues with
-  animation `a`, and `00` ends. Each of those arguments is always in range. The rest are listed in
-  `ANIM_OPS` with guesses.
+- **Animations** (entry 1): byte-code scripts, a command count then commands. The player is
+  `UnitAnimStep` in `ovl_1CE070` (a copy, `UnitAnimStep2`, sits in the same overlay). Its command
+  fetcher's opcode-length table matches the data for all 17 opcodes in use, and all 8,741 scripts
+  parse exactly. The player keeps a position offset, 16 "channels" with per-step deltas (fades), a
+  call stack and a loop stack:
 
-Not decoded yet: the remaining animation opcodes, the second per-part byte array at `info + 0x20`,
-the other piece flag bits (bit 2 may be additive blending, used by glow effects), and how frames map
+  | op | args | effect |
+  |---|---|---|
+  | `00` | | end: return from a call, else reset to the unit's default animation |
+  | `01` | f t | show frame `f` for `t` ticks (`15 lo hi t`: 16-bit frame number) |
+  | `02` / `0C` | a b / a b c | move: x −= a, y −= b / x −= a, y += b, z += c |
+  | `03` | t | wait `t` ticks |
+  | `04` / `05` | n | jump to command `n` / start animation `n` |
+  | `0D` / `10` | ch v | set channel `ch`'s value / per-step delta (`ch` = `FF`: all 16) |
+  | `0E` | n c | repeat from command `n`, `c` times |
+
+  `06`, `0B` and `11`–`14` (and the unused `07`–`0A`, `0F`) do nothing in this player. The bigger
+  interpreters in `ovl_1F0A30` and `ovl_29A4C0` call more game code and are probably where those
+  are handled, as events, sounds and effects.
+
+Not decoded yet: what the event opcodes and the 16 channels drive, the second per-part byte array at
+`info + 0x20`, the other piece flag bits (bit 2 may be additive blending, used by glow effects), and how frames map
 to unit actions.
 
 ## Game code
@@ -244,5 +258,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Pin down the remaining animation opcodes (by finding the script interpreter in `ovl_1CE070`)
-   and decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Read the battle overlays' animation interpreters (`ovl_1F0A30`, `ovl_29A4C0`) for the event
+   opcodes, and decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.

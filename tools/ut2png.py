@@ -25,7 +25,7 @@ UnitSetLoad in ovl_1CE070. Entries 0-2 are LZ chunks:
               (x, y relative to the unit's origin; w, h = the part's size; flags bit 0 = mirror
               horizontally; scale 0x400 = 1.0).
   animations: u32 offsets to scripts (count = first offset / 4). A script is a command count, then
-              commands (opcode + fixed-size arguments; see ANIM_OPS).
+              commands (opcode + fixed-size arguments; see ANIM_OPS). Signed arguments are bytes.
 
 usage: python3 tools/ut2png.py set <set handle> out.png      # every part of a set, in colour
        python3 tools/ut2png.py frames <set handle> out.png   # the set's composite frames
@@ -41,26 +41,33 @@ import zlib
 
 CHUNKS = "extracted/chunks"
 
-# Animation opcodes: (argument bytes, meaning). Argument sizes are verified on all 8,741 scripts;
-# meanings marked "?" are guesses.
+# Animation opcodes: (argument bytes, meaning), from the player UnitAnimStep (ovl_1CE070) and its
+# fetcher's length table D_801B8098 (which matches the data for every opcode in use). The player keeps
+# a position offset (x, y, z), 16 channel values with per-step deltas (clamped 0-255, i.e. fades),
+# a call stack and a loop stack. Ticks: the counter drops by 2 per step.
 ANIM_OPS = {
-    0x00: (0, "end"),
-    0x01: (2, "frame f, ticks t"),          # f is always a valid frame index
-    0x02: (2, "move? x y"),
-    0x03: (1, "wait? t"),
-    0x04: (1, "loop to command n"),        # n is always a valid command index
-    0x05: (1, "go to animation a"),        # a is always a valid animation index
-    0x06: (0, "end?"),
-    0x0B: (0, "event?"),
-    0x0C: (3, "offset? dx dy dz"),
-    0x0D: (2, "?"),
-    0x0E: (2, "?"),
-    0x10: (2, "?"),
-    0x11: (2, "?"),
-    0x12: (2, "?"),
-    0x13: (2, "?"),
-    0x14: (2, "?"),
-    0x15: (3, "frame f, ?, ticks t"),      # f is always a valid frame index, the middle byte is 1
+    0x00: (0, "end (return from a call, else reset to the default animation)"),
+    0x01: (2, "frame f, ticks t"),
+    0x02: (2, "move x -= a, y -= b"),
+    0x03: (1, "wait t ticks"),
+    0x04: (1, "jump to command n"),
+    0x05: (1, "start animation a"),
+    0x06: (0, "(ignored by UnitAnimStep)"),
+    0x07: (0, "(ignored; unused)"),
+    0x08: (0, "(ignored; unused)"),
+    0x09: (0, "(ignored; unused)"),
+    0x0A: (0, "(ignored; unused)"),
+    0x0B: (0, "(ignored by UnitAnimStep)"),
+    0x0C: (3, "move x -= a, y += b, z += c"),
+    0x0D: (2, "channel[ch] = v (ch 0xFF: all 16)"),
+    0x0E: (2, "repeat from command n, c times"),
+    0x0F: (1, "(ignored; unused)"),
+    0x10: (2, "channel delta[ch] = d per step (ch 0xFF: all 16)"),
+    0x11: (2, "(ignored by UnitAnimStep)"),
+    0x12: (2, "(ignored by UnitAnimStep)"),
+    0x13: (2, "(ignored by UnitAnimStep)"),
+    0x14: (2, "(ignored by UnitAnimStep)"),
+    0x15: (3, "frame lo | hi << 8, ticks t"),
 }
 
 

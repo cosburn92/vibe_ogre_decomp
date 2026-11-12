@@ -376,6 +376,9 @@ HIsAllocatedPointer = 0x800714D4; // type:func
 // HFindHeap: inferred: index of the heap containing an address
 HFindHeap = 0x80071B9C; // type:func
 
+// memset: inferred: (dst, value, n) -> dst, byte-wise
+memset = 0x8009C970; // type:func
+
 // ROM access
 // PiDmaRead: inferred: blocking PI DMA
 PiDmaRead = 0x80089F80; // type:func
@@ -409,6 +412,12 @@ UtCreateTexture = 0x8019ABA4; // type:func rom:0x1D10A4
 UnitSetLoad = 0x801AD11C; // type:func rom:0x1E361C
 // UnitSetLoadPart: inferred: loads part i on demand and converts it with its part's palette
 UnitSetLoadPart = 0x801AD538; // type:func rom:0x1E3A38
+// UnitAnimStep: inferred: runs a unit's animation script until it shows a frame (see tools/ut2png.py)
+UnitAnimStep = 0x8019F908; // type:func rom:0x1D5E08
+// UnitAnimStep2: inferred: a second copy of UnitAnimStep in this overlay
+UnitAnimStep2 = 0x801B28D8; // type:func rom:0x1E8DD8
+// UnitAnimGetCommand: inferred: (set, anim, command index, args out) -> opcode
+UnitAnimGetCommand = 0x8019B178; // type:func rom:0x1D1678
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C
