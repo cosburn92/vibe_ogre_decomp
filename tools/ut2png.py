@@ -44,7 +44,8 @@ CHUNKS = "extracted/chunks"
 # Animation opcodes: (argument bytes, meaning), from the players UnitAnimStep (ovl_1CE070) and
 # BattleAnimStep (ovl_1F0A30, which adds sounds and calls), BattleAnimEventTimes, and the fetcher's
 # length table D_801B8098 (which matches the data for every opcode in use). The player keeps
-# a position offset (x, y, z), 16 channel values with per-step deltas (clamped 0-255, i.e. fades),
+# a position offset (x, y, z), 16 channel values with per-step deltas (clamped 0-255, i.e. fades;
+# channel k is the opacity of piece k of the current frame, 0 hides it: see BattleDrawUnitSprite),
 # a call stack and a loop stack. Ticks: the counter drops by 2 per step.
 ANIM_OPS = {
     0x00: (0, "end (return from a call, else reset to the default animation)"),
@@ -60,10 +61,10 @@ ANIM_OPS = {
     0x0A: (0, "(ignored; unused)"),
     0x0B: (0, "timing marker (BattleAnimEventTimes reports when it is reached)"),
     0x0C: (3, "move x -= a, y += b, z += c"),
-    0x0D: (2, "channel[ch] = v (ch 0xFF: all 16)"),
+    0x0D: (2, "opacity of piece ch = v (ch 0xFF: all 16)"),
     0x0E: (2, "repeat from command n, c times"),
     0x0F: (1, "call animation a (BattleAnimStep; 00 returns)"),
-    0x10: (2, "channel delta[ch] = d per step (ch 0xFF: all 16)"),
+    0x10: (2, "opacity change of piece ch = d per step (ch 0xFF: all 16)"),
     0x11: (2, "play sound table[hi << 8 | lo] on channel A (BattleAnimStep)"),
     0x12: (2, "play weapon/class-dependent sound at the unit, channel A"),
     0x13: (2, "play sound table[hi << 8 | lo] on channel B"),

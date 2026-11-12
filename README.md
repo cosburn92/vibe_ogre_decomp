@@ -137,8 +137,11 @@ python3 tools/ut2png.py all extracted/ut/         # all sets
 - **Animations** (entry 1): byte-code scripts, a command count then commands. The player is
   `UnitAnimStep` in `ovl_1CE070` (a copy, `UnitAnimStep2`, sits in the same overlay). Its command
   fetcher's opcode-length table matches the data for all 17 opcodes in use, and all 8,741 scripts
-  parse exactly. The player keeps a position offset, 16 "channels" with per-step deltas (fades), a
-  call stack and a loop stack:
+  parse exactly. The player keeps a position offset, a call stack, a loop stack, and 16 channels
+  with per-step deltas. **Channel `k` is the opacity of piece `k` of the current frame**:
+  `BattleDrawUnitSprite` skips a piece whose channel is 0 and otherwise sets its alpha to
+  `unit alpha × channel / 255` via `SetPrimColor`. So `0D FF 00` then `10 FF 10` fades the whole
+  sprite in, and `0D FF FF` then `10 FF F8` fades it out.
 
   | op | args | effect |
   |---|---|---|
@@ -147,7 +150,7 @@ python3 tools/ut2png.py all extracted/ut/         # all sets
   | `02` / `0C` | a b / a b c | move: x −= a, y −= b / x −= a, y += b, z += c |
   | `03` | t | wait `t` ticks |
   | `04` / `05` | n | jump to command `n` / start animation `n` |
-  | `0D` / `10` | ch v | set channel `ch`'s value / per-step delta (`ch` = `FF`: all 16) |
+  | `0D` / `10` | ch v | set piece `ch`'s opacity / its per-step change (`ch` = `FF`: all 16) |
   | `0E` | n c | repeat from command `n`, `c` times |
 
   The battle interpreter `BattleAnimStep` (`ovl_1F0A30`, copied as `BattleAnimStep2` in
@@ -163,7 +166,7 @@ python3 tools/ut2png.py all extracted/ut/         # all sets
   `06` does nothing in any interpreter (it's used twice), and `07`–`0A` are never used. Animation
   numbers seem to come in banks of 50.
 
-Not decoded yet: what the 16 channels drive, the sound ID tables, the second per-part byte array at
+Not decoded yet: the sound ID tables, the second per-part byte array at
 `info + 0x20`, the other piece flag bits (bit 2 may be additive blending, used by glow effects), and how frames map
 to unit actions.
 
@@ -267,5 +270,4 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Find what the 16 animation channels drive (they're probably colour or alpha per part), and
-   decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
+3. Decode the other formats (`.n64`/`HU`/`B5` images, `.bin` files). Callers of `LoadChunk` show what each handle is.
