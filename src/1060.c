@@ -111,6 +111,7 @@ void func_80071950(HeapNode *n);
 void func_800719E8(HeapNode **slot, HeapNode *n);
 HeapNode *func_80071A3C(HeapNode *n, u32 size);
 void func_80071A74(void);
+HeapNode *func_80071E74(HeapNode *n, u32 size);
 u32 osSetIntMask(u32 mask);
 void __rmonMaskIdleThreadInts(void);
 void func_8007328C(void);
@@ -477,7 +478,84 @@ s32 HFindHeap(u32 p) {
     return i;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80071C04);
+static inline void TreeRemoveInline(HeapNode *n) {
+    HeapNode *p;
+
+    if (n->left == NULL) {
+        if (n->right != NULL) {
+            *n->parent = n->right;
+            n->right->parent = n->parent;
+        } else {
+            *n->parent = NULL;
+        }
+    } else {
+        *n->parent = n->left;
+        n->left->parent = n->parent;
+        if (n->right != NULL) {
+            p = n->left;
+            while (p->right != NULL) {
+                p = p->right;
+            }
+            p->right = n->right;
+            n->right->parent = &p->right;
+        }
+    }
+}
+
+/* Allocates from the top of the last free block that is large enough. */
+void *func_80071C04(s32 size) {
+    u16 flags;
+    s32 h, count, i;
+    HeapNode *b, *n, *r;
+    HeapNode **slot;
+
+    size = (size + 0xF) & ~0xF;
+    if (size == 0) {
+        return NULL;
+    }
+    flags = gHeapAllocFlags;
+    h = (flags >> 1) & 1;
+    if (h) {
+        count = gHeapCount - (~flags & 1);
+        h = h & -(gHeapCount >= 2);
+    } else {
+        count = flags & 1;
+    }
+    for (i = 0; i < count; i++) {
+        b = func_80071E74(gHeaps[h].root, size + 0x20);
+        if (b != NULL) {
+            n = (HeapNode *)((u8 *)b + b->used + b->free - size);
+            n->next = b->next;
+            b->next = n;
+            if (n->next < gHeaps[h].end) {
+                n->next->prev = n;
+            }
+            n->prev = b;
+            TreeRemoveInline(b);
+            b->free = b->free - size - 0x20;
+            slot = &gHeaps[h].root;
+            n->used = size;
+            n->free = 0;
+            n->parent = slot;
+            n->left = NULL;
+            n->right = NULL;
+            if (b->free > 0x20) {
+                r = *slot;
+                if (r == NULL) {
+                    b->parent = slot;
+                    b->left = NULL;
+                    b->right = NULL;
+                    *slot = b;
+                } else {
+                    func_800719E8(r->free >= b->free ? &r->left : &r->right, b);
+                }
+            }
+            return n + 1;
+        }
+        h = (h + 1) % gHeapCount;
+    }
+    return NULL;
+}
 
 HeapNode *func_80071E74(HeapNode *n, u32 size) {
     if (n == NULL) {
