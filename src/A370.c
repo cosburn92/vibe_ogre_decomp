@@ -31,6 +31,48 @@ typedef struct {
 #define flag D_800AF3EC
 #define matchpos D_800AF3F4
 #define text D_800AF3A8
+#define c_len D_800AF404
+#define c_table D_800AF40C
+#define pt_len D_800AF408
+#define pt_code D_800AF414
+#define pt_table D_800AF410
+#define n_max D_800AF3CC
+#define maxmatch D_800AF39E
+#define np D_800AF3E8
+#define freq D_800AF430
+#define child D_800AF418
+#define s_node D_800AF42C
+#define block D_800AF420
+#define stock D_800AF428
+#define edge D_800AF424
+#define avail D_800AF3D4
+#define most_p D_800AF3DC
+#define total_p D_800AF3D0
+#define nn D_800AF3E0
+#define nextcount D_800AF3E4
+#define dicbit D_800AF39C
+
+extern u8 *D_800AF404;
+extern u16 *D_800AF40C;
+extern u8 *D_800AF408;
+extern u16 *D_800AF414;
+extern u16 *D_800AF410;
+extern s32 D_800A87CC; /* fixed[0][0] */
+extern s32 D_800A87D0[];
+extern u16 *D_800AF430;
+extern s16 *D_800AF418;
+extern s16 *D_800AF42C;
+extern s16 *D_800AF420;
+extern s16 *D_800AF428;
+extern s16 *D_800AF424;
+extern s32 D_800AF3D4;
+extern s32 D_800AF3DC;
+extern u16 D_800AF3D0;
+extern s32 D_800AF3E0;
+extern s32 D_800AF3E4;
+extern u16 D_800AF39C;
+void func_8007BC24(s16 nchar, u8 *bitlen, s16 tablebits, u16 *table);
+void func_8007D5B8(void);
 
 extern s32 D_800AF3F0;
 extern s32 D_800AF3EC;
@@ -51,7 +93,7 @@ extern s16 D_800AF3C6;
 extern s32 D_800AF3CC;
 extern s16 D_800AF3C8;
 extern s16 D_800AF39E;
-extern s32 D_800AF3E8;
+extern u32 D_800AF3E8;
 extern u32 D_800AF3F4;
 extern u16 D_800AF3A4;
 extern char D_800AE30C[];
@@ -312,7 +354,21 @@ void func_8007D594(void) {
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007D5B8);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007D7BC);
+/* decode_start_dyn, with start_p_dyn inlined */
+void func_8007D7BC(void) {
+    n_max = 286;
+    maxmatch = 256;
+    func_8007C438();
+    func_8007D5B8();
+    freq[628] = 1;
+    child[628] = ~314;
+    s_node[314] = 628;
+    edge[block[628] = stock[avail++]] = 628;
+    most_p = 628;
+    total_p = 0;
+    nn = 1 << dicbit;
+    nextcount = 64;
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007D8A8);
 
@@ -332,9 +388,58 @@ void func_8007E698(void) {
     D_800AF3E8 = 0x80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007E6DC);
+/* read_tree_c */
+void func_8007E6DC(void) {
+    s32 i, c;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007E800);
+    i = 0;
+    while (i < 286) {
+        if (func_8007C25C(1)) {
+            c_len[i] = func_8007C25C(4) + 1;
+        } else {
+            c_len[i] = 0;
+        }
+        if (++i == 3 && c_len[0] == 1 && c_len[1] == 1 && c_len[2] == 1) {
+            c = func_8007C25C(9);
+            for (i = 0; i < 286; i++) {
+                c_len[i] = 0;
+            }
+            for (i = 0; i < 4096; i++) {
+                c_table[i] = c;
+            }
+            return;
+        }
+    }
+    func_8007BC24(286, c_len, 12, c_table);
+}
+
+/* decode_start_fix, with ready_made(0) inlined */
+void func_8007E800(void) {
+    s32 *tbl;
+    s32 i, j;
+    u32 code, weight;
+
+    n_max = 314;
+    maxmatch = 60;
+    func_8007C438();
+    np = 1 << (12 - 6);
+    func_8007D5B8();
+    j = D_800A87CC;
+    tbl = D_800A87D0;
+    weight = 1 << (16 - j);
+    code = 0;
+    for (i = 0; i < np; i++) {
+        while (*tbl == i) {
+            j++;
+            tbl++;
+            weight >>= 1;
+        }
+        pt_len[i] = j;
+        pt_code[i] = code;
+        code += weight;
+    }
+    func_8007BC24(np, pt_len, 8, pt_table);
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007E8F0);
 
