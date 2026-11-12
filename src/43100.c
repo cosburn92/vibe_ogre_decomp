@@ -11,6 +11,8 @@ extern u16 D_80193C1E_ovl_040E80;
 
 char *AttackGetName(u8 id);
 
+extern u8 D_8018ECE4_ovl_040E80[][6];
+
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -292,7 +294,14 @@ u8 func_8016DEC4_ovl_040E80(u8 cls, u8 other) {
     return gClassTable[other].leadership;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016DF18_ovl_040E80);
+u8 func_8016DF18_ovl_040E80(u8 cls, u8 other) {
+    if (D_8018ECE4_ovl_040E80[cls][0] & 0x80) {
+        if (gClassTable[cls].baseClass == other) {
+            other = cls;
+        }
+    }
+    return D_8018ECE4_ovl_040E80[other][0] & 0x3F;
+}
 
 u16 func_8016DF88_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
@@ -322,7 +331,16 @@ u16 func_8016E084_ovl_040E80(u8 cls, u8 other) {
     return gClassTable[other].defaultItems[3];
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016E0D8_ovl_040E80);
+char *func_8016E0D8_ovl_040E80(u8 cls, u8 other) {
+    u8 id;
+
+    if (gClassTable[cls].baseClass == other) {
+        id = gClassTable[cls].attacks[0][0];
+    } else {
+        id = gClassTable[other].attacks[0][0];
+    }
+    return AttackGetName(id);
+}
 
 #ifdef NON_MATCHING
 /* Only the prologue's `sw ra` is scheduled later than in the original. */
@@ -333,7 +351,16 @@ char *func_8016E140_ovl_040E80(u8 unused, u8 cls) {
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E140_ovl_040E80);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016E174_ovl_040E80);
+char *func_8016E174_ovl_040E80(u8 cls, u8 other) {
+    u8 id;
+
+    if (gClassTable[cls].baseClass == other) {
+        id = gClassTable[cls].attacks[2][0];
+    } else {
+        id = gClassTable[other].attacks[2][0];
+    }
+    return AttackGetName(id);
+}
 
 char * func_8016E1DC_ovl_040E80(u8 cls, u8 other) {
     if (gClassTable[cls].baseClass == other) {
