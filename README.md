@@ -251,7 +251,12 @@ prints them, with the byte layouts in its header:
     - no enemy left in an area;
     - a given squad in an area, or defeated;
     - at most N enemy squads left on the map;
-    - a story flag, or a location flag.
+    - a story flag, or the enemy holding a town/stronghold. Each location has flags in
+      `gLocations` (0x24-byte records, flags at `+0x1C`): 0x2 liberated by the player, 0x4
+      taken by the enemy. An enemy squad heading for a location captures it once it is in range
+      with no player unit nearby (in `func_801C2B70`); the player liberating it swaps the bits
+      back. `LocationSetLiberated`, `LocationSetCaptured` and `LocationClearOwner` set them
+      directly.
 
     Most triggers stay set once fired; a few are re-evaluated every pass.
 - **`enemydat.bin`:** 556 squad templates of 35 bytes, each a leader plus up to two member groups.
@@ -312,8 +317,7 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet in the eset files: the location flag that trigger type 0xC tests,
-the squad record's byte 9, and behaviour bytes 10–17.
+Not decoded yet in the eset files: the squad record's byte 9 and behaviour bytes 10–17.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached

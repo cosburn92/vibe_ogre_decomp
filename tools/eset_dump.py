@@ -66,7 +66,10 @@ eset file:
                 8     unit slot byte 6 is in the rectangle
                 9     at most byte 6 enemy squads are left on the map (gEnemySquadsOnMap)
                 0xA   the squad in slot byte 6 is gone (its flag 0x10 is clear)
-                0xC   location byte 6 has flag 0x4 (D_801951CC, 0x24-byte records)
+                0xC   the enemy has taken location byte 6 (flag 0x4 of gLocations[n - 1] +0x1C; 0x24-byte
+                      records). Flag 0x2 = liberated by the player. An enemy squad sent to a
+                      location captures it once it is in range with no player unit nearby,
+                      swapping 0x2 for 0x4; liberating it again swaps them back
                 0xD   a player unit is at location byte 6 or byte 7
                 0x13  the squad in slot byte 6 is gone or inactive (func_801D92D0)
                 Unused by the eset files: 0xB, 0xE, 0xF (0xB and 0xF are scanned but never latched).
@@ -129,7 +132,7 @@ COND_TYPES = {0x10: "unit in area", 0x17: "slot in area", 0x15: "unit flag 31", 
               0x01: "player unit in area", 0x02: "no enemy in area", 0x03: "no enemy near point",
               0x04: "player at location", 0x05: "slot in area (live)", 0x06: "story flag",
               0x07: "player near point", 0x08: "slot in area", 0x09: "enemy squads left <=",
-              0x0A: "squad gone", 0x0C: "location flag 4", 0x0D: "player at location",
+              0x0A: "squad gone", 0x0C: "enemy holds location", 0x0D: "player at location",
               0x13: "squad gone or inactive"}
 
 
