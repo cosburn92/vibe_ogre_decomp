@@ -822,7 +822,7 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x145210, asm]
-      - [0x145290, asm]
+      - [0x145290, c]
       - [0x149A80, asm]
       - [0x14AB50, asm]
       - [0x14DE90, data]
@@ -830,7 +830,7 @@ segments:
       - [0x14E150, data, 145290]
       - [0x14E370, data, 149A80]
       - [0x14E460, data, 14AB50]
-      - [0x14EA70, rodata, 145290]
+      - [0x14EA70, .rodata, 145290]
       - [0x14EBA0, rodata, 149A80]
       - [0x14EBC0, rodata, 14AB50]
       - { type: bss, vram: 0x801FDA00, name: 145290 }
