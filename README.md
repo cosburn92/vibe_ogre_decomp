@@ -345,7 +345,8 @@ which builds a unit of a given class and level:
   Stone/Baldr Golems everything, Gorgons Poison, Cockatrices Petrify.
 
 Still unknown:
-- item byte `+0x06` (a 0–11 tier) and the `+0x1A` bit-7 flag (on a few unique items);
+- what the `+0x1A` bit-7 item flag means (the Organize list marks those items), and the exact
+  rule for rank-0 items (`+0x06`), which the equipment screen refuses;
 - consumable use bits `0x2` and `0x4` (`0x1` = usable from the Organize screen);
 
 Every byte of the eset files is now accounted for.

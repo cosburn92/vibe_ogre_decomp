@@ -495,6 +495,8 @@ ItemGetElement = 0x8016F5E0; // type:func rom:0x454E0
 ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
 // ItemIsWeapon: inferred: category 1-13 or 24
 ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
+ItemGetRank = 0x8016F614; // type:func rom:0x45514
+ItemGetFlag80 = 0x8016F9D4; // type:func rom:0x458D4
 // PlayTimeUpdate: (gPlayTime) -> u16 hours, u8 minutes, u8 seconds from osGetTime, capped at 99:59:59
 PlayTimeUpdate = 0x8016CB44; // type:func rom:0x42A44
 // AttackGetElement: (attack, weapon items...) -> attack +5, or the weapon's element when that is 0xFF/0xF

@@ -51,8 +51,10 @@ gItemTable (0x8018C40C): 278 records of 0x20 bytes; id 0 = None.
         against the class's equipment slots.
   0x05  element (0 none, 1 Wind, 2 Flame, 3 Earth, 4 Water, 5 Virtue, 6 Bane, 7 ?; 0x10 = taken from
         a global, D_80193C12)
-  0x06  ? (0-11, rises with the item's strength; 0 on a few special items, which the inventory code
-        treats differently)
+  0x06  rank within the category (ItemGetRank), 1-11, rising with price. 0 = 25 special items
+        (royal garb, crowns, tunics, a few unique weapons): the Organize item list greys them out
+        and the equipment screen refuses them (message 0x40062, probably "The selected item cannot
+        be removed"), and the stock's +3 count is only adjusted for them when a character leaves
   0x08  u16 price
   0x0A  s8 STR, INT, AGI, DEX, VIT, MEN (getters in unit-stat order read 0x0A, 0x0E, 0x0B, 0x0F,
         0x0C, 0x0D); item 0x84 (Gallant Doll) computes its STR from D_80193C14 / 10
@@ -62,7 +64,8 @@ gItemTable (0x8018C40C): 278 records of 0x20 bytes; id 0 = None.
         DEX, VIT, MEN, luck (+0x19). UnitLevelUp adds them for each equipped item (an empty slot
         counts the class's default item). Game bug: it calls the HP getter (func_8016F8E4) for STR
         too, so the STR field (func_8016F900, never called) does nothing and HP items raise STR.
-  0x1A  bit 7: flag ? (set on a few unique items; an inventory screen marks them)
+  0x1A  bit 7: flag (ItemGetFlag80; 46 unique items): the Organize item list draws a marker icon
+        next to them when its display option 0x10 is on, and a stock count skips them; meaning ?
   0x1B  effects the weapon inflicts; 0x1C effects the armour protects against (same bits):
         0x01 dragons, 0x02 Sleep, 0x04 Paralyze, 0x08 Petrify, 0x10 Purify (most Virtue weapons),
         0x20 Poison; the item screens show protect 0x2E as "All" (names from the item screens'
