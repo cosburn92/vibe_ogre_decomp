@@ -328,6 +328,9 @@ which builds a unit of a given class and level:
   map items and key items, with a kind byte and a price.
 - **`gAttackTable`** has 159 × 16 bytes for attacks and spells. Class attack ids are 1-based into
   it; entry 0 is "－".
+  Each attack has two effects, and each names a damage formula: standard, half, a fraction of
+  the attacker's or target's current HP (Pumpkin Smash takes half the target's), power × 1.5
+  (Mirage Slash, Fatal Dance) or × 0.8 (Wind Storm), and so on.
 - **`gElementNames`** lists the element names.
 - **Resistances:** in battle the defender's resistance to the attack's element is its class value
   plus its four items' modifiers (plus or minus alignment / 10 for Virtue and Bane), clamped to

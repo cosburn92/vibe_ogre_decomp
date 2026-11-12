@@ -96,6 +96,16 @@ gConsumableTable (0x8018E6CC, right after the items): 45 records of 12 bytes:
         Quit Gate 4, the other map items 2, key and passive items 0)
 
 gAttackTable (0x8018AA7C): 16-byte records, name pointer first; id 0 = none.
+  0x04  kind (0 melee, 1 missile, 3 spells, 4 special attacks, 5 breaths, ...)
+  0x05  element (AttackGetElement; 0xF = the weapon's)
+  0x06-0x09  first effect, 0x0A-0x0D second effect (0xFF = none). Byte 2 of each (0x08 / 0x0C) is
+        the damage formula BattleCalcDamage applies (battle-unit +0x20 is current HP):
+          0 no damage, 1 standard, 2 half (Tempest, Annihilation, Meteor Strike, White Mute),
+          3 the attacker's HP / 20 (Throw a Kiss), 4 half the target's HP (Pumpkin Smash/Shower),
+          5 power / 6 (Sonic Boom's second hit), 6 a value passed in (Life Drain's heal),
+          7 power x 1.5 (Mirage Slash, Fatal Dance), 8 power x 1.6 (unused),
+          9 half the attacker's HP (Pumpkin Shower's second effect), 10 x 0.8 (Wind Storm).
+        The result is clamped to 1-9999.
 
 usage: python3 tools/table_dump.py [classes|items|consumables|attacks]...   # default: all
 """
