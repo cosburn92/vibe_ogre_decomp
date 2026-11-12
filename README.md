@@ -52,8 +52,10 @@ the wrong size shifts everything after it, so fix the first size mismatch first.
 `include/tables.h` has the class, item, consumable, attack and character record structs. Table
 accesses need real struct fields to match: byte-offset casts let GCC share the base address.
 
-Decompiled so far: about 505 functions (10% of them, 1% of the code bytes, since they are mostly
-small) across 20 files. Among them: table getters and `ClassAtLevel`/`AttackGetElement`
+Decompiled so far: about 625 functions (12% of them; a much smaller share of the code bytes, since
+most are small) across 24 files. Among them: the heap allocator, frame driver, display-list setup
+and save-data bit packer (`src/1060.c`), the LHa decompressor port with its static and dynamic
+Huffman decoders (`src/A370.c`), table getters and `ClassAtLevel`/`AttackGetElement`
 (`src/43100.c`), script accessors (`src/46090.c`), the scene table (`src/4D5C0.c`), the
 event-script opcode handlers (`src/1BA050.c`, with a `ScriptCtx` whose `pc` is volatile), battle
 helpers (`src/20BCE0.c`, `src/201430.c`, `src/205220.c`, `src/24BCA0.c`), the task pool
