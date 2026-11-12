@@ -501,7 +501,7 @@ segments:
       - [0x514B0, asm]
       - [0x5AC70, asm]
       - [0x5AFF0, asm]
-      - [0x5C060, asm]
+      - [0x5C060, c]
       - [0x5C1D0, asm]
       - [0x5C210, data]
       - [0x5CEBC, data, 40E80]
