@@ -457,6 +457,8 @@ SoundRequest = 0x801C5938; // type:func rom:0x208DC8
 // ovl_1F0A30
 // IsDragon: inferred: (battle unit) -> class (+0x4C) is 56-68 (Young Dragon..Tiamat) or 164 (Death Bahamut)
 IsDragon = 0x801C8D84; // type:func rom:0x20C214
+// BattleCalcDamage: (attacker, defender, power, ...) -> (power - defence + luck diff) * (100 - resistance) / 100 * (100 + rand 10) / 100
+BattleCalcDamage = 0x801F36AC; // type:func rom:0x23697C
 
 // ovl_29A4C0
 // BattleAnimStep2: inferred: another BattleAnimStep (calls SoundRequest in ovl_1F0A30)
@@ -492,6 +494,8 @@ ItemGetCategory = 0x8016F5C8; // type:func rom:0x454C8
 ItemIsWeapon = 0x8016F9F0; // type:func rom:0x458F0
 // PlayTimeUpdate: (gPlayTime) -> u16 hours, u8 minutes, u8 seconds from osGetTime, capped at 99:59:59
 PlayTimeUpdate = 0x8016CB44; // type:func rom:0x42A44
+// AttackGetElement: (attack, weapon items...) -> attack +5, or the weapon's element when that is 0xFF/0xF
+AttackGetElement = 0x8016E470; // type:func rom:0x44370
 ConsumableGetKind = 0x8016F500; // type:func rom:0x45400
 ConsumableGetTarget = 0x8016F540; // type:func rom:0x45440
 ConsumableGetUse = 0x8016F560; // type:func rom:0x45460

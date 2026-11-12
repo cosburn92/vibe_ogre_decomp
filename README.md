@@ -329,6 +329,11 @@ which builds a unit of a given class and level:
 - **`gAttackTable`** has 159 × 16 bytes for attacks and spells. Class attack ids are 1-based into
   it; entry 0 is "－".
 - **`gElementNames`** lists the element names.
+- **Resistances:** in battle the defender's resistance to the attack's element is its class value
+  plus its four items' modifiers (plus or minus alignment / 10 for Virtue and Bane), clamped to
+  0–100, and damage is multiplied by (100 − resistance) / 100 (`BattleCalcDamage`). Higher is
+  better, so an element's own armour really does leave its wearer weaker to that element (Flame
+  Leather: Flame −3, Water +8).
 - **Class status immunities** are a separate asset, chunk `0x3188AE`: one byte per class with Poison,
   Sleep, Paralyze and Petrify bits. Undead and golems ignore Poison, Sleep and Paralyze, Ghosts and
   Stone/Baldr Golems everything, Gorgons Poison, Cockatrices Petrify.
@@ -336,8 +341,6 @@ which builds a unit of a given class and level:
 Still unknown:
 - item byte `+0x06` (a 0–11 tier) and the `+0x1A` bit-7 flag (on a few unique items);
 - consumable use bits `0x2` and `0x4` (`0x1` = usable from the Organize screen);
-- whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
-  the opposite element's.
 
 Every byte of the eset files is now accounted for.
 

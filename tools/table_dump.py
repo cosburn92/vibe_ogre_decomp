@@ -18,7 +18,12 @@ read class's own record, else read record `base`.
         (func_801F32EC_ovl_22A280) uses attacker luck + equipment luck - target luck - equipment + 100.
   0x24  u8 alignment, copied to unit +0x1B (Cleric 65, Priest 78, Black Knight 30, Lich 15)
   0x25  7 resistances, u8 each, 50 = neutral: Physical, Wind, Flame, Earth, Water, Virtue, Bane
-        (the order of the element-name pointer table at 0x80187BD4)
+        (the order of the element-name pointer table at 0x80187BD4). In BattleCalcDamage the
+        defender's resistance R for the attack's element (AttackGetElement: attack +5, or the
+        weapon's element) is the class value + the four equipped items' +0x11 modifiers, plus
+        (alignment - 50) / 10 for Virtue or (50 - alignment) / 10 for Bane, clamped to 0-100:
+          damage = (attack - defence + luck difference) * (100 - R) / 100 * (100 + rand(10)) / 100
+        so higher is better. Elements 7 and 8 ignore resistance.
   0x2C  movement type 1-7 (1 flyers, 2 most infantry, 3 Amazon/Archer/Ninja, 4 beasts, 5 Valkyrie/
         Freya, 6 Zombies/Hydra/Blue Dragon, 7 giants and non-combat classes). Battle code indexes a
         signed modifier table by (type - 1) x 29 terrains + terrain (D_801F6910_ovl_22A280).
