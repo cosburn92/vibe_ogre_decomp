@@ -351,8 +351,19 @@ Still unknown:
 
 Every byte of the eset files is now accounted for.
 
+### Buried treasure (`maizo*`)
+
+The 40 `maizo*.bin` files (埋蔵, "buried treasure") are one LHA archive (handle `0x21AFA08`, first
+entry of the indirection chunk `0x21AF9F8`). `StageSetupUnits` loads the stage's member and unpacks
+it: a count, then 6-byte records of a global treasure id (1–230), x/y in 1/256ths of the map, and a
+kind (1 item, 2 consumable) with its u16 id. 249 treasures in all, 162 of them equipment. Found ids
+are bits in the saved bitfield `gTreasureFound`, so each treasure can be found once; a unit that
+reaches one gets it through `InventoryAdd`, and `TreasureDowse` (from the field item menu) digs up
+an unfound one, preferring equipment. `tools/maizo_dump.py` lists them, with the stage → file
+table.
+
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
-`maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
+and about 7,000 headerless LZ chunks. Many assets are reached
 the same way: overlays load handles with `lui`/`ori` immediates and call `LoadAsset`, sometimes
 through a 4-byte chunk holding the real handle.
 

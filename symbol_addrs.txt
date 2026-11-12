@@ -553,6 +553,10 @@ UnitShouldRetreat = 0x801CFDE0; // type:func rom:0x124520
 SquadUpkeep = 0x801D0458; // type:func rom:0x124B98
 // InventoryAdd: (v, ?) -> bit 15 set: item v & 0x7FFF into the item stock, else consumable v (max 99 each)
 InventoryAdd = 0x801DC720; // type:func rom:0x130E60
+// gTreasureFound: saved bitfield of found buried treasures (maizo ids 1-230)
+gTreasureFound = 0x80196A38;
+// TreasureDowse (ovl_1A9290, field item menu): picks an unfound treasure on the map, 76% an item one, marks it found
+TreasureDowse = 0x8021B5E0; // type:func rom:0x1AF8F0
 // Stage defeat checks (eset section A byte 2): lord alive, headquarters (location flag 0x10) still held, before deadline
 StageHQHeld = 0x801E5548; // type:func rom:0x139C88
 StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8
