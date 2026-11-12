@@ -2,10 +2,14 @@
 
 /* libmus channel state (channel_t, 0x13C bytes); only fields the code here touches are named. */
 typedef struct {
-    /* 0x00 */ u8 pad00[0x4];
+    /* 0x00 */ s32 unk00;
     /* 0x04 */ s32 unk04;
     /* 0x08 */ void *pdata;
-    /* 0x0C */ u8 pad0C[0x18];
+    /* 0x0C */ u8 pad0C[0x4];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad14[0x8];
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ u8 pad20[0x4];
     /* 0x24 */ f32 unk24;
     /* 0x28 */ u8 pad28[0x4];
     /* 0x2C */ f32 unk2C;
@@ -21,17 +25,21 @@ typedef struct {
     /* 0x68 */ s32 unk68;
     /* 0x6C */ f32 unk6C;
     /* 0x70 */ f32 unk70;
-    /* 0x74 */ s32 unk74;
-    /* 0x78 */ s32 unk78;
+    /* 0x74 */ void *unk74;
+    /* 0x78 */ void *unk78;
     /* 0x7C */ s32 unk7C;
     /* 0x80 */ u8 pad80[0x4];
     /* 0x84 */ s32 unk84;
     /* 0x88 */ u8 pad88[0x8];
     /* 0x90 */ f32 unk90;
     /* 0x94 */ s32 unk94;
-    /* 0x98 */ u8 pad98[0x6];
+    /* 0x98 */ u16 unk98;
+    /* 0x9A */ u8 pad9A[0x2];
+    /* 0x9C */ u16 unk9C;
     /* 0x9E */ u16 unk9E;
-    /* 0xA0 */ u8 padA0[0xC];
+    /* 0xA0 */ u8 padA0[0x8];
+    /* 0xA8 */ u16 unkA8;
+    /* 0xAA */ u8 padAA[0x2];
     /* 0xAC */ u16 length;
     /* 0xAE */ u16 unkAE;
     /* 0xB0 */ u16 unkB0;
@@ -48,7 +56,9 @@ typedef struct {
     /* 0xBE */ u8 unkBE;
     /* 0xBF */ u8 padBF[0xB];
     /* 0xCA */ u8 unkCA;
-    /* 0xCB */ u8 padCB[0x3];
+    /* 0xCB */ u8 unkCB;
+    /* 0xCC */ u8 unkCC;
+    /* 0xCD */ u8 padCD[0x1];
     /* 0xCE */ u8 wobble;
     /* 0xCF */ u8 unkCF;
     /* 0xD0 */ u8 padD0[0x2];
@@ -70,16 +80,39 @@ typedef struct {
 } MusBank;
 
 typedef struct {
-    /* 0x00 */ u8 pad00[4];
+    /* 0x00 */ s32 unk00;
     /* 0x04 */ s32 count;
-    /* 0x08 */ u8 pad08[8];
+    /* 0x08 */ u8 pad08[4];
+    /* 0x0C */ s32 flags;
     /* 0x10 */ void *ptrbank;
+    /* 0x14 */ u32 unk14;
+    /* 0x18 */ struct {
+        u32 ptr;
+        u32 unk4;
+    } entries[1];
 } MusFxBank;
+
+typedef struct {
+    /* 0x00 */ u8 pad00[8];
+    /* 0x08 */ s32 unk08;
+    /* 0x0C */ u8 pad0C[8];
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ u8 pad18[8];
+    /* 0x20 */ s32 unk20;
+} MusSong;
 
 typedef struct {
     /* 0x00 */ u8 type;
     /* 0x04 */ s32 value;
 } MusCommand;
+
+extern MusCommand *D_800B1850;
+extern s32 D_800B184C;
+extern s32 D_800B1848;
+extern s32 D_800B1844;
+void *__MusIntMemMalloc(s32 size);
+void func_80083F38(s32 handle, s32 a, s32 b);
+void func_80085B5C(void *dst, void *src, s32 n);
 
 typedef struct {
     /* 0x00 */ u8 pad00[0x1C];
@@ -173,7 +206,40 @@ s32 func_800819D4(u32 flags) {
     return n;
 }
 
+#ifdef NON_MATCHING
+/* Same code; loop counters get different registers. */
+s32 func_80081A54(s32 handle, s32 speed) {
+    s32 i, n;
+    s32 s;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    s = speed;
+    if (s == 0) {
+        s = 1;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle && cp->unk10 == -1) {
+            if (cp->unk00 & 1) {
+                cp->unk1C = 1;
+                cp->unk10 = 0;
+                cp->unk00 &= ~1;
+            } else {
+                cp->unk1C = s;
+                cp->unk10 = speed;
+            }
+            n++;
+        }
+    }
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081A54);
+#endif
 
 #ifdef NON_MATCHING
 /* Same code; i/cp/count load order differs (register assignment). */
@@ -248,9 +314,53 @@ s32 func_80081C30(s32 handle, f32 value) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081CA0);
+s32 func_80081CA0(s32 handle, s32 tempo) {
+    s32 i, n;
+    MusChannel *cp;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081D2C);
+    if (handle == 0) {
+        return 0;
+    }
+    if (tempo <= 0) {
+        tempo = 1;
+    } else if (tempo > 0x100) {
+        tempo = 0x100;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            n++;
+            cp->unk98 = tempo;
+            cp->unk9C = (cp->unkA8 * tempo) >> 7;
+        }
+    }
+    return n;
+}
+
+s32 func_80081D2C(s32 handle, s32 pan) {
+    s32 i, n;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    if (pan < 0) {
+        pan = 0;
+    } else if (pan >= 0x80) {
+        pan = 0x7F;
+    }
+    n = 0;
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            n++;
+            cp->unkCB = pan;
+            cp->unkCC = 0xFF;
+        }
+    }
+    return n;
+}
 
 void func_80081DB4(void *bank) {
     func_8008350C(bank);
@@ -328,7 +438,28 @@ void func_80081F20(s32 type) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Same code; bank and the index swap registers. */
+void func_80081F7C(MusFxBank *bank) {
+    u32 base = (u32)bank;
+    s32 i;
+
+    if (bank->flags & 1) {
+        return;
+    }
+    if (D_800B1838 == NULL) {
+        D_800B1838 = bank;
+    }
+    bank->flags = 1;
+    bank->ptrbank = NULL;
+    bank->unk14 = base + bank->unk14;
+    for (i = 0; i < bank->unk00; i++) {
+        bank->entries[i].ptr = base + bank->entries[i].ptr;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081F7C);
+#endif
 
 s32 MusFxBankNumberOfEffects(MusFxBank *bank) {
     return bank->count;
@@ -358,19 +489,85 @@ void func_8008203C(s32 a) {
     D_800A9B8C = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082048);
+#ifdef NON_MATCHING
+/* Same code; count and channel pointer swap registers. */
+s32 func_80082048(s32 handle) {
+    s32 i;
+    MusChannel *cp;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800820AC);
+    if (handle != 0) {
+        cp = D_800B180C;
+        for (i = 0; i < D_800B1804; i++, cp++) {
+            if (cp->handle == handle) {
+                return ((cp->unk74 != 0) ? (MusSong *)cp->unk74 : (MusSong *)cp->unk78)->unk08;
+            }
+        }
+    }
+    return 0;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/114F0", func_80082048);
+#endif
+
+s32 func_800820AC(s32 handle) {
+    s32 i;
+    MusChannel *cp;
+
+    if (handle == 0) {
+        return 0;
+    }
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            if (cp->unk74 != 0) {
+                return ((MusSong *)cp->unk74)->unk20;
+            }
+            return ((MusSong *)cp->unk78)->unk14;
+        }
+    }
+    return 0;
+}
 
 void func_80082124(s32 a) {
     D_800B1840 = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082130);
+void func_80082130(s32 n) {
+    if (n < 0x40) {
+        n = 0x40;
+    } else if (n > 0x400) {
+        n = 0x400;
+    }
+    D_800B1850 = __MusIntMemMalloc(n * 8);
+    D_800B184C = n;
+    D_800B1848 = 0;
+    D_800B1844 = 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082194);
+void func_80082194(MusCommand *cmd) {
+    switch (cmd->type) {
+        case 0:
+            func_80083F38(cmd->value, -2, 1);
+            break;
+        case 1:
+            func_80083F38(cmd->value, -2, 0);
+            break;
+        case 2:
+            ChangeCustomEffect(cmd->value);
+            break;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082214);
+s32 func_80082214(MusCommand *cmd) {
+    s32 next = (D_800B1848 + 1) % D_800B184C;
+
+    if (next == D_800B1844) {
+        return 0;
+    }
+    func_80085B5C(D_800B1850 + D_800B1848, cmd, 8);
+    D_800B1848 = next;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800822AC);
 
