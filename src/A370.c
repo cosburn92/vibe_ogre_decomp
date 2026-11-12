@@ -54,6 +54,14 @@ typedef struct {
 #define n1 D_800AF3D8
 #define parent D_800AF41C
 #define count D_800AF3A0
+#define left D_800AF3FC
+#define right D_800AF400
+#define blocksize D_800AF3C6
+
+extern u16 *D_800AF3FC;
+extern u16 *D_800AF400;
+void func_8007C74C(s16 nn, u8 nbit, s16 i_special);
+void func_8007CAB8(void);
 
 extern u32 D_800AF3A0;
 void func_8007DDF0(s32 p);
@@ -134,7 +142,7 @@ void func_8007BBC0(s32 a);
 ArcFile *func_8007F4E4(void *name, u8 *mode, u8 *buf, s32 size);
 extern u8 *D_800AF390;
 extern u16 *D_800AF3F8;
-extern s16 D_800AF3C6;
+extern u16 D_800AF3C6;
 extern s32 D_800AF3CC;
 extern s16 D_800AF3C8;
 extern u16 D_800AF39E;
@@ -540,11 +548,113 @@ void func_8007C74C(s16 nn, u8 nbit, s16 i_special) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007CAB8);
+/* read_c_len */
+void func_8007CAB8(void) {
+    s16 i, c, n;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007CE48);
+    n = func_8007C25C(9);
+    if (n == 0) {
+        c = func_8007C25C(9);
+        for (i = 0; i < 510; i++) {
+            c_len[i] = 0;
+        }
+        for (i = 0; i < 4096; i++) {
+            c_table[i] = c;
+        }
+    } else {
+        i = 0;
+        while (i < n) {
+            c = pt_table[bitbuf >> (16 - 8)];
+            if (c >= 19) {
+                u16 mask = 1 << (16 - 9);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007D200);
+                do {
+                    if (bitbuf & mask) {
+                        c = right[c];
+                    } else {
+                        c = left[c];
+                    }
+                    mask >>= 1;
+                } while (c >= 19);
+            }
+            fillbuf(pt_len[c]);
+            if (c <= 2) {
+                if (c == 0) {
+                    c = 1;
+                } else if (c == 1) {
+                    c = func_8007C25C(4) + 3;
+                } else {
+                    c = func_8007C25C(9) + 20;
+                }
+                while (--c >= 0) {
+                    c_len[i++] = 0;
+                }
+            } else {
+                c_len[i++] = c - 2;
+            }
+        }
+        while (i < 510) {
+            c_len[i++] = 0;
+        }
+        func_8007BC24(510, c_len, 12, c_table);
+    }
+}
+
+/* decode_c_st1 */
+u16 func_8007CE48(void) {
+    u16 j, mask;
+
+    if (blocksize == 0) {
+        blocksize = func_8007C25C(16);
+        func_8007C74C(19, 5, 3);
+        func_8007CAB8();
+        func_8007C74C(14, 4, -1);
+    }
+    blocksize--;
+    j = c_table[bitbuf >> 4];
+    if (j < 510) {
+        fillbuf(c_len[j]);
+    } else {
+        fillbuf(12);
+        mask = 1 << (16 - 1);
+        do {
+            if (bitbuf & mask) {
+                j = right[j];
+            } else {
+                j = left[j];
+            }
+            mask >>= 1;
+        } while (j >= 510);
+        fillbuf(c_len[j] - 12);
+    }
+    return j;
+}
+
+/* decode_p_st1 */
+u16 func_8007D200(void) {
+    u16 j, mask;
+
+    j = pt_table[bitbuf >> (16 - 8)];
+    if (j < 14) {
+        fillbuf(pt_len[j]);
+    } else {
+        fillbuf(8);
+        mask = 1 << (16 - 1);
+        do {
+            if (bitbuf & mask) {
+                j = right[j];
+            } else {
+                j = left[j];
+            }
+            mask >>= 1;
+        } while (j >= 14);
+        fillbuf(pt_len[j] - 8);
+    }
+    if (j != 0) {
+        j = (1 << (j - 1)) + func_8007C25C(j - 1);
+    }
+    return j;
+}
 
 void func_8007D594(void) {
     func_8007C438();
