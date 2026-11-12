@@ -17,6 +17,8 @@ options:
   ld_dependencies: True
 
   find_file_boundaries: True
+  # Each input (asm chunk or KMC-assembled object) carries its own padding; don't force 16.
+  subalign: 4
   header_encoding: ASCII
 
   o_as_suffix: True
@@ -296,6 +298,49 @@ segments:
       - [0x2DDF0, asm]
       - [0x2DE10, asm]
       - [0x2E570, data]
+      # .rodata: one chunk per text file, in text order (tools/rodata_chunks.py).
+      - [0x3E100, rodata, 1060]
+      - [0x3E278, rodata, 4AC0]
+      - [0x3E330, rodata, 5FC0]
+      - [0x3E388, rodata, 68E0]
+      - [0x3E3A8, rodata, 8700]
+      - [0x3E438, rodata, A370]
+      - [0x3E7A0, .rodata, FDC0]
+      - [0x3E7C0, .rodata, 10110]
+      - [0x3E7D0, .rodata, 10190]
+      - [0x3E7F0, rodata, 10CF0]
+      - [0x3E800, rodata, 11170]
+      - [0x3E810, rodata, 114F0]
+      - [0x3E900, rodata, 16100]
+      - [0x3E9A0, rodata, 177B0]
+      - [0x3E9B0, rodata, 17990]
+      - [0x3E9F0, rodata, 189D0]
+      - [0x3EA10, rodata, 1B940]
+      - [0x3EA90, rodata, 1C2B0]
+      - [0x3EAB0, rodata, 1C810]
+      - [0x3EAC0, rodata, 1C9F0]
+      - [0x3EB00, rodata, 1DE40]
+      - [0x3EBF0, rodata, 1EB10]
+      - [0x3EC20, rodata, 1EF30]
+      - [0x3EC70, rodata, 1FD20]
+      - [0x3EC98, rodata, 20BF0]
+      - [0x3ED10, rodata, 21450]
+      - [0x3ED40, rodata, 21EB0]
+      - [0x3ED50, rodata, 22720]
+      - [0x3ED98, rodata, 231B0]
+      - [0x3EDF0, rodata, 240B0]
+      - [0x3EE10, rodata, 25C20]
+      - [0x3EE20, rodata, 29160]
+      - [0x3EE70, rodata]
+      - [0x3EE80, rodata, 29FE0]
+      - [0x3F000, rodata, 2BA70]
+      - [0x3F070, rodata, 2CDA0]
+      - [0x3F0C0, rodata, 2CEF0]
+      - [0x3F120, rodata, 2D220]
+      - [0x3F130, rodata, 2D300]
+      - [0x3F140, rodata, 2D3E0]
+      - [0x3F170, rodata, 2D680]
+      - [0x3F180, rodata, 2D7F0]
       - { type: bss, vram: 0x800AEDB0 }
 
   - name: ovl_03F1B0

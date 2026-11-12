@@ -35,6 +35,23 @@ To test a candidate C function against the ROM without touching the build:
 tools/matchtest/check.sh candidate.c <rom_offset> <size>   # prints MATCH or an asm diff
 ```
 
+Workflow for decompiling a file:
+
+```sh
+tools/to_c.sh FDC0              # asm segment -> src/FDC0.c of INCLUDE_ASM stubs (+ its rodata chunk)
+make                            # still matches; now replace stubs with C one at a time
+tools/romdiff.sh 0xFDC0 0x150   # disassembly diff of a ROM range when it doesn't
+```
+
+### Rodata
+
+Each source file's `.rodata` (strings, jump tables, float/double constants) sits in one chunk, and
+the chunks appear in the same order as the files' `.text`. `tools/rodata_chunks.py 3E100 3F1B0`
+assigns each chunk to the text file that references it and emits the yaml subsegments. Once a file is
+C, its chunk becomes `.rodata` so it's linked from the C object; for `INCLUDE_ASM` functions splat
+migrates the constants into the function's `.s`. The linker script uses `SUBALIGN(4)` because every
+input already carries its own padding.
+
 ## ROM layout (as currently understood)
 
 | ROM range | Contents |
@@ -66,8 +83,8 @@ Many overlays share a VRAM address (twelve load at `0x80214F80`), so overlay sym
 
 ## Next steps
 
-1. Split the overlays' data sections into data and rodata, and add BSS segments.
+1. Split main's `.data` per file the same way, and the overlays' data sections into data/rodata/BSS.
 2. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
-3. Convert `asm/` functions into `src/` C (first match: `src/102E0.c`). Mixed files with
-   `INCLUDE_ASM` still need checking against the KMC `as`, which may not accept `include/macro.inc`.
+3. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
+   toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
 4. Identify the asset compression format.
