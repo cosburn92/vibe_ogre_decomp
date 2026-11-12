@@ -159,13 +159,14 @@ extern char D_800AE334[];
 s32 osSendMesg(void *mq, void *msg, s32 flag);
 void osSyncPrintf(const char *fmt, ...);
 u16 func_8007C25C(u8 n);
+u32 ReadU32BE(u8 *p);
 
 
 
 void func_8007C438(void);
 
 /* memcpy with word-aligned bulk copy */
-void *func_80079F70(void *dst, void *src, u32 n) {
+inline void *func_80079F70(void *dst, void *src, u32 n) {
     u8 *d;
     u8 *s;
     u32 i;
@@ -209,7 +210,7 @@ void *func_80079F70(void *dst, void *src, u32 n) {
 }
 
 /* memset with word-aligned bulk fill */
-void *func_8007A070(void *dst, s32 c, u32 n) {
+inline void *func_8007A070(void *dst, s32 c, u32 n) {
     u8 *d;
     u32 i;
 
@@ -245,7 +246,72 @@ void *func_8007A070(void *dst, s32 c, u32 n) {
     return dst;
 }
 
+#ifdef NON_MATCHING
+/* Close: register allocation and scheduling around the inlined memcpy/memset differ. */
+/* Decompresses an LZ stream: a big-endian size, then op bytes (back references, literal runs,
+ * zero and 0xFF fills). memcpy/memset are inline. Returns the size. */
+u32 DecodeLZ(u8 *dst, u8 *src) {
+    u32 size = ReadU32BE(src);
+    u32 done;
+    u32 len;
+    u8 b;
+
+    src += 4;
+    for (done = 0; done < size;) {
+        b = *src++;
+        if (b & 0x80) {
+            u8 lo;
+
+            len = ((b >> 3) & 0xF) + 3;
+            lo = *src++;
+            func_80079F70(dst + done, dst + done - ((b & 7) << 8) - lo - 1, len);
+            done += len;
+        } else if (b & 0x40) {
+            len = (b & 0x3F) + 1;
+            func_80079F70(dst + done, src, len);
+            done += len;
+            src += len;
+        } else if (b & 0x20) {
+            len = (b & 0x1F) + 2;
+            func_8007A070(dst + done, 0, len);
+            done += len;
+        } else if (b & 0x10) {
+            u8 c1 = *src++;
+            u8 c2 = *src++;
+
+            len = ((b & 0xF) | ((c1 >> 2) & 0x30)) + 4;
+            func_80079F70(dst + done, dst + done - (((c1 & 0x3F) << 8) | c2) - 1, len);
+            done += len;
+        } else {
+            switch (b) {
+                case 0: {
+                    u8 n = *src++;
+                    u8 hi = *src++;
+                    u8 lo = *src++;
+
+                    len = n + 5;
+                    func_80079F70(dst + done, dst + done - ((hi << 8) | lo) - 1, len);
+                    done += len;
+                    break;
+                }
+                case 1:
+                    len = *src++ + 3;
+                    func_8007A070(dst + done, 0xFF, len);
+                    done += len;
+                    break;
+                case 2:
+                    len = *src++ + 3;
+                    func_8007A070(dst + done, 0, len);
+                    done += len;
+                    break;
+            }
+        }
+    }
+    return size;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/A370", DecodeLZ);
+#endif
 
 u32 ReadU32BE(u8 *p) {
     return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
