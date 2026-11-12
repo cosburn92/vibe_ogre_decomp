@@ -30,6 +30,7 @@ void *LoadChunkRaw(void *dst, s32 handle);
 void *LoadChunk(s32 handle);
 void *HMalloc(s32 size);
 void HFree(void *p);
+void *LoadAsset();
 
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {
@@ -387,9 +388,71 @@ char * func_8016E1DC_ovl_040E80(u8 cls, u8 other) {
     return gClassTable[other].name;
 }
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016E230_ovl_040E80);
+#ifdef NON_MATCHING
+/* The class's attack id for a row, falling back to the other class when unset (0xFF).
+ * One instruction short: the original lays out row 0's fallback after a `j` to the exit. */
+u8 func_8016E230_ovl_040E80(u8 cls, u8 other, u8 row) {
+    u8 v;
 
+    if (gClassTable[cls].baseClass != other) {
+        cls = other;
+    }
+    if (row == 0) {
+        v = gClassTable[cls].attacks[0][0];
+        if (v != 0xFF) {
+            return v;
+        }
+        return gClassTable[other].attacks[0][0];
+    }
+    if (row == 1) {
+        v = gClassTable[cls].attacks[1][0];
+        if (v != 0xFF) {
+            return v;
+        }
+        return gClassTable[other].attacks[1][0];
+    }
+    v = gClassTable[cls].attacks[2][0];
+    if (v != 0xFF) {
+        return v;
+    }
+    return gClassTable[other].attacks[2][0];
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/43100", func_8016E230_ovl_040E80);
+#endif
+
+#ifdef NON_MATCHING
+/* The class's attack count for a row, falling back to the other class when unset (0xFF).
+ * One instruction short: the original lays out row 0's fallback after a `j` to the exit. */
+u8 func_8016E338_ovl_040E80(u8 cls, u8 other, u8 row) {
+    u8 v;
+
+    if (gClassTable[cls].baseClass != other) {
+        cls = other;
+    }
+    if (row == 0) {
+        v = gClassTable[cls].attacks[0][1];
+        if (v != 0xFF) {
+            return v;
+        }
+        return gClassTable[other].attacks[0][1];
+    }
+    if (row == 1) {
+        v = gClassTable[cls].attacks[1][1];
+        if (v != 0xFF) {
+            return v;
+        }
+        return gClassTable[other].attacks[1][1];
+    }
+    v = gClassTable[cls].attacks[2][1];
+    if (v != 0xFF) {
+        return v;
+    }
+    return gClassTable[other].attacks[2][1];
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016E338_ovl_040E80);
+#endif
 
 char * AttackGetName(u8 id) {
     return gAttackTable[id].name;
@@ -726,4 +789,28 @@ void *func_8016FBE0_ovl_040E80(u8 cls, u8 variant, void **out) {
     return chunk;
 }
 
+#ifdef NON_MATCHING
+/* As func_8016FBE0, through LoadAsset. Register allocation differs around the u16 sprite value. */
+void *func_8016FCEC_ovl_040E80(u8 cls, u8 variant, void **out) {
+    u16 v;
+    s32 sub;
+    u8 *chunk;
+
+    if (variant == 0) {
+        v = D_8018ECE0_ovl_040E80[cls].sprite[0];
+    } else {
+        v = D_8018ECE0_ovl_040E80[cls].sprite[1];
+    }
+    sub = v & 7;
+    if (v != 0) {
+        chunk = LoadAsset(0x1DFB6EA, v >> 3, -10);
+        *out = chunk + (sub * 0xA0 + 0x780);
+    } else {
+        chunk = NULL;
+        *out = NULL;
+    }
+    return chunk;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/43100", func_8016FCEC_ovl_040E80);
+#endif
