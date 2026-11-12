@@ -10,6 +10,24 @@ typedef struct {
     /* 0x08 */ u8 done;
 } ArcMsg;
 
+typedef struct {
+    /* 0x00 */ u8 unk00[8];
+    /* 0x08 */ u8 *buf;
+    /* 0x0C */ u8 unk0C[4];
+    /* 0x10 */ s32 pos;
+} ArcFile;
+
+#define bitbuf D_800AF3C2
+#define subbitbuf D_800AF3C4
+#define bitcount D_800AF3C5
+#define compsize D_800AF398
+#define infile D_800AF36C
+
+extern u16 D_800AF3C2;
+extern u8 D_800AF3C4;
+extern u8 D_800AF3C5;
+extern s32 D_800AF398;
+extern ArcFile *D_800AF36C;
 extern u8 D_800AF320[];
 extern u8 *D_800AF390;
 extern u16 *D_800AF3F8;
@@ -26,11 +44,11 @@ extern char D_800AE324[];
 extern char D_800AE334[];
 s32 osSendMesg(void *mq, void *msg, s32 flag);
 void osSyncPrintf(const char *fmt, ...);
-u16 func_8007C25C(s32 n);
+u16 func_8007C25C(u8 n);
 
 
 
-void func_8007C438();
+void func_8007C438(void);
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_80079F70);
 
@@ -102,9 +120,35 @@ s32 func_8007B710(void) {
     return (hi << 8) | lo;
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007B744);
+s32 func_8007B744(void) {
+    s32 b0, b1, b2, b3;
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007B7A8);
+    b0 = *D_800AF390++;
+    b1 = *D_800AF390++;
+    b2 = *D_800AF390++;
+    b3 = *D_800AF390++;
+    return (b3 << 24) + (b2 << 16) + (b1 << 8) + b0;
+}
+
+/* generic_to_unix_filename: '\' becomes '/', and all-upper-case names are lowered. */
+void func_8007B7A8(u8 *name, s32 len) {
+    s32 i;
+    s32 lower = 0;
+
+    for (i = 0; i < len; i++) {
+        if (name[i] >= 'a' && name[i] <= 'z') {
+            lower = 1;
+            break;
+        }
+    }
+    for (i = 0; i < len; i++) {
+        if (name[i] == 0x5C) {
+            name[i] = '/';
+        } else if (!lower && name[i] >= 'A' && name[i] <= 'Z') {
+            name[i] += 0x20;
+        }
+    }
+}
 
 /* Converts a path to lower case with forward slashes. */
 void func_8007B83C(u8 *s, s32 n) {
@@ -185,11 +229,40 @@ void func_8007C204(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007C25C);
+static inline void fillbuf(u8 n) {
+    while (n > bitcount) {
+        n -= bitcount;
+        bitbuf = (bitbuf << bitcount) + (subbitbuf >> (8 - bitcount));
+        if (compsize != 0) {
+            compsize--;
+            subbitbuf = infile->buf[infile->pos++];
+        } else {
+            subbitbuf = 0;
+        }
+        bitcount = 8;
+    }
+    bitcount -= n;
+    bitbuf = (bitbuf << n) + (subbitbuf >> (8 - n));
+    subbitbuf <<= n;
+}
+
+/* getbits */
+u16 func_8007C25C(u8 n) {
+    u16 x = bitbuf >> (16 - n);
+
+    fillbuf(n);
+    return x;
+}
 
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007C378);
 
-INCLUDE_ASM("asm/nonmatchings/A370", func_8007C438);
+/* init_getbits */
+void func_8007C438(void) {
+    bitbuf = 0;
+    subbitbuf = 0;
+    bitcount = 0;
+    fillbuf(16);
+}
 
 /* Replaces path separators ('\', '/', 0xFF) with sep; returns the start of the last component. */
 u8 *func_8007C538(u8 *s, u8 sep) {
