@@ -503,6 +503,10 @@ gStageBaseLevel = 0x801F1035; // size:0x1 segment:ovl_101CE0
 StageSetupUnits = 0x80215C18; // type:func rom:0x1960A8
 // SquadSetupItems: (slot, heals, fruit, revives) -> fills the squad's consumable slots (eset bytes 15-17)
 SquadSetupItems = 0x8021590C; // type:func rom:0x195D9C
+// gLegions: 10 x 11 bytes: +0 number, +1 flags (0x01 used, 0x80 enemy), +2-6 squad slots, +8 formation
+gLegions = 0x801969B8;
+// gFormationNames: legion formation names, index 1-8 (0 = blank)
+gFormationNames = 0x8021315C; // size:0x24 segment:ovl_14EBE0
 
 // ovl_101CE0
 Magnetic = 0x801B44DC; // type:func rom:0x108C1C

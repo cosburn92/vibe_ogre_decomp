@@ -230,9 +230,16 @@ member with `LoadAsset(0x21B35B2, 0, -4, D_8018F5A8[stage * 9])`, and `StageSetu
 prints them, with the byte layouts in its header:
 
 - **eset file:** four section offsets; stage parameters including the base level; then 18-byte
-  squad records giving the squad group, unit slot, template id, position (a spawn point or x/y in
+  squad records giving the legion and its formation, unit slot, template id, position (a spawn point or x/y in
   1/256ths of the map), sprite scale, starting order, retreat setting and behaviour bytes. 891
   records in all.
+- **Legions** (bytes 0 and 1): consecutive squads with the same non-zero byte 0 form a legion of up
+  to five squads that marches together behind its first squad, the legion core. Byte 1 of the
+  first record is the legion's formation: 1 Mobile Wall, 2 Right Ahead, 3 Left Ahead, 4 Grand
+  Arrow, 5 Wedge Shift, 6 Dual Wedge, 7 Funnel Shift, 8 Wing Shift (`gFormationNames` in
+  `ovl_14EBE0`). The in-game help says the formation decides which way a beaten enemy squad is
+  pushed back. `StageSetupUnits` fills an 11-byte `gLegions` record per legion, with the formation
+  at `+8`. Legions appear in 18 stage files, mostly in Funnel Shift (19) or Dual Wedge (11).
 - **Retreat setting** (byte 9, unit `+0xBB`): an enemy squad leaves its order to rest once a member
   is below 75%, 50% or 25% HP (settings 1, 2, 3) or too fatigued. It stays until everyone is at
   full HP with no fatigue. Setting 4 never retreats; 2 (340 squads) and 4 (272) are the most
@@ -330,7 +337,7 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet in the eset files: squad byte 1, which `StageSetupUnits` never reads.
+Every byte of the eset files is now accounted for.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached

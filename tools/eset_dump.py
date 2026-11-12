@@ -8,8 +8,15 @@ eset file:
   A     stage parameters, copied to globals: base level (D_801F1035), two more bytes (D_801F1036/37),
         a byte (D_80196A2C), a byte (D_80196A2E), then two bytes (D_801F0E0C/0D)
   B     u8 count, then 18-byte squad records:
-          0     squad group (records with the same non-zero value share the first one's position)
-          1     ? (not read by StageSetupUnits)
+          0     legion (0 = none). Consecutive records with the same non-zero value form a legion
+                of up to five squads; the first is the legion core, and the others share its
+                position. StageSetupUnits builds one 11-byte gLegions record per legion:
+                +0 number, +1 flags (0x01 in use, 0x80 enemy), +2-6 squad slots (0xFF = empty),
+                +7 0, +8 formation
+          1     legion formation, set on the first record of a legion: 1 Mobile Wall, 2 Right
+                Ahead, 3 Left Ahead, 4 Grand Arrow, 5 Wedge Shift, 6 Dual Wedge, 7 Funnel Shift,
+                8 Wing Shift (gFormationNames). The formation decides which way a beaten enemy
+                squad is pushed back
           2     unit slot (bit 7 is set by the game for a few special stage/template pairs)
           3-4   u16 enemy template, 1-based index into enemydat.bin
           5, 6  position: if byte 6 is 0, byte 5 is a 1-based spawn-point index; otherwise x, y in
@@ -168,6 +175,8 @@ def drop(r, items):
     return f"  drops consumable {CONSUMABLES[v] if v < len(CONSUMABLES) else v}"
 
 
+FORMATIONS = ["", "Mobile Wall", "Right Ahead", "Left Ahead", "Grand Arrow", "Wedge Shift",
+              "Dual Wedge", "Funnel Shift", "Wing Shift"]
 RETREAT = {0: "fatigued", 1: "HP<75%", 2: "HP<50%", 3: "HP<25%", 4: "never"}
 
 
@@ -235,9 +244,10 @@ def dump(path, enemydat, classes, items):
         r = d[offs[1] + 1 + 18 * i:offs[1] + 19 + 18 * i]
         tid, = struct.unpack_from(">H", r, 3)
         pos = f"spawn point {r[5]}" if r[6] == 0 else f"x={r[5]}/256 y={r[6]}/256"
-        print(f"  squad {r[0]:2} slot {r[2] & 0x7F:2} template {tid:3}  {pos:22} scale {r[7]}  "
+        legion = f"  legion {r[0]}" + (f" {FORMATIONS[r[1]]}" if r[1] < len(FORMATIONS) and r[1] else "") if r[0] else ""
+        print(f"  squad    slot {r[2] & 0x7F:2} template {tid:3}  {pos:22} scale {r[7]}  "
               f"order {r[8]:2} retreat {RETREAT.get(r[9], r[9])}  {STRATEGY.get(r[10], r[10])}  harmony {r[11]}"
-              f"  heal/fruit/revive {r[15]}/{r[16]}/{r[17]}{drop(r, items)}")
+              f"  heal/fruit/revive {r[15]}/{r[16]}/{r[17]}{drop(r, items)}{legion}")
         for g in template(enemydat, tid):
             lv = f"{g['level']:+d}"
             cls = classes[g["class"]] if g["class"] < len(classes) else f"#{g['class']}"
