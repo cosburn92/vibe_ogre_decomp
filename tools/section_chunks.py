@@ -25,7 +25,8 @@ import re
 import sys
 
 MAIN_TEXT = (0x1060, 0x2E570)
-SYM = r"(?:D|jtbl)_[0-9A-F]{8}(?:_ovl_[0-9A-F]{6})?"
+# any data label: splat's D_/jtbl_ names and names from symbol_addrs.txt (e.g. libultra globals)
+SYM = r"[A-Za-z_][A-Za-z0-9_]*"
 
 
 @functools.lru_cache(None)

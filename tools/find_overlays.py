@@ -2,10 +2,10 @@
 """Recover overlay ROM/VRAM ranges from calls to the DMA loader.
 
 Pattern used by the game (see main @ 0x80071F3C):
-    func_800900C0(text_start, text_size)   ; icache invalidate
-    func_80090010(data_start, data_size)   ; dcache writeback/inval
+    osInvalICache(text_start, text_size)
+    osInvalDCache(data_start, data_size)
     func_8009DA50(rom_start, vram, size)   ; DMA load
-    func_80093380(bss_start, bss_size)     ; bzero
+    bzero(bss_start, bss_size)
 Constant args are recovered by simple linear propagation of lui/addiu/ori/addu/subu.
 """
 import struct, sys

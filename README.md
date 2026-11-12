@@ -73,6 +73,15 @@ Every input already carries its own padding, so the linker script uses `SUBALIGN
 assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialized globals
 (`s32 x = 0;`) in `.data`, not `.bss`.
 
+## Libraries
+
+Main links libultra, both audio libraries (`libaudio` and `n_audio`) and a libc/printf (`_Printf`,
+`_Litob`, `_Ldtob`). Their symbols in `symbol_addrs.txt` come from
+[n64sym](https://github.com/shygoo/n64sym)'s built-in signatures (run on the ROM with `-s -f splat`),
+minus its auto-generated local labels and hits outside main. Names that occur twice, because the same
+static is in two objects (e.g. `_getRate`), get an address suffix. `osInvalICache` isn't in n64sym's
+database for this SDK version; it was identified by hand.
+
 ## ROM layout (as currently understood)
 
 | ROM range | Contents |
@@ -89,7 +98,7 @@ assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialize
 ### Overlays
 
 The game loads overlays with `func_8009DA50(rom_start, vram, size)` (a DMA wrapper), along with
-icache/dcache invalidation (`func_800900C0` / `func_80090010`) and a BSS clear (`func_80093380`).
+`osInvalICache` / `osInvalDCache` and a `bzero` of the BSS.
 19 overlays are described by a table in main's data at `0x800A83C0` (10 words each:
 vram, ?, rom start/end, bss start/end, text start/end, data start/end). The rest are loaded with
 literal arguments. `tools/find_overlays.py` recovers both and generates the splat segments:
@@ -124,7 +133,8 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
 
 ## Next steps
 
-1. Identify libultra functions (osPiStartDma, osCreateThread, etc.) and name them in `symbol_addrs.txt`.
+1. Name the libultra statics n64sym can't see (e.g. `func_800903B4` = `__osPackReadData`), and
+   start naming game functions.
 2. Keep converting `asm/` functions into `src/` C. Functions whose only diff is a prologue sunk
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
