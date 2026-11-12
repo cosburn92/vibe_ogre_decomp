@@ -118,8 +118,18 @@ typedef struct {
 typedef struct {
     /* 0x000 */ u8 unk00[8];
     /* 0x008 */ s32 packed_size;
-    /* 0x00C */ u8 unk0C[0x124];
+    /* 0x00C */ s32 original_size;
+    /* 0x010 */ u8 unk10[6];
+    /* 0x016 */ char name[0x11A];
 } LzHeader; /* size 0x130 */
+
+/* One file to pull out of an archive: by name, or by position when name is NULL. */
+typedef struct {
+    /* 0x00 */ char *name;
+    /* 0x04 */ s32 index;
+    /* 0x08 */ u8 *buf;
+    /* 0x0C */ s32 size;
+} ExtractReq;
 
 typedef struct {
     void **ptr;
@@ -132,6 +142,12 @@ extern u8 D_800AF300[];
 extern u8 D_800AF0D0[0x1B0]; /* OSThread */
 extern u64 D_800AF280[0x80 / 8]; /* its stack */
 extern u8 D_800AE0A8[];
+extern char D_800AE0AC[];
+extern char D_800AE0C8[];
+void extract_one(ArcFile *f, LzHeader *h);
+void func_8007BB90(s32 a, s32 b);
+void func_8007BBF4(s32 a, s32 b);
+s32 func_8007F47C(u8 *a, u8 *b);
 void UnpackProc(void *arg);
 void osCreateMesgQueue(void *mq, void *msgs, s32 n);
 void osCreateThread(void *t, s32 id, void (*entry)(void *), void *arg, void *sp, s32 pri);
@@ -454,7 +470,70 @@ void func_8007ABAC(s32 id, s32 pri) {
 
 INCLUDE_ASM("asm/nonmatchings/A370", UnpackProc);
 
+#ifdef NON_MATCHING
+/* Same code; the saved registers are assigned in a different order (n should be s2). */
+/* Extracts the requested files from an LHa archive in memory; reports any not found. */
+void func_8007ACB0(ArcReq *arc, ExtractReq *reqs, s32 n) {
+    LzHeader hdr;
+    ArcFile *f;
+    s32 i;
+    s32 idx;
+    s32 total;
+    s32 missing;
+    s32 pos;
+
+    func_8007AF3C(1);
+    func_8007C204();
+    total = n;
+    for (i = 0; i < total; i++) {
+        reqs[i].buf = NULL;
+        reqs[i].size = 0;
+    }
+    f = func_8007F4E4(arc->name, D_800AE0A8, arc->buf, arc->size);
+    idx = 0;
+    if (f == NULL) {
+        func_8007BBC0((s32)arc->name);
+    }
+    while (get_header(f, &hdr)) {
+        pos = f->pos;
+        for (i = 0; i < total; i++) {
+            if (reqs[i].name == NULL) {
+                if (reqs[i].index != idx) {
+                    continue;
+                }
+            } else if (func_8007F47C((u8 *)reqs[i].name, (u8 *)hdr.name) != 0) {
+                continue;
+            }
+            if (hdr.original_size != 0) {
+                extract_one(f, &hdr);
+                reqs[i].buf = D_800AF358.buf;
+                reqs[i].index = idx;
+                reqs[i].size = D_800AF358.size;
+            }
+            break;
+        }
+        if (i < total && --n == 0) {
+            break;
+        }
+        f->pos = pos + hdr.packed_size;
+        idx++;
+    }
+    f->open = 0;
+    func_8007AF3C(0);
+    missing = 0;
+    for (i = 0; i < total; i++) {
+        if (reqs[i].buf == NULL) {
+            func_8007BB90((s32)reqs[i].name, (s32)D_800AE0AC);
+            missing++;
+        }
+    }
+    if (missing) {
+        func_8007BBF4((s32)arc->name, (s32)D_800AE0C8);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/A370", func_8007ACB0);
+#endif
 
 /* Counts the files in an LHa archive held in memory. */
 s32 func_8007AE9C(ArcReq *r) {
