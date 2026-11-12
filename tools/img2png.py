@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Convert the game's "64" textures, "B5" tiled images and "HU" JPEG-style images to PNG
-(from `make extract-assets`).
+"""Convert the game's images (from `make extract-assets`) to PNG: "64" and "K" textures, "B5" tiled
+images, "HU" JPEG-style images, and a few headerless RGBA16 files.
 
 "64" format, big-endian:
   0x00  "64"
@@ -38,10 +38,23 @@ All 571 tiles of kinds 0, 1, 3 and 5 have the predicted sizes and every file is 
   dequantizes with the standard JPEG luminance table for all components, runs the IDCT (net scale
   1/4 against an orthonormal IDCT), and chroma is stored offset by +128.
 
-usage: python3 tools/img2png.py [--opaque] <file> <out.png>
-       python3 tools/img2png.py [--opaque] all <outdir>  # every "64"/"B5"/"HU" file in extracted/
+"K" format (small UI textures: icons, labels; .k64 and some .n64), big-endian:
+  0x00  "K"
+  0x01  u8  last palette index (CI only)
+  0x02  u8  RDP image format, 0x03 u8 RDP pixel size (as in "64")
+  0x04  u16 width, u16 height
+  0x08  pixels (rows padded as in "64"), then for CI (last index + 1) RGBA5551 colours.
+All 60 "K" files fit exactly.
+
+Headerless RGBA16 (they start with the transparent key colour 0x07C0): the sizes below come from the
+image data (rows correlate best at that width), not from a header. --raw16 W decodes any other file
+as RGBA16 W pixels wide.
+
+usage: python3 tools/img2png.py [--opaque] [--raw16 W] <file> <out.png>
+       python3 tools/img2png.py [--opaque] all <outdir>  # every recognised image in extracted/
 The HU decoder reads its tables from baserom/baserom.us.z64.
 """
+import re
 import math
 import os
 import struct
@@ -274,7 +287,56 @@ def decode_b5(d):
     return W, H, out
 
 
-def decode(d, opaque=False):
+# Headerless RGBA16 files: name pattern -> (width, height)
+RAW16 = [
+    (r"k\d+\.k64", (84, 67)),        # location pictures
+    (r"kmark\d+\.k64", (20, 20)),   # map markers
+    (r"kmarks\d+\.k64", (20, 13)),  # small map markers
+    (r"kname_\w\.bin", (24, 33)),    # name plates (b, g, r)
+]
+
+
+def raw16_size(name):
+    for pat, size in RAW16:
+        if re.fullmatch(pat, name):
+            return size
+    return None
+
+
+def decode_raw16(d, w, h=None):
+    h = h or len(d) // (2 * w)
+    out = bytearray(w * h * 4)
+    for i, c in enumerate(struct.unpack(f">{w * h}H", d[:w * h * 2])):
+        out[i * 4:i * 4 + 4] = bytes(rgba5551(c))
+    return w, h, out
+
+
+def k_size(d):
+    """Expected file size if d is a "K" texture, else None."""
+    if len(d) < 8 or d[0] != 0x4B or d[2] not in (0, 2, 4) or d[3] not in STRIDE:
+        return None
+    last, fmt, siz, w, h = struct.unpack_from(">BBBHH", d, 1)
+    return 8 + STRIDE[siz](w) * h + (2 * (last + 1) if fmt == 2 else 0)
+
+
+def decode_k(d):
+    """(width, height, RGBA bytes) for a "K" texture: a "64" texture with a short palette."""
+    if k_size(d) != len(d):
+        raise ValueError("not a K texture")
+    last, fmt, siz, w, h = struct.unpack_from(">BBBHH", d, 1)
+    n = 16 if siz == 0 else 256
+    if fmt == 2:  # pad the palette to full size so decode64 can be reused
+        stride = STRIDE[siz](w)
+        d = d[:8 + stride * h] + d[8 + stride * h:] + bytes(2 * (n - (last + 1)))
+    return decode64(b"64" + d[2:])
+
+
+def decode(d, opaque=False, name=""):
+    size = raw16_size(name) if name else None
+    if size and d[:2] == b"\x07\xc0":
+        return decode_raw16(d, *size)
+    if k_size(d) == len(d):
+        return decode_k(d)
     if d[:2] == b"HU":
         return decode_hu(d)
     if d[:2] == b"B5":
@@ -289,11 +351,20 @@ def main():
     opaque = "--opaque" in sys.argv
     if opaque:
         sys.argv.remove("--opaque")
+    raw_w = None
+    if "--raw16" in sys.argv:
+        i = sys.argv.index("--raw16")
+        raw_w = int(sys.argv[i + 1])
+        del sys.argv[i:i + 2]
     if len(sys.argv) != 3:
         print(__doc__)
         return 1
     if sys.argv[1] != "all":
-        w, h, rgba = decode(open(sys.argv[1], "rb").read(), opaque)
+        d = open(sys.argv[1], "rb").read()
+        if raw_w:
+            w, h, rgba = decode_raw16(d, raw_w)
+        else:
+            w, h, rgba = decode(d, opaque, os.path.basename(sys.argv[1]))
         write_png_rgba(sys.argv[2], w, h, rgba)
         print(f"{w}x{h} -> {sys.argv[2]}")
         return 0
@@ -305,10 +376,12 @@ def main():
             if name.endswith(".tsv") or os.path.isdir(path):
                 continue
             with open(path, "rb") as f:
-                if f.read(2) not in (b"64", b"B5", b"HU"):
-                    continue
+                d = f.read()
+            if d[:2] not in (b"64", b"B5", b"HU") and k_size(d) != len(d) \
+                    and not (raw16_size(name) and d[:2] == b"\x07\xc0"):
+                continue
             try:
-                w, h, rgba = decode(open(path, "rb").read(), opaque)
+                w, h, rgba = decode(d, opaque, name)
                 write_png_rgba(os.path.join(sys.argv[2], name + ".png"), w, h, rgba)
                 done += 1
             except (ValueError, struct.error, IndexError):

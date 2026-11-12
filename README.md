@@ -172,7 +172,7 @@ to unit actions.
 
 ### Images
 
-`tools/img2png.py` converts the three image formats (387 files; the byte layouts are in its header
+`tools/img2png.py` converts the game's image formats (477 files; the byte layouts are in its header
 comment):
 
 - **`"64"` textures** (`.n64` files and LZ chunks, 263 of them): the header holds the RDP image
@@ -197,8 +197,16 @@ python3 tools/img2png.py extracted/lha/camp.n64 camp.png
 python3 tools/img2png.py all extracted/png/        # about 45 s
 ```
 
-Not decoded yet: B5 kind 5, the `K` glyph files (`.k64` and small `.n64`), and the data formats
-(`.bin`, headerless chunks).
+- **`"K"` textures** (60 UI icons and labels, e.g. "BATTLE STRATEGY"): `"64"` with a short palette.
+  The header byte after `K` is the last palette index used, and only that many colours follow the
+  pixels. All 60 fit exactly.
+- **Headerless RGBA16** (they start with the transparent key colour `0x07C0`): location pictures
+  `k001`–`k025.k64` (84×67), map markers `kmark*.k64` (20×20) and `kmarks*.k64` (20×13), and name
+  plates `kname_*.bin` (24×33). Their sizes come from the image data, not a header (`--raw16 W` for
+  others).
+
+Not decoded yet: B5 kind 5 (2 files), one `"64"` file with pixel size 4, and the data formats
+(`.bin` files, headerless chunks).
 
 ## Game code
 
@@ -300,5 +308,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Decode the `K` glyph files and the data formats (`.bin` files, headerless chunks). Callers of
-   `LoadChunk` show what each handle is.
+3. Decode the data formats (`.bin` files, headerless chunks). Callers of `LoadChunk` show what
+   each handle is.
