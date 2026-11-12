@@ -105,9 +105,10 @@ eset file:
 
 enemydat.bin: 556 squad templates of 35 bytes (eset ids go up to 554):
   0x00  leader class, 0x01 leader level (signed, relative to the stage's base level),
-  0x02-0x05 four values passed to func_80214F80 (probably equipment), 0x06 leader position (1-9 on
+  0x02-0x05 four item ids (gItemTable, 0 = none), each equipped by CharacterEquipItem in the slot
+  whose class default item (class +0x2E-0x34) has the same category; 0x06 leader position (1-9 on
   the 3x3 formation grid)
-  0x07  group A class (0 = none), 0x08 level, 0x09-0x0C four values, 0x0D-0x0F positions (0 = unused)
+  0x07  group A class (0 = none), 0x08 level, 0x09-0x0C four items, 0x0D-0x0F positions (0 = unused)
   0x10  group B class, 0x11 level, 0x12-0x15 four values, 0x16-0x18 positions
   0x19-0x22 always zero
 Class ids index the class table (gClassTable, 165 records of 0x48 bytes at 0x80187C14 in ovl_040E80,

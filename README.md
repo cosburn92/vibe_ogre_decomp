@@ -282,8 +282,8 @@ prints them, with the byte layouts in its header:
 
     Most triggers stay set once fired; a few are re-evaluated every pass.
 - **`enemydat.bin`:** 556 squad templates of 35 bytes, each a leader plus up to two member groups.
-  Each has a class, a level relative to the stage's base level, four values that are probably
-  equipment, and positions on the 3×3 formation grid. Every eset template id is in range, every
+  Each has a class, a level relative to the stage's base level, four items of equipment (each goes
+  into the slot whose class default item has the same category, `CharacterEquipItem`), and positions on the 3×3 formation grid. Every eset template id is in range, every
   position is 1–9, and a group's class is 0 exactly when it has no positions.
 
 Class and item ids index tables in `ovl_040E80`'s data, which the dump uses for names.

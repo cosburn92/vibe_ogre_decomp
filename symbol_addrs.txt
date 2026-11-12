@@ -508,6 +508,13 @@ gStageBaseLevel = 0x801F1035; // size:0x1 segment:ovl_101CE0
 StageSetupUnits = 0x80215C18; // type:func rom:0x1960A8
 // SquadSetupItems: (slot, heals, fruit, revives) -> fills the squad's consumable slots (eset bytes 15-17)
 SquadSetupItems = 0x8021590C; // type:func rom:0x195D9C
+// CharacterEquipItem: (item, character) -> puts the item in the equipment slot (+0x2A-0x30) whose class default item has its category
+CharacterEquipItem = 0x80214F80; // type:func rom:0x195410
+// CharacterCreateFromTemplate: one enemydat group member: picks the character record (enemy table 0x80195560,
+// 0x34 bytes: +0x16 max HP, +0x18 HP, +0x32 fatigue; player table 0x80193BC0, 0x38 bytes), sets class and level, equips its 4 items
+CharacterCreateFromTemplate = 0x802150BC; // type:func rom:0x19554C
+// SquadCreateFromTemplate: (enemydat template, slot) -> leader and the two member groups
+SquadCreateFromTemplate = 0x80215340; // type:func rom:0x1957D0
 // gLegions: 10 x 11 bytes: +0 number, +1 flags (0x01 used, 0x80 enemy), +2-6 squad slots, +8 formation
 gLegions = 0x801969B8;
 // gFormationNames: legion formation names, index 1-8 (0 = blank)
