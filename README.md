@@ -231,7 +231,14 @@ prints them, with the byte layouts in its header:
 
 - **eset file:** four section offsets; stage parameters including the base level; then 18-byte
   squad records giving the squad group, unit slot, template id, position (a spawn point or x/y in
-  1/256ths of the map), sprite scale, and behaviour bytes. 891 records in all.
+  1/256ths of the map), sprite scale, starting order, retreat setting and behaviour bytes. 891
+  records in all.
+- **Retreat setting** (byte 9, unit `+0xBB`): an enemy squad leaves its order to rest once a member
+  is below 75%, 50% or 25% HP (settings 1, 2, 3) or too fatigued. It stays until everyone is at
+  full HP with no fatigue. Setting 4 never retreats; 2 (340 squads) and 4 (272) are the most
+  common. Squads also use their Heal Leaves/Seeds/Packs below 25% HP and Power/Angel Fruit at
+  fatigue 70 (`SquadUpkeep`, `UnitShouldRetreat`, `SquadUseHealItem`, `SquadUseFatigueItem` in
+  `ovl_101CE0`).
 - **Section C, orders:** 18-byte records, one per order id from 4 up. A squad's starting order is
   byte 8 of its record. An order is "hold", "move" (through up to three waypoints given as map
   coordinates or point indexes) or "reserve". A reserve squad is off the map, and not counted
@@ -317,7 +324,7 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet in the eset files: the squad record's byte 9 and behaviour bytes 10–17.
+Not decoded yet in the eset files: the squad record's behaviour bytes 10–17.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached

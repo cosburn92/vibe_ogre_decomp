@@ -16,7 +16,12 @@ eset file:
                 1/256ths of the map's extent
           7     sprite scale: v < 3 -> 0.75 + (v-1)/8, else (v-1)/8 - 0.25
           8     starting order (unit +0xBA): 0-3 built in, 4-19 a section C order
-          9     stored in the unit at +0xBB
+          9     retreat setting (unit +0xBB). Enemy squads head for a safe spot and rest until every
+                member is at full HP with no fatigue, once a member is below the threshold:
+                1 HP < 75% or fatigue > 75, 2 HP < 50% or fatigue > 75, 3 HP < 25% or fatigue > 100,
+                4 never, 0 fatigue > 100 only (UnitShouldRetreat). Every squad also uses its
+                consumables (SquadUseHealItem / SquadUseFatigueItem): Heal Leaf/Seed/Pack when a
+                member is under 25% HP (35% with setting 1), Power/Angel Fruit at fatigue >= 70
           10    per-unit byte (stored as v-1), 11 per-unit byte
           12    flag (sets bit 15 of D_8019367C[slot]), 13-14 u16 stored in D_8019367C[slot]
           15-17 passed to func_8021590C(slot, a, b, c) (builds a 20-byte list; each value 1-6)
@@ -140,6 +145,9 @@ def point(x, y):
     return "-" if not x else f"point {x}" if not y else f"({x},{y})"
 
 
+RETREAT = {0: "fatigued", 1: "HP<75%", 2: "HP<50%", 3: "HP<25%", 4: "never"}
+
+
 def dump_orders(d, off):
     kinds = {0: "hold", 1: "move", 2: "reserve"}
     for i in range(d[off]):
@@ -205,7 +213,7 @@ def dump(path, enemydat, classes, items):
         tid, = struct.unpack_from(">H", r, 3)
         pos = f"spawn point {r[5]}" if r[6] == 0 else f"x={r[5]}/256 y={r[6]}/256"
         print(f"  squad {r[0]:2} slot {r[2] & 0x7F:2} template {tid:3}  {pos:22} scale {r[7]}  "
-              f"order {r[8]:2} [9] {r[9]}  misc {list(r[10:15])} {list(r[15:18])}")
+              f"order {r[8]:2} retreat {RETREAT.get(r[9], r[9])}  misc {list(r[10:15])} {list(r[15:18])}")
         for g in template(enemydat, tid):
             lv = f"{g['level']:+d}"
             cls = classes[g["class"]] if g["class"] < len(classes) else f"#{g['class']}"

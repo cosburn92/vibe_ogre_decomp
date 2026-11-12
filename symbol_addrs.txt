@@ -515,6 +515,12 @@ UnitStartScriptOrder = 0x801CD7F8; // type:func rom:0x121F38
 OrderCheckCondition = 0x801CED18; // type:func rom:0x123458
 // OrderCheckNext: inferred: (unit) -> next order id once the current order's condition holds, else 0
 OrderCheckNext = 0x801CF0B0; // type:func rom:0x1237F0
+// Squad upkeep on the map. Per member (id < 100): HP at D_80195578 + id*0x34 (max at -2), fatigue
+// at D_80195592. Retreat thresholds come from unit +0xBB (squad record byte 9)
+SquadUseHealItem = 0x801CF8D8; // type:func rom:0x124018
+SquadUseFatigueItem = 0x801CFBE8; // type:func rom:0x124328
+UnitShouldRetreat = 0x801CFDE0; // type:func rom:0x124520
+SquadUpkeep = 0x801D0458; // type:func rom:0x124B98
 // gStageTriggers: inferred: u16 latched trigger bits, one per eset section D entry
 gStageTriggers = 0x801F0EBA; // size:0x2 segment:ovl_101CE0
 // gStageTriggersPending: inferred: u16 bits set by StageTriggerScanUnit during a pass
