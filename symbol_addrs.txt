@@ -499,6 +499,10 @@ ItemGetRank = 0x8016F614; // type:func rom:0x45514
 ItemGetFlag80 = 0x8016F9D4; // type:func rom:0x458D4
 // PlayTimeUpdate: (gPlayTime) -> u16 hours, u8 minutes, u8 seconds from osGetTime, capped at 99:59:59
 PlayTimeUpdate = 0x8016CB44; // type:func rom:0x42A44
+// DateAdvanceDay: (gDate) -> next day of the 15-month calendar (month lengths at 0x80186FFF), stops at 999/15/25
+DateAdvanceDay = 0x8016C5BC; // type:func rom:0x424BC
+// NewGameInit: date 251/4/1 6:00, gChaosFrame 50, ...
+NewGameInit = 0x8016C900; // type:func rom:0x42800
 // AttackGetElement: (attack, weapon items...) -> attack +5, or the weapon's element when that is 0xFF/0xF
 AttackGetElement = 0x8016E470; // type:func rom:0x44370
 ConsumableGetKind = 0x8016F500; // type:func rom:0x45400
@@ -577,6 +581,8 @@ StageLordAlive = 0x801E55A8; // type:func rom:0x139CE8
 StageBeforeDeadline = 0x801E5634; // type:func rom:0x139D74
 gPlayTime = 0x80196A28;
 gClock = 0x80196A2C;
+// gDate: u16 year, u8 month (1-15), u8 day
+gDate = 0x80196A30;
 // gStageTriggers: inferred: u16 latched trigger bits, one per eset section D entry
 gStageTriggers = 0x801F0EBA; // size:0x2 segment:ovl_101CE0
 // gStageTriggersPending: inferred: u16 bits set by StageTriggerScanUnit during a pass

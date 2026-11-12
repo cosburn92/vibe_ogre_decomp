@@ -379,6 +379,11 @@ which `scincsv` and `maizo` members it uses (both numbered by map, so stage `0x0
 The stage-clear code adds a share of the liberated locations' ktenmain `+0x16` values to that.
 `tools/stage_dump.py` prints the table; three of its bytes are still unknown.
 
+**Time:** `gClock` holds the hour, minute and second (hours 6–17 are day), and `gDate` the year,
+month and day of a 15-month calendar: months of 24, 25, 23, 24, 25, 24, 24, 25, 24, 24, 25, 24, 24,
+25 and 25 days (365), with a leap day in month 3 when year + 1748 is a Gregorian leap year
+(`DateAdvanceDay`). A new game starts on 251/4/1 at 6:00 (`NewGameInit`).
+
 **Reputation (Chaos Frame):** `gChaosFrame` runs 0–100 and starts at 50. Liberating a location
 compares the liberating squad's alignment with the alignment the town favours (ktenmain `+0x18`):
 a close match adds up to 2, a large mismatch takes up to 5 (`ChaosFrameOnLiberate`), and losing a
