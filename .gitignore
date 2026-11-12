@@ -17,3 +17,6 @@ __pycache__/
 # Toolchain binaries (make toolchain)
 tools/gcc-2.7.2/
 tools/binutils-2.6/
+
+# Unpacked assets (make extract-assets)
+extracted/

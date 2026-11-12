@@ -34,11 +34,15 @@ O_FILES    := $(C_FILES:%.c=build/%.o) $(ASM_FILES:%.s=build/%.o) $(BIN_FILES:%.
 GCC_URL    := https://github.com/decompals/mips-gcc-2.7.2/releases/download/v0.1/gcc-2.7.2-linux.tar.gz
 BINUTILS_URL := https://github.com/decompals/mips-binutils-2.6/releases/download/v0.3/binutils-2.6-linux.tar.gz
 
-.PHONY: all extract toolchain clean distclean check
+.PHONY: all extract extract-assets toolchain clean distclean check
 all: check
 
 extract:
 	$(PYTHON) -m splat split $(BASENAME).yaml
+
+# Unpack the LHA archive members in the asset region to extracted/lha/ (for inspection; not a build input)
+extract-assets:
+	$(PYTHON) tools/extract_assets.py $(BASEROM) extracted/lha
 
 toolchain: $(KMC_DIR)/cc1 $(KMC_AS)
 

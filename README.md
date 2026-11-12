@@ -73,6 +73,24 @@ Every input already carries its own padding, so the linker script uses `SUBALIGN
 assembled with `-no-pad-sections`. KMC GCC 2.7.2 puts explicitly zero-initialized globals
 (`s32 x = 0;`) in `.data`, not `.bss`.
 
+## Assets
+
+The asset region (`0x2B8BA0` onward) mixes LHA archive members with other formats.
+
+- **LHA members:** 828 of them (776 `-lh5-`, 52 stored `-lh0-`; level 1 and 2 headers) holding
+  12.5 MB uncompressed, with their original filenames (`.bin` ×565, `.n64` ×119, `.bg2`, `.k64`,
+  some Shift-JIS names). `make extract-assets` (`tools/extract_assets.py`) unpacks them to
+  `extracted/lha/`, checks each against its header's CRC-16, and writes `extracted/lha/manifest.tsv`.
+  Many `.n64` files are 153,608 bytes: a 320×240 16-bit image plus an 8-byte header. The build keeps
+  the original compressed bytes, since another LHA encoder wouldn't reproduce them exactly.
+- **libmus sound data:** `0x2B8BA0` starts with `N64 PtrTablesV2` (a libmus sample-bank pointer
+  table). The sound overlay `ovl_03F1B0` DMAs it and the banks at `0x423FF0` and `0x4E3140`.
+- **Not yet identified:** about 27 MB between and around the LHA members. The largest stretches
+  are `0x9254EF`–`0x1C4801C` (19 MB) and `0x2027BBE`–`0x26FF9F0` (7 MB). Chunks often start with a
+  4-byte size followed by tags such as `HU` (`48 55 fe`), `B5`/`OB5`, `G64` or `K64`. Small offset
+  tables after the last LHA member (`0x2754160`, `0x2757EBC`) index into the 7 MB region, and a
+  build timestamp sits near `0x275DD20`.
+
 ## Game code
 
 Game names come first from the developers' own debug strings (`AddHeap()`, `HIsAllocatedPointer()`,
@@ -172,4 +190,5 @@ python3 tools/overlay_sections.py --yaml   # rewrite the overlays' data/rodata/b
    toward a call (e.g. `func_8007FE70`) don't match with this cc1; leave them `NON_MATCHING`.
    Before converting a file, check its data/rodata/BSS chunk boundaries by hand
    (`tools/section_chunks.py ... -v`); they're heuristic.
-3. Extract the assets: walk the LHA member headers in the asset region and unpack them by name.
+3. Identify the non-LHA asset formats (libmus banks; the `HU`/`B5`/`OB5`/`G64`/`K64` chunks) and how
+   the game locates assets (callers of `RomRead`/`UnpackProc`).
