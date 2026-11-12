@@ -232,6 +232,17 @@ prints them, with the byte layouts in its header:
 - **eset file:** four section offsets; stage parameters including the base level; then 18-byte
   squad records giving the squad group, unit slot, template id, position (a spawn point or x/y in
   1/256ths of the map), sprite scale, and behaviour bytes. 891 records in all.
+- **Section C, orders:** 18-byte records, one per order id from 4 up. A squad's starting order is
+  byte 8 of its record. An order is "hold" or "move" (through up to three waypoints given as map
+  coordinates or point indexes). It also has a condition and the next order to switch to once the
+  condition holds. The condition is up to four section D entries joined by AND/OR, or a two-way
+  branch. `func_801CF0B0` in `ovl_101CE0` checks it every frame, and `func_801CD7F8` carries the
+  order out. This is how patrols and ambushes are scripted.
+- **Section D, conditions:** 10-byte records evaluated per unit by `func_801CED18`:
+  - "the unit is inside this rectangle" or "another unit is";
+  - "the squad is fully healed";
+  - unit event flags;
+  - otherwise a numbered trigger bit set elsewhere in the stage code, which may be one-shot.
 - **`enemydat.bin`:** 556 squad templates of 35 bytes, each a leader plus up to two member groups.
   Each has a class, a level relative to the stage's base level, four values that are probably
   equipment, and positions on the 3×3 formation grid. Every eset template id is in range, every
@@ -290,7 +301,8 @@ Still unknown:
 - whether a positive resistance modifier helps or hurts. An element's own items lower it and raise
   the opposite element's.
 
-Not decoded yet: sections C/D of the eset files and the behaviour bytes.
+Not decoded yet in the eset files: who sets the trigger bits; order kind 2; the squad record's
+byte 9 and behaviour bytes 10–17.
 
 Other named data, not decoded yet: `scincsv*` (59, binary `(index, value)` tables despite the name),
 `maizo*` (40, 埋蔵 "buried treasure"), and about 7,000 headerless LZ chunks. Many assets are reached
