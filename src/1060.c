@@ -1,18 +1,20 @@
 #include "common.h"
 
+/* Block header; the block's data follows it. Free blocks sit in a per-heap binary tree keyed by free size. */
 typedef struct HeapNode {
-    /* 0x00 */ u8 unk00[4];
-    /* 0x04 */ u32 end;
+    /* 0x00 */ struct HeapNode *prev;
+    /* 0x04 */ struct HeapNode *next;
     /* 0x08 */ struct HeapNode **parent;
     /* 0x0C */ struct HeapNode *left;
     /* 0x10 */ struct HeapNode *right;
-    /* 0x14 */ u8 unk14[4];
-    /* 0x18 */ u32 size;
-} HeapNode;
+    /* 0x14 */ u32 used;
+    /* 0x18 */ u32 free;
+    /* 0x1C */ u8 unk1C[4];
+} HeapNode; /* size 0x20 */
 
 typedef struct {
     /* 0x00 */ HeapNode *start;
-    /* 0x04 */ u32 end;
+    /* 0x04 */ HeapNode *end;
     /* 0x08 */ HeapNode *root;
 } Heap;
 
@@ -53,7 +55,7 @@ u8 func_8016CD3C(void);
 void osViSwapBuffer(void *fb);
 void func_80089804(Gfx *start, s32 size, u8 a, s32 b);
 void func_80073C48(void);
-extern s32 D_800C4818;
+extern u32 D_800C4818;
 extern u8 osViModeNtscLan1[];
 extern u8 osViModeMpalLan1[];
 extern u8 D_800AB9B0[];
@@ -100,6 +102,11 @@ void func_80073CB0(u8 level);
 void func_80081908(s32 a, s32 b);
 void *HMalloc(s32 size);
 void *HFree(void *p);
+s32 HFindHeap(u32 p);
+void func_80071950(HeapNode *n);
+void func_800719E8(HeapNode **slot, HeapNode *n);
+HeapNode *func_80071A3C(HeapNode *n, u32 size);
+void func_80071A74(void);
 u32 osSetIntMask(u32 mask);
 void __rmonMaskIdleThreadInts(void);
 void func_8007328C(void);
@@ -116,14 +123,14 @@ void func_80070C60(u32 start, s32 size) {
     h = gHeaps;
     h->start = (HeapNode *)start;
     bzero((void *)start, 0x20);
-    gHeaps[0].start->end = end;
-    gHeaps[0].start->size = end - start - 0x20;
+    gHeaps[0].start->next = (HeapNode *)end;
+    gHeaps[0].start->free = end - start - 0x20;
     gHeaps[0].root = NULL;
     func_800719E8(&h->root, h->start);
     D_800C4818 = 0;
     gHeapCount = 1;
     gHeapAllocFlags = 3;
-    gHeaps[0].end = gHeaps[0].start->end;
+    gHeaps[0].end = gHeaps[0].start->next;
 }
 
 INCLUDE_ASM("asm/nonmatchings/1060", AddHeap);
@@ -133,7 +140,48 @@ void func_80070F14(void) {
     gHeapAllocFlags = 3;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", HMalloc);
+void *HMalloc(s32 size) {
+    u16 flags;
+    s32 h, count, i;
+    HeapNode *b, *n;
+    u32 total;
+
+    size = (size + 0xF) & ~0xF;
+    if (size == 0) {
+        return NULL;
+    }
+    flags = gHeapAllocFlags;
+    h = (flags >> 1) & 1;
+    if (h) {
+        count = gHeapCount - (~flags & 1);
+        h = h & -(gHeapCount >= 2);
+    } else {
+        count = flags & 1;
+    }
+    for (i = 0; i < count; i++) {
+        total = size + 0x20;
+        b = func_80071A3C(gHeaps[h].root, total);
+        if (b != NULL) {
+            n = (HeapNode *)((u8 *)b + b->used + 0x20);
+            n->next = b->next;
+            b->next = n;
+            if (n->next < gHeaps[h].end) {
+                n->next->prev = n;
+            }
+            n->prev = b;
+            func_80071950(b);
+            b->free = 0;
+            n->used = size;
+            n->free = (u8 *)n->next - (u8 *)n - total;
+            if (n->free > 0x20) {
+                func_800719E8(&gHeaps[h].root, n);
+            }
+            return n + 1;
+        }
+        h = (h + 1) % gHeapCount;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1060", func_800710DC);
 
@@ -147,9 +195,62 @@ void *HMallocBack(s32 size) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", HFree);
+void *HFree(void *ptr) {
+    s32 h = HFindHeap((u32)ptr);
+    HeapNode *b;
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_800713EC);
+    if (ptr == NULL) {
+        return NULL;
+    }
+    b = (HeapNode *)ptr - 1;
+    if (b->free > 0x20) {
+        func_80071950(b);
+    }
+    ((HeapNode *)ptr - 1)->prev->next = ((HeapNode *)ptr - 1)->next;
+    if (((HeapNode *)ptr - 1)->next < gHeaps[h].end) {
+        ((HeapNode *)ptr - 1)->next->prev = ((HeapNode *)ptr - 1)->prev;
+    }
+    b = ((HeapNode *)ptr - 1)->prev;
+    if (b->free > 0x20) {
+        func_80071950(b);
+    }
+    b->free = (u8 *)b->next - ((u8 *)b + (b->used + sizeof(HeapNode)));
+    if (b->free > 0x20) {
+        func_800719E8(&gHeaps[h].root, b);
+    }
+    ((HeapNode *)ptr - 1)->next = NULL;
+    ((HeapNode *)ptr - 1)->prev = NULL;
+    if (++D_800C4818 > 0x3FFFF) {
+        func_80071A74();
+        D_800C4818 = 0;
+    }
+    return NULL;
+}
+
+u32 func_800713EC(void) {
+    u16 flags;
+    s32 h, count, i;
+    u32 max = 0;
+    HeapNode *n;
+
+    flags = gHeapAllocFlags;
+    h = (flags >> 1) & 1;
+    if (h) {
+        count = gHeapCount - (~flags & 1);
+        h = h & -(gHeapCount >= 2);
+    } else {
+        count = flags & 1;
+    }
+    for (i = 0; i < count; i++) {
+        for (n = gHeaps[h].root; n != NULL; n = n->right) {
+            if (max < n->free) {
+                max = n->free;
+            }
+        }
+        h = (h + 1) % gHeapCount;
+    }
+    return max;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1060", HIsAllocatedPointer);
 
@@ -196,7 +297,7 @@ void func_800719E8(HeapNode **slot, HeapNode *n) {
         n->right = NULL;
         *slot = n;
     } else {
-        func_800719E8(r->size < n->size ? &r->right : &r->left, n);
+        func_800719E8(r->free < n->free ? &r->right : &r->left, n);
     }
 }
 
@@ -204,7 +305,7 @@ HeapNode *func_80071A3C(HeapNode *n, u32 size) {
     HeapNode *best = NULL;
 
     while (n != NULL) {
-        if (n->size < size) {
+        if (n->free < size) {
             n = n->right;
         } else {
             best = n;
@@ -214,13 +315,45 @@ HeapNode *func_80071A3C(HeapNode *n, u32 size) {
     return best;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1060", func_80071A74);
+void func_80071A74(void) {
+    u16 flags;
+    s32 count, i;
+    HeapNode *b, *r;
+    HeapNode **slot;
+
+    flags = gHeapAllocFlags;
+    i = (flags >> 1) & 1;
+    if (i) {
+        count = gHeapCount - (~flags & 1);
+    } else {
+        count = flags & 1;
+    }
+    for (i = 0; i < count; i++) {
+        b = gHeaps[i].start;
+        gHeaps[i].root = NULL;
+        while (b < gHeaps[i].end) {
+            if (b->free > 0x20) {
+                slot = &gHeaps[i].root;
+                r = *slot;
+                if (r == NULL) {
+                    b->parent = slot;
+                    b->left = NULL;
+                    b->right = NULL;
+                    *slot = b;
+                } else {
+                    func_800719E8(r->free >= b->free ? &r->left : &r->right, b);
+                }
+            }
+            b = b->next;
+        }
+    }
+}
 
 s32 HFindHeap(u32 p) {
     s32 i;
 
     for (i = 0; i < gHeapCount; i++) {
-        if (p >= (u32)gHeaps[i].start && p < gHeaps[i].end) {
+        if (p >= (u32)gHeaps[i].start && p < (u32)gHeaps[i].end) {
             return i;
         }
     }
@@ -236,7 +369,7 @@ HeapNode *func_80071E74(HeapNode *n, u32 size) {
     while (n->right != NULL) {
         n = n->right;
     }
-    return n->size >= size ? n : NULL;
+    return n->free >= size ? n : NULL;
 }
 
 INCLUDE_ASM("asm/nonmatchings/1060", MainThreadEntry);
