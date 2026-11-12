@@ -1,5 +1,22 @@
 #include "common.h"
 
+s32 ProfileFlagTest(s16 flag);
+void ProfileFlagSet(s32 flag, s32 value);
+void FlagSet(s32 flag, s32 value);
+u8 func_80172BBC_ovl_040E80(u8 a);
+void func_80172B10_ovl_040E80(u8 a, u8 b);
+void func_80172B68_ovl_040E80(u8 a, u8 b);
+void func_80172BF0_ovl_040E80(u8 a, u8 b);
+void func_8016BA6C_ovl_040E80(u8 a, u8 b);
+u16 func_8016B738_ovl_040E80(u16 a);
+u16 func_8016B6FC_ovl_040E80(u16 a);
+typedef struct { u8 unk0; u8 flags; u8 members[5]; u8 pos[5]; u8 harmony; u8 items[10]; u8 strategy; u8 legion; } SquadRec;
+extern SquadRec D_801971F0_ovl_040E80[];
+extern u8 D_80197B00_ovl_040E80[];
+extern u8 D_801936A8_ovl_040E80;
+extern u16 D_80197B08_ovl_040E80;
+extern u8 D_801936A6_ovl_040E80;
+
 extern struct { u16 v; u8 pad[2]; } D_80193AC0_ovl_040E80[];
 extern struct { u16 v; u8 pad[2]; } D_80196B00_ovl_040E80[];
 extern struct { u16 v; u8 pad[34]; } D_801951CC_ovl_040E80[];
@@ -32,7 +49,9 @@ extern u8 D_8019EE40[];
 void FlagGet();
 void func_80170794_ovl_040E80();
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170190_ovl_040E80);
+u8 func_80170190_ovl_040E80(s32 squad, s32 i) {
+    return D_801971F0_ovl_040E80[squad].members[i];
+}
 
 u16 func_801701B8_ovl_040E80(s32 idx) {
     return D_80193BD8_ovl_040E80[idx].v;
@@ -74,7 +93,9 @@ u8 func_801702D4_ovl_040E80(s32 idx) {
     return D_80195574_ovl_040E80[idx].v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801702F8_ovl_040E80);
+s32 func_801702F8_ovl_040E80(s32 flag) {
+    return ProfileFlagTest(flag);
+}
 
 u8 func_80170318_ovl_040E80(s32 idx) {
     return D_801971F1_ovl_040E80[idx].v;
@@ -112,7 +133,9 @@ s32 func_801703D0_ovl_040E80(s32 idx) {
     return ((D_801951CC_ovl_040E80[idx].v & 0x6) == 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801703F4_ovl_040E80);
+u8 func_801703F4_ovl_040E80(s32 a) {
+    return func_80172BBC_ovl_040E80(a);
+}
 
 u8 func_80170414_ovl_040E80(s32 idx) {
     return D_8019367C_ovl_040E80[idx];
@@ -122,7 +145,9 @@ u8 func_80170424_ovl_040E80(s32 idx) {
     return D_80193681_ovl_040E80[idx];
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170434_ovl_040E80);
+s32 func_80170434_ovl_040E80(void) {
+    return 0;
+}
 
 void func_8017043C_ovl_040E80(void) {
     FlagGet();
@@ -132,9 +157,13 @@ u8 func_80170458_ovl_040E80(s32 idx) {
     return D_80193BDB_ovl_040E80[idx].v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170474_ovl_040E80);
+void func_80170474_ovl_040E80(s32 squad, s32 i, u8 value) {
+    D_801971F0_ovl_040E80[squad].members[i] = value;
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017049C_ovl_040E80);
+void func_8017049C_ovl_040E80(s32 flag, s32 unused, s32 value) {
+    ProfileFlagSet(flag, value);
+}
 
 void func_801704B8_ovl_040E80(s32 idx, s32 unused, u8 value) {
     D_801971F1_ovl_040E80[idx].v = value;
@@ -146,9 +175,13 @@ INCLUDE_ASM("asm/nonmatchings/46090", LocationSetCaptured);
 
 INCLUDE_ASM("asm/nonmatchings/46090", LocationClearOwner);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017055C_ovl_040E80);
+void func_8017055C_ovl_040E80(s32 a, s32 unused, s32 b) {
+    func_80172B10_ovl_040E80(a, b);
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017057C_ovl_040E80);
+void func_8017057C_ovl_040E80(s32 a, s32 unused, s32 b) {
+    func_80172B68_ovl_040E80(a, b);
+}
 
 void func_8017059C_ovl_040E80(s32 idx, s32 unused, u8 value) {
     D_8019367C_ovl_040E80[idx] = value;
@@ -162,9 +195,13 @@ void func_801705BC_ovl_040E80(s32 idx, s32 unused, u16 value) {
     D_80196F60_ovl_040E80[idx] = value;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801705D0_ovl_040E80);
+void func_801705D0_ovl_040E80(s32 flag, s32 unused, s32 value) {
+    FlagSet(flag, value);
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801705EC_ovl_040E80);
+u16 func_801705EC_ovl_040E80(s32 a) {
+    return func_8016B738_ovl_040E80(a);
+}
 
 u8 func_8017060C_ovl_040E80(s32 idx) {
     return D_80193AC3_ovl_040E80[idx].v;
@@ -178,7 +215,9 @@ u8 func_80170634_ovl_040E80(s32 idx) {
     return D_80193AC2_ovl_040E80[idx].v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170648_ovl_040E80);
+u16 func_80170648_ovl_040E80(s32 a) {
+    return func_8016B6FC_ovl_040E80(a);
+}
 
 u8 func_80170668_ovl_040E80(s32 idx) {
     return D_80196B03_ovl_040E80[idx].v;
@@ -224,9 +263,13 @@ void func_80170740_ovl_040E80(s32 idx, s32 unused, u8 value) {
     D_80196B02_ovl_040E80[idx].v = value;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170754_ovl_040E80);
+void func_80170754_ovl_040E80(s32 a, s32 unused, s32 b) {
+    func_8016BA6C_ovl_040E80(b, a);
+}
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170774_ovl_040E80);
+void func_80170774_ovl_040E80(s32 a, s32 unused, s32 b) {
+    func_80172BF0_ovl_040E80(a, b);
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170794_ovl_040E80);
 
@@ -248,11 +291,16 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_8017223C_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_8017230C_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172368_ovl_040E80);
+void func_80172368_ovl_040E80(void) {
+    bzero(D_80197B00_ovl_040E80, 100);
+    D_801936A8_ovl_040E80 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172394_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801725B4_ovl_040E80);
+void func_801725B4_ovl_040E80(u16 v) {
+    D_80197B08_ovl_040E80 = v;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801725C0_ovl_040E80);
 
@@ -268,7 +316,9 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_8017298C_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801729CC_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172A0C_ovl_040E80);
+u8 func_80172A0C_ovl_040E80(u8 i) {
+    return (D_801936A6_ovl_040E80 >> (i * 2)) & 3;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172A28_ovl_040E80);
 
