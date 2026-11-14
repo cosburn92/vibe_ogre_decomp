@@ -19,10 +19,11 @@ typedef struct {
     /* 0x3C */ u8 pad3C[0x4];
     /* 0x40 */ s32 unk40;
     /* 0x44 */ s32 handle;
-    /* 0x48 */ u8 pad48[0x8];
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ u8 pad4C[0x4];
     /* 0x50 */ f32 unk50;
     /* 0x54 */ u8 pad54[0x14];
-    /* 0x68 */ s32 unk68;
+    /* 0x68 */ f32 unk68;
     /* 0x6C */ f32 unk6C;
     /* 0x70 */ f32 unk70;
     /* 0x74 */ void *unk74;
@@ -37,16 +38,16 @@ typedef struct {
     /* 0x98 */ u16 unk98;
     /* 0x9A */ u8 pad9A[0x2];
     /* 0x9C */ u16 unk9C;
-    /* 0x9E */ u16 unk9E;
+    /* 0x9E */ s16 unk9E;
     /* 0xA0 */ u8 padA0[0x2];
     /* 0xA2 */ u16 unkA2;
     /* 0xA4 */ u16 unkA4;
     /* 0xA6 */ u8 padA6[0x2];
     /* 0xA8 */ u16 unkA8;
-    /* 0xAA */ u8 padAA[0x2];
+    /* 0xAA */ u16 unkAA;
     /* 0xAC */ u16 length;
     /* 0xAE */ u16 unkAE;
-    /* 0xB0 */ u16 unkB0;
+    /* 0xB0 */ s16 unkB0;
     /* 0xB2 */ u16 unkB2;
     /* 0xB4 */ u16 unkB4;
     /* 0xB6 */ u8 vib_delay;
@@ -65,7 +66,8 @@ typedef struct {
     /* 0xCD */ u8 padCD[0x1];
     /* 0xCE */ u8 wobble;
     /* 0xCF */ u8 unkCF;
-    /* 0xD0 */ u8 padD0[0x2];
+    /* 0xD0 */ u8 unkD0;
+    /* 0xD1 */ s8 unkD1;
     /* 0xD2 */ u8 velon;
     /* 0xD3 */ u8 unkD3;
     /* 0xD4 */ u8 unkD4;
@@ -138,6 +140,20 @@ typedef struct {
     /* 0x1C */ u8 unk1C;
     /* 0x20 */ void *unk20;
 } MusSample;
+void func_800850C0(MusSample *p);
+
+typedef struct {
+    u8 pad00[0x34];
+    struct {
+        u8 pad00[0x24];
+        s32 arr[1];
+    } *unk34;
+} AlGlobalsLike;
+extern AlGlobalsLike *alGlobals_800A9E54;
+extern AlGlobalsLike *n_alGlobals;
+extern AlGlobalsLike *D_800E8298;
+void func_80084C98(s32 *p);
+
 
 extern s16 D_800B181C;
 extern s16 D_800B181E;
@@ -611,9 +627,32 @@ void __MusIntInitSweep(MusChannel *cp) {
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_8008302C);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800830E4);
+f32 func_800830E4(MusChannel *cp) {
+    if (--cp->unkD0 == 0) {
+        if (cp->unkD1 == 0) {
+            cp->unkD1 = cp->unkD8;
+            cp->unkD0 = cp->wobble;
+        } else {
+            cp->unkD1 = 0;
+            cp->unkD0 = cp->unkCF;
+        }
+    }
+    return cp->unkD1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008313C);
+f32 sinf(f32);
+
+f32 func_8008313C(MusChannel *cp) {
+    s32 t = cp->unkAA - cp->vib_delay;
+    f32 r;
+
+    if (t <= 0) {
+        r = 0.0f;
+    } else {
+        r = cp->unk68 = sinf((f32)t * cp->vib_precalc) * cp->vib_amount;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800831A0);
 
@@ -629,7 +668,15 @@ INCLUDE_ASM("asm/nonmatchings/114F0", func_80083738);
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083874);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80083A3C);
+void func_80083A3C(u32 *p, u32 base, s32 n) {
+    s32 i;
+
+    for (i = 0; i < n; i++, p++) {
+        if (*p != 0) {
+            *p += base;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083A74);
 
@@ -927,9 +974,37 @@ u8 *func_80084784(MusChannel *cp, u8 *ptr) {
     return ptr + 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084794);
+u8 *func_80084794(MusChannel *cp, u8 *ptr) {
+    s32 v = *ptr++;
+    s32 h, i;
+    MusChannel *cp2;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084864);
+    if (v >= 0x80) {
+        v = ((v & 0x7F) << 8) + *ptr++;
+    }
+    cp->unk48++;
+    h = func_80083B24(cp->unk78, (void *)v, cp->unk9E, cp->unkB0, cp->unk48);
+    cp->unk48--;
+    if (h != 0) {
+        cp2 = D_800B180C;
+        for (i = 0; i < D_800B1804; i++, cp2++) {
+            if (cp2->handle == h) {
+                cp2->handle = cp->handle;
+                cp2->unk7C = cp->unk7C;
+            }
+        }
+    }
+    return ptr;
+}
+
+u8 *func_80084864(MusChannel *cp, u8 *ptr) {
+    cp->unk6C = (f32)*ptr * 0.015625;
+    cp->unk24 = cp->unk70 * cp->unk6C;
+    return ptr + 1;
+}
+
+/* Unreferenced double that follows this function's constant in the original rodata. */
+const f64 D_800AE4E8 = 0.0;
 
 u8 *func_800848A0(MusChannel *cp, u8 *ptr) {
     cp->unkD4 = *ptr;
@@ -945,18 +1020,43 @@ u8 *Fchangefx(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800848F4);
+u8 *func_800848F4(MusChannel *cp, u8 *ptr) {
+    s32 v = *ptr++;
+    s32 len = *ptr++;
+
+    if (len & 0x80) {
+        len = ((len & 0x7F) << 8) | *ptr++;
+    }
+    if ((cp->unk00 & 3) == 2 && D_800B1840 != 0) {
+        ((void (*)(s32, s32))D_800B1840)(cp->handle, v);
+    }
+    return ptr;
+}
 
 u8 *Flength0(MusChannel *cp, u8 *ptr) {
     cp->length = 0;
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084970);
+void func_800849D8(void *c);
+
+void func_80084970(AlGlobalsLike *g, void *c) {
+    if (n_alGlobals == NULL) {
+        n_alGlobals = g;
+        if (alGlobals_800A9E54 == NULL) {
+            func_800850C0(c);
+            alGlobals_800A9E54 = D_800E8298 = n_alGlobals;
+            func_800849D8(c);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800849D8);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084C48);
+s32 func_80084C48(s16 idx) {
+    func_80084C98(&alGlobals_800A9E54->unk34->arr[idx]);
+    return alGlobals_800A9E54->unk34->arr[idx];
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80084C98);
 
@@ -967,8 +1067,30 @@ void func_800850C0(MusSample *p) {
     p->unk20 = D_800A99D8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800850D8);
+extern s32 *D_800A9B64[];
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008511C);
+s32 func_800850D8(void) {
+    s32 i;
+    s32 max = 0;
+
+    for (i = 0; D_800A9B64[i] != NULL; i++) {
+        if (max < D_800A9B64[i][0]) {
+            max = D_800A9B64[i][0];
+        }
+    }
+    return max;
+}
+
+s32 func_8008511C(void) {
+    s32 i;
+    s32 max = 0;
+
+    for (i = 0; D_800A9B64[i] != NULL; i++) {
+        if (max < D_800A9B64[i][1]) {
+            max = D_800A9B64[i][1];
+        }
+    }
+    return max;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", ChangeCustomEffect);
