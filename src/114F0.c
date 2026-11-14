@@ -318,7 +318,15 @@ void MusSetMasterVolume(u32 flags, s32 volume);
 void func_80081DB4(MusBank *bank, u8 *wbank);
 void func_80081F7C(MusFxBank *bank);
 void func_80082130(s32 n);
-void func_800822AC(void *player);
+s32 func_800822AC(void *player);
+void func_80082AE8(MusChannel *cp, s32 voice);
+void func_80082B64(MusChannel *cp, s32 voice);
+void func_80082CB8(MusChannel *cp, s32 voice, f32 offset);
+void func_80082E34(MusChannel *cp);
+void func_8008302C(MusChannel *cp);
+f32 func_800830E4(MusChannel *cp);
+f32 func_8008313C(MusChannel *cp);
+void func_8008259C(MusChannel *cp, s32 voice);
 void func_800831A0(MusChannel *cp);
 void func_80083264(MusChannel *cp);
 
@@ -469,7 +477,7 @@ void func_8008123C(MusConfig *config) {
     D_800B1820 = 1;
     D_800B1824 = 0x12345678;
     D_800B17F0.next = NULL;
-    D_800B17F0.handler = func_800822AC;
+    D_800B17F0.handler = (void (*)(void *))func_800822AC;
     D_800B17F0.clientData = &D_800B17F0;
     func_80088000(&D_800B17F0);
     for (i = 0; i < D_800B1804; i++) {
@@ -1046,7 +1054,84 @@ s32 func_80082214(MusCommand *cmd) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800822AC);
+/* __MusIntMain: the synthesizer player callback */
+s32 func_800822AC(void *player) {
+    s32 i;
+    MusChannel *cp;
+    f32 pitch;
+
+    while (D_800B1844 != D_800B1848) {
+        func_80082194(&D_800B1850[D_800B1844]);
+        D_800B1844++;
+        if (D_800B1844 == D_800B184C) {
+            D_800B1844 = 0;
+        }
+    }
+    for (i = -4, cp = D_800B180C; i < D_800B1804 - 4; i++, cp++) {
+        if (cp->unk04 == 0) {
+            continue;
+        }
+        if (cp->unk00 & 1) {
+            continue;
+        }
+        if (cp->pdata != NULL) {
+            func_80082AE8(cp, i);
+        }
+        cp->unk0C += cp->unk9C;
+        if (cp->unk9A != 0x7FFF) {
+            while (cp->unk3C - cp->unk0C < 0) {
+                if (cp->unk04 == 0) {
+                    goto next;
+                }
+                func_8008259C(cp, i);
+            }
+            if (cp->unk04 == 0) {
+                continue;
+            }
+        }
+        if (cp->pvolume != NULL && cp->unk14 - cp->unk0C < 0) {
+            func_800831A0(cp);
+        }
+        if (cp->ppitchbend != NULL && cp->unk18 - cp->unk0C < 0) {
+            func_80083264(cp);
+        }
+        if (cp->unk10 != -1 && --cp->unk10 == -1) {
+            cp->pvolume = NULL;
+            cp->ppitchbend = NULL;
+            cp->unk74 = NULL;
+            cp->unk78 = NULL;
+            cp->handle = 0;
+            cp->pdata = NULL;
+            cp->unk04 = 0;
+            if (cp->unkC9 != 0) {
+                cp->unkC9 = 0;
+                func_80088550(D_800B1808 + i * 0x1C);
+            }
+        }
+        if (cp->unkC9 != 0) {
+            if (cp->unkC3 != 0) {
+                func_80082E34(cp);
+            }
+            if (cp->unkD4 != 0 && cp->unk94 - cp->unk0C < 0) {
+                func_8008302C(cp);
+            }
+            pitch = cp->unk30;
+            if (cp->vib_speed != 0) {
+                pitch += func_8008313C(cp);
+            }
+            if (cp->wobble != 0) {
+                pitch += func_800830E4(cp);
+            }
+            if (cp->pdata == NULL) {
+                func_80082CB8(cp, i, pitch);
+                func_80082B64(cp, i);
+            }
+        }
+        cp->unkAA = (u32)(cp->unk0C - cp->unk40) >> 8;
+    next:;
+    }
+    return D_800B1818;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_8008259C);
 
