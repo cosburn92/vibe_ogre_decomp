@@ -254,7 +254,7 @@ HeapNode *func_80071A3C(HeapNode *n, u32 size);
 void func_80071A74(void);
 HeapNode *func_80071E74(HeapNode *n, u32 size);
 u32 osSetIntMask(u32 mask);
-void __rmonMaskIdleThreadInts(void);
+void nuGfxTaskAllEndWait(void);
 void func_8007328C(void);
 
 
@@ -1171,7 +1171,7 @@ u8 func_8007338C(void) {
 }
 
 void func_80073398(void) {
-    __rmonMaskIdleThreadInts();
+    nuGfxTaskAllEndWait();
     func_8007328C();
     D_800A8213 = 0;
     D_800A8212 = 0;

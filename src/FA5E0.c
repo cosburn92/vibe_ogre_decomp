@@ -16,7 +16,7 @@ extern u8 *D_801B3E20_ovl_0FA5E0;
 extern s32 D_801B3DE0_ovl_0FA5E0[];
 extern u8 D_801B436C_ovl_0FA5E0[];
 extern u16 D_800C4C26;
-void __rmonMaskIdleThreadInts(void);
+void nuGfxTaskAllEndWait(void);
 void func_801AEDEC_ovl_0FA5E0(Widget3390 *p);
 void func_801AEE94_ovl_0FA5E0(s32 i, void *v);
 void HFree(void *p);
@@ -32,7 +32,7 @@ INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AD748_ovl_0FA5E0);
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801ADF6C_ovl_0FA5E0);
 
 void func_801AE090_ovl_0FA5E0(void) {
-    __rmonMaskIdleThreadInts();
+    nuGfxTaskAllEndWait();
     D_800C4C26 = 0xFFFE;
     func_801AEDEC_ovl_0FA5E0(D_801B3390_ovl_0FA5E0);
 }

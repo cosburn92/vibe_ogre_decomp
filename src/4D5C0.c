@@ -63,7 +63,7 @@ void func_80178D3C_ovl_040E80(void);
 void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
 void func_8022681C(s32 a, s32 b);
 void func_80227348(void);
-void __rmonMaskIdleThreadInts(void);
+void nuGfxTaskAllEndWait(void);
 void func_8022F264(void);
 void HFree(void *p);
 
@@ -435,7 +435,7 @@ INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178B5C_ovl_040E80);
 
 void func_80178BF4_ovl_040E80(void) {
     func_80227348();
-    __rmonMaskIdleThreadInts();
+    nuGfxTaskAllEndWait();
     func_8022F264();
     D_8018FDC0_ovl_040E80[0xD2] = 0;
     if (D_800C4BBC != NULL && D_800C4BBC->state == 13) {

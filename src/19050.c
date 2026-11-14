@@ -392,10 +392,3 @@ u8 func_80089534(void) {
     return nusched.frameRate;
 }
 
-INCLUDE_ASM("asm/nonmatchings/19050", func_80089540);
-
-INCLUDE_ASM("asm/nonmatchings/19050", func_80089660);
-
-INCLUDE_ASM("asm/nonmatchings/19050", func_80089804);
-
-INCLUDE_ASM("asm/nonmatchings/19050", func_80089990);
