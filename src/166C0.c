@@ -3,6 +3,30 @@
 /* n_audio n_env.c */
 
 void n_alLoadParam(void *filter, s32 paramID, void *param);
+Acmd *n_alResamplePull(N_PVoice *e, s16 *outp, Acmd *p);
+s16 _getRate_80086AFC(f64 vol, f64 tgt, s32 count, u16 *ratel);
+
+extern s16 D_800A9D40[]; /* eqpower */
+
+#define FIXED_SAMPLE 184
+#define N_EQPOWER_LENGTH 128
+
+#define n_aSetVolume(pkt, f, v, t, r)                                       \
+    {                                                                       \
+        Acmd *_a = (Acmd *)pkt;                                             \
+                                                                            \
+        _a->w0 = _SHIFTL(9, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(v, 0, 16); \
+        _a->w1 = _SHIFTL(t, 16, 16) | _SHIFTL(r, 0, 16);                    \
+    }
+
+#define n_aEnvMixer(pkt, f, t, s)                                           \
+    {                                                                       \
+        Acmd *_a = (Acmd *)pkt;                                             \
+                                                                            \
+        _a->w0 = _SHIFTL(3, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(t, 0, 16); \
+        _a->w1 = (u32)(s);                                                  \
+    }
+
 
 INCLUDE_ASM("asm/nonmatchings/166C0", n_alEnvmixerPull);
 
@@ -38,7 +62,37 @@ s32 n_alEnvmixerParam(void *filter, s32 paramID, void *param) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/166C0", _pullSubFrame_800868DC);
+Acmd *_pullSubFrame_800868DC(void *filter, s16 *inp, s16 *outp, s32 outCount, Acmd *p) {
+    Acmd *ptr = p;
+    N_PVoice *e = filter;
+
+    if (e->em_motion != 1 || !outCount) { /* AL_PLAYING */
+        return ptr;
+    }
+
+    ptr = n_alResamplePull(e, inp, p);
+
+    if (e->em_first) {
+        e->em_first = 0;
+
+        e->em_ltgt = (e->em_volume * D_800A9D40[e->em_pan]) >> 15;
+        e->em_lratm = _getRate_80086AFC((f64)e->em_cvolL, (f64)e->em_ltgt, e->em_segEnd, &e->em_lratl);
+        e->em_rtgt = (e->em_volume * D_800A9D40[N_EQPOWER_LENGTH - e->em_pan - 1]) >> 15;
+        e->em_rratm = _getRate_80086AFC((f64)e->em_cvolR, (f64)e->em_rtgt, e->em_segEnd, &e->em_rratl);
+
+        n_aSetVolume(ptr++, 0, e->em_ltgt, e->em_lratm, e->em_lratl);
+        n_aSetVolume(ptr++, 6, e->em_cvolL, e->em_dryamt, e->em_wetamt); /* A_VOL | A_LEFT */
+        n_aSetVolume(ptr++, 4, e->em_rtgt, e->em_rratm, e->em_rratl);    /* A_VOL | A_RIGHT */
+        n_aEnvMixer(ptr++, 1, e->em_cvolR, osVirtualToPhysical(e->em_state)); /* A_INIT */
+    } else {
+        n_aEnvMixer(ptr++, 0, 0, osVirtualToPhysical(e->em_state)); /* A_CONTINUE */
+    }
+
+    *inp += FIXED_SAMPLE << 1;
+    e->em_delta += FIXED_SAMPLE;
+
+    return ptr;
+}
 
 s16 _getRate_80086AFC(f64 vol, f64 tgt, s32 count, u16 *ratel) {
     s16 s;
