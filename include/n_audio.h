@@ -120,7 +120,8 @@ typedef struct {
     /* 0x1C */ s32 upitch;
     /* 0x20 */ f32 delta;
     /* 0x24 */ s32 first;
-} ALResampler;
+    /* 0x28 */ u8 pad28[0xC];
+} ALResampler; /* size 0x34 */
 
 /* libultra ALDelay */
 typedef struct {
