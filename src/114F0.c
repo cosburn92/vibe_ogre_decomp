@@ -78,7 +78,7 @@ typedef struct {
     /* 0xCA */ u8 unkCA;
     /* 0xCB */ u8 unkCB;
     /* 0xCC */ u8 unkCC;
-    /* 0xCD */ u8 padCD[0x1];
+    /* 0xCD */ u8 unkCD;
     /* 0xCE */ u8 wobble;
     /* 0xCF */ u8 unkCF;
     /* 0xD0 */ u8 unkD0;
@@ -143,14 +143,17 @@ typedef struct {
 } MusDrum;
 
 typedef struct {
-    /* 0x00 */ u8 pad00[8];
+    /* 0x00 */ u8 pad00[4];
+    /* 0x04 */ s32 count;
     /* 0x08 */ s32 unk08;
     /* 0x0C */ u32 *channels;
-    /* 0x10 */ u8 pad10[4];
-    /* 0x14 */ s32 unk14;
+    /* 0x10 */ u32 *volumes;
+    /* 0x14 */ u32 *pitchbends;
     /* 0x18 */ u8 *envelopes; /* 7 bytes each */
     /* 0x1C */ MusDrum *drums;
     /* 0x20 */ s32 unk20;
+    /* 0x24 */ u32 master;
+    /* 0x28 */ s32 relocated;
 } MusSong;
 
 typedef struct {
@@ -192,7 +195,7 @@ extern u16 D_800B181E;
 extern s32 D_800B1818;
 void func_80088410(void *voice, s16 vol, s32 time);
 void func_800882E0(void *voice, u8 pan);
-void func_80083A3C(u32 *p, u32 base, s32 n);
+void func_80083A3C(void *table, void *base, s32 n);
 void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
 s32 alFxParamHdl(void *fx, s32 id, void *param);
 /* Custom reverb state allocated by func_80084C98 (D_800E82A8..D_800E82BC) */
@@ -225,7 +228,7 @@ f32 func_80083378(f32 pitch);
 void func_80088380(void *voice, f32 pitch);
 extern s32 D_800A9B8C;
 extern u8 D_800A99D8[];
-s32 func_80083CCC(void *addr);
+s32 func_80083CCC(MusSong *song);
 void MusHandleUnPause(s32 handle);
 void func_8008350C(MusBank *pbank, u8 *wbank);
 s32 func_80082214(MusCommand *cmd);
@@ -721,7 +724,7 @@ s32 func_800820AC(s32 handle) {
             if (cp->unk74 != 0) {
                 return ((MusSong *)cp->unk74)->unk20;
             }
-            return ((MusSong *)cp->unk78)->unk14;
+            return ((MusFxBank *)cp->unk78)->unk14;
         }
     }
     return 0;
@@ -842,7 +845,50 @@ void func_80082DC4(MusChannel *cp) {
     cp->unkC5 = cp->unkBF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082E34);
+/* volume envelope: 1 attack, 2 decay, 3 sustain, 4 release */
+void func_80082E34(MusChannel *cp) {
+    u8 state;
+    s32 t;
+
+    if (cp->unk54 - cp->unk0C < 0 && cp->unkC3 < 4) {
+        cp->unkC3 = 4;
+        cp->unkC5 = 1;
+        cp->unkCD = cp->unkC4;
+    }
+    state = cp->unkC3;
+    cp->unkC5 = cp->unkBF;
+    switch (state) {
+        case 1:
+            t = ((u32)(cp->unk0C - cp->unk40) >> 8) * cp->unk64 >> 10;
+            if (t < cp->unkC6) {
+                cp->unkC4 = cp->unkC0 + (s32)(cp->unk58 * t);
+            } else {
+                cp->unkC3 = state + 1;
+                cp->unkC4 = cp->unkC1;
+            }
+            break;
+        case 2:
+            t = (((u32)(cp->unk0C - cp->unk40) >> 8) - cp->unkC6) * cp->unk64 >> 10;
+            if (t < cp->unkC7) {
+                cp->unkC4 = cp->unkC1 + (s32)(cp->unk5C * t);
+            } else {
+                cp->unkC3 = state + 1;
+                cp->unkC4 = cp->unkC2;
+            }
+            break;
+        case 3:
+            break;
+        case 4:
+            t = ((u32)(cp->unk0C - cp->unk54) >> 8) * cp->unk64 >> 10;
+            if (t < cp->unkC8) {
+                cp->unkC4 = cp->unkCD - (s32)(cp->unk60 * t * cp->unkCD);
+            } else {
+                cp->unkC3 = state + 1;
+                cp->unkC4 = 0;
+            }
+            break;
+    }
+}
 
 void __MusIntInitSweep(MusChannel *cp) {
     cp->sweep_timer = 0;
@@ -1001,8 +1047,8 @@ void func_8008350C(MusBank *pbank, u8 *wbank) {
         return;
     }
     b->flags |= 0x80000000;
-    func_80083A3C((u32 *)&b->basenote, (u32)b, 3);
-    func_80083A3C((u32 *)b->waves, (u32)b, b->count);
+    func_80083A3C(&b->basenote, b, 3);
+    func_80083A3C(b->waves, b, b->count);
     for (i = 0; i < b->count; i++) {
         f32 *det = (f32 *)b->detune + i;
 
@@ -1126,12 +1172,14 @@ s32 func_80083874(MusSong *song, s32 index) {
     return (index % (D_800B1804 - 4)) + 4;
 }
 
-void func_80083A3C(u32 *p, u32 base, s32 n) {
+inline void func_80083A3C(void *table, void *base, s32 n) {
+    u32 *p = table;
+    u32 b = (u32)base;
     s32 i;
 
     for (i = 0; i < n; i++, p++) {
         if (*p != 0) {
-            *p += base;
+            *p += b;
         }
     }
 }
@@ -1175,7 +1223,50 @@ s32 func_80083B24(MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* The original copies each loaded table pointer into the inlined loop pointer (move v1,v0); GCC here loads it straight in. */
+/* start a song: relocate it once, then claim the master channel and one per track */
+s32 func_80083CCC(MusSong *song) {
+    s32 count = song->count;
+    void *base = song;
+    s32 handle;
+    s32 i;
+    MusChannel *cp;
+
+    if (song->relocated == 0) {
+        song->relocated = 1;
+        func_80083A3C(&song->channels, song, 7);
+        func_80083A3C(song->channels, base, count);
+        func_80083A3C(song->volumes, base, count);
+        func_80083A3C(song->pitchbends, base, count);
+    }
+    handle = D_800B1820++;
+    cp = &D_800B180C[func_80083874(song, -1)];
+    func_80083738(cp);
+    cp->velon = 1;
+    cp->unk74 = song;
+    cp->unk00 |= 3;
+    cp->unk04 = (s32)(cp->pbase = (u8 *)song->master);
+    cp->handle = handle;
+    for (i = 0; i < count; i++) {
+        if (song->channels[i] != 0) {
+            cp = &D_800B180C[func_80083874(song, i)];
+            func_80083738(cp);
+            cp->velon = 1;
+            cp->unk74 = song;
+            cp->unk00 |= 1;
+            cp->pvolume = cp->pvolumebase = (u8 *)song->volumes[i];
+            cp->ppitchbend = cp->ppitchbendbase = (u8 *)song->pitchbends[i];
+            cp->unk04 = (s32)(cp->pbase = (u8 *)song->channels[i]);
+            cp->handle = handle;
+        }
+    }
+    D_800B1828 = NULL;
+    return handle;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083CCC);
+#endif
 
 void func_80083F38(s32 handle, s32 and, s32 or) {
     s32 i;
