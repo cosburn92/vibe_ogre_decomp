@@ -145,9 +145,10 @@ typedef struct {
 typedef struct {
     /* 0x00 */ u8 pad00[8];
     /* 0x08 */ s32 unk08;
-    /* 0x0C */ u8 pad0C[8];
+    /* 0x0C */ u32 *channels;
+    /* 0x10 */ u8 pad10[4];
     /* 0x14 */ s32 unk14;
-    /* 0x18 */ u8 pad18[4];
+    /* 0x18 */ u8 *envelopes; /* 7 bytes each */
     /* 0x1C */ MusDrum *drums;
     /* 0x20 */ s32 unk20;
 } MusSong;
@@ -167,10 +168,10 @@ void func_80085B5C(void *dst, void *src, s32 n);
 
 typedef struct {
     /* 0x00 */ u8 pad00[0x1C];
-    /* 0x1C */ u8 unk1C;
-    /* 0x20 */ void *unk20;
-} MusSample;
-void func_800850C0(MusSample *p);
+    /* 0x1C */ u8 fxType;
+    /* 0x20 */ void *params;
+} MusSynConfig;
+void func_800850C0(MusSynConfig *p);
 
 typedef struct {
     u8 pad00[0x34];
@@ -183,7 +184,7 @@ typedef struct {
 extern AlGlobalsLike *alGlobals_800A9E54;
 extern AlGlobalsLike *n_alGlobals;
 extern AlGlobalsLike *D_800E8298;
-void func_80084C98(s32 *p);
+void func_80084C98(void **out, MusSynConfig *c, void *hp);
 
 
 extern u16 D_800B181C;
@@ -192,6 +193,20 @@ extern s32 D_800B1818;
 void func_80088410(void *voice, s16 vol, s32 time);
 void func_800882E0(void *voice, u8 pan);
 void func_80083A3C(u32 *p, u32 base, s32 n);
+void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
+s32 alFxParamHdl(void *fx, s32 id, void *param);
+/* Custom reverb state allocated by func_80084C98 (D_800E82A8..D_800E82BC) */
+typedef struct {
+    /* 0x00 */ void *unkA8;
+    /* 0x04 */ void *unkAC;
+    /* 0x08 */ void *unkB0;
+    /* 0x0C */ void *unkB4;
+    /* 0x10 */ void *unkB8;
+    /* 0x14 */ void *unkBC;
+} MusFxState;
+extern MusFxState D_800E82A8;
+s32 func_800850D8(void);
+s32 func_8008511C(void);
 void osWritebackDCacheAll(void);
 extern void *D_800B1828;
 extern MusBank *D_800B182C;
@@ -230,7 +245,45 @@ void alFxParam(void *fx, s32 id, void *param);
 
 
 
+#ifdef NON_MATCHING
+/* The original computes env into v0 and copies it to a3 in bnez's delay slot; GCC here uses beqzl. */
+/* Fenvelope from the song's envelope table */
+u8 *func_800810F0(MusChannel *cp, u8 *ptr) {
+    s32 n = *ptr++;
+    u8 *env;
+    u8 v, t;
+
+    if (n & 0x80) {
+        n &= 0x7F;
+        n <<= 8;
+        n |= *ptr++;
+    }
+    env = ((MusSong *)cp->unk74)->envelopes + n * 7;
+    v = env[0];
+    if (v == 0) {
+        v = 1;
+    }
+    cp->unkBF = v;
+    cp->unk64 = 0x400 / v;
+    cp->unkC0 = env[1];
+    v = env[2];
+    cp->unkC6 = v;
+    t = env[3];
+    cp->unk58 = (1.0 / (f32)v) * (f32)(t - cp->unkC0);
+    cp->unkC1 = t;
+    v = env[4];
+    cp->unkC7 = v;
+    t = env[5];
+    cp->unk5C = (1.0 / (f32)v) * (f32)(t - cp->unkC1);
+    cp->unkC2 = t;
+    v = env[6];
+    cp->unkC8 = v;
+    cp->unk60 = 1.0 / (f32)v;
+    return ptr;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800810F0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_8008123C);
 
@@ -1033,7 +1086,45 @@ void func_80083738(MusChannel *cp) {
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083738);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80083874);
+s32 func_80083874(MusSong *song, s32 index) {
+    s32 i, best, low;
+    MusChannel *cp;
+
+    if (index < 0) {
+        cp = D_800B180C;
+        for (i = 0; i < 4; i++, cp++) {
+            if (cp->unk04 == 0) {
+                return i;
+            }
+        }
+    }
+    for (i = 4, cp = D_800B1810; i < D_800B1804; i++, cp++) {
+        if (cp->unk04 == 0) {
+            return i;
+        }
+    }
+    for (i = 4, cp = D_800B1810, low = 0x7FFFFFFF, best = 3; i < D_800B1804; i++, cp++) {
+        if (cp->unk78 != 0 && cp->unk48 <= low) {
+            low = cp->unk48;
+            best = i;
+        }
+    }
+    if (best >= 4) {
+        return best;
+    }
+    /* cp is never advanced here */
+    for (i = 4, cp = D_800B1810; i < D_800B1804; i++) {
+        if (cp->unk78 == 0 && cp->unk74 != song) {
+            return i;
+        }
+    }
+    for (i = 4, cp = D_800B1810; i < D_800B1804; i++, cp++) {
+        if (cp->unk74 == song && song->channels[index] == (u32)cp->pbase) {
+            return i;
+        }
+    }
+    return (index % (D_800B1804 - 4)) + 4;
+}
 
 void func_80083A3C(u32 *p, u32 base, s32 n) {
     s32 i;
@@ -1508,18 +1599,31 @@ void func_80084970(AlGlobalsLike *g, void *c) {
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800849D8);
 
-s32 func_80084C48(s16 idx) {
-    func_80084C98(&alGlobals_800A9E54->unk34->arr[idx]);
+/* n_alSynAllocFX */
+s32 func_80084C48(s16 idx, MusSynConfig *c, void *hp) {
+    func_80084C98((void **)&alGlobals_800A9E54->unk34->arr[idx], c, hp);
     return alGlobals_800A9E54->unk34->arr[idx];
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084C98);
+void func_80084C98(void **out, MusSynConfig *c, void *hp) {
+    s32 *fx = alHeapDBAlloc(NULL, 0, hp, 1, 0x2C);
+
+    *out = fx;
+    fx[10] = (s32)alFxParamHdl;
+    D_800E82A8.unkA8 = alHeapDBAlloc(NULL, 0, hp, func_800850D8(), 0x28);
+    D_800E82A8.unkAC = alHeapDBAlloc(NULL, 0, hp, func_8008511C(), 2);
+    D_800E82A8.unkB0 = alHeapDBAlloc(NULL, 0, hp, 1, 0x34);
+    D_800E82A8.unkB4 = alHeapDBAlloc(NULL, 0, hp, 1, 0x20);
+    D_800E82A8.unkB8 = alHeapDBAlloc(NULL, 0, hp, 1, 0x30);
+    D_800E82A8.unkBC = alHeapDBAlloc(NULL, 0, hp, 1, 8);
+    func_80084DE0(c->params);
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80084DE0);
 
-void func_800850C0(MusSample *p) {
-    p->unk1C = 6;
-    p->unk20 = D_800A99D8;
+void func_800850C0(MusSynConfig *p) {
+    p->fxType = 6; /* AL_FX_CUSTOM */
+    p->params = D_800A99D8;
 }
 
 extern s32 *D_800A9B64[];
