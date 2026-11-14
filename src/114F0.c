@@ -139,7 +139,10 @@ typedef struct {
 } MusFxBank;
 
 typedef struct {
-    u8 b[6];
+    /* 0x00 */ u16 wave;
+    /* 0x02 */ u16 envelope;
+    /* 0x04 */ u8 pan;
+    /* 0x05 */ u8 note;
 } MusDrum;
 
 typedef struct {
@@ -151,7 +154,7 @@ typedef struct {
     /* 0x14 */ u32 *pitchbends;
     /* 0x18 */ u8 *envelopes; /* 7 bytes each */
     /* 0x1C */ MusDrum *drums;
-    /* 0x20 */ s32 unk20;
+    /* 0x20 */ u16 *wavetable;
     /* 0x24 */ u32 master;
     /* 0x28 */ s32 relocated;
 } MusSong;
@@ -278,6 +281,9 @@ extern u16 D_800B181C;
 extern u16 D_800B181E;
 extern s32 D_800B1818;
 void func_80088410(void *voice, s16 vol, s32 time);
+void func_80088240(void *voice, u8 fxmix);
+void func_80082DC4(MusChannel *cp);
+void __MusIntInitSweep(MusChannel *cp);
 void func_800882E0(void *voice, u8 pan);
 void func_80083A3C(void *table, void *base, s32 n);
 void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
@@ -400,45 +406,44 @@ void alFxParam(void *fx, s32 id, void *param);
 
 
 
-#ifdef NON_MATCHING
-/* The original computes env into v0 and copies it to a3 in bnez's delay slot; GCC here uses beqzl. */
+/* Loads a 7-byte envelope (speed, init, attack speed, max, decay speed, sustain, release speed). */
+static inline void __MusIntSetEnvelope(MusChannel *cp, u8 *env) {
+    u8 v, t;
+
+    v = *env++;
+    if (v == 0) {
+        v = 1;
+    }
+    cp->unkBF = v;
+    cp->unk64 = 0x400 / v;
+    cp->unkC0 = *env++;
+    v = *env++;
+    cp->unkC6 = v;
+    t = *env++;
+    cp->unk58 = (1.0 / (f32)v) * (f32)(t - cp->unkC0);
+    cp->unkC1 = t;
+    v = *env++;
+    cp->unkC7 = v;
+    t = *env++;
+    cp->unk5C = (1.0 / (f32)v) * (f32)(t - cp->unkC1);
+    cp->unkC2 = t;
+    v = *env++;
+    cp->unkC8 = v;
+    cp->unk60 = 1.0 / (f32)v;
+}
+
 /* Fenvelope from the song's envelope table */
 u8 *func_800810F0(MusChannel *cp, u8 *ptr) {
     s32 n = *ptr++;
-    u8 *env;
-    u8 v, t;
 
     if (n & 0x80) {
         n &= 0x7F;
         n <<= 8;
         n |= *ptr++;
     }
-    env = ((MusSong *)cp->unk74)->envelopes + n * 7;
-    v = env[0];
-    if (v == 0) {
-        v = 1;
-    }
-    cp->unkBF = v;
-    cp->unk64 = 0x400 / v;
-    cp->unkC0 = env[1];
-    v = env[2];
-    cp->unkC6 = v;
-    t = env[3];
-    cp->unk58 = (1.0 / (f32)v) * (f32)(t - cp->unkC0);
-    cp->unkC1 = t;
-    v = env[4];
-    cp->unkC7 = v;
-    t = env[5];
-    cp->unk5C = (1.0 / (f32)v) * (f32)(t - cp->unkC1);
-    cp->unkC2 = t;
-    v = env[6];
-    cp->unkC8 = v;
-    cp->unk60 = 1.0 / (f32)v;
+    __MusIntSetEnvelope(cp, ((MusSong *)cp->unk74)->envelopes + n * 7);
     return ptr;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800810F0);
-#endif
 
 /* MusInitialize */
 void func_8008123C(MusConfig *config) {
@@ -1005,7 +1010,7 @@ s32 func_800820AC(s32 handle) {
     for (i = 0; i < D_800B1804; i++, cp++) {
         if (cp->handle == handle) {
             if (cp->unk74 != 0) {
-                return ((MusSong *)cp->unk74)->unk20;
+                return (s32)((MusSong *)cp->unk74)->wavetable;
             }
             return ((MusFxBank *)cp->unk78)->unk14;
         }
@@ -1133,7 +1138,127 @@ s32 func_800822AC(void *player) {
     return D_800B1818;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008259C);
+/* the channel's command stream pointer (unk04) as an lvalue */
+#define CMDPTR(cp) (*(u8 **)&(cp)->unk04)
+
+/* __MusIntGetNewNote */
+void func_8008259C(MusChannel *cp, s32 voice) {
+    u8 *ptr;
+    s32 note;
+    u8 v, t, rv;
+    u16 idx;
+    MusBank *pbank;
+
+    ptr = (u8 *)cp->unk04;
+    if (ptr != NULL) {
+    next:
+        t = *ptr;
+        if (t >= 0x80) {
+            ptr = D_800A98B0[t & 0x7F](cp, ptr + 1);
+            if (ptr != NULL) {
+                goto next;
+            }
+        }
+    }
+    cp->unk04 = (s32)ptr;
+    if (ptr != NULL) {
+        cp->unk4C = cp->unk50;
+        note = *CMDPTR(cp)++;
+        if (cp->velon) {
+            v = *CMDPTR(cp)++;
+            if (v >= 0x80) {
+                v &= 0x7F;
+                cp->velon = 0;
+                cp->unkD3 = v;
+            }
+            if (note != 0x60) {
+                cp->unkBB = v;
+            }
+        } else {
+            cp->unkBB = cp->unkD3;
+        }
+
+        if (cp->length != 0) {
+            if (cp->unkB7 != 0) {
+                cp->unkB7 = 0;
+                t = *CMDPTR(cp)++;
+                if (t < 0x80) {
+                    cp->unk9A = t;
+                } else {
+                    cp->unk9A = *CMDPTR(cp)++ + ((t & 0x7F) << 8);
+                }
+            } else {
+                cp->unk9A = cp->length;
+            }
+        } else {
+            t = *CMDPTR(cp)++;
+            if (t < 0x80) {
+                cp->unk9A = t;
+            } else {
+                cp->unk9A = *CMDPTR(cp)++ + ((t & 0x7F) << 8);
+            }
+        }
+
+        cp->unk40 = cp->unk3C;
+        cp->unk3C = cp->unk3C + (cp->unk9A << 8);
+        cp->unkAA = 0;
+        cp->unkD1 = 0;
+        cp->unkD0 = cp->unkCF;
+
+        if (cp->unk74 != NULL && cp->unk84 == 0 &&
+            ((MusSong *)cp->unk74)->wavetable[cp->unkAE] == 0xFFFF) {
+            note = 0x60;
+        }
+        if (note != 0x60) {
+            pbank = (MusBank *)cp->unk7C;
+            if (cp->unk84 != 0) {
+                cp->unkAE = ((MusDrum *)cp->unk84)[note].wave;
+                cp->unkBD = ((MusDrum *)cp->unk84)[note].pan >> 1;
+                __MusIntSetEnvelope(cp, ((MusSong *)cp->unk74)->envelopes + ((MusDrum *)cp->unk84)[note].envelope * 7);
+                note = ((MusDrum *)cp->unk84)[note].note;
+            }
+            if (cp->env == 0) {
+                func_80082DC4(cp);
+            }
+            if (cp->unkD4 != 0) {
+                __MusIntInitSweep(cp);
+            }
+            idx = cp->unkAE;
+            if (cp->unk74 != NULL) {
+                idx = ((MusSong *)cp->unk74)->wavetable[idx];
+            } else {
+                idx = ((u16 *)((MusFxBank *)cp->unk78)->unk14)[idx];
+            }
+            if (cp->trigger == 0) {
+                cp->pdata = pbank->waves[idx];
+                if (cp->unkC9 != 0 && cp->unkA0 != 0) {
+                    cp->unkA0 = 0;
+                    func_80088410(D_800B1808 + voice * 0x1C, 0, D_800B1818);
+                } else {
+                    func_80082AE8(cp, voice);
+                }
+            }
+            cp->unk2C = (f32)note + ((f32 *)pbank->detune)[idx];
+            t = cp->unkB9 * (1 - cp->unkBA);
+            cp->unk2C = cp->unk2C + (f32)((t & 0x80) ? t - 0x100 : t);
+            rv = cp->unkCA;
+            if (rv != cp->unkCC) {
+                cp->unkCC = rv;
+                func_80088240(D_800B1808 + voice * 0x1C, cp->unkCB + (((0x80 - cp->unkCB) * rv) >> 7));
+            }
+        } else if (cp->unkC3 < 4) {
+            /* rest: release the envelope */
+            cp->unkC3 = 4;
+            cp->unkC5 = 1;
+            cp->unk54 = cp->unk0C;
+            cp->unkCD = cp->unkC4;
+        }
+    } else if (cp->unkC9 != 0) {
+        cp->unkC9 = 0;
+        func_80088410(D_800B1808 + voice * 0x1C, 0, D_800B1818);
+        func_80088550(D_800B1808 + voice * 0x1C);
+    }
+}
 
 void func_80082AE8(MusChannel *cp, s32 voice) {
     if (cp->unkC9 != 0) {
