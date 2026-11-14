@@ -105,9 +105,24 @@ typedef struct {
     /* 0x138 */ u8 pad138[0x4];
 } MusChannel; /* size 0x13C */
 
+/* libultra ALWaveTable */
+typedef struct {
+    /* 0x00 */ u32 base_u;
+    /* 0x04 */ s32 len;
+    /* 0x08 */ u8 type;
+    /* 0x09 */ u8 flags;
+    /* 0x0C */ u32 loop;
+    /* 0x10 */ u32 book;
+} MusWave;
+
 typedef struct {
     /* 0x00 */ u8 pad00[0x10];
     /* 0x10 */ s32 flags; /* negative once initialised */
+    /* 0x14 */ u8 pad14[0xC];
+    /* 0x20 */ s32 count;
+    /* 0x24 */ u8 *basenote;
+    /* 0x28 */ u8 *detune;
+    /* 0x2C */ MusWave **waves;
 } MusBank;
 
 typedef struct {
@@ -171,8 +186,13 @@ extern AlGlobalsLike *D_800E8298;
 void func_80084C98(s32 *p);
 
 
-extern s16 D_800B181C;
-extern s16 D_800B181E;
+extern u16 D_800B181C;
+extern u16 D_800B181E;
+extern s32 D_800B1818;
+void func_80088410(void *voice, s16 vol, s32 time);
+void func_800882E0(void *voice, u8 pan);
+void func_80083A3C(u32 *p, u32 base, s32 n);
+void osWritebackDCacheAll(void);
 extern void *D_800B1828;
 extern MusBank *D_800B182C;
 extern s32 D_800B1830;
@@ -192,7 +212,7 @@ extern s32 D_800A9B8C;
 extern u8 D_800A99D8[];
 s32 func_80083CCC(void *addr);
 void MusHandleUnPause(s32 handle);
-void func_8008350C(void *bank);
+void func_8008350C(MusBank *pbank, u8 *wbank);
 s32 func_80082214(MusCommand *cmd);
 s32 ChangeCustomEffect(s32 fx);
 s32 func_800836A4(s32 range);
@@ -488,8 +508,8 @@ s32 func_80081D2C(s32 handle, s32 pan) {
     return n;
 }
 
-void func_80081DB4(void *bank) {
-    func_8008350C(bank);
+void func_80081DB4(MusBank *bank, u8 *wbank) {
+    func_8008350C(bank, wbank);
     if (D_800B182C == NULL) {
         D_800B182C = bank;
     }
@@ -708,7 +728,28 @@ void func_80082AE8(MusChannel *cp, s32 voice) {
     cp->pdata = NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082B64);
+void func_80082B64(MusChannel *cp, s32 voice) {
+    u32 v;
+
+    v = (u32)(cp->unkBC * cp->unkC4 * cp->unkBB * cp->unk9E) >> 13;
+    if (v > 0x7FFF) {
+        v = 0x7FFF;
+    }
+    v *= (cp->unk78 == 0) ? D_800B181E : D_800B181C;
+    v >>= 15;
+    if (cp->unk10 != -1) {
+        v = (v * cp->unk10) / (u32)cp->unk1C;
+    }
+    if (v != cp->unkA0) {
+        cp->unkA0 = v;
+        func_80088410(D_800B1808 + voice * 0x1C, v, D_800B1818);
+    }
+    v = ((cp->unkBD * cp->unkB0) >> 7) & 0x7F;
+    if (v != cp->unkBE) {
+        cp->unkBE = v;
+        func_800882E0(D_800B1808 + voice * 0x1C, v);
+    }
+}
 
 void func_80082CB8(MusChannel *cp, s32 voice, f32 offset) {
     f32 pitch = cp->unk2C;
@@ -861,9 +902,79 @@ void func_80083264(MusChannel *cp) {
     } while (cp->unk18 - cp->unk0C < 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80083378);
+#ifdef NON_MATCHING
+/* Same arithmetic; the original branches on 0 < x with c.lt.s/bc1tl, GCC here inverts to c.le.s/bc1fl and allocates differently. */
+/* 2^x by its Taylor series */
+f32 func_80083378(f32 x) {
+    f32 x2, x3, x4, x5, x6;
 
+    if (x == 0) {
+        return 1;
+    }
+    if (x > 0) {
+        x2 = x * x;
+        x3 = x2 * x;
+        x4 = x2 * x2;
+        x5 = x4 * x;
+        x6 = x4 * x2;
+        return 1.0 + x * 0.693147180559944953 + x2 * 0.240226506959100999 + x3 * 0.055504108664821597 +
+            x4 * 0.00961812910762848035 + x5 * 0.00133335581464283999 + x6 * 0.000154035303933816006;
+    } else {
+        x = -x;
+        x2 = x * x;
+        x3 = x2 * x;
+        x4 = x2 * x2;
+        x5 = x4 * x;
+        x6 = x4 * x2;
+        return 1.0 / (1.0 + x * 0.693147180559944953 + x2 * 0.240226506959100999 + x3 * 0.055504108664821597 +
+            x4 * 0.00961812910762848035 + x5 * 0.00133335581464283999 + x6 * 0.000154035303933816006);
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/114F0", func_80083378);
+#endif
+
+
+#ifdef NON_MATCHING
+/* The original keeps a 0x30 frame, reloads *det before the add and allocates the wave pointer differently. */
+#define SIGNED_BYTE(x) (((x) & 0x80) ? (x) - 0x100 : (x))
+
+void func_8008350C(MusBank *pbank, u8 *wbank) {
+    MusBank *b = pbank;
+    s32 i;
+    u8 v;
+
+    if (b->flags < 0) {
+        return;
+    }
+    b->flags |= 0x80000000;
+    func_80083A3C((u32 *)&b->basenote, (u32)b, 3);
+    func_80083A3C((u32 *)b->waves, (u32)b, b->count);
+    for (i = 0; i < b->count; i++) {
+        f32 *det = (f32 *)b->detune + i;
+
+        v = *(u8 *)det;
+        *det = (f32)SIGNED_BYTE(v) / 100.0;
+        v = b->basenote[i] - 0x30;
+        *det += (f32)SIGNED_BYTE(v);
+        if (b->waves[i]->flags == 0) {
+            if ((b->waves[i]->base_u & 0xFF000000) != 0xFF000000) {
+                b->waves[i]->base_u += (u32)wbank;
+            }
+            b->waves[i]->flags = 1;
+            if (b->waves[i]->loop != 0) {
+                b->waves[i]->loop += (u32)pbank;
+            }
+            if (b->waves[i]->type == 0) {
+                b->waves[i]->book += (u32)pbank;
+            }
+        }
+    }
+    osWritebackDCacheAll();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_8008350C);
+#endif
 
 s32 func_800836A4(s32 range) {
     s32 i;
@@ -934,7 +1045,7 @@ void func_80083A3C(u32 *p, u32 base, s32 n) {
     }
 }
 
-s32 func_80083A74(MusChannel *cp, MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority) {
+inline s32 func_80083A74(MusChannel *cp, MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority) {
     func_80083738(cp);
     cp->unkA6 = number;
     cp->unk78 = bank;
@@ -949,7 +1060,29 @@ s32 func_80083A74(MusChannel *cp, MusFxBank *bank, s32 number, s32 volume, s32 p
     return cp->handle;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80083B24);
+s32 func_80083B24(MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority) {
+    MusChannel *cp;
+    MusChannel *found;
+    s32 i, low;
+
+    if (priority == -1) {
+        priority = bank->entries[number].unk4;
+    }
+    low = priority + 1;
+    for (i = 4, cp = D_800B1810; i < D_800B1804; i++, cp++) {
+        if (cp->unk04 == 0) {
+            return func_80083A74(cp, bank, number, volume, pan, priority);
+        }
+        if (cp->unk78 != 0 && cp->unk48 < low) {
+            low = cp->unk48;
+            found = cp;
+        }
+    }
+    if (low < priority) {
+        return func_80083A74(found, bank, number, volume, pan, priority);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083CCC);
 
