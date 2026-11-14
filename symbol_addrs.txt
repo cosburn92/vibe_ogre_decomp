@@ -625,3 +625,4 @@ nuScGraphicsStack = 0x800B5A90;
 nuScPreNMIFlag = 0x800C4800;
 nuScRetraceCounter = 0x800C4BCC;
 nuScPreNMIFunc = 0x800A9E60;
+rdpstateinit_dl = 0x800A9EF0;
