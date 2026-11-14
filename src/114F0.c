@@ -169,20 +169,104 @@ void *__MusIntMemMalloc(s32 size);
 void func_80083F38(s32 handle, s32 a, s32 b);
 void func_80085B5C(void *dst, void *src, s32 n);
 
+/* n_audio ALSynConfig */
 typedef struct {
-    /* 0x00 */ u8 pad00[0x1C];
+    /* 0x00 */ s32 maxVVoices;
+    /* 0x04 */ s32 maxPVoices;
+    /* 0x08 */ s32 maxUpdates;
+    /* 0x0C */ s32 maxFXbusses;
+    /* 0x10 */ void *dmaproc;
+    /* 0x14 */ void *heap;
+    /* 0x18 */ s32 outputRate;
     /* 0x1C */ u8 fxType;
-    /* 0x20 */ void *params;
+    /* 0x20 */ s32 *params;
 } MusSynConfig;
 void func_800850C0(MusSynConfig *p);
 
+/* libultra ALLink */
+typedef struct MusLink {
+    struct MusLink *next;
+    struct MusLink *prev;
+} MusLink;
+
+/* libultra ALDelay */
 typedef struct {
-    u8 pad00[0x34];
-    struct {
-        u8 pad00[0x20];
-        void *unk20;
-        s32 arr[1];
+    /* 0x00 */ u32 input;
+    /* 0x04 */ u32 output;
+    /* 0x08 */ s16 ffcoef;
+    /* 0x0A */ s16 fbcoef;
+    /* 0x0C */ s16 gain;
+    /* 0x10 */ f32 rsinc;
+    /* 0x14 */ f32 rsval;
+    /* 0x18 */ s32 rsdelta;
+    /* 0x1C */ f32 rsgain;
+    /* 0x20 */ struct {
+        s16 fc;
+        u8 pad02[0x26];
+        void *fstate; /* 0x28 */
+    } *lp;
+    /* 0x24 */ struct {
+        u8 pad00[0x14];
+        void *state; /* 0x14 */
+        u8 pad18[8];
+        f32 delta; /* 0x20 */
+        s32 first; /* 0x24 */
+    } *rs;
+} MusDelay;
+
+/* libultra ALFx (reverb) */
+typedef struct {
+    /* 0x00 */ u8 filter[0x14];
+    /* 0x14 */ s16 *base;
+    /* 0x18 */ s16 *input;
+    /* 0x1C */ u32 length;
+    /* 0x20 */ MusDelay *delay;
+    /* 0x24 */ u8 section_count;
+    /* 0x28 */ void *paramHdl;
+} MusFx;
+
+/* n_audio N_PVoice */
+typedef struct {
+    /* 0x00 */ MusLink node;
+    /* 0x08 */ void *vvoice;
+    /* 0x0C */ u8 pad0C[0x80];
+} MusPVoice; /* size 0x8C */
+
+/* libultra ALParam */
+typedef struct MusParam {
+    /* 0x00 */ struct MusParam *next;
+    /* 0x04 */ u8 pad04[0x18];
+} MusParam; /* size 0x1C */
+
+/* n_audio N_ALSynth */
+typedef struct {
+    /* 0x00 */ void *head;
+    /* 0x04 */ MusLink pFreeList;
+    /* 0x0C */ MusLink pAllocList;
+    /* 0x14 */ MusLink pLameList;
+    /* 0x1C */ s32 paramSamples;
+    /* 0x20 */ s32 curSamples;
+    /* 0x24 */ void *dma;
+    /* 0x28 */ void *heap;
+    /* 0x2C */ MusParam *paramList;
+    /* 0x30 */ struct {
+        u8 pad00[4];
+        void *handler; /* 0x04 */
+    } *mainBus;
+    /* 0x34 */ struct {
+        u8 pad00[0x14];
+        s32 sourceCount; /* 0x14 */
+        s32 maxSources;  /* 0x18 */
+        void **sources;  /* 0x1C */
+        void *unk20;     /* 0x20 */
+        s32 arr[1];      /* 0x24: fx per bus */
     } *unk34;
+    /* 0x38 */ s32 numPVoices;
+    /* 0x3C */ u8 pad3C[4];
+    /* 0x40 */ s32 outputRate;
+    /* 0x44 */ s32 maxOutSamples;
+    /* 0x48 */ s32 sv_dramout;
+    /* 0x4C */ s32 sv_first;
 } AlGlobalsLike;
 extern AlGlobalsLike *alGlobals_800A9E54;
 extern AlGlobalsLike *n_alGlobals;
@@ -227,7 +311,7 @@ extern s32 D_800B1814;
 f32 func_80083378(f32 pitch);
 void func_80088380(void *voice, f32 pitch);
 extern s32 D_800A9B8C;
-extern u8 D_800A99D8[];
+extern s32 D_800A99D8[];
 s32 func_80083CCC(MusSong *song);
 void MusHandleUnPause(s32 handle);
 void MusSetMasterVolume(u32 flags, s32 volume);
@@ -295,7 +379,13 @@ extern u8 *D_800B1808;
 void func_80088550(void *voice);
 void func_800884C0(void *voice, void *wave);
 extern s32 D_800A9B60;
-void func_80084DE0(s32 *fx);
+void func_80084DE0(s32 *param);
+void alLink(void *ln, void *to);
+void alN_PVoiceNew(void *pv, void *dma, void *hp);
+void init_lpfilter(void *lp);
+s32 func_80087590(void);
+s32 func_80085D00(void);
+s32 func_80084C48(s16 idx, MusSynConfig *c, void *hp);
 void alFxParam(void *fx, s32 id, void *param);
 
 
@@ -1860,9 +1950,10 @@ u8 *Flength0(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-void func_800849D8(void *c);
+void func_800849D8(MusSynConfig *c);
 
-void func_80084970(AlGlobalsLike *g, void *c) {
+/* n_alInit */
+void func_80084970(AlGlobalsLike *g, MusSynConfig *c) {
     if (n_alGlobals == NULL) {
         n_alGlobals = g;
         if (alGlobals_800A9E54 == NULL) {
@@ -1873,7 +1964,62 @@ void func_80084970(AlGlobalsLike *g, void *c) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800849D8);
+/* n_alSynNew */
+void func_800849D8(MusSynConfig *c) {
+    s32 i;
+    MusPVoice *pv;
+    MusPVoice *pvoices;
+    MusParam *params;
+    void *hp = c->heap;
+
+    alGlobals_800A9E54->head = NULL;
+    alGlobals_800A9E54->numPVoices = c->maxPVoices;
+    alGlobals_800A9E54->curSamples = 0;
+    alGlobals_800A9E54->paramSamples = 0;
+    alGlobals_800A9E54->outputRate = c->outputRate;
+    alGlobals_800A9E54->maxOutSamples = 184;
+    alGlobals_800A9E54->dma = c->dmaproc;
+    alGlobals_800A9E54->sv_dramout = 0;
+    alGlobals_800A9E54->sv_first = 1;
+
+    alGlobals_800A9E54->unk34 = alHeapDBAlloc(NULL, 0, hp, 1, 0x44);
+    alGlobals_800A9E54->unk34->sourceCount = 0;
+    alGlobals_800A9E54->unk34->maxSources = c->maxPVoices;
+    alGlobals_800A9E54->unk34->sources = alHeapDBAlloc(NULL, 0, hp, c->maxPVoices, 4);
+
+    alGlobals_800A9E54->mainBus = alHeapDBAlloc(NULL, 0, hp, 1, 0x14);
+    if (c->fxType != 0) {
+        alGlobals_800A9E54->unk34->unk20 = (void *)func_80084C48(0, c, hp);
+        alGlobals_800A9E54->mainBus->handler = func_80087590;
+    } else {
+        alGlobals_800A9E54->mainBus->handler = func_80085D00;
+    }
+
+    alGlobals_800A9E54->pFreeList.next = NULL;
+    alGlobals_800A9E54->pFreeList.prev = NULL;
+    alGlobals_800A9E54->pLameList.next = NULL;
+    alGlobals_800A9E54->pLameList.prev = NULL;
+    alGlobals_800A9E54->pAllocList.next = NULL;
+    alGlobals_800A9E54->pAllocList.prev = NULL;
+
+    pvoices = alHeapDBAlloc(NULL, 0, hp, c->maxPVoices, 0x8C);
+    for (i = 0; i < c->maxPVoices; i++) {
+        pv = &pvoices[i];
+        alLink(pv, &alGlobals_800A9E54->pFreeList);
+        pv->vvoice = NULL;
+        alN_PVoiceNew(pv, alGlobals_800A9E54->dma, hp);
+        alGlobals_800A9E54->unk34->sources[alGlobals_800A9E54->unk34->sourceCount++] = pv;
+    }
+
+    params = alHeapDBAlloc(NULL, 0, hp, c->maxUpdates, 0x1C);
+    alGlobals_800A9E54->paramList = NULL;
+    for (i = 0; i < c->maxUpdates; i++) {
+        params[i].next = alGlobals_800A9E54->paramList;
+        alGlobals_800A9E54->paramList = &params[i];
+    }
+
+    alGlobals_800A9E54->heap = hp;
+}
 
 /* n_alSynAllocFX */
 s32 func_80084C48(s16 idx, MusSynConfig *c, void *hp) {
@@ -1895,7 +2041,57 @@ void func_80084C98(void **out, MusSynConfig *c, void *hp) {
     func_80084DE0(c->params);
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084DE0);
+/* the reverb part of alFxNew, using the buffers func_80084C98 preallocated */
+#define RANGE 2.0
+#define CONVERT 173123.404906676
+#define LENGTH (d->output - d->input)
+
+void func_80084DE0(s32 *param) {
+    MusFx *r = (MusFx *)D_800E8298->unk34->arr[0];
+    u16 i, j;
+    MusDelay *d;
+
+    j = 0;
+    r->section_count = param[j++];
+    r->length = param[j++];
+    r->delay = D_800E82A8.unkA8;
+    r->base = D_800E82A8.unkAC;
+    r->input = r->base;
+    for (i = 0; i < r->length; i++) {
+        r->base[i] = 0;
+    }
+    for (i = 0; i < r->section_count; i++) {
+        d = &r->delay[i];
+        d->input = param[j++];
+        d->output = param[j++];
+        d->fbcoef = param[j++];
+        d->ffcoef = param[j++];
+        d->gain = param[j++];
+        if (param[j]) {
+            d->rsinc = ((((f32)param[j++]) / 1000) * RANGE) / D_800E8298->outputRate;
+            d->rsgain = (((f32)param[j++]) / CONVERT) * LENGTH;
+            d->rsval = 1.0;
+            d->rsdelta = 0.0;
+            d->rs = D_800E82A8.unkB0;
+            d->rs->state = D_800E82A8.unkB4;
+            d->rs->delta = 0.0;
+            d->rs->first = 1;
+        } else {
+            d->rs = 0;
+            j++;
+            j++;
+        }
+        if (param[j]) {
+            d->lp = D_800E82A8.unkB8;
+            d->lp->fstate = D_800E82A8.unkBC;
+            d->lp->fc = param[j++];
+            init_lpfilter(d->lp);
+        } else {
+            d->lp = 0;
+            j++;
+        }
+    }
+}
 
 void func_800850C0(MusSynConfig *p) {
     p->fxType = 6; /* AL_FX_CUSTOM */
