@@ -8,11 +8,11 @@ typedef struct {
     /* 0x0C */ s32 unk0C;
     /* 0x10 */ s32 unk10;
     /* 0x14 */ s32 unk14;
-    /* 0x18 */ u8 pad18[0x4];
+    /* 0x18 */ s32 unk18;
     /* 0x1C */ s32 unk1C;
     /* 0x20 */ f32 vib_amount;
     /* 0x24 */ f32 unk24;
-    /* 0x28 */ u8 pad28[0x4];
+    /* 0x28 */ f32 unk28;
     /* 0x2C */ f32 unk2C;
     /* 0x30 */ f32 unk30;
     /* 0x34 */ u8 *ppitchbend;
@@ -21,10 +21,13 @@ typedef struct {
     /* 0x40 */ s32 unk40;
     /* 0x44 */ s32 handle;
     /* 0x48 */ s32 unk48;
-    /* 0x4C */ u8 pad4C[0x4];
+    /* 0x4C */ f32 unk4C;
     /* 0x50 */ f32 unk50;
     /* 0x54 */ s32 unk54;
-    /* 0x58 */ u8 pad58[0x10];
+    /* 0x58 */ f32 unk58;
+    /* 0x5C */ f32 unk5C;
+    /* 0x60 */ f32 unk60;
+    /* 0x64 */ s32 unk64;
     /* 0x68 */ f32 unk68;
     /* 0x6C */ f32 unk6C;
     /* 0x70 */ f32 unk70;
@@ -37,11 +40,11 @@ typedef struct {
     /* 0x8C */ u8 *pvolumebase;
     /* 0x90 */ f32 unk90;
     /* 0x94 */ s32 unk94;
-    /* 0x98 */ u16 unk98;
+    /* 0x98 */ s16 unk98;
     /* 0x9A */ u16 unk9A;
     /* 0x9C */ u16 unk9C;
     /* 0x9E */ s16 unk9E;
-    /* 0xA0 */ u8 padA0[0x2];
+    /* 0xA0 */ u16 unkA0;
     /* 0xA2 */ u16 unkA2;
     /* 0xA4 */ u16 unkA4;
     /* 0xA6 */ u16 unkA6;
@@ -57,17 +60,20 @@ typedef struct {
     /* 0xB8 */ u8 porta;
     /* 0xB9 */ u8 unkB9;
     /* 0xBA */ u8 unkBA;
-    /* 0xBB */ u8 padBB[0x1];
+    /* 0xBB */ u8 unkBB;
     /* 0xBC */ u8 unkBC;
     /* 0xBD */ u8 unkBD;
     /* 0xBE */ u8 unkBE;
     /* 0xBF */ u8 unkBF;
     /* 0xC0 */ u8 unkC0;
-    /* 0xC1 */ u8 padC1[0x2];
+    /* 0xC1 */ u8 unkC1;
+    /* 0xC2 */ u8 unkC2;
     /* 0xC3 */ u8 unkC3;
     /* 0xC4 */ u8 unkC4;
     /* 0xC5 */ u8 unkC5;
-    /* 0xC6 */ u8 padC6[0x3];
+    /* 0xC6 */ u8 unkC6;
+    /* 0xC7 */ u8 unkC7;
+    /* 0xC8 */ u8 unkC8;
     /* 0xC9 */ u8 unkC9;
     /* 0xCA */ u8 unkCA;
     /* 0xCB */ u8 unkCB;
@@ -176,7 +182,12 @@ extern MusFxBank *D_800B183C;
 extern s32 D_800B1840;
 extern s32 D_800B1804;
 extern MusChannel *D_800B180C;
-s32 func_80083B24(MusFxBank *bank, void *addr, s32 a, s32 b, s32 c);
+s32 func_80083B24(MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority);
+s32 func_80083A74(MusChannel *cp, MusFxBank *bank, s32 number, s32 volume, s32 pan, s32 priority);
+extern MusChannel *D_800B1810;
+extern s32 D_800B1814;
+f32 func_80083378(f32 pitch);
+void func_80088380(void *voice, f32 pitch);
 extern s32 D_800A9B8C;
 extern u8 D_800A99D8[];
 s32 func_80083CCC(void *addr);
@@ -221,7 +232,7 @@ s32 MusStartSong(void *addr) {
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081520);
 
-s32 func_80081770(void *addr) {
+s32 func_80081770(s32 number) {
     MusFxBank *bank = D_800B183C;
     s32 ret;
 
@@ -237,14 +248,74 @@ s32 func_80081770(void *addr) {
     if (D_800B1828 == NULL) {
         D_800B1828 = bank->ptrbank;
     }
-    ret = func_80083B24(bank, addr, 0x80, 0x80, -1);
+    ret = func_80083B24(bank, number, 0x80, 0x80, -1);
     D_800B1828 = NULL;
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800817F0);
+s32 func_800817F0(s32 number, s32 volume, s32 pan, s32 restartflag, s32 priority) {
+    MusFxBank *bank;
+    MusFxBank *next = D_800B183C;
+    MusChannel *cp;
+    s32 i;
+    s32 ret;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081908);
+    if (next != NULL) {
+        bank = next;
+        D_800B183C = NULL;
+    } else {
+        bank = D_800B1838;
+        if (bank == NULL) {
+            D_800B1828 = NULL;
+            return 0;
+        }
+    }
+    if (D_800B1828 == NULL) {
+        D_800B1828 = bank->ptrbank;
+    }
+    if (restartflag) {
+        cp = D_800B1810;
+        for (i = 4; i < D_800B1804; i++, cp++) {
+            if (cp->unkA6 == number && cp->unk78 == bank) {
+                if (priority == -1) {
+                    priority = bank->entries[number].unk4;
+                }
+                ret = func_80083A74(cp, bank, number, volume, pan, priority);
+                D_800B1828 = NULL;
+                return ret;
+            }
+        }
+    }
+    ret = func_80083B24(bank, number, volume, pan, priority);
+    D_800B1828 = NULL;
+    return ret;
+}
+
+void func_80081908(u32 flags, s32 speed) {
+    s32 i;
+    s32 s;
+    MusChannel *cp;
+
+    s = speed;
+    if (s == 0) {
+        s = 1;
+    }
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if ((cp->unk78 != 0 && (flags & 1)) || (cp->unk78 == 0 && (flags & 2))) {
+            if (cp->unk04 != 0 && cp->unk10 == -1) {
+                if (cp->unk00 & 1) {
+                    cp->unk1C = 1;
+                    cp->unk10 = 0;
+                    cp->unk00 &= ~1;
+                } else {
+                    cp->unk1C = s;
+                    cp->unk10 = speed;
+                }
+            }
+        }
+    }
+}
 
 s32 func_800819D4(u32 flags) {
     s32 i;
@@ -639,7 +710,28 @@ void func_80082AE8(MusChannel *cp, s32 voice) {
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80082B64);
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082CB8);
+void func_80082CB8(MusChannel *cp, s32 voice, f32 offset) {
+    f32 pitch = cp->unk2C;
+
+    if (cp->porta != 0) {
+        if (cp->porta < cp->unkAA) {
+            cp->unk50 = pitch;
+        } else {
+            pitch = cp->unk4C + (pitch - cp->unk4C) / (f32)cp->porta * (f32)cp->unkAA;
+            cp->unk50 = pitch;
+        }
+    }
+    pitch += offset + cp->unk24;
+    if (pitch != cp->unk28) {
+        cp->unk28 = pitch;
+        pitch = func_80083378(pitch * (1.0 / 12.0));
+        if (pitch > 2.0) {
+            pitch = 2.0f;
+            cp->unkBB = 0;
+        }
+        func_80088380(D_800B1808 + voice * 0x1C, pitch);
+    }
+}
 
 void func_80082DC4(MusChannel *cp) {
     if (cp->unk9A != 0x7FFF) {
@@ -743,7 +835,31 @@ void func_800831A0(MusChannel *cp) {
     } while (cp->unk14 - cp->unk0C < 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80083264);
+void func_80083264(MusChannel *cp) {
+    u8 v;
+
+    do {
+        cp->unk18 += 0x100;
+        if (--cp->unkA4 == 0) {
+            v = *cp->ppitchbend++;
+            if (v >= 0x80) {
+                cp->unk70 = (f32)(v & 0x7F) - 64.0;
+                cp->unk24 = cp->unk70 * cp->unk6C;
+                v = *cp->ppitchbend++;
+                if (v >= 0x80) {
+                    cp->unkA4 = (v & 0x7F) << 8;
+                    cp->unkA4 += *cp->ppitchbend++ + 2;
+                } else {
+                    cp->unkA4 = v + 2;
+                }
+            } else {
+                cp->unk70 = (f32)v - 64.0;
+                cp->unk24 = cp->unk70 * cp->unk6C;
+                cp->unkA4 = 1;
+            }
+        }
+    } while (cp->unk18 - cp->unk0C < 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083378);
 
@@ -763,7 +879,48 @@ s32 func_800836A4(s32 range) {
     return (f32)range * ((f32)D_800B1824 / 65536.0f / 65536.0f);
 }
 
+#ifdef NON_MATCHING
+/* Same code; the original keeps cp in a2 and 0xFF in a1 (register allocation). */
+void func_80083738(MusChannel *cp) {
+    u8 old = cp->unkC9;
+    u8 *p = (u8 *)cp;
+    u32 i;
+
+    cp->unk04 = 0;
+    for (i = 0; i < sizeof(MusChannel); i++) {
+        *p++ = 0;
+    }
+    cp->unkCC = 0xFF;
+    cp->unkBE = 0xFF;
+    cp->unk9C = cp->unkA8 = 0x6000 / D_800B1814;
+    cp->unkD3 = 0x7F;
+    cp->unkBC = 0x7F;
+    cp->unkC1 = 0x7F;
+    cp->unkC7 = 0xFF;
+    cp->unkC2 = 0x7F;
+    cp->unkBD = 0x40;
+    cp->unkBF = 1;
+    cp->unkC6 = 1;
+    cp->unkC8 = 0xF;
+    cp->unkA0 = 0xFFFF;
+    cp->unk9A = 1;
+    cp->unkA2 = 1;
+    cp->unkA4 = 1;
+    cp->unk10 = -1;
+    cp->unk9E = 0x80;
+    cp->unkB0 = 0x80;
+    cp->unk98 = 0x80;
+    cp->unk28 = 99.9f;
+    cp->unk6C = 0.03125f;
+    cp->unk58 = 1.0f;
+    cp->unk5C = 1.0f / 255.0f;
+    cp->unk60 = 1.0f / 15.0f;
+    cp->unk7C = (s32)(D_800B1828 != NULL ? D_800B1828 : D_800B182C);
+    cp->unkC9 = old;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083738);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80083874);
 
@@ -839,9 +996,53 @@ u8 *Fportoff(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084008);
+/* Fenvelope */
+u8 *func_80084008(MusChannel *cp, u8 *ptr) {
+    u8 v, t;
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084130);
+    v = *ptr++;
+    if (v == 0) {
+        v = 1;
+    }
+    cp->unkBF = v;
+    cp->unk64 = 0x400 / v;
+    cp->unkC0 = *ptr++;
+    v = *ptr++;
+    cp->unkC6 = v;
+    t = *ptr++;
+    cp->unk58 = (1.0 / (f32)v) * (f32)(t - cp->unkC0);
+    cp->unkC1 = t;
+    v = *ptr++;
+    cp->unkC7 = v;
+    t = *ptr++;
+    cp->unk5C = (1.0 / (f32)v) * (f32)(t - cp->unkC1);
+    cp->unkC2 = t;
+    v = *ptr++;
+    cp->unkC8 = v;
+    cp->unk60 = 1.0 / (f32)v;
+    return ptr;
+}
+
+/* Ftempo */
+u8 *func_80084130(MusChannel *cp, u8 *ptr) {
+    s32 tempo, calc, i;
+    MusChannel *cp2;
+
+    tempo = (*ptr++ * 0x6000 / 120) / D_800B1814;
+    calc = (tempo * cp->unk98) >> 7;
+    if (cp->unk78 != 0) {
+        cp->unk9C = tempo;
+    } else {
+        cp2 = D_800B180C;
+        for (i = 0; i < D_800B1804; i++, cp2++) {
+            if (cp2->unk74 == cp->unk74) {
+                cp2->unkA8 = tempo;
+                cp2->unk9C = calc;
+            }
+        }
+    }
+    return ptr;
+}
 
 u8 *func_80084214(MusChannel *cp, u8 *ptr) {
     cp->unkB4 = *ptr++;
@@ -1104,7 +1305,7 @@ u8 *func_80084794(MusChannel *cp, u8 *ptr) {
         v = ((v & 0x7F) << 8) + *ptr++;
     }
     cp->unk48++;
-    h = func_80083B24(cp->unk78, (void *)v, cp->unk9E, cp->unkB0, cp->unk48);
+    h = func_80083B24(cp->unk78, v, cp->unk9E, cp->unkB0, cp->unk48);
     cp->unk48--;
     if (h != 0) {
         cp2 = D_800B180C;
