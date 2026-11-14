@@ -52,8 +52,12 @@ the wrong size shifts everything after it, so fix the first size mismatch first.
 `include/tables.h` has the class, item, consumable, attack and character record structs. Table
 accesses need real struct fields to match: byte-offset casts let GCC share the base address.
 
-Decompiled so far: about 625 functions (12% of them; a much smaller share of the code bytes, since
-most are small) across 24 files. Among them: the heap allocator, frame driver, display-list setup
+Decompiled so far: about 840 functions (17% of them; a smaller share of the code bytes, since most
+are small) across 55 files. The sound stack is nearly complete: Software Creations' libmus player,
+its command handlers, DMA manager, scheduler glue and audio thread (`src/114F0.c` through
+`src/16100.c`), and Nintendo's n_audio synthesizer (`src/161A0.c` through `src/18F80.c`: the
+envelope mixer, ADPCM loader, resampler, reverb, voice API and `n_alAudioFrame`), with shared
+layouts in `include/n_audio.h`. Also: the heap allocator, frame driver, display-list setup
 and save-data bit packer (`src/1060.c`), the LHa decompressor port with its static and dynamic
 Huffman decoders (`src/A370.c`), table getters and `ClassAtLevel`/`AttackGetElement`
 (`src/43100.c`), script accessors (`src/46090.c`), the scene table (`src/4D5C0.c`), the
@@ -62,6 +66,9 @@ helpers (`src/20BCE0.c`, `src/201430.c`, `src/205220.c`, `src/24BCA0.c`), the ta
 (`src/262450.c`), sound channels (`src/3F1B0.c`), the main scene manager (`src/68E0.c`), UI widgets
 (`src/FA5E0.c`, `src/B48F0.c`) and the text renderer's helpers (`src/4EF10.c`).
 `tools/sizecheck.sh SEG` lists functions whose compiled size differs from the original.
+`tools/fdiff.sh SEG FUNC` diffs one compiled function against the original at its own ROM offset,
+so it still works when earlier code has shifted. `python3 tools/try.py SEG FUNC variants.c` builds
+each candidate body (separated by `//----` lines) and keeps the closest. Run both inside WSL.
 Functions that are close but not matching are kept as `#ifdef NON_MATCHING` C with a note.
 
 ### Data, rodata and BSS
