@@ -19,7 +19,13 @@ typedef struct {
     /* 0x34 */ N_ALAuxBus *auxBus;
 } N_ALSynth;
 
-#define aClearBuffer(pkt, d, c)                        {                                                      Acmd *_a = (Acmd *)pkt;                                                                               _a->w0 = (2 << 24) | ((d) & 0xFFFFFF);             _a->w1 = (u32)(c);                             }
+#define aClearBuffer(pkt, d, c)                \
+    {                                          \
+        Acmd *_a = (Acmd *)pkt;                \
+                                               \
+        _a->w0 = (2 << 24) | ((d) & 0xFFFFFF); \
+        _a->w1 = (u32)(c);                     \
+    }
 
 extern N_ALSynth *alGlobals_800A9E54; /* n_syn */
 

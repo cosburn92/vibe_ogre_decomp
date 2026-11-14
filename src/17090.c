@@ -8,19 +8,55 @@
 #define A_LOOP 2
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define aClearBuffer(pkt, d, c)                                     {                                                                   Acmd *_a = (Acmd *)pkt;                                                                                                         _a->w0 = _SHIFTL(2, 24, 8) | _SHIFTL(d, 0, 24);                 _a->w1 = (u32)(c);                                          }
+#define aClearBuffer(pkt, d, c)                         \
+    {                                                   \
+        Acmd *_a = (Acmd *)pkt;                         \
+                                                        \
+        _a->w0 = _SHIFTL(2, 24, 8) | _SHIFTL(d, 0, 24); \
+        _a->w1 = (u32)(c);                              \
+    }
 
-#define aDMEMMove(pkt, dmemi, dmemo, count)                             {                                                                       Acmd *_a = (Acmd *)pkt;                                                                                                                 _a->w0 = _SHIFTL(10, 24, 8) | _SHIFTL(dmemi, 0, 24);                _a->w1 = _SHIFTL(dmemo, 16, 16) | _SHIFTL(count, 0, 16);        }
+#define aDMEMMove(pkt, dmemi, dmemo, count)                      \
+    {                                                            \
+        Acmd *_a = (Acmd *)pkt;                                  \
+                                                                 \
+        _a->w0 = _SHIFTL(10, 24, 8) | _SHIFTL(dmemi, 0, 24);     \
+        _a->w1 = _SHIFTL(dmemo, 16, 16) | _SHIFTL(count, 0, 16); \
+    }
 
-#define aLoadADPCM(pkt, c, d)                                       {                                                                   Acmd *_a = (Acmd *)pkt;                                                                                                         _a->w0 = _SHIFTL(11, 24, 8) | _SHIFTL(c, 0, 24);                _a->w1 = (u32)(d);                                          }
+#define aLoadADPCM(pkt, c, d)                            \
+    {                                                    \
+        Acmd *_a = (Acmd *)pkt;                          \
+                                                         \
+        _a->w0 = _SHIFTL(11, 24, 8) | _SHIFTL(c, 0, 24); \
+        _a->w1 = (u32)(d);                               \
+    }
 
 #define K0_TO_PHYS(x) ((u32)(x) & 0x1FFFFFFF)
 
-#define n_aLoadBuffer(pkt, c, d, s)                                                     {                                                                                       Acmd *_a = (Acmd *)pkt;                                                                                                                                                 _a->w0 = _SHIFTL(4, 24, 8) | _SHIFTL(c, 12, 12) | _SHIFTL(d, 0, 12);                _a->w1 = (u32)(s);                                                              }
+#define n_aLoadBuffer(pkt, c, d, s)                                          \
+    {                                                                        \
+        Acmd *_a = (Acmd *)pkt;                                              \
+                                                                             \
+        _a->w0 = _SHIFTL(4, 24, 8) | _SHIFTL(c, 12, 12) | _SHIFTL(d, 0, 12); \
+        _a->w1 = (u32)(s);                                                   \
+    }
 
-#define aSetLoop(pkt, a)                    {                                           Acmd *_a = (Acmd *)pkt;                                                         _a->w0 = _SHIFTL(15, 24, 8);            _a->w1 = (u32)(a);                  }
+#define aSetLoop(pkt, a)             \
+    {                                \
+        Acmd *_a = (Acmd *)pkt;      \
+                                     \
+        _a->w0 = _SHIFTL(15, 24, 8); \
+        _a->w1 = (u32)(a);           \
+    }
 
-#define n_aADPCMdec(pkt, s, f, c, a, d)                                                             {                                                                                                   Acmd *_a = (Acmd *)pkt;                                                                                                                                                                         _a->w0 = _SHIFTL(1, 24, 8) | _SHIFTL(s, 0, 24);                                                 _a->w1 = _SHIFTL(f, 28, 4) | _SHIFTL(c, 16, 12) | _SHIFTL(a, 12, 4) | _SHIFTL(d, 0, 12);     }
+#define n_aADPCMdec(pkt, s, f, c, a, d)                                                          \
+    {                                                                                            \
+        Acmd *_a = (Acmd *)pkt;                                                                  \
+                                                                                                 \
+        _a->w0 = _SHIFTL(1, 24, 8) | _SHIFTL(s, 0, 24);                                          \
+        _a->w1 = _SHIFTL(f, 28, 4) | _SHIFTL(c, 16, 12) | _SHIFTL(a, 12, 4) | _SHIFTL(d, 0, 12); \
+    }
 
 Acmd *_decodeChunk_80087264(Acmd *ptr, N_PVoice *f, s32 tsam, s32 nbytes, s16 outp, s16 inp, u32 flags);
 

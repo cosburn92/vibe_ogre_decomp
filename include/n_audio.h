@@ -100,6 +100,71 @@ typedef struct {
     /* 0x88 */ s32 offset;
 } N_PVoice; /* size 0x8C */
 
+/* libultra ALLowPass */
+typedef struct {
+    /* 0x00 */ s16 fc;
+    /* 0x02 */ s16 fgain;
+    /* 0x08 */ union {
+        s16 fccoef[16];
+        s64 force_aligned;
+    } fcvec;
+    /* 0x28 */ s16 *fstate;
+    /* 0x2C */ s32 first;
+} ALLowPass;
+
+/* libultra ALResampler */
+typedef struct {
+    /* 0x00 */ u8 pad00[0x14];
+    /* 0x14 */ s16 *state;
+    /* 0x18 */ f32 ratio;
+    /* 0x1C */ s32 upitch;
+    /* 0x20 */ f32 delta;
+    /* 0x24 */ s32 first;
+} ALResampler;
+
+/* libultra ALDelay */
+typedef struct {
+    /* 0x00 */ u32 input;
+    /* 0x04 */ u32 output;
+    /* 0x08 */ s16 ffcoef;
+    /* 0x0A */ s16 fbcoef;
+    /* 0x0C */ s16 gain;
+    /* 0x10 */ f32 rsinc;
+    /* 0x14 */ f32 rsval;
+    /* 0x18 */ s32 rsdelta;
+    /* 0x1C */ f32 rsgain;
+    /* 0x20 */ ALLowPass *lp;
+    /* 0x24 */ ALResampler *rs;
+} ALDelay; /* size 0x28 */
+
+/* libultra ALFx (reverb) */
+typedef struct {
+    /* 0x00 */ u8 filter[0x14];
+    /* 0x14 */ s16 *base;
+    /* 0x18 */ s16 *input;
+    /* 0x1C */ u32 length;
+    /* 0x20 */ ALDelay *delay;
+    /* 0x24 */ u8 section_count;
+    /* 0x28 */ void *paramHdl;
+} ALFx;
+
+/* n_audio N_ALSynth (fields used by the n_ files) */
+typedef struct {
+    /* 0x00 */ u8 pad00[0x34];
+    /* 0x34 */ struct {
+        u8 pad00[0x14];
+        s32 sourceCount;
+        s32 maxSources;
+        N_PVoice **sources;
+        ALFx *fx;
+    } *auxBus;
+    /* 0x38 */ s32 numPVoices;
+    /* 0x3C */ u8 pad3C[4];
+    /* 0x40 */ s32 outputRate;
+} N_ALSynth;
+
+extern N_ALSynth *alGlobals_800A9E54; /* n_syn */
+
 void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
 #define alHeapAlloc(hp, elem, size) alHeapDBAlloc(0, 0, (hp), (elem), (size))
 void alCopy(void *src, void *dest, s32 len);
