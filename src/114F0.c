@@ -230,6 +230,60 @@ extern s32 D_800A9B8C;
 extern u8 D_800A99D8[];
 s32 func_80083CCC(MusSong *song);
 void MusHandleUnPause(s32 handle);
+void MusSetMasterVolume(u32 flags, s32 volume);
+void func_80081DB4(MusBank *bank, u8 *wbank);
+void func_80081F7C(MusFxBank *bank);
+void func_80082130(s32 n);
+void func_800822AC(void *player);
+void func_800831A0(MusChannel *cp);
+void func_80083264(MusChannel *cp);
+
+/* libmus musConfig */
+typedef struct {
+    /* 0x00 */ u32 control_flag;
+    /* 0x04 */ s32 channels;
+    /* 0x08 */ void *sched;
+    /* 0x0C */ s32 thread_priority;
+    /* 0x10 */ u8 *heap;
+    /* 0x14 */ s32 heap_length;
+    /* 0x18 */ MusBank *ptr;
+    /* 0x1C */ u8 *wbk;
+    /* 0x20 */ MusFxBank *default_fxbank;
+    /* 0x24 */ s32 fifo_length;
+    /* 0x28 */ s32 syn_updates;
+    /* 0x2C */ s32 syn_output_rate;
+    /* 0x30 */ s32 syn_rsp_cmds;
+    /* 0x34 */ s32 syn_retraceCount;
+    /* 0x38 */ s32 syn_num_dma_bufs;
+    /* 0x3C */ s32 syn_dma_buf_size;
+    /* 0x40 */ s32 diskrom_handle;
+} MusConfig;
+
+/* libultra ALVoiceConfig */
+typedef struct {
+    s16 priority;
+    s16 fxBus;
+    u8 unityPitch;
+} MusVoiceConfig;
+
+/* libultra ALPlayer */
+typedef struct MusPlayer {
+    /* 0x00 */ struct MusPlayer *next;
+    /* 0x04 */ void *clientData;
+    /* 0x08 */ void (*handler)(void *);
+} MusPlayer;
+
+extern s32 osTvType;
+extern s32 D_800C4B48;
+extern u32 D_800E7A14;
+extern MusPlayer D_800B17F0;
+extern u8 *(*D_800A98B0[])(MusChannel *cp, u8 *ptr);
+void func_80085A90(u8 *heap, s32 length);
+void func_80085620(void *sched);
+void func_800857D0(MusConfig *config, s32 rate, s32 n);
+void func_80088000(MusPlayer *player);
+void func_80088050(void *voice, MusVoiceConfig *vc);
+void func_80085B0C(void);
 void func_8008350C(MusBank *pbank, u8 *wbank);
 s32 func_80082214(MusCommand *cmd);
 s32 ChangeCustomEffect(s32 fx);
@@ -288,7 +342,58 @@ u8 *func_800810F0(MusChannel *cp, u8 *ptr) {
 INCLUDE_ASM("asm/nonmatchings/114F0", func_800810F0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_8008123C);
+/* MusInitialize */
+void func_8008123C(MusConfig *config) {
+    s32 i;
+    MusVoiceConfig vc;
+
+    D_800C4B48 = config->diskrom_handle;
+    D_800E7A14 = config->control_flag;
+    D_800B1804 = config->channels + 4;
+    if (osTvType == 0) {
+        D_800B1814 = 50;
+    } else {
+        D_800B1814 = 60;
+    }
+    D_800B1818 = 1000000 / D_800B1814;
+    func_80085A90(config->heap, config->heap_length);
+    func_80085620(config->sched);
+    D_800B1808 = __MusIntMemMalloc((D_800B1804 - 4) * 0x1C);
+    D_800B180C = __MusIntMemMalloc(D_800B1804 * sizeof(MusChannel));
+    D_800B1810 = D_800B180C + 4;
+    func_80082130(config->fifo_length);
+    D_800B1828 = NULL;
+    D_800B182C = NULL;
+    if (config->ptr != NULL && config->wbk != NULL) {
+        func_80081DB4(config->ptr, config->wbk);
+    }
+    D_800B183C = NULL;
+    D_800B1838 = NULL;
+    if (config->default_fxbank != NULL) {
+        func_80081F7C(config->default_fxbank);
+    }
+    D_800B1840 = 0;
+    D_800B1834 = 2;
+    func_800857D0(config, D_800B1814, 2);
+    MusSetMasterVolume(3, 0x7FFF);
+    D_800B1820 = 1;
+    D_800B1824 = 0x12345678;
+    D_800B17F0.next = NULL;
+    D_800B17F0.handler = func_800822AC;
+    D_800B17F0.clientData = &D_800B17F0;
+    func_80088000(&D_800B17F0);
+    for (i = 0; i < D_800B1804; i++) {
+        D_800B180C[i].unkC9 = 0;
+        func_80083738(&D_800B180C[i]);
+        vc.unityPitch = 0;
+        vc.priority = config->thread_priority;
+        vc.fxBus = 0;
+        if (i >= 4) {
+            func_80088050(D_800B1808 + (i - 4) * 0x1C, &vc);
+        }
+    }
+    func_80085B0C();
+}
 
 void MusSetMasterVolume(u32 flags, s32 volume) {
     if (flags & 1) {
@@ -306,7 +411,87 @@ s32 MusStartSong(void *addr) {
     return handle;
 }
 
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081520);
+/* MusStartSongFromMarker */
+s32 func_80081520(MusSong *song, s32 marker) {
+    s32 handle = func_80083CCC(song);
+    s32 i;
+    MusChannel *cp = D_800B180C;
+    u8 *ptr;
+    u8 cmd, v, d;
+    u8 *q;
+    s32 n;
+
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle != handle || cp->unk74 != song || cp->unk04 == 0) {
+            continue;
+        }
+    next:
+            ptr = (u8 *)cp->unk04;
+            cmd = *ptr;
+            if (cmd >= 0x80) {
+                if (cmd == 0xAB && ptr[1] == marker) {
+                    goto found;
+                }
+                cp->unk04 = (s32)D_800A98B0[cmd & 0x7F](cp, ptr + 1);
+            } else {
+                cp->unk04 = (s32)(ptr + 1);
+                if (cp->velon) {
+                    cp->unk04 = (s32)(ptr + 2);
+                    v = ptr[1];
+                    cp->unkBB = v;
+                    if (v >= 0x80) {
+                        cp->unkBB = v & 0x7F;
+                        cp->velon = 0;
+                        cp->unkD3 = cp->unkBB;
+                    }
+                } else {
+                    cp->unkBB = cp->unkD3;
+                }
+                if (cp->length != 0 && cp->unkB7 == 0) {
+                    cp->unk9A = cp->length;
+                } else {
+                    cp->unkB7 = 0;
+                    q = (u8 *)cp->unk04;
+                    cp->unk04 = (s32)(q + 1);
+                    d = q[0];
+                    if (d < 0x80) {
+                        cp->unk9A = d;
+                    } else {
+                        cp->unk04 = (s32)(q + 2);
+                        cp->unk9A = q[1] + ((d & 0x7F) << 8);
+                    }
+                }
+                cp->unk0C += cp->unk9A << 8;
+            }
+        if (cp->unk04 != 0) {
+            goto next;
+        }
+    found:
+        cp->unk3C = cp->unk0C;
+        if (cp->unk04 != 0) {
+            ptr = (u8 *)cp->unk04 + 2;
+            n = *ptr++;
+            if (n >= 0x80) {
+                n &= 0x7F;
+                n <<= 8;
+                n |= *ptr++;
+            }
+            cp->unkAA = 0;
+            cp->unk9A = n;
+            cp->unk04 = (s32)ptr;
+            cp->unk0C -= n << 8;
+        }
+        cp->unk40 = cp->unk0C;
+        if (cp->pvolume != NULL) {
+            func_800831A0(cp);
+        }
+        if (cp->ppitchbend != NULL) {
+            func_80083264(cp);
+        }
+    }
+    MusHandleUnPause(handle);
+    return handle;
+}
 
 s32 func_80081770(s32 number) {
     MusFxBank *bank = D_800B183C;
