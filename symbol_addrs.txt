@@ -618,3 +618,10 @@ D_800A81FF = 0x800A81FF; // size:0x1
 // LHa unpack thread (main A370 bss): OSThread and its 0x80-byte stack
 D_800AF0D0 = 0x800AF0D0; // size:0x1B0
 D_800AF280 = 0x800AF280; // size:0x80
+nusched = 0x800E8B10;
+nuScStack = 0x800B1A90;
+nuScAudioStack = 0x800B3A90;
+nuScGraphicsStack = 0x800B5A90;
+nuScPreNMIFlag = 0x800C4800;
+nuScRetraceCounter = 0x800C4BCC;
+nuScPreNMIFunc = 0x800A9E60;

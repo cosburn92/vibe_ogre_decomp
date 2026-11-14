@@ -53,7 +53,7 @@ typedef struct {
 
 extern FbSet D_800A81C0[2];
 extern SceneFuncs *D_800E8294;
-extern u8 D_800C4800;
+extern u8 nuScPreNMIFlag;
 extern u8 D_800AEF98;
 extern volatile u16 D_800C4C26;
 extern u8 D_800E810C;
@@ -230,7 +230,7 @@ extern u32 D_800AEFC0;
 extern u8 D_800AEF99;
 extern s32 D_800A81F4;
 extern u32 D_800A81F8;
-extern u32 D_800C4BCC;
+extern u32 nuScRetraceCounter;
 extern s32 D_800EB0DC;
 extern s32 D_800EB12C;
 extern s32 D_800EB17C;
@@ -851,7 +851,7 @@ void MainThreadEntry(void *arg) {
         D_800C4CE4 = 1;
         D_800AEFA0 = 0;
         D_800A81F4 = 0;
-        D_800AEFA4 = D_800C4BCC;
+        D_800AEFA4 = nuScRetraceCounter;
         if (D_800AEF98 != 3) {
             D_800E9C08 = D_800ABD80;
         }
@@ -883,7 +883,7 @@ void MainThreadEntry(void *arg) {
         func_800746C8();
         func_800749C0(0xE);
         func_800764E0();
-        if (D_800C4800) {
+        if (nuScPreNMIFlag) {
             for (;;) {
             }
         }
@@ -916,7 +916,7 @@ INCLUDE_ASM("asm/nonmatchings/1060", MainThreadEntry);
 
 /* Per-retrace frame driver: fades, draws when a new frame is due, and runs the game update. */
 void func_80072398(s32 retrace) {
-    if (D_800C4800 == 1) {
+    if (nuScPreNMIFlag == 1) {
         D_800AEF98 = 1;
     } else if (D_800AEF98 == 0) {
         if (func_80072944()) {
@@ -966,7 +966,7 @@ void func_80072398(s32 retrace) {
             D_800E810C = 0;
             D_800A81FF++;
         }
-        if ((s32)(D_800C4BCC - D_800AEFA4) >= 2 || D_800A8214) {
+        if ((s32)(nuScRetraceCounter - D_800AEFA4) >= 2 || D_800A8214) {
             if (!D_800A81FC || D_800C4CE4) {
                 func_8007297C();
                 if (D_800AEFA0 == 0 || D_800AEFA0 == 0x83) {
@@ -981,8 +981,8 @@ void func_80072398(s32 retrace) {
                     func_801841F4();
                     D_800C4CE4 = 0;
                     D_800E810C = 1;
-                    D_800A81FE += D_800C4BCC - D_800AEFA4;
-                    D_800AEFA4 = D_800C4BCC;
+                    D_800A81FE += nuScRetraceCounter - D_800AEFA4;
+                    D_800AEFA4 = nuScRetraceCounter;
                 }
                 if (D_800A81FE >= 60) {
                     D_800A8200 = D_800A81FF;
@@ -1487,7 +1487,7 @@ void func_80073ED8(void) {
         D_800EB2BC = 0;
         func_80081908(3, 12);
         D_800A81F4 = 12;
-        D_800A81F8 = D_800C4BCC;
+        D_800A81F8 = nuScRetraceCounter;
     }
 }
 
@@ -1499,10 +1499,10 @@ s32 func_80073F58(void) {
         return 0;
     }
     if (start < end) {
-        if (D_800C4BCC >= end || D_800C4BCC < start) {
+        if (nuScRetraceCounter >= end || nuScRetraceCounter < start) {
             D_800A81F4 = 0;
         }
-    } else if (D_800C4BCC > end && D_800C4BCC < start) {
+    } else if (nuScRetraceCounter > end && nuScRetraceCounter < start) {
         D_800A81F4 = 0;
     }
     return D_800A81F4;
