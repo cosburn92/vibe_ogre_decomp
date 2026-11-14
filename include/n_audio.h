@@ -94,8 +94,8 @@ typedef struct {
     /* 0x70 */ s32 em_delta;
     /* 0x74 */ s32 em_segEnd;
     /* 0x78 */ s32 em_first;
-    /* 0x7C */ void *em_ctrlList;
-    /* 0x80 */ void *em_ctrlTail;
+    /* 0x7C */ struct ALParam_s *em_ctrlList;
+    /* 0x80 */ struct ALParam_s *em_ctrlTail;
     /* 0x84 */ s32 em_motion;
     /* 0x88 */ s32 offset;
 } N_PVoice; /* size 0x8C */
@@ -207,7 +207,8 @@ typedef struct {
 #define AL_FILTER_SET_PITCH 7
 #define AL_FILTER_SET_VOLUME 11
 #define AL_FILTER_SET_PAN 12
-#define AL_FILTER_START_VOICE_ALT 14
+#define AL_FILTER_START_VOICE_ALT 13
+#define AL_FILTER_START_VOICE 14
 #define AL_FILTER_STOP_VOICE 15
 #define AL_FILTER_SET_FXAMT 16
 #define AL_FILTER_ADD_UPDATE 3
