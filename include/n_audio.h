@@ -157,6 +157,7 @@ typedef struct {
         s32 maxSources;
         N_PVoice **sources;
         ALFx *fx;
+        ALFx *fxArr[1]; /* 0x24 */
     } *auxBus;
     /* 0x38 */ s32 numPVoices;
     /* 0x3C */ u8 pad3C[4];
@@ -164,6 +165,55 @@ typedef struct {
 } N_ALSynth;
 
 extern N_ALSynth *alGlobals_800A9E54; /* n_syn */
+extern void *n_alGlobals;
+
+/* libultra ALParam */
+typedef struct ALParam_s {
+    /* 0x00 */ struct ALParam_s *next;
+    /* 0x04 */ s32 delta;
+    /* 0x08 */ s16 type;
+    /* 0x0A */ s16 unity;
+    /* 0x0C */ union {
+        f32 f;
+        s32 i;
+    } data;
+    /* 0x10 */ union {
+        f32 f;
+        s32 i;
+    } moredata;
+    /* 0x14 */ union {
+        f32 f;
+        s32 i;
+    } stillmoredata;
+    /* 0x18 */ union {
+        f32 f;
+        s32 i;
+    } yetstillmoredata;
+} ALParam; /* size 0x1C */
+
+/* n_audio N_ALVoice */
+typedef struct {
+    /* 0x00 */ ALLink node;
+    /* 0x08 */ N_PVoice *pvoice;
+    /* 0x0C */ ALWaveTable *table;
+    /* 0x10 */ void *clientPrivate;
+    /* 0x14 */ s16 state;
+    /* 0x16 */ s16 priority;
+    /* 0x18 */ s16 fxBus;
+    /* 0x1A */ s16 unityPitch;
+} N_ALVoice; /* size 0x1C */
+
+#define AL_FILTER_SET_PITCH 7
+#define AL_FILTER_SET_VOLUME 11
+#define AL_FILTER_SET_PAN 12
+#define AL_FILTER_START_VOICE_ALT 14
+#define AL_FILTER_STOP_VOICE 15
+#define AL_FILTER_SET_FXAMT 16
+#define AL_FILTER_ADD_UPDATE 3
+
+ALParam *__allocParam_800889A8(void);
+s32 func_80088AD4(s32 t); /* _n_timeToSamples */
+s32 n_alEnvmixerParam(void *filter, s32 paramID, void *param);
 
 void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
 #define alHeapAlloc(hp, elem, size) alHeapDBAlloc(0, 0, (hp), (elem), (size))

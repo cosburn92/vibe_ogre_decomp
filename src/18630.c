@@ -1,3 +1,7 @@
-#include "common.h"
+#include "n_audio.h"
 
-INCLUDE_ASM("asm/nonmatchings/18630", n_alSynDelete);
+/* n_audio n_syndelete.c */
+
+void n_alSynDelete(void) {
+    *(void **)alGlobals_800A9E54 = NULL; /* n_syn->head */
+}
