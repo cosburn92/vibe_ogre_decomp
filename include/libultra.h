@@ -404,6 +404,71 @@ s32 __osPfsSelectBank(OSPfs *pfs, u8 bank);
 u8 __osContAddressCrc(u16 addr);
 u8 __osContDataCrc(u8 *data);
 
+typedef union {
+    struct {
+        u8 bank;
+        u8 page;
+    } inode_t;
+    u16 ipage;
+} __OSInodeUnit;
+
+typedef struct {
+    __OSInodeUnit inode_page[128];
+} __OSInode;
+
+typedef struct {
+    /* 0x00 */ u32 game_code;
+    /* 0x04 */ u16 company_code;
+    /* 0x06 */ __OSInodeUnit start_page;
+    /* 0x08 */ u8 status;
+    /* 0x09 */ s8 reserved;
+    /* 0x0A */ u16 data_sum;
+    /* 0x0C */ u8 ext_name[4];
+    /* 0x10 */ u8 game_name[16];
+} __OSDir;
+
+typedef struct {
+    /* 0x00 */ u32 file_size;
+    /* 0x04 */ u32 game_code;
+    /* 0x08 */ u16 company_code;
+    /* 0x0A */ char ext_name[4];
+    /* 0x0E */ char game_name[16];
+} OSPfsState;
+
+#define PFS_INITIALIZED 0x1
+#define PFS_CORRUPTED 0x2
+#define PFS_ID_BROKEN 0x4
+#define PFS_ONE_PAGE 8
+#define PFS_INODE_SIZE_PER_PAGE 128
+#define PFS_PAGE_NOT_USED 3
+#define PFS_EOF 1
+#define PFS_READ 0
+#define PFS_WRITE 1
+#define PFS_FILE_NAME_LEN 16
+#define PFS_FILE_EXT_LEN 4
+
+#define ERRCK(fn)          \
+    ret = fn;              \
+    if (ret != 0) {        \
+        return ret;        \
+    }
+
+#define PFS_CHECK_STATUS                          \
+    if ((pfs->status & PFS_INITIALIZED) == 0) {   \
+        return PFS_ERR_INVALID;                   \
+    }
+
+#define PFS_CHECK_ID ERRCK(__osCheckId(pfs))
+
+#define SET_ACTIVEBANK_TO_ZERO                  \
+    if (pfs->activebank != 0) {                 \
+        ERRCK(__osPfsSelectBank(pfs, 0));       \
+    }
+
+s32 __osCheckId(OSPfs *pfs);
+s32 __osGetId(OSPfs *pfs);
+s32 __osPfsRWInode(OSPfs *pfs, __OSInode *inode, u8 flag, u8 bank);
+
 u32 __osDisableInt(void);
 void __osRestoreInt(u32 mask);
 s32 osJamMesg(OSMesgQueue *mq, OSMesg msg, s32 flag);

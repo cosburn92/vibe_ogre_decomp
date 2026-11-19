@@ -3,27 +3,12 @@
 
 /* libultra pfsinternal.c (contpfs.c) */
 
-#define PFS_ONE_PAGE 8
 #define PFS_MAX_BANKS 62
 #define PFS_ID_0AREA 1
 #define PFS_ID_1AREA 3
 #define PFS_ID_2AREA 4
 #define PFS_ID_3AREA 6
-#define PFS_INODE_SIZE_PER_PAGE 128
 #define DEF_DIR_PAGES 2
-#define PFS_READ 0
-#define PFS_WRITE 1
-
-#define ERRCK(fn)          \
-    ret = fn;              \
-    if (ret != 0) {        \
-        return ret;        \
-    }
-
-#define SET_ACTIVEBANK_TO_ZERO                  \
-    if (pfs->activebank != 0) {                 \
-        ERRCK(__osPfsSelectBank(pfs, 0));       \
-    }
 
 typedef struct {
     /* 0x00 */ u32 repaired;
@@ -36,18 +21,6 @@ typedef struct {
     /* 0x1C */ u16 checksum;
     /* 0x1E */ u16 inverted_checksum;
 } __OSPackId;
-
-typedef union {
-    struct {
-        u8 bank;
-        u8 page;
-    } inode_t;
-    u16 ipage;
-} __OSInodeUnit;
-
-typedef struct {
-    __OSInodeUnit inode_page[128];
-} __OSInode;
 
 extern __OSInode __osPfsInodeCache;
 extern s32 D_800ABAA0; /* __osPfsInodeCacheChannel */
