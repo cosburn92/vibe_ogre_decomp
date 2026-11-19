@@ -118,6 +118,13 @@ void func_8022620C_ovl_281860(void);
 void func_802395C0(void);
 s32 func_8023E050(void);
 void func_8023C9EC(void);
+typedef struct {
+    s32 w[0x58 / 4];
+} Blk58;
+extern Blk58 D_8022A720_ovl_281860;
+void func_80226538_ovl_281860(void);
+void func_802265EC_ovl_281860(void);
+void func_802267DC_ovl_281860(void);
 /* --- end decls --- */
 
 /* Reloads the battle overlays and restarts the battle */
@@ -348,7 +355,19 @@ void func_802263C4_ovl_281860(s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_8022643C_ovl_281860);
+/* Scene init: state is the id followed by a copy of the 0x58-byte block at D_8022A720 */
+void func_8022643C_ovl_281860(u16 id) {
+    D_800E7A44.update = func_80226538_ovl_281860;
+    D_800E7A44.draw = func_802265EC_ovl_281860;
+    D_800E7A44.exit = func_802267DC_ovl_281860;
+    D_800E7A44.size = 0x5C;
+    D_800E7A54 = 0;
+    D_800E7A32 |= 9;
+    D_800E7A33 |= 5;
+    bzero(D_800E91D0, 0x5C);
+    *(s32 *)D_800E91D0 = id;
+    *(Blk58 *)(D_800E91D0 + 4) = D_8022A720_ovl_281860;
+}
 
 /* Fade step: interpolates +8 from +9 to +0xA over the remaining frames */
 void func_80226538_ovl_281860(void) {
