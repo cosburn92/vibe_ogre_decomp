@@ -494,7 +494,51 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802339D8_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80233DA8_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 13 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_80233F38_ovl_286BD0(s32 arg0) {
+    s32 temp_a0;
+    s32 var_v0;
+
+    temp_a0 = arg0 & 0xFF;
+    switch (temp_a0) {                              /* irregular */
+    case 4:
+        if (D_8023DE40_ovl_286BD0 >= 0x35) {
+            FIELD(D_8023DE30_ovl_286BD0, u8, 0x244) = (u8) (FIELD(D_8023DE30_ovl_286BD0, u8, 0x244) - 1);
+            D_8023DE40_ovl_286BD0 -= 0x3C;
+            return;
+        }
+        return;
+    case 5:
+        if (D_8023DE40_ovl_286BD0 < 0x35) {
+            FIELD(D_8023DE30_ovl_286BD0, u8, 0x244) = (u8) (FIELD(D_8023DE30_ovl_286BD0, u8, 0x244) + 1);
+            D_8023DE40_ovl_286BD0 += 0x3C;
+            return;
+        }
+        break;
+    case 6:
+        if (D_8023DE44_ovl_286BD0 >= 0x37) {
+            FIELD(D_8023DE30_ovl_286BD0, u8, 0x245) = (u8) (FIELD(D_8023DE30_ovl_286BD0, u8, 0x245) - 1);
+            var_v0 = D_8023DE44_ovl_286BD0 - 0x48;
+block_15:
+            D_8023DE44_ovl_286BD0 = var_v0;
+        }
+        break;
+    case 7:
+        if (D_8023DE44_ovl_286BD0 < 0x37) {
+            FIELD(D_8023DE30_ovl_286BD0, u8, 0x245) = (u8) (FIELD(D_8023DE30_ovl_286BD0, u8, 0x245) + 1);
+            var_v0 = D_8023DE44_ovl_286BD0 + 0x48;
+            goto block_15;
+        }
+        break;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80233F38_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234078_ovl_286BD0);
 

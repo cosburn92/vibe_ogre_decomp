@@ -131,7 +131,53 @@ void func_802012D8_ovl_14EBE0(u32 pal) {
     g->w1 = 0;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 31 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_80201384_ovl_14EBE0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Gfx *temp_a0;
+    Gfx *temp_v0;
+    Gfx *temp_v0_2;
+    s32 var_a1;
+    s32 var_t0;
+    u32 var_v0;
+
+    temp_a0 = D_800E9BA0 + 8;
+    D_800E9BA0->w0 = 0xE7000000;
+    D_800E9BA0->w1 = 0;
+    temp_v0 = D_800E9BA0 + 0x10;
+    D_800E9BA0 = temp_a0;
+    D_800E9BA0 = temp_v0;
+    if (arg0 < 0) {
+        var_t0 = 0xED000000;
+    } else {
+        var_t0 = (((s32) ((f32) arg0 * 4.0f) & 0xFFF) << 0xC) | 0xED000000;
+    }
+    FIELD(D_800E9BA0, s32, 8) = var_t0;
+    if (arg1 >= 0) {
+        FIELD(D_800E9BA0, s32, 8) = (s32) (var_t0 | ((s32) ((f32) arg1 * 4.0f) & 0xFFF));
+    }
+    if (arg2 != 0x140) {
+        var_a1 = ((s32) ((f32) arg2 * 4.0f) & 0xFFF) << 0xC;
+    } else {
+        var_a1 = 0x4FC000;
+    }
+    if (arg3 == 0xF0) {
+        var_v0 = var_a1 | 0x3BC;
+    } else {
+        var_v0 = var_a1 | ((s32) ((f32) arg3 * 4.0f) & 0xFFF);
+    }
+    temp_a0->w1 = var_v0;
+    temp_v0_2 = D_800E9BA0;
+    D_800E9BA0 = temp_v0_2 + 8;
+    temp_v0_2->w0 = 0xE7000000;
+    temp_v0_2->w1 = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201384_ovl_14EBE0);
+#endif
 
 /* Rank 1-3 of stat i: how many thirds of the cap (D_80190F82) it reaches */
 #ifdef NON_MATCHING
@@ -350,7 +396,68 @@ void func_80202928_ovl_14EBE0(u8 *p, s32 b) {
     func_80200DD0_ovl_14EBE0(p + 0x2A, b, 7);
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 54 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_8020296C_ovl_14EBE0(s32 arg0, s32 arg1, s32 arg2) {
+    Gfx *temp_a1;
+    Gfx *temp_a2;
+    Gfx *temp_v1;
+    Gfx *temp_v1_3;
+    s16 temp_s0;
+    s32 temp_s1;
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    s32 temp_v1_2;
+    s32 var_a0;
+    s32 var_v0;
+
+    temp_v1 = D_800E9BA0;
+    D_800E9BA0 = temp_v1 + 8;
+    temp_v1->w0 = 0xDE000000;
+    temp_v1->w1 = (u32) D_80213648_ovl_14EBE0;
+    func_80200F70_ovl_14EBE0(D_801F36C0 + ((arg2 << 5) + 0x1E0), D_801F0B90 + 0x1868, 0x10, 0x50, 2);
+    temp_a1 = D_800E9BA0;
+    temp_s1 = arg2 << 9;
+    D_800E9BA0 = temp_a1 + 8;
+    temp_a2 = temp_a1 + 0x10;
+    temp_a1->w0 = 0xE7000000;
+    temp_v0 = arg0 + 0xF;
+    temp_v0_2 = arg1 + 0xF;
+    temp_s0 = arg0 * 4;
+    FIELD(temp_a1, s32, 8) = (s32) ((((temp_v0 * 4) & ((s32) ~(s16) (temp_v0 * 4) >> 0x1F) & 0xFFC) << 0xC) | (((temp_v0_2 * 4) & ((s32) ~(s16) (temp_v0_2 * 4) >> 0x1F) & 0xFFC) | 0xE4000000));
+    D_800E9BA0 = temp_a2;
+    D_800E9BA0 = temp_a1 + 0x18;
+    temp_a1->w1 = 0;
+    FIELD(temp_a1, s32, 0xC) = (s32) ((((arg0 * 4) & ((s32) ~temp_s0 >> 0x1F) & 0xFFC) << 0xC) | ((arg1 * 4) & ((s32) ~(s16) (arg1 * 4) >> 0x1F) & 0xFFC));
+    FIELD(temp_a1, s32, 0x10) = 0xE1000000;
+    if (temp_s0 < 0) {
+        temp_v1_2 = temp_s0 * 8;
+        var_a0 = (temp_v1_2 & -(temp_v1_2 < 1)) * -0x10000;
+    } else {
+        var_a0 = 0;
+    }
+    if (!(arg1 & 0x20000000)) {
+        var_v0 = temp_s1 & 0xFFFF;
+    } else {
+        temp_v0_3 = (s32) (arg1 << 0x12) >> 0xD;
+        var_v0 = (temp_s1 - (temp_v0_3 & -(temp_v0_3 < 1))) & 0xFFFF;
+    }
+    temp_a2->w1 = var_a0 | var_v0;
+    temp_v1_3 = D_800E9BA0;
+    D_800E9BA0 = temp_v1_3 + 8;
+    temp_v1_3->w0 = 0xF1000000;
+    D_800E9BA0 = temp_v1_3 + 0x10;
+    temp_v1_3->w1 = 0x04000400;
+    FIELD(temp_v1_3, s32, 8) = 0xE7000000;
+    FIELD(temp_v1_3, s32, 0xC) = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020296C_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202B70_ovl_14EBE0);
 

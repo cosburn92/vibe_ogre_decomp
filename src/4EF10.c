@@ -256,7 +256,69 @@ void func_8017AA18_ovl_040E80(u8 *str, u8 *dst) {
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AAF4_ovl_040E80);
 
+#ifdef NON_MATCHING
+/* m2c draft, 70 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_8017AC08_ovl_040E80(s32 arg0, s8 *arg1) {
+    s32 temp_a0;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 var_a3;
+    s32 var_t0;
+    s8 *var_a1;
+    void *temp_v0;
+    void *var_a2;
+
+    var_a1 = arg1;
+    var_a3 = 0;
+    var_t0 = 0;
+    var_a2 = var_a1 + 7;
+    do {
+        temp_v0 = arg0 + (var_a3 >> 2);
+        temp_v1 = (var_a3 & 3) * 2;
+        temp_v1_2 = var_t0 & 3;
+        temp_a0 = (FIELD(temp_v0, u8, 0) << temp_v1) | ((s32) FIELD(temp_v0, u8, 1) >> (8 - temp_v1));
+        if (temp_v1_2 != 1) {
+            if (temp_v1_2 < 2) {
+                if (temp_v1_2 == 0) {
+                    var_a3 += 4;
+                    *var_a1 = ((temp_a0 >> 2) & 0x30) | ((temp_a0 >> 4) & 3);
+                    FIELD(var_a2, s8, -6) = (s8) (((temp_a0 * 4) & 0x30) | (temp_a0 & 3));
+                    goto block_18;
+                }
+                var_t0 += 1;
+            } else {
+                switch (temp_v1_2) {                /* irregular */
+                case 2:
+                    var_a3 += 3;
+                    FIELD(var_a2, s8, -3) = (s8) (((temp_a0 >> 2) & 0x30) | ((temp_a0 >> 4) & 3));
+                    FIELD(var_a2, s8, -2) = (s8) ((temp_a0 * 4) & 0x30);
+                    goto block_18;
+                case 3:
+                    FIELD(var_a2, s8, -1) = 0;
+                    FIELD(var_a2, s8, 0) = 0;
+                    var_a2 += 8;
+                    var_a1 += 8;
+                    goto block_18;
+                default:
+                    var_t0 += 1;
+                    break;
+                }
+            }
+        } else {
+            var_a3 += 4;
+            FIELD(var_a2, s8, -5) = (s8) (((temp_a0 >> 2) & 0x30) | ((temp_a0 >> 4) & 3));
+            FIELD(var_a2, s8, -4) = (s8) (((temp_a0 * 4) & 0x30) | (temp_a0 & 3));
+block_18:
+            var_t0 += 1;
+        }
+    } while (var_t0 < 0x38);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AC08_ovl_040E80);
+#endif
 
 /* Cached text for id (moved to the front of the LRU list), or NULL */
 u8 *func_8017AD3C_ovl_040E80(s32 id) {
