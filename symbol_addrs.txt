@@ -654,3 +654,4 @@ __osGetCause = 0x8009A6D0; // type:func
 osUnmapTLBAll = 0x8009AB00; // type:func
 osMapTLBRdb = 0x8009AAA0; // type:func
 vi_contexts = 0x800ABB70; // size:0x60
+__osPfsReleasePages = 0x8009616C; // type:func
