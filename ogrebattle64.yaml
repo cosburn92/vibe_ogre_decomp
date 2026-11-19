@@ -72,7 +72,7 @@ segments:
     subsegments:
       - [0x1060, c]
       - [0x4AC0, asm]
-      - [0x5FC0, asm]
+      - [0x5FC0, c]
       - [0x68E0, c]
       - [0x8700, asm]
       - [0xA370, c]
@@ -390,7 +390,7 @@ segments:
       - [0x3C170, data, 2DE50]
       - [0x3E100, .rodata, 1060]
       - [0x3E278, rodata, 4AC0]
-      - [0x3E330, rodata, 5FC0]
+      - [0x3E330, .rodata, 5FC0]
       - [0x3E388, .rodata, 68E0]
       - [0x3E3A8, rodata, 8700]
       - [0x3E438, .rodata, A370]
