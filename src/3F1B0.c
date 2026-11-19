@@ -55,6 +55,11 @@ void MusFxBankSetPtrBank(void *fx, void *ptr);
 void MusSetMasterVolume(s32 flags, s32 vol);
 s32 MusStartSong(void *song);
 void func_80081D2C(s32 h, s32 v);
+void func_800EA1C8_ovl_03F1B0(SoundChannel *ch);
+void func_800EA3BC_ovl_03F1B0(SoundChannel *ch);
+void func_800EA3E4_ovl_03F1B0(SoundChannel *ch);
+void func_800EA568_ovl_03F1B0(SoundChannel *ch);
+#define CH_LOOP(ch) (*(s32 *)&(ch)->unk10[8])
 /* --- end decls --- */
 
 /* Loads the sound banks from ROM and registers them with the music library */
@@ -77,7 +82,54 @@ INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9CEC_ovl_03F1B0);
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9E34_ovl_03F1B0);
 
-INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA0E4_ovl_03F1B0);
+/* Applies a pending request: kinds 1-4 restart, 5/6 stop looping, 7 loops */
+void func_800EA0E4_ovl_03F1B0(SoundChannel *ch) {
+    if (ch->pending == 0) {
+        return;
+    }
+    func_800EA3BC_ovl_03F1B0(ch);
+    switch (ch->unk00) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            if (ch->saved[1]) {
+                func_800EA1C8_ovl_03F1B0(ch);
+            }
+            if (ch->saved[0]) {
+                func_800EA3E4_ovl_03F1B0(ch);
+            }
+            break;
+        case 5:
+            CH_LOOP(ch) = 0;
+            if (ch->saved[1]) {
+                func_800EA1C8_ovl_03F1B0(ch);
+            }
+            if (ch->saved[0]) {
+                func_800EA568_ovl_03F1B0(ch);
+            }
+            break;
+        case 6:
+            CH_LOOP(ch) = 0;
+            if (ch->saved[1]) {
+                func_800EA1C8_ovl_03F1B0(ch);
+            }
+            if (ch->saved[0]) {
+                func_800EA568_ovl_03F1B0(ch);
+            }
+            break;
+        case 7:
+            CH_LOOP(ch) = 1;
+            if (ch->saved[1]) {
+                func_800EA1C8_ovl_03F1B0(ch);
+            }
+            if (ch->saved[0]) {
+                func_800EA568_ovl_03F1B0(ch);
+            }
+            break;
+    }
+    ch->pending = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA1C8_ovl_03F1B0);
 
