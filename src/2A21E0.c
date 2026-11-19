@@ -6,7 +6,10 @@ typedef struct {
     /* 0x00 */ s32 id;
     /* 0x04 */ u8 unk04[8];
     /* 0x0C */ s32 kind;
-    /* 0x10 */ u8 unk10[0x18];
+    /* 0x10 */ u32 n;
+    /* 0x14 */ u8 unk14[8];
+    /* 0x1C */ void **list;
+    /* 0x20 */ u8 unk20[8];
     /* 0x28 */ s32 w28;
     /* 0x2C */ s32 w2C;
     /* 0x30 */ u8 *w30;
@@ -18,6 +21,7 @@ extern Rec2A *D_802395B0_ovl_29A4C0;
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 Rec2A *func_80232C28_ovl_29A4C0(void);
+void func_801BFBA0(void *p);
 /* --- end decls --- */
 
 void func_802329B0_ovl_29A4C0(void) {
@@ -85,7 +89,24 @@ INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233134_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802332A0_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233398_ovl_29A4C0);
+/* Passes every non-null entry of every record's list to func_801BFBA0 */
+void func_80233398_ovl_29A4C0(void) {
+    Rec2A *r;
+    u32 i;
+    u32 k;
+
+    if (D_802395B0_ovl_29A4C0 == NULL) {
+        return;
+    }
+    for (i = 0; i < 40; i++) {
+        r = &D_802395B0_ovl_29A4C0[i];
+        for (k = 0; k < D_802395B0_ovl_29A4C0[i].n; k++) {
+            if (r->list[k] != NULL) {
+                func_801BFBA0(r->list[k]);
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233448_ovl_29A4C0);
 
