@@ -1486,7 +1486,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x29A4C0, asm]
+      - [0x29A4C0, c]
       - [0x29C950, c]
       - [0x2A1860, asm]
       - [0x2A21E0, asm]
@@ -1504,7 +1504,7 @@ segments:
       - [0x2A8940, data, 2A7010]
       - [0x2A8960, data, 2A7060]
       - [0x2A89A0, data, 2A7D60]
-      - [0x2A89B0, rodata, 29A4C0]
+      - [0x2A89B0, .rodata, 29A4C0]
       - [0x2A89E0, .rodata, 29C950]
       - [0x2A8B90, rodata, 2A1860]
       - [0x2A8BA0, rodata, 2A3310]
