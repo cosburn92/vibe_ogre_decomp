@@ -175,9 +175,60 @@ void func_801EE3C8(s32 a);
 void func_801D0840(void);
 void func_80226B5C(void);
 void func_801C8850(void);
+extern u8 ovl_23A3A0_TEXT_START[];
+extern u8 ovl_23A3A0_TEXT_END[];
+extern u8 ovl_23A3A0_DATA_START[];
+extern u8 ovl_23A3A0_RODATA_END[];
+extern u8 ovl_23A3A0_BSS_START[];
+extern u8 ovl_23A3A0_BSS_END[];
+extern u8 ovl_23A3A0_ROM_START[];
+extern u8 ovl_23A3A0_ROM_END[];
+extern u8 ovl_23A3A0_VRAM[];
+extern u8 D_801976D8_ovl_040E80;
+extern u16 D_80197B60_ovl_040E80;
+void func_801D0A8C(void);
+void func_801D14E8(void);
+void func_801AFC0C(s32 a);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80177734_ovl_040E80);
+/* Enters battle: optional pre-battle overlay (23A3A0), then the battle overlays */
+void func_80177734_ovl_040E80(void) {
+    u8 v = D_801976D8_ovl_040E80;
+
+    if ((v & 8) || D_80197B60_ovl_040E80 != 0) {
+        osInvalICache(ovl_23A3A0_TEXT_START, ovl_23A3A0_TEXT_END - ovl_23A3A0_TEXT_START);
+        osInvalDCache(ovl_23A3A0_DATA_START, ovl_23A3A0_RODATA_END - ovl_23A3A0_DATA_START);
+        RomRead(ovl_23A3A0_ROM_START, ovl_23A3A0_VRAM, ovl_23A3A0_ROM_END - ovl_23A3A0_ROM_START);
+        if (ovl_23A3A0_BSS_START != ovl_23A3A0_BSS_END) {
+            bzero(ovl_23A3A0_BSS_START, ovl_23A3A0_BSS_END - ovl_23A3A0_BSS_START);
+        }
+        func_801D0A8C();
+    } else if (v & 0x40) {
+        osInvalICache(ovl_23A3A0_TEXT_START, ovl_23A3A0_TEXT_END - ovl_23A3A0_TEXT_START);
+        osInvalDCache(ovl_23A3A0_DATA_START, ovl_23A3A0_RODATA_END - ovl_23A3A0_DATA_START);
+        RomRead(ovl_23A3A0_ROM_START, ovl_23A3A0_VRAM, ovl_23A3A0_ROM_END - ovl_23A3A0_ROM_START);
+        if (ovl_23A3A0_BSS_START != ovl_23A3A0_BSS_END) {
+            bzero(ovl_23A3A0_BSS_START, ovl_23A3A0_BSS_END - ovl_23A3A0_BSS_START);
+        }
+        func_801D14E8();
+    }
+    osInvalICache(ovl_213B10_TEXT_START, ovl_213B10_TEXT_END - ovl_213B10_TEXT_START);
+    osInvalDCache(ovl_213B10_DATA_START, ovl_213B10_RODATA_END - ovl_213B10_DATA_START);
+    RomRead(ovl_213B10_ROM_START, ovl_213B10_VRAM, ovl_213B10_ROM_END - ovl_213B10_ROM_START);
+    if (ovl_213B10_BSS_START != ovl_213B10_BSS_END) {
+        bzero(ovl_213B10_BSS_START, ovl_213B10_BSS_END - ovl_213B10_BSS_START);
+    }
+    osInvalICache(ovl_22A280_TEXT_START, ovl_22A280_TEXT_END - ovl_22A280_TEXT_START);
+    osInvalDCache(ovl_22A280_DATA_START, ovl_22A280_RODATA_END - ovl_22A280_DATA_START);
+    RomRead(ovl_22A280_ROM_START, ovl_22A280_VRAM, ovl_22A280_ROM_END - ovl_22A280_ROM_START);
+    if (ovl_22A280_BSS_START != ovl_22A280_BSS_END) {
+        bzero(ovl_22A280_BSS_START, ovl_22A280_BSS_END - ovl_22A280_BSS_START);
+    }
+    func_801D0840();
+    func_801AFC0C(0);
+    func_80073164(0, 0x10, 0x10, 0x200, 0x10, 0x800, 0x1900);
+    func_8007337C();
+}
 
 void func_8017798C_ovl_040E80(void) {
     func_8007337C();
