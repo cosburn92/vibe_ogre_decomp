@@ -2,7 +2,8 @@
 
 typedef struct TextNode {
     /* 0x00 */ struct TextNode *next;
-    /* 0x04 */ u8 unk04[0x74];
+    /* 0x04 */ struct TextNode *prev;
+    /* 0x08 */ u8 data[0x70];
     /* 0x78 */ u16 id;
     /* 0x7A */ u8 value;
 } TextNode;
@@ -21,7 +22,8 @@ extern u8 D_80190F6D_ovl_040E80;
 extern u8 D_80190F6E_ovl_040E80;
 extern s16 D_80190F74_ovl_040E80;
 extern s16 D_80190F76_ovl_040E80;
-extern TextNode *D_80190F4C_ovl_040E80;
+extern TextNode *D_80190F4C_ovl_040E80; /* most recently used */
+extern TextNode *D_80190F48_ovl_040E80; /* least recently used */
 void *HFree(void *p);
 void func_8017907C_ovl_040E80(s32 a);
 void func_80179354_ovl_040E80(void);
@@ -55,7 +57,7 @@ void func_80179060_ovl_040E80(void) {
 }
 
 extern u8 *D_80190F50_ovl_040E80;
-s32 func_8017AD3C_ovl_040E80(s32 id);
+u8 *func_8017AD3C_ovl_040E80(s32 id);
 s32 func_8017AE20_ovl_040E80(s32 id);
 /* --- end decls --- */
 
@@ -126,7 +128,7 @@ s32 func_8017A8E8_ovl_040E80(s32 id) {
         return 0;
     }
     if ((D_80190F50_ovl_040E80[id >> 3] >> (id & 7)) & 1) {
-        return func_8017AD3C_ovl_040E80(id);
+        return (s32)func_8017AD3C_ovl_040E80(id);
     }
     return func_8017AE20_ovl_040E80(id);
 }
@@ -188,7 +190,42 @@ INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AAF4_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AC08_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AD3C_ovl_040E80);
+/* Cached text for id (moved to the front of the LRU list), or NULL */
+u8 *func_8017AD3C_ovl_040E80(s32 id) {
+    TextNode *n;
+
+    for (n = D_80190F4C_ovl_040E80; n != NULL; n = n->next) {
+        if (n->id == id) {
+            if (n->next == NULL) {
+                TextNode *prev = n->prev;
+                TextNode *old = D_80190F4C_ovl_040E80;
+
+                D_80190F4C_ovl_040E80 = n;
+                D_80190F48_ovl_040E80 = prev;
+                prev->next = NULL;
+                old->prev = n;
+                n->prev = NULL;
+                n->next = old;
+            } else if (n->prev != NULL) {
+                TextNode *prev;
+                TextNode *next;
+                TextNode *old;
+
+                n->next->prev = n->prev;
+                prev = n->prev;
+                next = n->next;
+                old = D_80190F4C_ovl_040E80;
+                D_80190F4C_ovl_040E80 = n;
+                prev->next = next;
+                old->prev = n;
+                n->next = old;
+                n->prev = NULL;
+            }
+            return n->data;
+        }
+    }
+    return NULL;
+}
 
 u8 func_8017ADE8_ovl_040E80(s32 id) {
     TextNode *p;
