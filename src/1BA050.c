@@ -77,9 +77,42 @@ void func_8017C384(void *o);
 void *LoadAsset(s32 file, s32 id, s32 a, s32 b);
 void bzero(void *p, s32 n);
 #define U16AT(p, off) (*(u16 *)((u8 *)(p) + (off)))
+typedef struct {
+    /* 0x00 */ u8 *vram;
+    /* 0x04 */ s32 unk04;
+    /* 0x08 */ u8 *romStart;
+    /* 0x0C */ u8 *romEnd;
+    /* 0x10 */ u8 *bssStart;
+    /* 0x14 */ u8 *bssEnd;
+    /* 0x18 */ u8 *textStart;
+    /* 0x1C */ u8 *textEnd;
+    /* 0x20 */ u8 *dataStart;
+    /* 0x24 */ u8 *dataEnd;
+} OvlDesc; /* size 0x28 */
+typedef struct {
+    /* 0x00 */ s32 a;
+    /* 0x04 */ s32 b;
+    /* 0x08 */ void (*init)(void);
+    /* 0x0C */ s32 c;
+    /* 0x10 */ s32 d;
+    /* 0x14 */ u8 *e;
+    /* 0x18 */ s32 f;
+} EvSetup; /* size 0x1C */
+extern OvlDesc D_80229DBC_ovl_1BA050[];
+extern EvSetup D_80229E68_ovl_1BA050[];
+extern s32 D_8022A238_ovl_1BA050;
+extern s32 D_8022A23C_ovl_1BA050;
+extern s32 D_8022A240_ovl_1BA050;
+extern s32 D_8022A244_ovl_1BA050;
+void osInvalICache(void *p, s32 n);
+void osInvalDCache(void *p, s32 n);
+void RomRead(void *rom, void *dst, s32 size);
+void func_80224C60_ovl_1BA050(void);
+void func_80224D60_ovl_1BA050(void);
+void func_8022995C_ovl_1BA050(void);
 /* --- end decls --- */
 
-void func_80220F64_ovl_1BA050(u16 id, u8 v) {
+inline void func_80220F64_ovl_1BA050(u16 id, u8 v) {
     s32 i;
 
     for (i = 0; i < 8; i++) {
@@ -111,7 +144,7 @@ void func_80220FD0_ovl_1BA050(u16 id) {
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221030_ovl_1BA050);
 
-void func_8022126C_ovl_1BA050(void) {
+inline void func_8022126C_ovl_1BA050(void) {
     if (D_8022A248_ovl_1BA050 != NULL && D_8022A24C_ovl_1BA050 != 0) {
         bzero(D_8022A248_ovl_1BA050, D_8022A24C_ovl_1BA050);
     }
@@ -247,7 +280,56 @@ void func_80221CB8_ovl_1BA050(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221D30_ovl_1BA050);
+/* Sets up the event system for the current scenario (D_801936E0): loads its event overlay and script state */
+void func_80221D30_ovl_1BA050(void) {
+    OvlDesc *o;
+    EvSetup *e;
+
+    if (D_801936E0 == 0) {
+        return;
+    }
+    D_8022A230_ovl_1BA050 = 8;
+    D_8022A234_ovl_1BA050 = HMalloc(0x1C0);
+    bzero(D_8022A234_ovl_1BA050, 0x1C0);
+    D_8022A82C_ovl_1BA050 = 0;
+    bzero(D_8022A218_ovl_1BA050, 0x18);
+    D_8022A254_ovl_1BA050 = 0;
+    D_8022A256_ovl_1BA050 = 0;
+    D_8022A828_ovl_1BA050 = 0;
+    D_8022A830_ovl_1BA050 = 0;
+    D_8022A822_ovl_1BA050 = 0;
+    bzero(D_8022A1F0_ovl_1BA050, 0x20);
+    o = &D_80229DBC_ovl_1BA050[D_801936E0];
+    D_8022A214_ovl_1BA050 = NULL;
+    D_8022A210_ovl_1BA050 = -1;
+    if (o->vram != NULL) {
+        osInvalICache(o->textStart, o->textEnd - o->textStart);
+        osInvalDCache(o->dataStart, o->dataEnd - o->dataStart);
+        RomRead(o->romStart, o->vram, o->romEnd - o->romStart);
+        if (o->bssEnd != o->bssStart) {
+            bzero(o->bssStart, o->bssEnd - o->bssStart);
+        }
+    }
+    e = &D_80229E68_ovl_1BA050[D_801936E0];
+    D_8022A238_ovl_1BA050 = e->a;
+    D_8022A23C_ovl_1BA050 = e->b;
+    if (e->init != NULL) {
+        e->init();
+    }
+    D_8022A240_ovl_1BA050 = e->c;
+    D_8022A244_ovl_1BA050 = e->d;
+    D_8022A248_ovl_1BA050 = e->e;
+    D_8022A24C_ovl_1BA050 = e->f;
+    func_80224C60_ovl_1BA050();
+    func_80220F64_ovl_1BA050(0x5100, 0xFF);
+    func_80224D60_ovl_1BA050();
+    func_8022845C_ovl_1BA050();
+    func_80228F54_ovl_1BA050();
+    func_8022995C_ovl_1BA050();
+    func_80220F64_ovl_1BA050(0x5500, 0);
+    func_8022126C_ovl_1BA050();
+    D_80196AEC |= 0x80;
+}
 
 /* nop */
 s32 func_8022200C_ovl_1BA050(ScriptCtx *ctx) {
