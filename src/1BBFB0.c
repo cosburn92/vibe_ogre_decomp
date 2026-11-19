@@ -497,7 +497,36 @@ void func_80227F14_ovl_1BA050(u32 i, s32 v) {
     func_80220F64_ovl_1BA050(i | 0x5200, v);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80227F68_ovl_1BA050);
+/* Releases script resource slot i unless object 0x5200 | i still exists; returns whether it did */
+s32 func_80227F68_ovl_1BA050(s32 i) {
+    void *o = func_8017F334(i | 0x5200);
+    ScriptRes *e;
+
+    if (o == NULL) {
+        if (i >= 4) {
+            for (;;);
+        }
+        e = &D_8022A4E0_ovl_1BA050[i];
+        if (FIELD(e, u8 *, 4) != NULL) {
+            FIELD(FIELD(e, u8 *, 4), u8 *, 8) = FIELD(e, u8 *, 8);
+        } else {
+            D_8022A650_ovl_1BA050 = FIELD(e, u8 *, 8);
+        }
+        if (FIELD(e, u8 *, 8) != NULL) {
+            FIELD(FIELD(e, u8 *, 8), u8 *, 4) = FIELD(e, u8 *, 4);
+        }
+        if (FIELD(e, void *, 0x34) != NULL) {
+            HFree(FIELD(e, void *, 0x34));
+            FIELD(e, void *, 0x34) = NULL;
+        }
+        if (FIELD(e, void *, 0x4C) != NULL) {
+            HFree(FIELD(e, void *, 0x4C));
+            FIELD(e, void *, 0x4C) = NULL;
+        }
+        e->used = 0;
+    }
+    return o == NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228048_ovl_1BA050);
 
