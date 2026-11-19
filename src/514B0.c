@@ -411,7 +411,24 @@ void func_8017EE64_ovl_040E80(s32 a, u16 kind, s16 x, s16 y, s16 w, s16 h) {
     func_801807F4_ovl_040E80(n, a);
 }
 
+/* Like func_8017EE64, with a separate inner rectangle */
+#ifdef NON_MATCHING
+/* Only scheduling differs: the original sign-extends the four stack parameters before li v0,1 for the 0x28 store; with any statement order tried, the li lands first or the stores move. */
+void func_8017EF24_ovl_040E80(s32 a, u16 kind, s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
+    Node *n = func_8017C074_ovl_040E80(kind | 0x100, 0, func_8017C584_ovl_040E80, x, y, w, h);
+
+    FIELD(n, s32, 0x3C) = x2;
+    FIELD(n, s32, 0x40) = y2;
+    FIELD(n, s32, 0x44) = w2;
+    FIELD(n, s32, 0x48) = h2;
+    FIELD(n, s16, 0x28) = 1;
+    FIELD(n, s16, 0x18) = 0;
+    FIELD(n, u16, 0x26) = 0x8000;
+    func_801807F4_ovl_040E80(n, a);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EF24_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F010_ovl_040E80);
 
