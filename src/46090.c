@@ -678,4 +678,30 @@ s32 func_80173490_ovl_040E80(u8 v) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801734D4_ovl_040E80);
+/* Group and position of id in the grouped list chunk 0x01A8E7AE (u16 group starts, then the ids) */
+void func_801734D4_ovl_040E80(s16 *grp, s16 *pos, u8 id) {
+    u16 *t;
+    u16 *ids;
+    s16 g = 0;
+    s16 n = 0;
+    u16 i;
+    u16 j;
+
+    t = LoadChunkRaw(NULL, 0x01A8E7AE);
+    ids = t + t[0];
+    for (i = 0; ids[i] != 0xFFFF; i++) {
+        if (id == ids[i]) {
+            for (j = 0; t[j] != 0xFFFF; j++) {
+                if (i < t[j] - t[0]) {
+                    break;
+                }
+            }
+            g = j - 1;
+            n = i - t[j];
+            break;
+        }
+    }
+    HFree(t);
+    *grp = g;
+    *pos = n;
+}
