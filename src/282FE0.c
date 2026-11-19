@@ -12,7 +12,19 @@ extern St8C4 *D_8022A8C4_ovl_281860;
 extern s32 D_8022A990_ovl_281860;
 extern u8 D_8018FC19;
 extern u8 D_8022A980_ovl_281860;
-extern u8 *D_8018FC10;
+typedef struct {
+    s16 h0;
+    s16 h2;
+    u8 b4;
+    u8 b5;
+    u8 b6;
+    u8 b7;
+    u8 b8;
+    u8 b9;
+    u8 bA;
+    u8 bB;
+} StFC10;
+extern StFC10 *D_8018FC10;
 extern u8 *D_8022A974_ovl_281860;
 void func_800EA838(void *p);
 void func_800EA884(s32 a);
@@ -61,6 +73,7 @@ void func_800EA8B4(s32 ch, s32 v);
 extern s32 D_800EB2E0[];
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
+void func_8022681C_ovl_281860(s32 a, s32 b);
 /* --- end decls --- */
 
 void func_80227010_ovl_281860(void) {
@@ -260,11 +273,37 @@ void *func_80227838_ovl_281860(s32 id) {
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_802278DC_ovl_281860);
+void func_802278DC_ovl_281860(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
+    StFC10 *p;
+
+    if (D_8018FC10 == NULL) {
+        D_8018FC10 = HMalloc(0xC);
+        bzero(D_8018FC10, 0xC);
+        func_8022681C_ovl_281860(-2, -1);
+    } else if (D_8018FC10->b7 == 1) {
+        D_8018FC10->b7 = 0;
+        func_8022681C_ovl_281860(-2, -1);
+    } else {
+        D_8018FC10->b7 = 2;
+    }
+    p = D_8018FC10;
+    p->h2 = a;
+    p->b4 = b;
+    p->b5 = c;
+    p->b6 = d;
+    p->b9 = f;
+    p->h0 = FIELD(p, u16, 2);
+    if (e != -1) {
+        p->bA = e;
+        p->b8 = e;
+    } else {
+        p->bA = p->b8;
+    }
+}
 
 void func_802279D8_ovl_281860(void) {
     if (D_8018FC10 != NULL) {
-        D_8018FC10[7] = 1;
+        D_8018FC10->b7 = 1;
     }
 }
 
