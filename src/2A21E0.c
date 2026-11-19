@@ -38,7 +38,32 @@ void func_802329B0_ovl_29A4C0(void) {
     bzero(p, 0x960);
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802329E0_ovl_29A4C0);
+/* Frees every record's buffers; the table itself too unless keep is set */
+void func_802329E0_ovl_29A4C0(s32 keep) {
+    u32 i;
+    u32 k;
+
+    if (D_802395B0_ovl_29A4C0 == NULL) {
+        return;
+    }
+    for (i = 0; i < 40; i++) {
+        for (k = 0; k < D_802395B0_ovl_29A4C0[i].n; k++) {
+            if (D_802395B0_ovl_29A4C0[i].list[k] != NULL) {
+                HFree(D_802395B0_ovl_29A4C0[i].list[k]);
+            }
+        }
+        HFree(D_802395B0_ovl_29A4C0[i].age);
+        HFree(D_802395B0_ovl_29A4C0[i].p08);
+        HFree((void *)D_802395B0_ovl_29A4C0[i].w2C);
+        HFree((void *)D_802395B0_ovl_29A4C0[i].w28);
+        HFree(D_802395B0_ovl_29A4C0[i].p38);
+        HFree(D_802395B0_ovl_29A4C0[i].p14);
+    }
+    if (!keep) {
+        HFree(D_802395B0_ovl_29A4C0);
+        D_802395B0_ovl_29A4C0 = NULL;
+    }
+}
 
 /* Frees the record for (id, kind) and clears it */
 void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
