@@ -14,6 +14,7 @@ extern void *D_801D06AC_ovl_1F0A30;
 extern u8 D_801CEEC0_ovl_1F0A30[][4];
 void HFree(void *p);
 u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w);
+u8 *func_801BFF84_ovl_1F0A30(u8 *desc, u32 page);
 void func_801C0F50_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 e);
 
 
@@ -437,7 +438,41 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BFE28_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFF84_ovl_1F0A30);
 
+/* Palette of page `page` of image bank desc (NULL when the page has none) */
+#ifdef NON_MATCHING
+/* Three differences remain: the original re-zero-extends h (andi 0xFFFF) before each multiply, picks the second-plane size with a branch rather than xori, and allocates e/w/h as s2/s3/s4. */
+u8 *func_801C00E0_ovl_1F0A30(u8 *desc, u32 page) {
+    u32 w = *(u16 *)(desc + 4);
+    u32 h = *(u16 *)(desc + 6);
+    u8 *e = func_801BFF84_ovl_1F0A30(desc, page);
+    u32 off;
+    s32 siz;
+
+    if (e == NULL) {
+        return NULL;
+    }
+    off = 8;
+    if (e[3] & 1) {
+        if (desc[3] & 2) {
+            siz = 3;
+        } else if (desc[3] & 4) {
+            siz = 1;
+        } else {
+            siz = 2;
+        }
+        off = func_801BE9A8_ovl_1F0A30(siz, w) * (u16)h + 8;
+    }
+    if (e[3] & 2) {
+        off += func_801BE9A8_ovl_1F0A30((desc[3] & 1) ? 0 : 1, w) * (u16)h;
+    }
+    if (e[3] & 4) {
+        return e + off;
+    }
+    return NULL;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801C00E0_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801C01D4_ovl_1F0A30);
 
