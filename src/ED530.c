@@ -255,7 +255,20 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8E64_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A906C_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A9304_ovl_0EBBB0);
+void func_801A9304_ovl_0EBBB0(void) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xF2000000 | (((D_801ABA58_ovl_0EBBB0->w104 >> 1) & 0x7F) << 12);
+    g->w1 = 0x7C0FC;
+    g = D_800E9BA0++;
+    g->w0 = 0xFA000000;
+    g->w1 = (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x157) << 24) | (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x158) << 16) |
+            (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x159) << 8) | FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x15A);
+}
 
 #ifdef NON_MATCHING
 /* display-list pointer updates are scheduled after the command stores */
