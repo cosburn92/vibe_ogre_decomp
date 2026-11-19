@@ -46,6 +46,8 @@ void func_80218104(f32 x, f32 y, s32 z, s32 w);
 s32 func_801C8E30(u8 *u);
 extern u16 D_801CEF10[];
 void func_801C5938(void *a, u16 b);
+s32 guRandom(void);
+void func_801BC3A0(s16 x, s16 y, s32 a, s32 b);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -282,7 +284,38 @@ void func_801F98D0_ovl_24BCA0(u8 a, u8 *b, u8 n) {
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9950_ovl_24BCA0);
 
+/* Screen shake by amt on the axes in flags (bit 0 x, bit 1 y), random signs */
+#ifdef NON_MATCHING
+/* only the s1/s2 save order in the prologue differs */
+void func_801F9BEC_ovl_24BCA0(s32 amt, s32 flags) {
+    s16 x = 0;
+    s16 y = 0;
+
+    if ((u8)amt != 0xFF) {
+        s16 r = guRandom() % 50 % 2;
+        s16 nr;
+
+        x = 0;
+        nr = r ^ 1;
+
+        if (flags & 1) {
+            x = (u8)amt;
+        }
+        if (flags & 2) {
+            y = (u8)amt;
+        }
+        if (r) {
+            x = -x;
+        }
+        if (nr) {
+            y = -y;
+        }
+    }
+    func_801BC3A0(x, y, 0, 0);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9BEC_ovl_24BCA0);
+#endif
 
 void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
     struct {
