@@ -18,6 +18,10 @@ void bzero(void *p, s32 n);
 void *HFree(void *p);
 void nuGfxTaskAllEndWait(void);
 s32 func_801CE38C_ovl_1F0A30(void);
+extern u8 *D_801D06D8_ovl_1F0A30;
+s32 ChunkSize(s32 id);
+void *HMalloc(s32 size);
+void *LoadChunkRaw(void *dst, s32 id);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CC930_ovl_1F0A30);
@@ -114,7 +118,47 @@ s32 CombinationMatch(u8 *e, s32 n) {
 INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationMatch);
 #endif
 
+/* Walks the 6-byte-node trie (section 1b) over n elements; returns the last result id reached
+ * (0xFF if none) and stores the matching secondary value in *out */
+#ifdef NON_MATCHING
+/* same register/scheduling issue as CombinationMatch */
+s32 CombinationLookup(u8 *e, s32 n, u8 *out) {
+    u8 *node = D_801D06D8_ovl_1F0A30;
+    u8 *base = node;
+    s32 r2 = 0;
+    s32 r = 0xFF;
+    u8 *end;
+    u8 k = node[0];
+
+    if (k != 0xFF) {
+        end = e + n;
+        do {
+            if (k == *e) {
+                if (node[1] != 0xFF) {
+                    r = node[1];
+                }
+                if (node[2] != 0xFF) {
+                    r2 = node[2];
+                }
+                e++;
+                node = base + *(u16 *)(node + 4);
+                if (!(e < end)) {
+                    break;
+                }
+            } else {
+                node += 6;
+            }
+            k = node[0];
+        } while (k != 0xFF);
+    }
+    if (out != NULL) {
+        *out = r2;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationLookup);
+#endif
 
 #ifdef NON_MATCHING
 /* Same as CombinationMatch (section 2). */
@@ -149,7 +193,30 @@ s32 func_801CD390_ovl_1F0A30(u8 *e, s32 n) {
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD390_ovl_1F0A30);
 #endif
 
+/* Loads the combination tries (chunk 0x31823A, three sections) and chunk 0x3188AE */
+#ifdef NON_MATCHING
+/* original reuses one register for each section offset */
+void CombinationTablesLoad(void) {
+    u8 *t;
+    u8 *a;
+    u8 *b;
+    u8 *c;
+
+    D_801CFCC0_ovl_1F0A30 = HMalloc(ChunkSize(0x31823A));
+    LoadChunkRaw(D_801CFCC0_ovl_1F0A30, 0x31823A);
+    t = D_801CFCC0_ovl_1F0A30;
+    a = t + *(u16 *)(t + 0);
+    b = t + *(u16 *)(t + 2);
+    c = t + *(u16 *)(t + 4);
+    D_801D06D4_ovl_1F0A30 = a;
+    D_801D06D8_ovl_1F0A30 = b;
+    D_801D06DC_ovl_1F0A30 = c;
+    D_801D06D0_ovl_1F0A30 = HMalloc(ChunkSize(0x3188AE));
+    LoadChunkRaw(D_801D06D0_ovl_1F0A30, 0x3188AE);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationTablesLoad);
+#endif
 
 void func_801CD4A0_ovl_1F0A30(void) {
     HFree(D_801CFCC0_ovl_1F0A30);
