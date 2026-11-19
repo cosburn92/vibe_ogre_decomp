@@ -5,13 +5,18 @@
 typedef struct {
     /* 0x000 */ u8 unk000[0xE8];
     /* 0x0E8 */ s32 wE8;
-    /* 0x0EC */ u8 unk0EC[4];
+    /* 0x0EC */ s32 wEC;
     /* 0x0F0 */ s32 wF0;
-    /* 0x0F4 */ u8 unk0F4[0x34];
+    /* 0x0F4 */ s32 wF4;
+    /* 0x0F8 */ u8 unk0F8[0x30];
     /* 0x128 */ s32 w128;
     /* 0x12C */ u8 unk12C[8];
     /* 0x134 */ s16 h134;
-    /* 0x136 */ u8 unk136[0xF];
+    /* 0x136 */ u8 unk136[4];
+    /* 0x13A */ s16 h13A;
+    /* 0x13C */ u8 unk13C;
+    /* 0x13D */ u8 b13D;
+    /* 0x13E */ u8 unk13E[7];
     /* 0x145 */ u8 b145;
     /* 0x146 */ u8 b146;
 } BUnit;
@@ -37,6 +42,7 @@ void *HFree(void *p);
 void func_801CCA5C(s32 a, s32 b, s32 c);
 u8 func_80233968_ovl_29A4C0(s32 a, s16 b, s32 c, u8 d, u8 *r, u8 *g, u8 *bl);
 u8 func_8019F174(u8 a);
+u8 func_801C1AA4(s32 a, s32 b, u8 c, s16 d, s16 e, s32 f, u8 *r, u8 *g, u8 *bl);
 void func_8019F2C0(u8 a);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 extern s16 *D_8022A97C;
@@ -141,7 +147,30 @@ __asm__(".section .rodata\n.global D_80239240_ovl_29A4C0\nD_80239240_ovl_29A4C0:
 
 INCLUDE_ASM("asm/nonmatchings/29C950", BattleAnimStep2);
 
+/* Advances u's frame counter until the colour query reports 4, then steps it back by 2 */
+#ifdef NON_MATCHING
+/* Only the epilogue differs: the original reloads wF0 into v0 and re-materialises 4 with li after the store; here v0 still holds 4 from the loop compare. */
+s32 func_8022EEDC_ovl_29A4C0(BUnit *u) {
+    u8 c[3];
+    u8 r;
+
+    u->wF4 = 0;
+    while (1) {
+        u->wF0++;
+        if (u->b13D == 0) {
+            r = func_80233968_ovl_29A4C0(u->wE8, u->h134, u->wF0, u->b146, &c[0], &c[1], &c[2]);
+        } else {
+            r = func_801C1AA4(u->wE8, u->wEC, u->b146, u->h13A, u->h134, u->wF0, &c[0], &c[1], &c[2]);
+        }
+        if (r == 4) {
+            u->wF0 -= 2;
+            return 4;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022EEDC_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022EFB0_ovl_29A4C0);
 
