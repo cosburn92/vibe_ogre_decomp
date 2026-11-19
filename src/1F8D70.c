@@ -275,7 +275,33 @@ void func_801BC5FC_ovl_1F0A30(void) {
     bzero(D_801D0828_ovl_1F0A30, 5);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC640_ovl_1F0A30);
+/* Two light/fog parameter blocks (0x30 bytes each) at D_801D0774 */
+typedef struct {
+    /* 0x00 */ f32 pos[3];
+    /* 0x0C */ f32 dir[3];
+    /* 0x18 */ f32 scale[3];
+    /* 0x24 */ u8 rgba[4];
+    /* 0x28 */ s32 on;
+    /* 0x2C */ u8 unk2C[4];
+} Light1F8;
+extern Light1F8 D_801D0774_ovl_1F0A30[2];
+
+/* Resets both light blocks and the 0x1A-byte state at D_801D07F4 */
+void func_801BC640_ovl_1F0A30(void) {
+    D_801D0774_ovl_1F0A30[0].rgba[0] = D_801D0774_ovl_1F0A30[0].rgba[1] = D_801D0774_ovl_1F0A30[0].rgba[2] = D_801D0774_ovl_1F0A30[0].rgba[3] = 0xFF;
+    D_801D0774_ovl_1F0A30[0].on = 1;
+    D_801D0774_ovl_1F0A30[1].rgba[0] = D_801D0774_ovl_1F0A30[1].rgba[1] = D_801D0774_ovl_1F0A30[1].rgba[2] = D_801D0774_ovl_1F0A30[1].rgba[3] = 0xFF;
+    D_801D0774_ovl_1F0A30[1].on = 1;
+    D_801D0774_ovl_1F0A30[0].pos[0] = D_801D0774_ovl_1F0A30[0].pos[1] = 0.0f;
+    D_801D0774_ovl_1F0A30[0].dir[0] = D_801D0774_ovl_1F0A30[0].dir[1] = D_801D0774_ovl_1F0A30[0].dir[2] = 0.0f;
+    D_801D0774_ovl_1F0A30[1].pos[0] = D_801D0774_ovl_1F0A30[1].pos[1] = 0.0f;
+    D_801D0774_ovl_1F0A30[1].dir[0] = D_801D0774_ovl_1F0A30[1].dir[1] = D_801D0774_ovl_1F0A30[1].dir[2] = 0.0f;
+    D_801D0774_ovl_1F0A30[0].pos[2] = -5.0f;
+    D_801D0774_ovl_1F0A30[0].scale[0] = D_801D0774_ovl_1F0A30[0].scale[1] = D_801D0774_ovl_1F0A30[0].scale[2] = 1.0f;
+    D_801D0774_ovl_1F0A30[1].pos[2] = -905.0f;
+    D_801D0774_ovl_1F0A30[1].scale[0] = D_801D0774_ovl_1F0A30[1].scale[1] = D_801D0774_ovl_1F0A30[1].scale[2] = 1.0f;
+    bzero(&D_801D07F4_ovl_1F0A30, 0x1A);
+}
 
 /* Channel tint for the current map (ids 0x3B/0x2E special-cased) */
 u8 func_801BC76C_ovl_1F0A30(void) {
