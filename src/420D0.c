@@ -140,7 +140,39 @@ void NewGameInit(void) {
     memset(D_80197810_ovl_040E80, 0xFF, 0x2D6);
 }
 
+#ifdef NON_MATCHING
+/* the inlined NewGameInit keeps &D_80193678 in s2; the original re-materialises it for the store */
+static inline void func_8016C9FC_newGame(void) {
+    func_8016CB08_ovl_040E80(D_80196A28_ovl_040E80);
+    *(u16 *)D_80196A30_ovl_040E80 = 0xFB;
+    D_80196A36_ovl_040E80 = 0;
+    D_80196A32_ovl_040E80 = 4;
+    D_80196A33_ovl_040E80 = 1;
+    D_80196A2C_ovl_040E80.hours = 6;
+    D_80196A2C_ovl_040E80.minutes = 0;
+    D_80196A2C_ovl_040E80.seconds = 0;
+    bzero(&D_80193678_ovl_040E80, 0x3A);
+    D_801936AA_ovl_040E80 = 7;
+    D_801936A9_ovl_040E80 = 50;
+    D_801936A7_ovl_040E80 = 0;
+    D_80193678_ovl_040E80 = 0xF9;
+    D_8019367A_ovl_040E80 = 1;
+    D_8019367B_ovl_040E80 = 1;
+    D_801936AD_ovl_040E80 = 4;
+    D_801936AC_ovl_040E80 = 2;
+    D_80196AA4_ovl_040E80 = 2;
+    memset(D_80197810_ovl_040E80, 0xFF, 0x2D6);
+}
+
+/* NewGameInit, then sets profile flag 0x19 and starts the clock at 07:00 */
+void func_8016C9FC_ovl_040E80(void) {
+    func_8016C9FC_newGame();
+    ProfileFlagSet(0x19, 1);
+    D_80196A2C_ovl_040E80.hours = 7;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C9FC_ovl_040E80);
+#endif
 
 void func_8016CB08_ovl_040E80(void *p) {
     osSetTime(0);
