@@ -266,7 +266,34 @@ void func_801CA9FC_ovl_087200(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAA64_ovl_087200);
+/* Clears flag 2 on the nine slot units; units 100+ (guests) are also returned: their count goes back
+ * to D_80190F81 and their entries are cleared */
+void func_801CAA64_ovl_087200(void) {
+    u8 *slots = D_80196AF8 + 0x17D0;
+    s32 i;
+    u8 u;
+    u8 *p;
+
+    for (i = 0; i < 9; i++) {
+        u = (slots + i)[4];
+        if (u == 0xFF) {
+            continue;
+        }
+        p = D_80196AF8 + (u * 2 + 0x1872);
+        if (u < 100) {
+            if (*p & 2) {
+                *p &= ~2;
+            }
+        } else {
+            if (*p & 2) {
+                *p &= ~0x42;
+            }
+            ((u8 *)D_80190EBC)[0xC5] += func_801CBC98_ovl_087200(u);
+            D_80190EBC[u] = 0;
+            D_80191010[u] = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAB68_ovl_087200);
 
