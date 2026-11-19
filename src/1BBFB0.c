@@ -88,6 +88,8 @@ extern s16 D_8022A72A_ovl_1BA050;
 void func_80227234_ovl_1BA050(u8 *p);
 void func_80226E8C_ovl_1BA050(ScriptRes *r);
 void func_802292DC_ovl_1BA050(s16 *p);
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
@@ -184,7 +186,23 @@ void func_80224BE8_ovl_1BA050(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224C60_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224D60_ovl_1BA050);
+/* Loads the six event resource chunks listed in chunk 0x21C2F70 */
+void func_80224D60_ovl_1BA050(void) {
+    s32 n = 6;
+    s32 *tbl;
+    s32 i;
+
+    i = ChunkSize(0x21C2F70);
+    if (i / 4 != n) {
+        for (;;) {
+        }
+    }
+    tbl = LoadChunkRaw(NULL, 0x21C2F70);
+    for (i = 0; i < n; i++) {
+        D_8022A4C0_ovl_1BA050[i] = LoadChunkRaw(NULL, tbl[i]);
+    }
+    HFree(tbl);
+}
 
 void func_80224E1C_ovl_1BA050(void) {
     s32 i;
@@ -272,7 +290,33 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80227234_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022750C_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80227E00_ovl_1BA050);
+/* Unlinks script resource i from the active list and frees its buffers */
+void func_80227E00_ovl_1BA050(s32 i) {
+    u8 *r;
+
+    if (i >= 4) {
+        for (;;) {
+        }
+    }
+    r = (u8 *)&D_8022A4E0_ovl_1BA050[i];
+    if (*(u8 **)(r + 4) != NULL) {
+        *(u8 **)(*(u8 **)(r + 4) + 8) = *(u8 **)(r + 8);
+    } else {
+        D_8022A650_ovl_1BA050 = *(u8 **)(r + 8);
+    }
+    if (*(u8 **)(r + 8) != NULL) {
+        *(u8 **)(*(u8 **)(r + 8) + 4) = *(u8 **)(r + 4);
+    }
+    if (*(void **)(r + 0x34) != NULL) {
+        HFree(*(void **)(r + 0x34));
+        *(void **)(r + 0x34) = NULL;
+    }
+    if (*(void **)(r + 0x4C) != NULL) {
+        HFree(*(void **)(r + 0x4C));
+        *(void **)(r + 0x4C) = NULL;
+    }
+    *(s32 *)r = 0;
+}
 
 void func_80227EB8_ovl_1BA050(u8 *p, s32 a, s32 b, s32 c) {
     p[0xF] |= c;
