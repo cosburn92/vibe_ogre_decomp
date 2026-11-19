@@ -102,6 +102,23 @@ s32 func_801BE6DC_ovl_1F0A30(void *p);
 s32 func_801BE6FC_ovl_1F0A30(void *p);
 void func_801B464C_ovl_1F0A30(s32 a, f32 x, f32 y, f32 z, s32 b);
 void *LoadChunk(s32 id);
+typedef struct {
+    u8 b[0x38];
+} PChar1F;
+typedef struct {
+    u8 b[0x34];
+} EChar1F;
+extern PChar1F D_80193BC0[];
+extern EChar1F D_80195560[];
+extern u8 D_801976E8;
+extern char D_801CE890_ovl_1F0A30[];
+s32 func_801C8B68_ovl_1F0A30(u8 *u);
+s32 func_801C8BA4_ovl_1F0A30(u8 *u);
+s32 func_801C8B84_ovl_1F0A30(u8 *u);
+void BattleAnimStep(void *a, s32 b, s32 c, s32 d, s32 e);
+s32 func_8016E1DC(u8 a, u8 b);
+s32 sprintf(char *buf, const char *fmt, ...);
+void func_801AF9B8_ovl_1F0A30(char *s, s32 side);
 /* --- end decls --- */
 
 void func_801AD5A0_ovl_1F0A30(void) {
@@ -137,7 +154,35 @@ void *func_801AD60C_ovl_1F0A30(s32 id) {
     return NULL;
 }
 
+/* Ages the chunk caches; frees entries whose ttl runs out */
+#ifdef NON_MATCHING
+/* base+offset operand order in the slot address (cf. AD60C) */
+void func_801AD6B0_ovl_1F0A30(void) {
+    Slot1F *s;
+    u32 i;
+
+    for (i = 0; i < 16; i++) {
+        if ((s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->id != 0) {
+            if (--s->ttl == 0) {
+                HFree(s->data);
+                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->data = NULL;
+                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->id = 0;
+            }
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        if ((s = (Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->data != NULL) {
+            if (--s->id == 0) {
+                HFree(s->data);
+                ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->data = NULL;
+                ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->ttl = 0;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD6B0_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD794_ovl_1F0A30);
 
@@ -219,7 +264,24 @@ void func_801ADC60_ovl_1F0A30(Spr1F *s, Mot1F *m) {
     s->y = m->y + m->vy;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801ADCBC_ovl_1F0A30);
+/* Steps the animations attached to battle unit u */
+void func_801ADCBC_ovl_1F0A30(u8 *u) {
+    u32 i = 0;
+    u8 **a = (u8 **)u;
+
+    for (; i < 3; i++, a++) {
+        if (*a != NULL) {
+            s32 x = func_801C8B68_ovl_1F0A30(u);
+            BattleAnimStep(*a + 0x44, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), x, func_801C8BA4_ovl_1F0A30(u));
+        }
+    }
+    if (FIELD(u, u8 *, 0x18) != NULL) {
+        BattleAnimStep(FIELD(u, u8 *, 0x18) + 0x44, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), 0, 0);
+    }
+    if (FIELD(u, u8 *, 0x1C) != NULL) {
+        BattleAnimStep(FIELD(u, u8 *, 0x1C) + 0x44, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), 0, 0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", BattleAnimStep);
 
@@ -285,7 +347,29 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF730_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF9B8_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFB0C_ovl_1F0A30);
+/* Shows "<name> ..." message for unit u's action a */
+void func_801AFB0C_ovl_1F0A30(u8 *u, u8 *a) {
+    char buf[64];
+    u8 *rec;
+    s32 player;
+
+    if (func_801C8B84_ovl_1F0A30(u)) {
+        s32 sq = D_801976DC;
+
+        player = sq < 30;
+    } else {
+        s32 sq = D_801976E8;
+
+        player = sq < 30;
+    }
+    if (player) {
+        rec = D_80193BC0[u[0xF6]].b;
+    } else {
+        rec = D_80195560[u[0xF6]].b;
+    }
+    sprintf(buf, D_801CE890_ovl_1F0A30, rec, func_8016E1DC(a[0x4B], a[0x4F]));
+    func_801AF9B8_ovl_1F0A30(buf, func_801C8B84_ovl_1F0A30(u));
+}
 
 void func_801AFBE8_ovl_1F0A30(s32 a) {
     func_801AF730_ovl_1F0A30(D_801CE8A8_ovl_1F0A30, a);
