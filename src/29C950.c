@@ -38,6 +38,11 @@ extern s16 D_800E9C0A[];
 extern u8 D_8019EE40[];
 
 void bzero(void *p, s32 n);
+typedef struct {
+    s32 m[16];
+} Mtx29;
+void guMtxL2F(f32 mf[4][4], Mtx29 *m);
+void func_80233AE0_ovl_29A4C0(f32 x, f32 y, f32 z, f32 *out, f32 mf[4][4]);
 s32 func_80080D70(f32 y);
 f32 sqrtf(f32 x);
 f32 fabsf(f32 x);
@@ -113,7 +118,22 @@ void func_8022D1AC_ovl_29A4C0(void) {
     func_80227010();
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D2A8_ovl_29A4C0);
+/* Screen position of the origin under matrix m (0 when out of integer range) */
+void func_8022D2A8_ovl_29A4C0(Mtx29 m, s32 *x, s32 *y) {
+    f32 mf[4][4];
+    f32 out[3];
+
+    guMtxL2F(mf, &m);
+    *x = 0;
+    *y = 0;
+    func_80233AE0_ovl_29A4C0(0.0f, 0.0f, 0.0f, out, mf);
+    if (out[0] < 2147483008.0f && -2147483008.0f < out[0]) {
+        *x = out[0];
+    }
+    if (out[2] < 2147483008.0f && -2147483008.0f < out[2]) {
+        *y = out[2];
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D3AC_ovl_29A4C0);
 
