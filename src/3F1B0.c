@@ -20,11 +20,22 @@ extern SoundChannel D_800EB0B0_ovl_03F1B0[];
 extern s32 D_80164760_ovl_03F1B0;
 s32 func_800EA924_ovl_03F1B0(SoundChannel *ch, s32 a, u16 b, s32 c);
 void func_80081908(s32 a, s32 b);
-void func_80081B08(s32 handle);
 
 
 
 
+
+#define CHF(ch, off) (*(s32 *)((u8 *)(ch) + (off)))
+extern SoundChannel D_800EB1F0_ovl_03F1B0;
+extern SoundChannel D_800EB240_ovl_03F1B0;
+extern SoundChannel D_800EB290_ovl_03F1B0;
+extern u8 D_80104710_ovl_03F1B0[];
+s32 func_80081B08(s32 h);
+void func_80081A54(s32 h, s32 a);
+void func_80081DF0(void *p);
+s32 func_80081770(s32 a);
+void func_800EA488_ovl_03F1B0(SoundChannel *ch);
+/* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9C20_ovl_03F1B0);
 
@@ -49,13 +60,64 @@ void func_800EA3BC_ovl_03F1B0(SoundChannel *ch) {
     ch->saved[2] = c;
 }
 
+#ifdef NON_MATCHING
+/* saved[0] load scheduled before the param store */
+void func_800EA3E4_ovl_03F1B0(SoundChannel *ch) {
+    s32 v;
+
+    if (!func_80081B08(ch->handle)) {
+        D_800EB0B0_ovl_03F1B0[0].unk38 = 0;
+        func_800EA488_ovl_03F1B0(ch);
+        return;
+    }
+    if (ch->unk38 == 0) {
+        if (ch->saved[2] != 0) {
+            func_80081A54(ch->handle, ch->saved[2]);
+            v = ch->saved[2] + 3;
+        } else {
+            func_80081A54(ch->handle, 1);
+            v = 3;
+        }
+        CHF(ch, 0x3C) = v;
+        ch->unk38 = 2;
+        CHF(ch, 0x40) = ch->saved[0];
+    } else {
+        CHF(ch, 0x40) = ch->saved[0];
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA3E4_ovl_03F1B0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA488_ovl_03F1B0);
 
-INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA568_ovl_03F1B0);
+void func_800EA568_ovl_03F1B0(SoundChannel *ch) {
+    if (CHF(ch, 0x18) != 0) {
+        if (func_80081B08(ch->handle)) {
+            func_80081A54(ch->handle, 0);
+        }
+    } else if (ch->unk28 != -1 && func_80081B08(ch->unk28)) {
+        func_80081A54(ch->unk28, 0);
+    }
+    ch->unk28 = ch->handle;
+    func_80081DF0(D_80104710_ovl_03F1B0);
+    ch->handle = func_80081770(ch->saved[0] - 1);
+    CHF(ch, 0x20) = ch->saved[0];
+}
 
-INCLUDE_ASM("asm/nonmatchings/3F1B0", SoundPlay);
+/* Starts sound id on channel ch: effect channels (4, 5, none) play directly, channel 6 stops first, music channels queue it */
+void SoundPlay(SoundChannel *ch, s32 id) {
+    if (ch == &D_800EB1F0_ovl_03F1B0 || ch == &D_800EB240_ovl_03F1B0 || ch == NULL) {
+        func_800EA924_ovl_03F1B0(ch, 1, id, 0x4000);
+    } else if (ch == &D_800EB290_ovl_03F1B0) {
+        func_800EA924_ovl_03F1B0(ch, 2, 0, 0x4000);
+        func_800EA924_ovl_03F1B0(ch, 1, id, 0x4000);
+    } else {
+        ch->request = id + 1;
+        ch->fade = 4;
+        ch->pending = 1;
+    }
+}
 
 void SoundPlayFade(SoundChannel *ch, s32 id, s32 fade) {
     ch->request = id + 1;
