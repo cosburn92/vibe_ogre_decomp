@@ -39,6 +39,7 @@ extern u8 *(*D_80209718_ovl_24BCA0[])(u16 id);
 extern u8 *(*D_80209728_ovl_24BCA0[])(u16 id);
 extern u8 *(*D_80209734_ovl_24BCA0[])(u16 id);
 extern u8 *(*D_80209740_ovl_24BCA0[])(u16 id, u8 x);
+extern u8 *(*D_8020974C_ovl_24BCA0[])(u16 id, s32 a, s32 x, s32 b, s32 y);
 extern s32 D_8020A170_ovl_24BCA0[];
 u8 *func_80214CF0(u16 id, s32 a);
 extern s32 (*D_80209700_ovl_24BCA0[])(u8 c);
@@ -232,7 +233,12 @@ u8 *func_801F847C_ovl_24BCA0(AnimReq *r, u8 x) {
     return o + 0x1C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8518_ovl_24BCA0);
+u8 *func_801F8518_ovl_24BCA0(AnimReq *r, s32 x) {
+    u8 *o = D_8020974C_ovl_24BCA0[r->kind & 3](r->id, 8, x, 8, x);
+
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F85C0_ovl_24BCA0);
 
