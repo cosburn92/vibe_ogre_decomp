@@ -24,13 +24,45 @@ typedef struct {
 
 void *func_8020C9B0(s32 a);
 void func_8020C074(void *p);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+extern Gfx *D_800E9BA0;
+typedef struct {
+    s32 m[16];
+} Mtx40;
+extern Mtx40 *D_801969B0;
+extern Gfx D_80225620_ovl_275850[];
+void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z);
+void guMtxF2L(f32 mf[4][4], void *m);
+s32 func_802210C0_ovl_275850(u8 *o, s32 k);
+void func_80221368_ovl_275850(u8 *o, s32 a);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_802210C0_ovl_275850);
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221368_ovl_275850);
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221508_ovl_275850);
+/* Draws the two parts of o under an untranslated matrix, after the setup list */
+void func_80221508_ovl_275850(u8 *o) {
+    f32 m[4][4];
+    Gfx *g;
+
+    func_80098D00(m, 0.0f, 0.0f, 0.0f);
+    guMtxF2L(m, D_801969B0);
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380000;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0++;
+    g->w0 = 0xDE000000;
+    g->w1 = (u32)D_80225620_ovl_275850;
+    func_80221368_ovl_275850(o, func_802210C0_ovl_275850(o, 0));
+    func_80221368_ovl_275850(o, func_802210C0_ovl_275850(o, 1));
+    g = D_800E9BA0++;
+    g->w0 = 0xD8380002;
+    g->w1 = 0x40;
+}
 
 void func_802215FC_ovl_275850(Obj27 *o, s32 v) {
     if (o->w24 == 0) {
