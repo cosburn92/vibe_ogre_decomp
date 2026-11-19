@@ -1325,7 +1325,7 @@ segments:
     subsegments:
       - [0x25EE90, asm]
       - [0x25F6C0, asm]
-      - [0x25F7F0, asm]
+      - [0x25F7F0, c]
       - [0x260420, asm]
       - [0x260DA0, asm]
       - [0x261C90, asm]
