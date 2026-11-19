@@ -113,7 +113,35 @@ void func_8022B56C_ovl_29A4C0(u8 *bank) {
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B56C_ovl_29A4C0);
 #endif
 
+/* Sepia-filters a single image (8-byte header: [3] fmt, u16 width at 4, height at 6) */
+#ifdef NON_MATCHING
+/* Same as func_8022B4A8 applied to img+8. Inlining that function gets closest; the only difference left is that the original keeps the pixel pointer in the img register (s1) and fmt in s3. */
+void func_8022B62C_ovl_29A4C0(u8 *img) {
+    s32 fmt = img[3];
+    s32 w = FIELD(img, u16, 4);
+    s32 h = FIELD(img, u16, 6);
+    s32 n;
+    s32 i;
+
+    img += 8;
+    n = func_801BEA0C(fmt, w) * h;
+    if (fmt == 2) {
+        u16 *p = (u16 *)img;
+
+        for (i = 0; i < n; i++, p++) {
+            *p = func_801BEB28(*p);
+        }
+    } else if (fmt == 3) {
+        u32 *p = (u32 *)img;
+
+        for (i = 0; i < n; i++, p++) {
+            *p = func_801BEA70(*p);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B62C_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B6F4_ovl_29A4C0);
 
