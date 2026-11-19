@@ -1031,10 +1031,10 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x1A2C20, asm]
+      - [0x1A2C20, c]
       - [0x1A4270, asm]
       - [0x1A4480, data, 1A2C20]
-      - [0x1A4BE0, rodata, 1A2C20]
+      - [0x1A4BE0, .rodata, 1A2C20]
       - [0x1A4C00, rodata, 1A4270]
       - { type: bss, vram: 0x80216F70, name: 1A2C20 }
 
