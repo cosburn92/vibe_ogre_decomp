@@ -146,9 +146,68 @@ void func_801EA990_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA990_ovl_23B220);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA9BC_ovl_23B220);
+/* Closes the panel by 8 px a frame and fades out; 1 when the fade completes */
+#ifdef NON_MATCHING
+/* same as func_801EAA58 */
+s32 func_801EA9BC_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    s32 step = 25;
+    s16 *f = &s->h652;
 
+    if (s->x1 >= s->y1) {
+        s->x1 -= 8;
+        if (s->x1 <= s->y1) {
+            s->x1 = s->y1;
+            s->y1 = 0xF2;
+        }
+    }
+    if (*f != 0xFF) {
+        *f += step;
+        if (*f < 0xFF) {
+            return 0;
+        }
+        *f = 0xFF;
+        return 1;
+    }
+    return 0;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA9BC_ovl_23B220);
+#endif
+
+/* Opens the panel by 8 px a frame and fades in; 1 when the fade completes */
+static inline s32 fade23(s16 *f, s32 step) {
+    if (*f != 0) {
+        *f -= step;
+        if (*f > 0) {
+            return 0;
+        }
+        *f = 0;
+        return 1;
+    }
+    return 0;
+}
+static inline void open23(Ctx23 *s) {
+    if (s->x1 != s->y1) {
+        s->x1 += 8;
+        if (s->x1 >= s->y1) {
+            s->x1 = s->y1;
+        }
+    }
+}
+#ifdef NON_MATCHING
+/* step 25 kept in a3 (unpropagated constant, likely an inlined helper arg); 0x18 frame */
+s32 func_801EAA58_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    s32 step = 25;
+    s16 *f = &s->h652;
+
+    open23(s);
+    return fade23(f, step);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAA58_ovl_23B220);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAAD8_ovl_23B220);
 
@@ -284,7 +343,26 @@ s32 func_801ECD28_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECD28_ovl_23B220);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECD80_ovl_23B220);
+void func_801ECD80_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    s32 i;
+
+    if (FIELD(s, void *, 0x244) != NULL) {
+        HFree(FIELD(s, void *, 0x244));
+        FIELD(s, void *, 0x244) = NULL;
+        FIELD(s, s32, 0x248) = 0;
+    }
+    D_801EFE48_ovl_23B220->flags &= 3;
+    for (i = 0; i < 2; i++) {
+        u8 *e = (u8 *)D_801EFE48_ovl_23B220 + 0x5D4 + i * 0x1C;
+
+        if (FIELD(e, void *, 4) != NULL) {
+            HFree(FIELD(e, void *, 4));
+            FIELD(e, void *, 4) = NULL;
+        }
+    }
+    D_801EFE48_ovl_23B220->flags &= ~2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECE30_ovl_23B220);
 
