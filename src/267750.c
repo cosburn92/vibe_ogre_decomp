@@ -42,7 +42,7 @@ void func_8020E51C_ovl_25EE90(void *p);
 /* --- end decls --- */
 
 void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++) {
@@ -53,7 +53,7 @@ void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
 }
 
 void func_80212BD8_ovl_25EE90(s32 n, Obj26 **arr, s32 d) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++) {
@@ -64,7 +64,7 @@ void func_80212BD8_ovl_25EE90(s32 n, Obj26 **arr, s32 d) {
 }
 
 void func_80212C20_ovl_25EE90(s32 n, Pos26 **arr, s32 d) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
     Pos26 *p;
 
@@ -123,7 +123,7 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_80213420_ovl_25EE90);
 INCLUDE_ASM("asm/nonmatchings/267750", func_802136F4_ovl_25EE90);
 
 void func_802137A8_ovl_25EE90(s32 n, void **arr) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++) {
@@ -134,7 +134,7 @@ void func_802137A8_ovl_25EE90(s32 n, void **arr) {
 }
 
 void func_80213804_ovl_25EE90(s32 n, Src26 *src, Obj26 **arr) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++) {
@@ -145,7 +145,7 @@ void func_80213804_ovl_25EE90(s32 n, Src26 *src, Obj26 **arr) {
 }
 
 void func_80213850_ovl_25EE90(s32 n, Src26 *src, Pos26 **arr) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++) {
@@ -158,7 +158,7 @@ void func_80213850_ovl_25EE90(s32 n, Src26 *src, Pos26 **arr) {
 }
 
 void func_802138C8_ovl_25EE90(s32 n, Src26 *src, f32 v) {
-    s32 pad[2];
+    s32 pad;
     s32 i;
 
     for (i = 0; i < n; i++, src++) {
@@ -173,7 +173,7 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_80213980_ovl_25EE90);
 INCLUDE_ASM("asm/nonmatchings/267750", func_80213AC8_ovl_25EE90);
 
 void func_80213BE8_ovl_25EE90(Set26 *s) {
-    s32 pad[2];
+    s32 pad;
     s32 n = s->cnt->n;
     void **list = s->list;
     s32 i;
@@ -199,7 +199,7 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_8021404C_ovl_25EE90);
 INCLUDE_ASM("asm/nonmatchings/267750", func_8021419C_ovl_25EE90);
 
 void func_802142BC_ovl_25EE90(Set26 *s) {
-    s32 pad[2];
+    s32 pad;
     s32 n = s->cnt->n;
     void **list = s->list;
     s32 i;
