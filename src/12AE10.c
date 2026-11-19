@@ -93,6 +93,17 @@ void func_80079618();
 void func_8017C384(s32 h);
 void *HFree(void *p);
 void func_801B2D2C_ovl_101CE0(MapUnit *u);
+typedef struct {
+    /* 0x0 */ u16 id;
+    /* 0x2 */ u8 equipped;
+    /* 0x3 */ u8 count;
+} StockEntry;
+
+extern StockEntry D_80196B00[]; /* item stock, 0x116 entries */
+extern StockEntry D_80193AC0[]; /* consumables, 0x28 entries */
+
+s32 guRandom(void);
+void osSyncPrintf(const char *fmt, ...);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -385,7 +396,82 @@ s32 func_801DB424_ovl_101CE0(DB424Arg *a, s32 id) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB424_ovl_101CE0);
 #endif
 
+/* (squad, location): adjusts gChaosFrame by -5..+2 from how far the squad's mean alignment is from
+ * the town's preference (plus 40 when bit 7 of the preference is set) and a random 0-7.
+ * Returns whether the score was 31 or more. */
+#ifdef NON_MATCHING
+/* Logic is complete; loop strength reduction and register use differ. */
+s32 ChaosFrameOnLiberate(s32 squad, s32 loc) {
+    u16 pref = D_801951CC[loc].pref;
+    u16 bonus;
+    u16 sum;
+    u16 avg;
+    u16 score;
+    u8 cnt;
+    s32 r;
+    s32 d;
+    s32 delta;
+    s32 v;
+    u8 *m;
+
+    if (pref == 0xFF || squad >= 30) {
+        return 0;
+    }
+    bonus = (pref >> 7) ? 40 : 0;
+    pref &= 0x7F;
+    sum = 0;
+    cnt = 0;
+    for (m = gSquads[squad].members; m < gSquads[squad].members + 5; m++) {
+        if (*m == 0 || *m >= 99) {
+            continue;
+        }
+        if (squad < 30) {
+            sum += D_80193BC0[*m].c.alignment;
+        } else {
+            sum += D_80195560[*m].alignment;
+        }
+        cnt++;
+    }
+    if (cnt == 0) {
+        avg = 50;
+    } else {
+        avg = sum / cnt;
+    }
+    r = guRandom() % 8;
+    d = avg - pref;
+    if (d <= 0) {
+        d = pref - avg;
+    }
+    score = d + r + bonus;
+    if (score > 140) {
+        delta = -5;
+    } else if (score > 110) {
+        delta = -4;
+    } else if (score > 80) {
+        delta = -3;
+    } else if (score > 50) {
+        delta = -2;
+    } else if (score > 30) {
+        delta = -1;
+    } else if (score > 15) {
+        delta = 0;
+    } else if (score > 5) {
+        delta = 1;
+    } else {
+        delta = 2;
+    }
+    v = gChaosFrame + delta;
+    if (v > 100) {
+        v = 100;
+    } else if (v < 0) {
+        v = 0;
+    }
+    gChaosFrame = v;
+    return score > 30;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", ChaosFrameOnLiberate);
+#endif
 
 void ChaosFrameOnCapture(s32 loc) {
     s32 v;
@@ -465,7 +551,70 @@ void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
     }
 }
 
+/* v with bit 15: item v & 0x7FFF into the item stock, else consumable v (max 99 each) */
+#ifdef NON_MATCHING
+/* Logic is complete; the target walks the count bytes with a pointer and indexes the ids. */
+void InventoryAdd(u16 v, u8 flag) {
+    u16 id = v & 0x7FFF;
+    s32 i;
+
+    if (v & 0x8000) {
+        for (i = 0; i < 0x116; i++) {
+            if (D_80196B00[i].id == id) {
+                if (++D_80196B00[i].count >= 100) {
+                    D_80196B00[i].count = 99;
+                }
+                break;
+            }
+        }
+        if (i == 0x116) {
+            for (i = 0; i < 0x116; i++) {
+                if (D_80196B00[i].id == 0) {
+                    D_80196B00[i].id = id;
+                    D_80196B00[i].count = 1;
+                    break;
+                }
+            }
+            if (i == 0x116) {
+                osSyncPrintf("no space to put item[%d]\n", id);
+            }
+        }
+    } else {
+        for (i = 0; i < 0x28; i++) {
+            if (D_80193AC0[i].id == id) {
+                D_80193AC0[i].count++;
+                if (flag) {
+                    D_80193AC0[i].equipped++;
+                }
+                if (D_80193AC0[i].count >= 100) {
+                    D_80193AC0[i].count = 99;
+                }
+                if (D_80193AC0[i].count < D_80193AC0[i].equipped) {
+                    D_80193AC0[i].equipped = D_80193AC0[i].count;
+                }
+                break;
+            }
+        }
+        if (i == 0x28) {
+            for (i = 0; i < 0x28; i++) {
+                if (D_80193AC0[i].id == 0) {
+                    D_80193AC0[i].id = id;
+                    D_80193AC0[i].count = 1;
+                    if (flag) {
+                        D_80193AC0[i].equipped = 1;
+                    }
+                    break;
+                }
+            }
+            if (i == 0x28) {
+                osSyncPrintf("no space to put item[%d]\n", id);
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", InventoryAdd);
+#endif
 
 void func_801DC910_ovl_101CE0(void) {
     s32 i;
