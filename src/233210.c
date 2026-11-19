@@ -7,14 +7,19 @@ typedef struct BattleUnit {
     /* 0x00 */ u8 unk00[0x20];
     /* 0x20 */ u16 hp;
     /* 0x22 */ u16 maxHp;
-    /* 0x24 */ u8 unk24[0xF];
+    /* 0x24 */ u8 unk24[0xC];
+    /* 0x30 */ u8 unk30;
+    /* 0x31 */ u8 unk31[2];
     /* 0x33 */ u8 unk33;
     /* 0x34 */ u8 unk34[2];
     /* 0x36 */ u16 stats[4];
     /* 0x3E */ u8 unk3E;
     /* 0x3F */ u8 unk3F;
     /* 0x40 */ u32 flags; /* bit 0 down, bit 8 player side, bit 9 leader, bit 12 not targetable */
-    /* 0x44 */ u8 unk44[0x10];
+    /* 0x44 */ u8 unk44[4];
+    /* 0x48 */ s32 unk48;
+    /* 0x4C */ s32 cls;
+    /* 0x50 */ u8 unk50[4];
     /* 0x54 */ s32 lane;
     /* 0x58 */ s32 unk58;
     /* 0x5C */ u8 unk5C[0xC];
@@ -86,6 +91,17 @@ u8 *func_801E14C0(s32 side);
 s32 func_801C9FB4(u16 a, u16 b);
 s32 func_801C8AC0(s32 a);
 f32 func_8007FE70(f32 *a, f32 *b);
+s32 func_801C8D84(BattleUnit *u);
+s32 func_801C8B68(BattleUnit *u);
+u8 func_8016F580(u16 id);
+u8 func_8016F598(u16 id);
+typedef struct {
+    u8 mode;
+    u8 unk1[3];
+    u8 flags;
+} BattleMode;
+extern BattleMode D_801976D9;
+extern u8 D_801976E9;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
@@ -380,13 +396,57 @@ s8 func_801F1344_ovl_22A280(BattleUnit *u) {
     return D_801F6A30_ovl_22A280[func_8016E458(((u8 *)u)[0x7F])][a];
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F139C_ovl_22A280);
+s32 func_801F139C_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    s32 r = 0;
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F1444_ovl_22A280);
+    if (func_801C8D84(b)) {
+        if (a->cls == 20) {
+            r = 5;
+        } else if ((func_8016F580(a->stats[0]) | func_8016F580(a->stats[1]) | func_8016F580(a->stats[2]) |
+                    func_8016F580(a->stats[3])) & 1) {
+            r = 5;
+        }
+    }
+    return r;
+}
+
+s32 func_801F1444_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    s32 r = 0;
+
+    if (func_801C8D84(a)) {
+        if (b->cls == 20) {
+            r = 5;
+        } else if ((func_8016F598(b->stats[0]) | func_8016F598(b->stats[1]) | func_8016F598(b->stats[2]) |
+                    func_8016F598(b->stats[3])) & 1) {
+            r = 5;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F14E8_ovl_22A280);
 
+#ifdef NON_MATCHING
+/* original keeps &D_801976D9 in s1 across the call; GCC rematerializes it */
+s32 func_801F1700_ovl_22A280(BattleUnit *u) {
+    BattleMode *s = &D_801976D9;
+    u8 t;
+
+    t = (s->mode & 0x80) ? 15 : s->mode;
+    if (t != 15 && t != 19) {
+        return 0;
+    }
+    if (func_801C8B84(u) && (s->flags & 8)) {
+        return 3;
+    }
+    if (func_801C8B68(u) == 0) {
+        return 0;
+    }
+    return (D_801976E9 & 8) ? 3 : 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1700_ovl_22A280);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F17B8_ovl_22A280);
 
@@ -450,7 +510,15 @@ s32 func_801F4480_ovl_22A280(BattleUnit *a, BattleUnit *b, s32 c, s32 d, s32 e) 
     return BattleCalcDamage(a, b, p, c, d, e);
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F4540_ovl_22A280);
+/* Chance roll: ((a - b) / 2 + 5)% on the +0x30 values */
+s32 func_801F4540_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    s32 v = (a->unk30 - b->unk30) / 2 + 5;
+
+    if (v > 0) {
+        return func_8009C7CC() % 100 < v;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F45C0_ovl_22A280);
 
@@ -458,7 +526,26 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F46DC_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F4828_ovl_22A280);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F4A8C_ovl_22A280);
+/* Battle grid position of slot i: units 0-19 from the unit, 20-46 a 3-wide grid, 47-86 a 4-wide grid */
+void func_801F4A8C_ovl_22A280(s32 i, s32 *x, s32 *y) {
+    if (i < 20) {
+        BattleUnit *u = func_801C8FE8(i);
+
+        *x = u->lane;
+        *y = u->unk58;
+    } else if (i < 47) {
+        i -= 20;
+        *x = i % 3;
+        *y = i / 3;
+    } else if (i < 87) {
+        i -= 47;
+        *x = i % 4;
+        *y = i / 4;
+    } else {
+        *x = -1;
+        *y = -1;
+    }
+}
 
 #ifdef NON_MATCHING
 /* addu operand order (1 byte) */
