@@ -11,7 +11,7 @@ typedef struct {
     /* 0x14 */ void *p14;
     /* 0x18 */ u8 unk18[4];
     /* 0x1C */ void **list;
-    /* 0x20 */ void *p20;
+    /* 0x20 */ u32 *age;
     /* 0x24 */ u8 unk24[4];
     /* 0x28 */ s32 w28;
     /* 0x2C */ s32 w2C;
@@ -94,7 +94,28 @@ INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232EE8_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233134_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802332A0_ovl_29A4C0);
+/* Ages every list entry; entries unused for 3 ticks are freed */
+void func_802332A0_ovl_29A4C0(void) {
+    Rec2A *r;
+    u32 i;
+    u32 k;
+
+    if (D_802395B0_ovl_29A4C0 == NULL) {
+        return;
+    }
+    for (i = 0; i < 40; i++) {
+        r = &D_802395B0_ovl_29A4C0[i];
+        for (k = 0; k < D_802395B0_ovl_29A4C0[i].n; k++) {
+            if (r->list[k] != NULL) {
+                r->age[k]++;
+                if (r->age[k] >= 3) {
+                    HFree(r->list[k]);
+                    r->list[k] = NULL;
+                }
+            }
+        }
+    }
+}
 
 /* Passes every non-null entry of every record's list to func_801BFBA0 */
 void func_80233398_ovl_29A4C0(void) {
@@ -146,7 +167,7 @@ void func_80233448_ovl_29A4C0(void) {
                     r->list[k] = NULL;
                 }
             }
-            HFree(r->p20);
+            HFree(r->age);
             HFree(r->p08);
             HFree((void *)r->w2C);
             HFree((void *)r->w28);
