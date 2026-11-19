@@ -11,6 +11,7 @@ void _bcopy(const void *src, void *dst, s32 n);
 void func_801CC684_ovl_087200(u8 *w, void (*f)(), s32 a, s32 b, s32 c, s32 d);
 void func_801B6394_ovl_087200();
 void func_801B3B00_ovl_087200();
+void func_801AA2B8_ovl_087200();
 void func_801C7CA0_ovl_087200(s16 *a, s16 *b, s16 *c, s16 *d);
 void func_801CCA50_ovl_087200(s32 a, s32 b, void (*f)(), s32 c, s32 d, s32 e, s32 g);
 void func_801CC784_ovl_087200(u8 *w, s32 a, s32 b, s32 c, s32 d);
@@ -23,7 +24,7 @@ typedef struct {
     u8 b[0x36];
 } OrgSquad; /* organize-screen squad record, 30 of them at state +0x117C */
 u8 func_801D06F4_ovl_087200(u16 sq);
-s32 func_801CC974_ovl_087200(s32 id, s32 a, void (*f)(), s32 b, s32 c, s32 d, s32 e, s32 g, s32 h, s32 i, s32 j);
+s32 func_801CC974_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 void func_801B1FE0_ovl_087200();
 extern u16 D_80190EBC[];
 extern u16 D_80190F82;
@@ -398,7 +399,16 @@ void func_801CBD34_ovl_087200(u8 *w) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBD34_ovl_087200);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBE08_ovl_087200);
+void func_801CBE08_ovl_087200(u8 *o) {
+    s32 x = FIELD(o, s32, 0x24);
+    s32 y = FIELD(o, s32, 0x28);
+    s16 r = func_801CC974_ovl_087200(4, 0x12, func_801AA2B8_ovl_087200, x - 12, y - 8, x - 4, y + 8, x - 0x3E, y - 0x10,
+                                     x - 4, y + 0x10);
+    u8 *st = D_80196AF8;
+
+    st += r * 0x108;
+    st[0x737] = o[0xE7];
+}
 
 void func_801CBEDC_ovl_087200(void) {
     func_801CC684_ovl_087200(func_801CC410_ovl_087200(0), func_801B6394_ovl_087200, 0x18, 0x14, 0x128, 0x8A);
