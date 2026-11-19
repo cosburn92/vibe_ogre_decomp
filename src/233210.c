@@ -163,6 +163,10 @@ static inline s32 BattleUnitItemSum6AC(BattleUnit *u) {
     }
     return s;
 }
+BattleUnit *func_801CA2E0(s32 lane, s32 row);
+s32 func_801CD19C(s32 a, s32 cls, s32 flag);
+s32 func_801C8B08(BattleUnit *u);
+u8 func_8016FF5C(u8 a, u8 b);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
@@ -625,7 +629,44 @@ s32 func_801F4540_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F45C0_ovl_22A280);
+/* Status effects a's weapon inflicts that b's equipment and class don't protect against */
+u8 func_801F45C0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 inflict;
+    u8 protect;
+    u16 id = func_801C8FB8(a);
+
+    inflict = 0;
+    protect = 0;
+    if (id != 0) {
+        inflict = func_8016F580(id);
+    }
+    if (b->stats[0] != 0) {
+        protect = func_8016F598(b->stats[0]);
+    }
+    if (b->stats[1] != 0) {
+        protect |= func_8016F598(b->stats[1]);
+    }
+    if (b->stats[2] != 0) {
+        protect |= func_8016F598(b->stats[2]);
+    }
+    if (b->stats[3] != 0) {
+        protect |= func_8016F598(b->stats[3]);
+    }
+    if (func_801CD19C(b->unk48, b->cls, 4)) {
+        protect |= 2;
+    }
+    if (func_801CD19C(b->unk48, b->cls, 8)) {
+        protect |= 4;
+    }
+    if (func_801CD19C(b->unk48, b->cls, 2)) {
+        protect |= 8;
+    }
+    if (func_801CD19C(b->unk48, b->cls, 0x10)) {
+        protect |= 0x20;
+    }
+    inflict &= ~protect;
+    return inflict;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F46DC_ovl_22A280);
 
@@ -663,7 +704,37 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F4B48_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F4B5C_ovl_22A280);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F54C8_ovl_22A280);
+/* Whether nobody stands in front of u in its lane (front row 6 for the player side, 2 for the enemy) */
+s32 func_801F54C8_ovl_22A280(BattleUnit *u) {
+    if (func_801C8B84(u)) {
+        if (u->unk58 == 6) {
+            return 1;
+        }
+        if (u->unk58 == 7) {
+            return func_801C8E30(func_801CA2E0(u->lane, 6)) != 0;
+        }
+        if (u->unk58 == 8) {
+            if (!func_801C8E30(func_801CA2E0(u->lane, 7))) {
+                return 0;
+            }
+            return func_801C8E30(func_801CA2E0(u->lane, 6)) != 0;
+        }
+    } else {
+        if (u->unk58 == 2) {
+            return 1;
+        }
+        if (u->unk58 == 1) {
+            return func_801C8E30(func_801CA2E0(u->lane, 2)) != 0;
+        }
+        if (u->unk58 == 0) {
+            if (!func_801C8E30(func_801CA2E0(u->lane, 1))) {
+                return 0;
+            }
+            return func_801C8E30(func_801CA2E0(u->lane, 2)) != 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F55AC_ovl_22A280);
 
@@ -673,7 +744,33 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F6068_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F6504_ovl_22A280);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F67D4_ovl_22A280);
+s32 func_801F67D4_ovl_22A280(BattleUnit *u, u32 f) {
+    s32 r = 0;
+    s32 k = func_801C8B08(u);
+
+    if (f & 0x8000) {
+        return 0;
+    }
+    if (func_801C8B84(u) && (f & 0x400)) {
+        r = 1;
+    }
+    if (func_801C8B68(u) && !(f & 0x400)) {
+        r = 1;
+    }
+    if (k == 0) {
+        r = 0;
+    }
+    if (r) {
+        if (k == 0xFF) {
+            if (!func_801C8C58(u)) {
+                r = 0;
+            }
+        } else if (!func_8016FF5C(u->unk48, k)) {
+            r = 0;
+        }
+    }
+    return r;
+}
 
 s32 func_801F68A4_ovl_22A280(u8 *a, u8 *b) {
     return a[1] - b[1];
