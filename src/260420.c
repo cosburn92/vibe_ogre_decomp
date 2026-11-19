@@ -4,22 +4,67 @@
 
 typedef struct {
     /* 0x00 */ u16 count;
-    /* 0x02 */ u8 unk02[0xA];
-    /* 0x0C */ s32 id;
-    /* 0x10 */ u8 unk10[4];
+    /* 0x02 */ u16 h2;
+    /* 0x04 */ s32 w4;
+    /* 0x08 */ s32 w8;
+    /* 0x0C */ s32 id; /* the cached data pointer */
+    /* 0x10 */ u16 nextFree;
+    /* 0x12 */ u8 unk12[2];
 } Ent260; /* size 0x14 */
 
 extern s32 D_80220CA0_ovl_25EE90;
 extern Ent260 *D_80220CA8_ovl_25EE90;
 
 Ent260 *func_8020BC78_ovl_25EE90(u16 a);
+extern s32 D_80220CA4_ovl_25EE90;
+extern s32 D_80220CAC_ovl_25EE90;
+extern s32 D_80220CB0_ovl_25EE90;
+extern Ent260 *D_80220CB8_ovl_25EE90[];
+void HFree(void *p);
+void bzero(void *p, s32 n);
+Ent260 *func_8020BA6C_ovl_25EE90(void *p);
+
+static inline void CacheRelease(Ent260 *e) {
+    void *data;
+
+    if (--e->count == 0) {
+        data = (void *)e->id;
+        e->nextFree = D_80220CA4_ovl_25EE90;
+        D_80220CA4_ovl_25EE90 = e - D_80220CA8_ovl_25EE90;
+        HFree(data);
+        e->id = 0;
+        e->count = 0;
+        e->h2 = 0;
+        e->w4 = 0;
+        e->w8 = 0;
+    }
+}
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/260420", func_8020B870_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020B940_ovl_25EE90);
+void func_8020B940_ovl_25EE90(void) {
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020B9D0_ovl_25EE90);
+    for (i = 0; i < D_80220CA0_ovl_25EE90; i++) {
+        if (D_80220CA8_ovl_25EE90[i].id != 0) {
+            HFree((void *)D_80220CA8_ovl_25EE90[i].id);
+        }
+    }
+    bzero(D_80220CA8_ovl_25EE90, D_80220CA0_ovl_25EE90 * sizeof(Ent260));
+}
+
+void func_8020B9D0_ovl_25EE90(void) {
+    s32 i;
+
+    for (i = 0; i < D_80220CA0_ovl_25EE90; i++) {
+        if (D_80220CA8_ovl_25EE90[i].id != 0) {
+            HFree((void *)D_80220CA8_ovl_25EE90[i].id);
+        }
+    }
+    bzero(D_80220CA8_ovl_25EE90, D_80220CA0_ovl_25EE90 * sizeof(Ent260));
+    HFree(D_80220CA8_ovl_25EE90);
+}
 
 INCLUDE_ASM("asm/nonmatchings/260420", func_8020BA6C_ovl_25EE90);
 
@@ -54,8 +99,46 @@ void func_8020BF94_ovl_25EE90(s32 id) {
 INCLUDE_ASM("asm/nonmatchings/260420", func_8020BF94_ovl_25EE90);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020BFE8_ovl_25EE90);
+/* Takes a cache entry from the free list and records it in the recent-use ring */
+Ent260 *func_8020BFE8_ovl_25EE90(void) {
+    Ent260 *e;
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020C074_ovl_25EE90);
+    if (D_80220CA4_ovl_25EE90 == 0xFFFF) {
+        for (;;) {
+        }
+    }
+    e = &D_80220CA8_ovl_25EE90[D_80220CA4_ovl_25EE90];
+    D_80220CA4_ovl_25EE90 = e->nextFree;
+    if (++D_80220CB0_ovl_25EE90 >= D_80220CAC_ovl_25EE90) {
+        D_80220CB0_ovl_25EE90 = 0;
+    }
+    D_80220CB8_ovl_25EE90[D_80220CB0_ovl_25EE90] = e;
+    e->id = (s32)e;
+    return e;
+}
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020C130_ovl_25EE90);
+/* Drops a reference to the cache entry holding p; frees it on the last one */
+void func_8020C074_ovl_25EE90(void *p) {
+    Ent260 *e;
+
+    if (p != NULL) {
+        e = func_8020BA6C_ovl_25EE90(p);
+        if (e != NULL) {
+            CacheRelease(e);
+        }
+    } else {
+        for (;;) {
+        }
+    }
+}
+
+void func_8020C130_ovl_25EE90(u16 id) {
+    Ent260 *e = func_8020BC78_ovl_25EE90(id);
+
+    if (e != NULL) {
+        CacheRelease(e);
+    } else {
+        for (;;) {
+        }
+    }
+}
