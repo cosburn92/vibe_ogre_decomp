@@ -216,6 +216,12 @@ void func_801D9F60(s32 a, s32 b, BattleUnit *u, s32 c);
 extern BattleState *D_801CE8BC;
 s32 func_801BE138(s32 a, s32 cls, s32 c, s32 d);
 void func_801E15E0(BattleUnit *u, s32 cls);
+u8 func_8016E470(u8 a, u16 b, u16 c, u16 d, u16 e);
+extern s8 D_801F6A14_ovl_22A280[][5];
+extern s8 D_801F6A44_ovl_22A280[][7];
+
+/* Folds an affinity id onto 0-6: 1-6 stay, 9/13 -> 1, 10/14 -> 2, 11 -> 3, 12 -> 4, else 0 */
+#define FOLD_AFFINITY(k)        switch (k) {                    case 1:                     case 2:                     case 3:                     case 4:                     case 5:                     case 6:                         break;                  case 11:                        k = 3;                      break;                  case 12:                        k = 4;                      break;                  case 9:                     case 13:                        k = 1;                      break;                  case 10:                    case 14:                        k = 2;                      break;                  default:                        k = 0;                      break;              }
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
@@ -579,7 +585,16 @@ s32 func_801F11E4_ovl_22A280(BattleUnit *u, s32 d) {
     return func_8007FE70(a, b) / d;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F1274_ovl_22A280);
+f32 func_801F1274_ovl_22A280(s32 k, BattleUnit *u) {
+    FOLD_AFFINITY(k);
+    if (k == 5) {
+        return (u->unk34[0] - 50) * 0.1;
+    }
+    if (k == 6) {
+        return (50 - u->unk34[0]) * 0.1;
+    }
+    return D_801F6A14_ovl_22A280[k][u->unk33];
+}
 
 s8 func_801F1344_ovl_22A280(BattleUnit *u) {
     u8 a = func_801C9FA4(u->unk58);
@@ -639,7 +654,13 @@ s32 func_801F1700_ovl_22A280(BattleUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1700_ovl_22A280);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F17B8_ovl_22A280);
+s8 func_801F17B8_ovl_22A280(BattleUnit *u) {
+    u8 k = func_8016E470(u->attack, u->items[0], u->items[1], u->items[2], u->items[3]);
+    u8 e = func_8016F5E0(func_801C8FB8(u));
+
+    FOLD_AFFINITY(k);
+    return D_801F6A44_ovl_22A280[e][k];
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1884_ovl_22A280);
 
