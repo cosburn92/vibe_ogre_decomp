@@ -72,6 +72,7 @@ void func_80213980_ovl_25EE90(void *mdl, void *mtx, void *slots);
 void func_8021404C_ovl_25EE90(void *mdl, void *mtx, void *slots);
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
+void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
 /* --- end decls --- */
 
 void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
@@ -159,7 +160,22 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_80212D78_ovl_25EE90);
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_80212DE0_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_802131E8_ovl_25EE90);
+/* Matrix from scale (0-2), rotation in degrees (3-5) and translation (6-8) */
+void func_802131E8_ovl_25EE90(f32 *srt, f32 m[4][4]) {
+    guRotateRPYF(m, srt[3], srt[4], srt[5]);
+    m[0][0] *= srt[0];
+    m[0][1] *= srt[0];
+    m[0][2] *= srt[0];
+    m[1][0] *= srt[1];
+    m[1][1] *= srt[1];
+    m[1][2] *= srt[1];
+    m[2][0] *= srt[2];
+    m[2][1] *= srt[2];
+    m[2][2] *= srt[2];
+    m[3][0] = srt[6];
+    m[3][1] = srt[7];
+    m[3][2] = srt[8];
+}
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_802132D0_ovl_25EE90);
 
