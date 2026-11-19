@@ -349,7 +349,20 @@ void func_80230FD4_ovl_29A4C0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231090_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231238_ovl_29A4C0);
+/* Snaps the unit's x/z to the target when within 0.1; returns bit 0 = x snapped, bit 1 = z snapped */
+s16 func_80231238_ovl_29A4C0(BUnit *u, f32 x, f32 z, f32 tx, f32 tz) {
+    s16 r = 0;
+
+    if (x < tx + 0.1 && tx - 0.1 < x) {
+        FIELD(u, f32, 0x11C) = tx;
+        r = 1;
+    }
+    if (z < tz + 0.1 && tz - 0.1 < z) {
+        FIELD(u, f32, 0x124) = tz;
+        r += 2;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_802312E4_ovl_29A4C0);
 
@@ -456,7 +469,35 @@ void func_80231DE0_ovl_29A4C0(s32 i, s32 unused, f32 v) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231DE0_ovl_29A4C0);
 #endif
 
+/* Sets the speed (pct / 100) of every part of unit i, or of all units when i == -1 */
+#ifdef NON_MATCHING
+/* D_8022A974 lands in v1 and end gets copied to a3; the original keeps end in v1 and the base in t0. */
+void func_80231E60_ovl_29A4C0(s32 i, s32 pct) {
+    s16 s;
+    s16 end;
+    s16 k;
+    s16 j;
+    BUnit *u;
+
+    if (i == -1) {
+        s = 0;
+        end = 0x1C;
+    } else {
+        s = i;
+        end = i + 1;
+    }
+    for (k = s; k < end; k++) {
+        u = D_8022A974->units[k];
+        if (u != NULL) {
+            for (j = 0; j < 3; j++) {
+                FIELD(u, f32, 0x104 + j * 4) = (f32)pct / 100.0;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231E60_ovl_29A4C0);
+#endif
 
 #ifdef NON_MATCHING
 /* s16 range-loop register flow differs */

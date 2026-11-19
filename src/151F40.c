@@ -234,7 +234,41 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80202140_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202434_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202728_ovl_14EBE0);
+/* Base stat `stat` (0 str .. 5 dex) of a character (side 0 player, else enemy); idx >= 100 reads slot 0 */
+u16 func_80202728_ovl_14EBE0(u8 side, u8 idx, u8 stat) {
+    Character *c;
+    u16 v;
+    u8 i;
+
+    i = idx < 100 ? idx : 0;
+    if (side == 0) {
+        c = &D_80193BC0[i].c;
+    } else {
+        c = &D_80195560[i];
+    }
+    v = 0;
+    switch (stat) {
+        case 0:
+            v = c->str;
+            break;
+        case 1:
+            v = c->vit;
+            break;
+        case 2:
+            v = c->intl;
+            break;
+        case 3:
+            v = c->men;
+            break;
+        case 4:
+            v = c->agi;
+            break;
+        case 5:
+            v = c->dex;
+            break;
+    }
+    return v;
+}
 
 void func_802027DC_ovl_14EBE0(void) {
     Gfx *g = D_800E9BA0++;
