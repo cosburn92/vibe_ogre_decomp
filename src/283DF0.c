@@ -10,6 +10,12 @@ extern u16 D_800C4B28;
 
 void *HFree(void *p);
 void func_80227FD8_ovl_281860(s32 a, s32 b);
+extern u8 *D_8023DE34;
+extern u8 D_80197778[];
+extern s32 D_8018F1A4;
+void func_80080998(u8 *dst, u8 *src, u32 n);
+void func_8023BD88(s32 a, s32 b);
+void func_8023BC1C(s32 a);
 extern s8 *D_800C47F0;
 /* --- end decls --- */
 
@@ -119,4 +125,16 @@ void func_8022A554_ovl_281860(void) {
 
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A574_ovl_281860);
 
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A650_ovl_281860);
+void func_8022A650_ovl_281860(void) {
+    D_8022A950_ovl_281860 = *(s32 *)D_80197778;
+    func_80080998(D_8023DE34 + 0x18, D_80197778 + 0x44, 6);
+    func_80080998(D_8023DE34 + 0x1E, D_80197778 + 0x4A, 6);
+    func_80080998(D_8023DE34 + 0x24, D_80197778 + 4, 0x40);
+    func_8023BD88(10, 0x11);
+    func_8023BC1C(10);
+    func_8023BD88(11, 0x12);
+    func_8023BC1C(11);
+    D_8018F1A4 = 0;
+    D_8023DE34[0x64] = 1;
+    func_80227FD8_ovl_281860(4, 1);
+}
