@@ -4,19 +4,19 @@
 
 typedef struct {
     /* 0x00 */ s32 id;
-    /* 0x04 */ u8 unk04[4];
-    /* 0x08 */ void *p08;
+    /* 0x04 */ s32 chunk;
+    /* 0x08 */ s32 *p08;
     /* 0x0C */ s32 kind;
     /* 0x10 */ u32 n;
     /* 0x14 */ void *p14;
     /* 0x18 */ u8 unk18[4];
     /* 0x1C */ void **list;
     /* 0x20 */ u32 *age;
-    /* 0x24 */ u8 unk24[4];
+    /* 0x24 */ u8 *p24;
     /* 0x28 */ s32 w28;
     /* 0x2C */ s32 w2C;
     /* 0x30 */ u8 *w30;
-    /* 0x34 */ u8 unk34[4];
+    /* 0x34 */ u8 *p34;
     /* 0x38 */ void *p38;
 } Rec2A; /* size 0x3C */
 
@@ -28,8 +28,12 @@ void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void HFree(void *p);
 void nuGfxTaskAllEndWait(void);
-Rec2A *func_80232C28_ovl_29A4C0(void);
+Rec2A *func_80232C28_ovl_29A4C0(s32 id, s32 kind);
 void func_801BFBA0(void *p);
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void *LoadChunk(s32 id);
+void _bcopy(void *src, void *dst, s32 n);
 /* --- end decls --- */
 
 void func_802329B0_ovl_29A4C0(void) {
@@ -100,7 +104,55 @@ void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
     Rec2AFree(id, kind);
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232C28_ovl_29A4C0);
+/* Takes a free record for id: loads its chunk list from 0x109F95E and the four chunks it names */
+Rec2A *func_80232C28_ovl_29A4C0(s32 id, s32 kind) {
+    Rec2A *r = D_802395B0_ovl_29A4C0;
+    s32 i = 39;
+    s32 *tbl;
+    u32 *hdr;
+    u32 a;
+    u32 b;
+    u8 *m;
+
+    while (1) {
+        if (r->id == 0) {
+            break;
+        }
+        r++;
+        if (i-- == 0) {
+            break;
+        }
+    }
+    r->id = id;
+    tbl = HMalloc(ChunkSize(0x109F95E));
+    LoadChunkRaw(tbl, 0x109F95E);
+    r->chunk = tbl[r->id - 1];
+    r->p08 = HMalloc(ChunkSize(r->chunk));
+    LoadChunkRaw(r->p08, r->chunk);
+    HFree(tbl);
+    r->w2C = (s32)LoadChunk(r->p08[0]);
+    r->w28 = (s32)LoadChunk(r->p08[1]);
+    hdr = LoadChunk(r->p08[2]);
+    r->p38 = LoadChunk(r->p08[3]);
+    r->kind = kind;
+    r->n = hdr[0];
+    b = (r->n + 7) & ~7;
+    a = (r->n * 4 + 7) & ~7;
+    m = HMalloc(b * 3 + a);
+    r->p14 = m;
+    r->list = (void **)m;
+    r->w30 = m + a;
+    r->p24 = m + a + b;
+    r->p34 = m + a + b + b;
+    r->age = HMalloc(a);
+    bzero(r->age, a);
+    bzero(r->list, a);
+    bzero(r->p24, b);
+    _bcopy(hdr + 8, r->w30, r->n);
+    _bcopy((u8 *)hdr + hdr[7], r->p34, r->n);
+    HFree(hdr);
+    return r;
+}
 
 #ifdef NON_MATCHING
 /* The record pointer and derived field pointer use swapped registers. */
@@ -113,7 +165,7 @@ s32 func_80232DE0_ovl_29A4C0(s32 id, s32 kind) {
             return r->w2C;
         }
     }
-    return func_80232C28_ovl_29A4C0()->w2C;
+    return func_80232C28_ovl_29A4C0(id, kind)->w2C;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232DE0_ovl_29A4C0);
@@ -130,7 +182,7 @@ s32 func_80232E44_ovl_29A4C0(s32 id, s32 kind) {
             return r->w28;
         }
     }
-    return func_80232C28_ovl_29A4C0()->w28;
+    return func_80232C28_ovl_29A4C0(id, kind)->w28;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232E44_ovl_29A4C0);
