@@ -880,7 +880,25 @@ inline void func_80229604_ovl_1BA050(s16 *list) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802296B0_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80229828_ovl_1BA050);
+/* Second fade: mode 1 raises the level to D_8022A71E, mode 2 lowers it to 0 and stops, over
+ * D_8022A824 frames */
+void func_80229828_ovl_1BA050(void) {
+    if (D_8022A821_ovl_1BA050 == 0) {
+        return;
+    }
+    if (D_8022A821_ovl_1BA050 == 1) {
+        D_8022A826_ovl_1BA050 += D_8022A71E_ovl_1BA050 / D_8022A824_ovl_1BA050;
+        if (D_8022A826_ovl_1BA050 >= D_8022A71E_ovl_1BA050) {
+            D_8022A826_ovl_1BA050 = D_8022A71E_ovl_1BA050;
+        }
+    } else if (D_8022A821_ovl_1BA050 == 2) {
+        D_8022A826_ovl_1BA050 -= D_8022A71E_ovl_1BA050 / D_8022A824_ovl_1BA050;
+        if (D_8022A826_ovl_1BA050 < 0) {
+            D_8022A826_ovl_1BA050 = 0;
+            D_8022A821_ovl_1BA050 = 0;
+        }
+    }
+}
 
 void func_80229930_ovl_1BA050(void) {
     void *o = func_8017F334(0x5500);
