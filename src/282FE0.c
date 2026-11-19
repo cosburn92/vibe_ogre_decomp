@@ -48,6 +48,7 @@ typedef struct Node282 {
 } Node282;
 extern EChar282 D_80195560[];
 extern PChar282 D_80193BC0[];
+extern PChar282 D_80193BD1[]; /* D_80193BC0 + 0x11: class byte reached through its own symbol */
 extern void *D_8018EA00[];
 extern Node282 *D_8018FDC0;
 extern s32 D_8022A720_ovl_281860;
@@ -380,24 +381,34 @@ u8 *func_80227B9C_ovl_281860(s32 i) {
 }
 
 /* Name of the current squad's leader plus the title for its class (NULL when it has none) */
-#ifdef NON_MATCHING
 /* Only the class-title table walk differs: the original tests D_8022A921[0] with a direct lbu and then materialises the pointer separately; GCC here shares the address register. */
+/* Name of the current squad leader plus the title for its class (NULL when it has none) */
+#ifdef NON_MATCHING
+/* only the cls copy (move a1,s2) is scheduled one slot later */
 u8 *func_80227CBC_ovl_281860(void) {
     u8 leader = D_801971F2[D_801976DC * 25];
-    u8 cls = D_80193BC0[leader].b[0x11];
-    u8 *p;
+    u8 cls = D_80193BD1[leader].b[0];
     s32 k;
+    u8 *p;
+    s32 end;
 
     if (cls == 0) {
         return NULL;
     }
     bzero(D_8022AC40_ovl_281860, 0x40);
     func_8009C550(D_8022AC40_ovl_281860, D_80193BC0[leader].b);
-    for (k = 0; D_8022A921_ovl_281860[k * 2] != 0xFF; k++) {
-        if (D_8022A921_ovl_281860[k * 2] == cls) {
-            func_8009C620(D_8022AC40_ovl_281860, D_8022A8C8_ovl_281860[k]);
-            break;
-        }
+    k = 0;
+    if (D_8022A921_head_ovl_281860 != 0xFF) {
+        end = 0xFF;
+        p = D_8022A921_ovl_281860;
+        do {
+            if (*p == cls) {
+                func_8009C620(D_8022AC40_ovl_281860, D_8022A8C8_ovl_281860[k]);
+                break;
+            }
+            p += 2;
+            k++;
+        } while (*p != end);
     }
     return D_8022AC40_ovl_281860;
 }
