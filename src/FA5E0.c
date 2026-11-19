@@ -93,6 +93,9 @@ void func_801AD748_ovl_0FA5E0(void);
 void func_801ADF6C_ovl_0FA5E0(void);
 void func_801AE090_ovl_0FA5E0(void);
 void func_801AEC40_ovl_0FA5E0(Widget3390 *p);
+extern s32 D_801B4894_ovl_0FA5E0[]; /* bits per pixel by format */
+void _bcopy(const void *src, void *dst, s32 n);
+void *HMalloc(s32 size);
 /* --- end decls --- */
 
 /* Scene init: full-screen (320x240) window scene with a 0x28-line child scene, loads asset 0x209A7B4 */
@@ -301,7 +304,25 @@ void func_801B04B8_ovl_0FA5E0(u16 *p) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B04E4_ovl_0FA5E0);
+/* Two image buffers sized for the image at 0x4 (header copied into each), plus three parameters */
+void func_801B04E4_ovl_0FA5E0(u8 *o, s32 a, s32 b, s32 c) {
+    u8 *img = FIELD(o, u8 *, 4);
+    s32 size;
+    u32 i;
+
+    size = FIELD(img, u16, 4) * FIELD(img, u16, 6) * D_801B4894_ovl_0FA5E0[img[3]];
+    size /= 8;
+    size += 8;
+    for (i = 0; i < 2; i++) {
+        ((u8 **)(o + 0x38))[i] = HMalloc(size);
+        _bcopy(FIELD(o, u8 *, 4), ((u8 **)(o + 0x38))[i], 8);
+    }
+    FIELD(o, s32, 0x34) = 0;
+    FIELD(o, s32, 0x40) = a;
+    FIELD(o, s32, 0x44) = b;
+    FIELD(o, s32, 0x48) = c;
+    FIELD(o, u16, 0) = 2;
+}
 
 void func_801B05D0_ovl_0FA5E0(u8 *p, s16 a, u16 *x, u16 *y) {
     s32 i;
