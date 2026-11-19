@@ -578,10 +578,10 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x6E660, asm]
+      - [0x6E660, c]
       - [0x70E70, data]
       - [0x71060, data, 6E660]
-      - [0x71258, rodata, 6E660]
+      - [0x71258, .rodata, 6E660]
       - { type: bss, vram: 0x8019A790, name: 6E660 }
 
   - name: ovl_071280
