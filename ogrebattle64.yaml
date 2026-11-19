@@ -698,13 +698,13 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0xEBBB0, asm]
-      - [0xED530, asm]
+      - [0xED530, c]
       - [0xF6340, asm]
       - [0xF8550, data, EBBB0]
       - [0xF86C0, data, ED530]
       - [0xF96A0, data, F6340]
       - [0xF9E70, rodata, EBBB0]
-      - [0xF9EA0, rodata, ED530]
+      - [0xF9EA0, .rodata, ED530]
       - { type: bss, vram: 0x801AD290, name: EBBB0 }
       - { type: bss, vram: 0x801AD550, name: ED530 }
 
