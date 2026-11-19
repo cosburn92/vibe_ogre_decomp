@@ -196,12 +196,44 @@ void func_801CC7D4_ovl_087200(u16 id) {
     }
 }
 
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    u16 flag;
+    s16 s;
+    s16 t;
+    u8 rgba[4];
+} VtxB8; /* 0x10 */
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC84C_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC974_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCA50_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCD08_ovl_087200);
+/* Fills the 4 vertices at w+0x60 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
+void func_801CCD08_ovl_087200(VtxB8 *v, s16 x0, s16 y0, s16 x1, s16 y1) {
+    s16 sw = ((s16)x1 - (s16)x0 > 0 ? x1 - x0 : x0 - x1) - 1;
+    s16 sh = ((s16)y1 - (s16)y0 > 0 ? y1 - y0 : y0 - y1) - 1;
+
+    v[6].x = 160 - x1;
+    v[6].y = 120 - y1;
+    v[6].s = 0;
+    v[6].t = sh << 6;
+    v[7].x = 160 - x1;
+    v[7].y = 120 - y0;
+    v[7].s = 0;
+    v[7].t = 0;
+    v[8].x = 160 - x0;
+    v[8].y = 120 - y0;
+    v[8].s = sw << 6;
+    v[8].t = 0;
+    v[9].x = 160 - x0;
+    v[9].y = 120 - y1;
+    v[9].s = sw << 6;
+    v[9].t = sh << 6;
+}
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCDCC_ovl_087200);
