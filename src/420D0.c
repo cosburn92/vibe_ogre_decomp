@@ -90,7 +90,7 @@ void func_8016C81C_ovl_040E80(void) {
     }
 }
 
-/* New game: day 251 of year 4 (era 1), 06:00, default party settings, clears the event flags */
+/* New game: date {251, 4, 1}, clock 06:00:00, default settings, event flags cleared to 0xFF */
 void NewGameInit(void) {
     u16 *p;
 
