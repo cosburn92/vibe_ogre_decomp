@@ -60,6 +60,9 @@ extern u8 *D_80190F50_ovl_040E80;
 u8 *func_8017AD3C_ovl_040E80(s32 id);
 s32 func_8017AE20_ovl_040E80(s32 id);
 extern u8 D_8018FC6C_ovl_040E80;
+extern u8 *D_8018FC70_ovl_040E80;
+extern u8 *D_8018FC74_ovl_040E80;
+s32 func_8017B550_ovl_040E80(u8 c);
 s32 func_8017B500_ovl_040E80(u8 **pp);
 s16 func_8017A720_ovl_040E80(u8 **pp);
 /* --- end decls --- */
@@ -108,7 +111,39 @@ void func_801793AC_ovl_040E80(s32 unused, s32 x, s32 y) {
     func_80179F04_ovl_040E80();
 }
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_801793E4_ovl_040E80);
+/* Width of character c in the normal or alternate font (control codes 0, kanji 11; a forced glyph
+ * D_80190F74 overrides); characters below 0x80 are offset by 0x10 in the width table */
+u8 func_801793E4_ovl_040E80(u8 c, s32 alt) {
+    u8 *p;
+
+    if (c < 0x11) {
+        return 0;
+    }
+    if (func_8017B550_ovl_040E80(c)) {
+        return 0xB;
+    }
+    if (D_80190F74_ovl_040E80 != -1) {
+        if (!alt) {
+            p = D_8018FC70_ovl_040E80 + D_80190F74_ovl_040E80;
+        } else {
+            p = D_8018FC74_ovl_040E80 + D_80190F74_ovl_040E80;
+        }
+    } else if (!alt) {
+        if (c >= 0x80) {
+            p = D_8018FC70_ovl_040E80 + c;
+        } else {
+            p = (u8 *)((u32)c + (u32)D_8018FC70_ovl_040E80);
+            return p[0x10];
+        }
+    } else {
+        if (c < 0x80) {
+            p = (u8 *)((u32)c + (u32)D_8018FC74_ovl_040E80);
+            return p[0x10];
+        }
+        p = D_8018FC74_ovl_040E80 + c;
+    }
+    return *p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_801794C8_ovl_040E80);
 
