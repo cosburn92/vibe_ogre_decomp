@@ -276,7 +276,7 @@ segments:
       - [0x29020, asm]
       - [0x29100, asm]
       - [0x29160, asm]
-      - [0x29AD0, asm]
+      - [0x29AD0, c]
       - [0x29B60, asm]
       - [0x29BA0, asm]
       - [0x29BF0, c]
@@ -316,8 +316,8 @@ segments:
       - [0x2C990, asm]
       - [0x2C9E0, asm]
       - [0x2CA20, asm]
-      - [0x2CB50, asm]
-      - [0x2CBC0, asm]
+      - [0x2CB50, c]
+      - [0x2CBC0, c]
       - [0x2CC00, asm]
       - [0x2CD70, asm]
       - [0x2CDA0, asm]
@@ -679,7 +679,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0xE48F0, asm]
+      - [0xE48F0, c]
       - [0xE4BE0, asm]
       - [0xE5960, asm]
       - [0xEAF00, data, E48F0]
@@ -699,7 +699,7 @@ segments:
     subsegments:
       - [0xEBBB0, asm]
       - [0xED530, c]
-      - [0xF6340, asm]
+      - [0xF6340, c]
       - [0xF8550, data, EBBB0]
       - [0xF86C0, data, ED530]
       - [0xF96A0, data, F6340]
@@ -752,7 +752,7 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x101CE0, asm]
-      - [0x105C20, asm]
+      - [0x105C20, c]
       - [0x105CC0, asm]
       - [0x107850, asm]
       - [0x108500, asm]
@@ -768,7 +768,7 @@ segments:
       - [0x126770, asm]
       - [0x127830, asm]
       - [0x127F60, asm]
-      - [0x128D50, asm]
+      - [0x128D50, c]
       - [0x12AE10, c]
       - [0x132D30, asm]
       - [0x133EA0, asm]
@@ -824,7 +824,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x145210, asm]
+      - [0x145210, c]
       - [0x145290, c]
       - [0x149A80, asm]
       - [0x14AB50, asm]
@@ -852,7 +852,7 @@ segments:
       - [0x14EBE0, asm]
       - [0x151F40, asm]
       - [0x15DF10, asm]
-      - [0x15DF70, asm]
+      - [0x15DF70, c]
       - [0x15E670, asm]
       - [0x15FBF0, data, 14EBE0]
       - [0x1638D8, data, 151F40]
@@ -969,7 +969,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x18F100, asm]
+      - [0x18F100, c]
       - [0x1914D0, asm]
       - [0x191E50, asm]
       - [0x1952F0, data, 18F100]
@@ -1128,7 +1128,7 @@ segments:
       - [0x1CE070, c]
       - [0x1D4700, asm]
       - [0x1D8850, asm]
-      - [0x1DAAB0, asm]
+      - [0x1DAAB0, c]
       - [0x1DBF70, asm]
       - [0x1E3440, asm]
       - [0x1E9E00, asm]
@@ -1200,7 +1200,7 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x213B10, asm]
+      - [0x213B10, c]
       - [0x213B50, asm]
       - [0x21C970, c]
       - [0x21D7F0, asm]
@@ -1328,20 +1328,20 @@ segments:
       - [0x25F6C0, c]
       - [0x25F7F0, c]
       - [0x260420, asm]
-      - [0x260DA0, asm]
+      - [0x260DA0, c]
       - [0x261C90, c]
       - [0x261E90, c]
       - [0x262450, c]
       - [0x262CC0, c]
       - [0x263190, asm]
-      - [0x263690, asm]
+      - [0x263690, c]
       - [0x2638D0, asm]
       - [0x2639E0, asm]
       - [0x263F40, asm]
       - [0x2641B0, asm]
       - [0x264490, asm]
-      - [0x264770, asm]
-      - [0x264BB0, asm]
+      - [0x264770, c]
+      - [0x264BB0, c]
       - [0x264FC0, asm]
       - [0x2664B0, c]
       - [0x2673F0, asm]
@@ -1354,10 +1354,10 @@ segments:
       - [0x26BE30, c]
       - [0x26C070, asm]
       - [0x26C1F0, c]
-      - [0x26CCF0, asm]
-      - [0x26D770, asm]
+      - [0x26CCF0, c]
+      - [0x26D770, c]
       - [0x26F1E0, c]
-      - [0x271E30, asm]
+      - [0x271E30, c]
       - [0x272790, asm]
       - [0x274000, data, 25F6C0]
       - [0x274870, data, 263190]
@@ -1493,7 +1493,7 @@ segments:
       - [0x2A3030, asm]
       - [0x2A3150, asm]
       - [0x2A3310, asm]
-      - [0x2A3F20, asm]
+      - [0x2A3F20, c]
       - [0x2A46D0, asm]
       - [0x2A7010, asm]
       - [0x2A7060, asm]
