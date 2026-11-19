@@ -51,6 +51,12 @@ typedef struct {
 } Opt1F; /* size 6 */
 
 typedef struct {
+    /* 0x0 */ void *data;
+    /* 0x4 */ s32 ttl;
+    /* 0x8 */ s32 id;
+} Slot1F; /* chunk cache slot */
+
+typedef struct {
     u8 unk00[0x17];
     u8 strategy;
     u8 unk18;
@@ -77,8 +83,25 @@ void HFree(void *p);
 u16 func_801794C8(s32 a);
 void func_8017C4B4(s16 a);
 void func_80179034(s32 a, s32 x, s32 y);
-s32 func_801AD60C_ovl_1F0A30(s32 id);
+void *func_801AD60C_ovl_1F0A30(s32 id);
 void func_801B0770_ovl_1F0A30(u8 *o, s32 a, s32 b, s32 c, s32 d, s32 e);
+extern s16 D_801D071C_ovl_1F0A30;
+extern s16 D_801D0820_ovl_1F0A30;
+extern f32 D_801D06F0_ovl_1F0A30;
+extern f32 D_801D0718_ovl_1F0A30;
+extern f32 D_801D0740_ovl_1F0A30;
+extern f32 D_801D0764_ovl_1F0A30;
+extern f32 D_801D0768_ovl_1F0A30;
+extern f32 D_801D0814_ovl_1F0A30;
+extern s32 D_801D0838_ovl_1F0A30;
+extern s32 D_801D0734_ovl_1F0A30;
+extern s32 D_801D070C_ovl_1F0A30;
+extern void *D_801CEAB0_ovl_1F0A30;
+s32 func_801BE6BC_ovl_1F0A30(void *p);
+s32 func_801BE6DC_ovl_1F0A30(void *p);
+s32 func_801BE6FC_ovl_1F0A30(void *p);
+void func_801B464C_ovl_1F0A30(s32 a, f32 x, f32 y, f32 z, s32 b);
+void *LoadChunk(s32 id);
 /* --- end decls --- */
 
 void func_801AD5A0_ovl_1F0A30(void) {
@@ -93,7 +116,26 @@ void func_801AD5E8_ovl_1F0A30(void) {
     SoundRequest(D_800EB1F0, 2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD60C_ovl_1F0A30);
+/* Returns the cached chunk id (16 slots of {data, ttl, id}), loading it into a free slot */
+void *func_801AD60C_ovl_1F0A30(s32 id) {
+    Slot1F *s = (Slot1F *)D_801CE8BC_ovl_1F0A30;
+    u32 i;
+
+    for (i = 0; i < 16; i++) {
+        if (s[i].id == id) {
+            s[i].ttl = 15;
+            return s[i].data;
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        if ((s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->id == 0) {
+            s->id = id;
+            s->ttl = 15;
+            return (s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->data = LoadChunk(id);
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD6B0_ovl_1F0A30);
 
@@ -183,7 +225,19 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", BattleAnimStep);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", BattleAnimEventTimes);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AE8CC_ovl_1F0A30);
+void func_801AE8CC_ovl_1F0A30(void) {
+    s32 v;
+
+    D_801D0838_ovl_1F0A30 = func_801BE6BC_ovl_1F0A30(D_801CEAB0_ovl_1F0A30);
+    D_801D0734_ovl_1F0A30 = func_801BE6DC_ovl_1F0A30(D_801CEAB0_ovl_1F0A30);
+    v = func_801BE6FC_ovl_1F0A30(D_801CEAB0_ovl_1F0A30);
+    D_801D0768_ovl_1F0A30 = D_801D06F0_ovl_1F0A30 = D_801D0838_ovl_1F0A30;
+    D_801D0718_ovl_1F0A30 = D_801D0740_ovl_1F0A30 = D_801D0734_ovl_1F0A30;
+    D_801D070C_ovl_1F0A30 = v;
+    D_801D0814_ovl_1F0A30 = D_801D0764_ovl_1F0A30 = v;
+    D_801D071C_ovl_1F0A30 = 0xFF;
+    D_801D0820_ovl_1F0A30 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AE988_ovl_1F0A30);
 
@@ -285,7 +339,7 @@ s32 func_801B3C3C_ovl_1F0A30(u8 *o) {
     s32 v;
 
     if (FIELD(o, u32, 0x94) & 4) {
-        v = func_801AD60C_ovl_1F0A30(0x3224BA);
+        v = (s32)func_801AD60C_ovl_1F0A30(0x3224BA);
     } else {
         v = 0;
     }
@@ -303,7 +357,15 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B4398_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B464C_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B5524_ovl_1F0A30);
+s32 func_801B5524_ovl_1F0A30(s32 a) {
+    if (D_801D071C_ovl_1F0A30 != 0) {
+        func_801B464C_ovl_1F0A30(a, D_801D0768_ovl_1F0A30, D_801D0718_ovl_1F0A30, D_801D0814_ovl_1F0A30, D_801D071C_ovl_1F0A30);
+    }
+    if (D_801D0820_ovl_1F0A30 != 0) {
+        func_801B464C_ovl_1F0A30(a, D_801D06F0_ovl_1F0A30, D_801D0740_ovl_1F0A30, D_801D0764_ovl_1F0A30, D_801D0820_ovl_1F0A30);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B55C4_ovl_1F0A30);
 
