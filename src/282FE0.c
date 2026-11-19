@@ -166,7 +166,27 @@ s16 func_802276F8_ovl_281860(s32 i) {
 void func_80227770_ovl_281860(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227778_ovl_281860);
+/* Frees record slot i at 0x19B8 (all 14 when i is -1) */
+void func_80227778_ovl_281860(s32 i) {
+    u8 k = 0;
+    u8 end = 14;
+    u8 *r;
+
+    if (i != -1) {
+        k = i;
+        end = i + 1;
+    }
+    for (; k < end; k++) {
+        r = FIELD(D_8022A974_ovl_281860 + k * 4, u8 *, 0x19B8);
+        if (r != NULL) {
+            HFree(FIELD(r, void *, 0x10));
+            HFree(FIELD(r, void *, 8));
+            HFree(FIELD(r, void *, 4));
+            HFree(r);
+            FIELD(D_8022A974_ovl_281860 + k * 4, u8 *, 0x19B8) = NULL;
+        }
+    }
+}
 
 /* Character record for id: enemy table, then player table, then the extras table (ids 0x54+) */
 void *func_80227838_ovl_281860(s32 id) {
