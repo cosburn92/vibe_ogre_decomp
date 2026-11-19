@@ -77,6 +77,18 @@ extern u8 *D_800A8204[];
 extern u8 *D_800C4BB8;
 void HFree(void *p);
 u8 *func_80199ECC_ovl_1CE070(u8 *t, u32 page);
+typedef struct {
+    void *name;
+    s32 index;
+    u8 *buf;
+    s32 size;
+} Arc16_1CE070;
+extern Arc16_1CE070 D_801B99A0_ovl_1CE070;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -125,7 +137,28 @@ u32 func_80197C14_ovl_1CE070(s32 siz, u32 w, s32 h) {
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80197C74_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_801985D0_ovl_1CE070);
+/* Loads chunk id and unpacks it: LHa archives ("-lh") through func_8007ACB0, otherwise LZ */
+void *func_801985D0_ovl_1CE070(s32 id) {
+    s32 size = ChunkSize(id);
+    u8 *raw = HMalloc(size);
+    void *out;
+
+    LoadChunkRaw(raw, id);
+    if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
+        Arc16_1CE070 arc = D_801B99A0_ovl_1CE070;
+        Arc16_1CE070 req = D_801B99A0_ovl_1CE070;
+
+        arc.buf = raw;
+        arc.size = size;
+        func_8007ACB0(&arc, &req, 1);
+        out = req.buf;
+    } else {
+        out = HMalloc(ReadU32BE(raw));
+        DecodeLZ(out, raw);
+    }
+    HFree(raw);
+    return out;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_801986E0_ovl_1CE070);
 

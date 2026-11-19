@@ -101,6 +101,19 @@ u8 func_801BC838_ovl_1F0A30(void);
 u8 func_801BC914_ovl_1F0A30(void);
 u8 func_801C1C1C_ovl_1F0A30(u32 a, s32 w, s32 i, u8 *c, u8 *d1, u8 *d2);
 void func_801ADCBC_ovl_1F0A30(void *u);
+typedef struct {
+    void *name;
+    s32 index;
+    u8 *buf;
+    s32 size;
+} Arc16_20BCE0;
+extern Arc16_20BCE0 D_801D0640_ovl_1F0A30;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
+void *func_80071C04(s32 size);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
@@ -759,7 +772,28 @@ void func_801CBF44_ovl_1F0A30(void) {
     FIELD(D_801CE8BC_ovl_1F0A30, s32, 0x6080)++;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC124_ovl_1F0A30);
+/* Loads chunk id and unpacks it: LHa archives ("-lh") through func_8007ACB0, otherwise LZ */
+void *func_801CC124_ovl_1F0A30(s32 id) {
+    s32 size = ChunkSize(id);
+    u8 *raw = func_80071C04(size);
+    void *out;
+
+    LoadChunkRaw(raw, id);
+    if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
+        Arc16_20BCE0 arc = D_801D0640_ovl_1F0A30;
+        Arc16_20BCE0 req = D_801D0640_ovl_1F0A30;
+
+        arc.buf = raw;
+        arc.size = size;
+        func_8007ACB0(&arc, &req, 1);
+        out = req.buf;
+    } else {
+        out = HMalloc(ReadU32BE(raw));
+        DecodeLZ(out, raw);
+    }
+    HFree(raw);
+    return out;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC234_ovl_1F0A30);
 
