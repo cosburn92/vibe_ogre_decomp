@@ -1173,7 +1173,7 @@ segments:
       - [0x205220, c]
       - [0x208F90, asm]
       - [0x20BCE0, c]
-      - [0x20FDC0, asm]
+      - [0x20FDC0, c]
       - [0x211D20, data, 1F0A30]
       - [0x211F44, data, 1F8D70]
       - [0x212180, data, 201430]
@@ -1188,7 +1188,7 @@ segments:
       - [0x213830, .rodata, 205220]
       - [0x213A00, rodata, 208F90]
       - [0x213A40, .rodata, 20BCE0]
-      - [0x213AE0, rodata, 20FDC0]
+      - [0x213AE0, .rodata, 20FDC0]
       - { type: bss, vram: 0x801D0680, name: 201430 }
       - { type: bss, vram: 0x801D06B0, name: 205220 }
       - { type: bss, vram: 0x801D06D0, name: 20FDC0 }
