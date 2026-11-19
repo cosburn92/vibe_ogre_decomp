@@ -33,6 +33,9 @@ ScriptObj *func_80222EEC_ovl_1BA050(s32 i) {
 }
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+s32 func_801794C8(void *text);
+void func_802284B4_ovl_1BA050();
+void func_80228BF0_ovl_1BA050(s32 id);
 void func_8017C4B4(s16 id);
 void func_80224E74_ovl_1BA050(s16 x0, s16 y0, s16 x1, s16 y1);
 void func_80179034(void *s, s32 x, s32 y);
@@ -46,9 +49,12 @@ extern u8 D_8022A099_ovl_1BA050;
 extern u8 D_8022A098_ovl_1BA050;
 typedef struct {
     /* 0x00 */ s32 used;
-    /* 0x04 */ u8 unk04[5];
+    /* 0x04 */ void *text;
+    /* 0x08 */ u8 flags;
     /* 0x09 */ u8 state;
-    /* 0x0A */ u8 unk0A[6];
+    /* 0x0A */ s16 hA;
+    /* 0x0C */ s16 hC;
+    /* 0x0E */ u16 hE;
     /* 0x10 */ u16 h10;
     /* 0x12 */ u16 h12;
     /* 0x14 */ u16 h14;
@@ -74,7 +80,7 @@ extern u8 D_8022A834_ovl_1BA050;
 extern s16 D_8022A832_ovl_1BA050;
 void HFree(void *p);
 void func_80220F64_ovl_1BA050(u16 a, u8 b);
-void func_8017C074(s32 a, s32 b, void *fn, s32 c, s32 d, s32 e, s32 f);
+u8 *func_8017C074(u16 a, u8 b, void *fn, s16 c, s16 d, s16 e, s16 f);
 void func_80229BD4_ovl_1BA050(void);
 s32 func_8016FBE0(u8 a, u8 b, void *out);
 typedef void (*ScriptObjFn)(ScriptObj *o);
@@ -682,7 +688,62 @@ s32 func_80229040_ovl_1BA050(s32 i) {
     return D_8022A6A1_ovl_1BA050[i].b == 3;
 }
 
+/* Opens window record i for text at (x, y); flag 1 = vertical layout, 2 = framed (redraws via
+ * func_80228BF0) instead of animated (func_802284B4) */
+#ifdef NON_MATCHING
+/* Only the registers for i and text are swapped (the original has i in s2 and text in s3). */
+Rec698 *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags) {
+    Rec698 *r;
+    u8 *n;
+    u16 w;
+    u8 prio;
+    void (*fn)();
+
+    if (i >= 4) {
+        for (;;);
+    }
+    r = &D_8022A698_ovl_1BA050[i];
+    if (r->used != 0) {
+        for (;;);
+    }
+    bzero(r, 0x20);
+    r->text = text;
+    r->hA = x;
+    r->hC = y;
+    r->hE = func_801794C8(r->text) + 0x10;
+    r->flags = flags;
+    if (flags & 1) {
+        w = r->hE;
+        r->h14 = w;
+        if (!(flags & 2)) {
+            r->h14 = w - 0x10;
+        }
+        r->h1A = 0xFF;
+        r->state = 1;
+    } else {
+        w = r->hE;
+        r->h10 = w;
+        if (!(flags & 2)) {
+            r->h10 = w - 0x10;
+        }
+        r->h16 = 0xFF;
+        r->state = 0;
+    }
+    if (flags & 2) {
+        prio = 0;
+        fn = func_80228BF0_ovl_1BA050;
+    } else {
+        fn = func_802284B4_ovl_1BA050;
+        prio = 3;
+    }
+    n = func_8017C074(i | 0x5400, prio, fn, 0, 0, 0, 0);
+    r->used = (s32)n;
+    FIELD(n, s16, 0x26) = 0;
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022905C_ovl_1BA050);
+#endif
 
 inline void func_802291BC_ovl_1BA050(s16 a, s16 b, s16 c, s16 d) {
     D_8022A718_ovl_1BA050 = a;
