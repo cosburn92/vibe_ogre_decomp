@@ -60,6 +60,9 @@ extern u16 D_800E7A0E;
 extern u8 D_80216F18_ovl_1A2C20[];
 extern u8 D_80216BF0_ovl_1A2C20[];
 extern void *D_80216EE8_ovl_1A2C20[];
+extern u8 D_80216C70_ovl_1A2C20[];
+extern u8 D_80216CF0_ovl_1A2C20[];
+extern u8 D_80216D70_ovl_1A2C20[];
 extern u8 D_800EB0B0[];
 extern Camera *D_8018F58C;
 extern u8 D_8018F53C;
@@ -95,6 +98,7 @@ void *LoadAsset(u32 handle, ...);
 void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
 void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
 void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
+void func_800987E0(void *m); /* guMtxIdent */
 void guMtxCatF(f32 a[4][4], f32 b[4][4], f32 out[4][4]);
 void guMtxF2L(f32 mf[4][4], void *m);
 void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
@@ -435,7 +439,35 @@ void func_80215D30_ovl_1A2C20(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_8021608C_ovl_1A2C20);
+/* Draws the overlay quad (64x64 IA texture) scaled around (159, 119) */
+void func_8021608C_ovl_1A2C20(void) {
+    FadeCtx *ctx = D_80216BE0_ovl_1A2C20;
+    f32 mf[4][4];
+    f32 scale[4][4];
+
+    if (!(D_80216F70_ovl_1A2C20 & 2)) {
+        return;
+    }
+    GFX(0xDE000000, (u32)D_80216C70_ovl_1A2C20);
+    GFX(0xFB000000, 0xFF);
+    GFX(0xFD700000, (u32)ctx->unk30);
+    GFX(0xF5700000, 0x07014050);
+    GFX(0xE6000000, 0);
+    GFX(0xF3000000, 0x071FF200);
+    GFX(0xE7000000, 0);
+    GFX(0xF5680800, 0x00014050);
+    GFX(0xF2000000, 0x0007C07C);
+    func_800987E0(D_800E9BE0->mtx[D_800C4BE4]);
+    GFX(0xDA380003, (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000);
+    GFX(0x01004008, (u32)D_80216CF0_ovl_1A2C20);
+    func_80098B60(scale, ctx->unk3C, ctx->unk40, 0.0f);
+    func_80098D00(mf, 159.0f, 119.0f, 0.0f);
+    guMtxCatF(scale, mf, mf);
+    guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
+    GFX(0xDA380003, (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000);
+    GFX(0x01004010, (u32)(D_80216CF0_ovl_1A2C20 + 0x40));
+    GFX(0xDE000000, (u32)D_80216D70_ovl_1A2C20);
+}
 
 void func_80216380_ovl_1A2C20(void) {
     func_80215B1C_ovl_1A2C20();
