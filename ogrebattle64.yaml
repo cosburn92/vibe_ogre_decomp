@@ -1421,11 +1421,11 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x27A020, asm]
+      - [0x27A020, c]
       - [0x2804E0, asm]
       - [0x280D50, data, 27A020]
       - [0x281320, data, 2804E0]
-      - [0x281330, rodata, 27A020]
+      - [0x281330, .rodata, 27A020]
       - [0x281840, rodata, 2804E0]
       - { type: bss, vram: 0x8022D0D0, name: 27A020 }
 
