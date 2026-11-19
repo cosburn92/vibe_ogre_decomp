@@ -25,6 +25,8 @@ typedef struct {
 u8 func_801D06F4_ovl_087200(u16 sq);
 void func_801CC974_ovl_087200(s32 id, s32 a, void (*f)(), s32 b, s32 c, s32 d, s32 e, s32 g, s32 h, s32 i, s32 j);
 void func_801B1FE0_ovl_087200();
+extern u16 D_80190EBC[];
+extern u16 D_80190F82;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
@@ -208,7 +210,25 @@ u8 func_801CBC64_ovl_087200(void) {
     return i + 100;
 }
 
+#ifdef NON_MATCHING
+/* rank loop: frame pad and loop branch-likely shape not reproduced */
+u16 func_801CBC98_ovl_087200(u8 i) {
+    s32 pad;
+    u16 q = D_80190F82 / 3;
+    s32 v = D_80190EBC[i] - q;
+    u16 n = 0;
+
+    do {
+        n++;
+    } while ((v > 0) & (n < 3) ? (v -= q, 1) : 0);
+    if (n >= 4) {
+        n = 3;
+    }
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBC98_ovl_087200);
+#endif
 
 void func_801CBD0C_ovl_087200(s16 a, s16 b, u8 f) {
     u8 *st = D_80196AF8;
