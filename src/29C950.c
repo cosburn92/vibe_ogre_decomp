@@ -47,6 +47,15 @@ u32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_802329B0_ovl_29A4C0(void);
 void func_8019F354(u8 a);
+typedef struct {
+    s32 unk00;
+    s32 key2;
+    s32 unk08;
+    s32 key1;
+    u8 unk10[0x24];
+} Sort29C; /* size 0x34 */
+void BattleAnimStep2(void *a);
+void func_8022EFB0_ovl_29A4C0(void *a);
 /* --- end decls --- */
 
 void func_8022D120_ovl_29A4C0(void) {
@@ -211,7 +220,23 @@ void func_80230DBC_ovl_29A4C0(s32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80230E50_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230FD4_ovl_29A4C0);
+/* Steps unit animations (28) and effect objects (30) unless paused */
+void func_80230FD4_ovl_29A4C0(void) {
+    s16 i;
+
+    if (FIELD(D_8022A974, u8, 0x1CB1) == 0) {
+        for (i = 0; i < 28; i++) {
+            if (D_8022A974->units[i] != NULL) {
+                BattleAnimStep2(D_8022A974->units[i]);
+            }
+        }
+        for (i = 0; i < 30; i++) {
+            if (((void **)((u8 *)D_8022A974 + 0x1AC0))[i] != NULL) {
+                func_8022EFB0_ovl_29A4C0(((void **)((u8 *)D_8022A974 + 0x1AC0))[i]);
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231090_ovl_29A4C0);
 
@@ -295,4 +320,24 @@ void func_80231F2C_ovl_29A4C0(s32 i, u8 v) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231F2C_ovl_29A4C0);
 #endif
 
+/* qsort order: key1 ascending, then key2 descending, then original order */
+#ifdef NON_MATCHING
+/* pointer difference: original multiplies via shift-add chain then shifts; GCC uses mult */
+s32 func_80231FB0_ovl_29A4C0(Sort29C *a, Sort29C *b) {
+    if (a->key1 < b->key1) {
+        return -1;
+    }
+    if (a->key1 > b->key1) {
+        return 1;
+    }
+    if (a->key2 < b->key2) {
+        return 1;
+    }
+    if (a->key2 > b->key2) {
+        return -1;
+    }
+    return a - b;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231FB0_ovl_29A4C0);
+#endif
