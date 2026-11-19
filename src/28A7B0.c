@@ -152,6 +152,8 @@ typedef struct {
 } PtrTbl28;
 void bzero(void *p, s32 n);
 void func_80080998(void *dst, void *src, s32 n);
+void func_80080998(void *dst, void *src, s32 n);
+void bzero(void *p, s32 n);
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -577,7 +579,37 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802376B8_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80237B7C_ovl_286BD0);
 
+/* Copies paragraph n (paragraphs end with CR LF CR LF) of text chunk 0x18855FE into dst */
+#ifdef NON_MATCHING
+/* only prologue scheduling of the u8 param mask vs the chunk id load differs */
+void func_80238910_ovl_286BD0(u8 *dst, u8 n, u8 b) {
+    u16 want;
+    u8 *buf;
+    s32 count;
+    s32 start;
+    s32 i;
+    s32 len;
+
+    want = n;
+    buf = func_80227A18(0x18855FE, b);
+    count = 0;
+    start = 0;
+    for (i = 0; i < 0xFFFFFFF; i++) {
+        if (buf[i] == '\r' && buf[i + 1] == '\n' && buf[i + 2] == buf[i] && buf[i + 3] == buf[i + 1]) {
+            if (want == ++count) {
+                len = i - start;
+                bzero(dst, len + 2);
+                func_80080998(dst, buf + start, len);
+                break;
+            }
+            start = i + 4;
+        }
+    }
+    HFree(buf);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238910_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238A00_ovl_286BD0);
 
