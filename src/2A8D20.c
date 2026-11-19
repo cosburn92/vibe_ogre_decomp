@@ -234,7 +234,28 @@ u8 func_8023A0FC_ovl_2A8D20(s32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A164_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A270_ovl_2A8D20);
+f32 func_8009CFB0(f32);                             /* extern */
+
+f32 func_8023A270_ovl_2A8D20(void *arg0, f32 arg1, f32 arg2) {
+    f32 temp_fv0;
+    f32 var_fv1;
+
+    temp_fv0 = FIELD(arg0, f32, 0x124);
+    if (temp_fv0 < arg2) {
+        var_fv1 = (f32) (((f64) func_8009CFB0((FIELD(arg0, f32, 0x11C) - arg1) / (temp_fv0 - arg2)) * 180.0) / 3.141592653589793);
+    } else if (arg2 < temp_fv0) {
+        var_fv1 = (f32) ((((f64) func_8009CFB0((FIELD(arg0, f32, 0x11C) - arg1) / (temp_fv0 - arg2)) * 180.0) / 3.141592653589793) + 180.0);
+    } else {
+        var_fv1 = -90.0f;
+        if (FIELD(arg0, f32, 0x11C) < arg1) {
+            var_fv1 = 90.0f;
+        }
+    }
+    if (var_fv1 < 0.0f) {
+        var_fv1 += 360.0f;
+    }
+    return var_fv1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A370_ovl_2A8D20);
 
