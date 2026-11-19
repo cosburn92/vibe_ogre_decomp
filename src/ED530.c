@@ -198,9 +198,55 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5B0C_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5F38_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A6284_ovl_0EBBB0);
+/* RGB lerp from `from` to `to` as x goes lo..hi (clamped), written as bytes (x256, capped at 255) */
+void func_801A6284_ovl_0EBBB0(s32 lo, s32 hi, s32 x, f32 *from, f32 *to, u8 *out) {
+    s32 i;
+    s32 c;
+    f32 v;
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A633C_ovl_0EBBB0);
+    if (x < lo) {
+        x = lo;
+    }
+    if (hi < x) {
+        x = hi;
+    }
+    for (i = 0; i < 3; i++) {
+        v = to[i];
+        if (v != from[i]) {
+            v = (v - from[i]) / (hi - lo) * (x - lo) + from[i];
+        }
+        c = v * 256.0f;
+        if (c >= 256) {
+            c = 255;
+        }
+        out[i] = c;
+    }
+}
+
+/* Same as func_801A6284 with float bounds */
+void func_801A633C_ovl_0EBBB0(f32 lo, f32 hi, f32 x, f32 *from, f32 *to, u8 *out) {
+    s32 i;
+    s32 c;
+    f32 v;
+
+    if (x < lo) {
+        x = lo;
+    }
+    if (hi < x) {
+        x = hi;
+    }
+    for (i = 0; i < 3; i++) {
+        v = to[i];
+        if (v != from[i]) {
+            v = (v - from[i]) / (hi - lo) * (x - lo) + from[i];
+        }
+        c = v * 256.0f;
+        if (c >= 256) {
+            c = 255;
+        }
+        out[i] = c;
+    }
+}
 
 s32 func_801A63F4_ovl_0EBBB0(void) {
     return 0;
