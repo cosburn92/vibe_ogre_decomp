@@ -24,7 +24,7 @@ CFLAGS      = -quiet $(OPTFLAGS) -G0 -mips3 -mgp32 -mfp32
 KMC_ASFLAGS := -EB -mcpu=vr4300 -mips3 -G0
 
 ASFLAGS    := -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mno-shared -G 0 -no-pad-sections -I include
-LDFLAGS    := -T $(LD_SCRIPT) -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T linker_scripts/hardware_regs.ld \
+LDFLAGS    := -T $(LD_SCRIPT) -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T linker_scripts/hardware_regs.ld -T linker_scripts/aliases.ld \
               -Map build/$(BASENAME).map --no-check-sections
 
 C_FILES    := $(shell find src -name '*.c' 2>/dev/null)

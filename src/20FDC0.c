@@ -49,6 +49,10 @@ typedef struct {
     s32 size;
 } BgJob_20FDC0;
 void func_801CE064_ovl_1F0A30(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
+extern u64 D_8009F540[];
+extern u64 jpegTextStart[];
+extern u64 D_800AC050[];
+extern u64 D_800AC140[];
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CC930_ovl_1F0A30);
@@ -252,7 +256,42 @@ void func_801CD4A0_ovl_1F0A30(void) {
     D_801D06D0_ovl_1F0A30 = NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD4E0_ovl_1F0A30);
+/* Sends the JPEG decode RSP task for a w x h image (in 16x16 blocks) */
+void func_801CD4E0_ovl_1F0A30(s8 mode, void *data_ptr, s16 w, s16 h) {
+    s32 bw = w / 16;
+    s32 bh = h / 16;
+    NUScTask *t = (NUScTask *)D_801D06E0_ovl_1F0A30;
+    u32 mask;
+
+    t->framebuffer = FIELD(t, void *, 0x64);
+    t->state = 1;
+    t->next = D_800E7D90;
+    t->msgQ = &D_800E9BA8;
+    t->msg = D_801CFCE8_ovl_1F0A30;
+    t->flags = 2;
+    t->list.t.type = 4;
+    t->list.t.ucode_boot = D_8009ECB0;
+    t->list.t.ucode_boot_size = (s32)D_8009ED80 - (s32)D_8009ECB0;
+    t->list.t.ucode = jpegTextStart;
+    t->list.t.ucode_size = (s32)D_8009F540 - (s32)jpegTextStart;
+    t->list.t.ucode_data = D_800AC050;
+    t->list.t.ucode_data_size = (s32)D_800AC140 - (s32)D_800AC050;
+    t->list.t.flags = 0;
+    t->list.t.dram_stack = NULL;
+    t->list.t.dram_stack_size = 0;
+    t->list.t.output_buff = NULL;
+    t->list.t.output_buff_size = NULL;
+    t->list.t.data_ptr = data_ptr;
+    t->list.t.data_size = bw * bh;
+    t->list.t.yield_data_ptr = NULL;
+    t->list.t.yield_data_size = mode;
+    mask = osSetIntMask(1);
+    D_800E79A4++;
+    osSetIntMask(mask);
+    osWritebackDCacheAll();
+    ((u8 *)D_801D06E0_ovl_1F0A30)[0x7E]++;
+    osSendMesg(&D_800E8B4C, D_801D06E0_ovl_1F0A30, 1);
+}
 
 /* Sends the JPEG decode RSP task (data at data_ptr) to the scheduler, like nuGfxTaskStart */
 void func_801CD658_ovl_1F0A30(void *data_ptr, u32 data_size, s32 unused, u32 flags) {

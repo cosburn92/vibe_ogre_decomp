@@ -1,0 +1,3 @@
+/* Second names for data addresses that the original code reaches through two different symbols
+ * (end of one block = start of the next), so the compiler does not merge the address loads. */
+jpegTextStart = D_8009ED80; /* rspboot text end = JPEG microcode text start */
