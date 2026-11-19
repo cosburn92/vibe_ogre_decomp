@@ -989,9 +989,9 @@ segments:
     symbol_name_format: $VRAM_$SEG
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
-      - [0x195410, asm]
+      - [0x195410, c]
       - [0x197740, data, 195410]
-      - [0x197774, rodata, 195410]
+      - [0x197774, .rodata, 195410]
 
   - name: ovl_1977E0
     type: code
