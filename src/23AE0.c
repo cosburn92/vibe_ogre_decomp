@@ -3,10 +3,10 @@
 
 /* libultra recvmesg.c */
 
-extern OSThreadHdr *__osRunningThread;
+extern OSThread *__osRunningThread;
 
-void __osEnqueueAndYield(OSThreadHdr **queue);
-OSThreadHdr *__osPopThread(OSThreadHdr **queue);
+void __osEnqueueAndYield(OSThread **queue);
+OSThread *__osPopThread(OSThread **queue);
 
 s32 osRecvMesg(OSMesgQueue *mq, OSMesg *msg, s32 flag) {
     register u32 saveMask;
@@ -18,15 +18,15 @@ s32 osRecvMesg(OSMesgQueue *mq, OSMesg *msg, s32 flag) {
             return -1;
         }
         __osRunningThread->state = OS_STATE_WAITING;
-        __osEnqueueAndYield((OSThreadHdr **)&mq->mtqueue);
+        __osEnqueueAndYield(&mq->mtqueue);
     }
     if (msg != NULL) {
         *msg = mq->msg[mq->first];
     }
     mq->first = (mq->first + 1) % mq->msgCount;
     mq->validCount--;
-    if (((OSThreadHdr *)mq->fullqueue)->next != NULL) {
-        osStartThread((OSThread *)__osPopThread((OSThreadHdr **)&mq->fullqueue));
+    if ((mq->fullqueue)->next != NULL) {
+        osStartThread(__osPopThread(&mq->fullqueue));
     }
     __osRestoreInt(saveMask);
     return 0;

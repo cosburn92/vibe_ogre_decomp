@@ -6,8 +6,8 @@
 typedef void *OSMesg;
 
 typedef struct {
-    /* 0x00 */ void *mtqueue;
-    /* 0x04 */ void *fullqueue;
+    /* 0x00 */ struct OSThread_s *mtqueue;
+    /* 0x04 */ struct OSThread_s *fullqueue;
     /* 0x08 */ s32 validCount;
     /* 0x0C */ s32 first;
     /* 0x10 */ s32 msgCount;
@@ -15,8 +15,27 @@ typedef struct {
 } OSMesgQueue;
 
 typedef struct {
-    u64 pad[0x1B0 / 8];
-} OSThread;
+    /* 0x000 */ u64 at, v0, v1, a0, a1, a2, a3;
+    /* 0x038 */ u64 t0, t1, t2, t3, t4, t5, t6, t7;
+    /* 0x078 */ u64 s0, s1, s2, s3, s4, s5, s6, s7;
+    /* 0x0B8 */ u64 t8, t9, gp, sp, s8, ra;
+    /* 0x0E8 */ u64 lo, hi;
+    /* 0x0F8 */ u32 sr, pc, cause, badvaddr, rcp;
+    /* 0x10C */ u32 fpcsr;
+    /* 0x110 */ u64 fp[16];
+} __OSThreadContext; /* size 0x190 */
+
+typedef struct OSThread_s {
+    /* 0x00 */ struct OSThread_s *next;
+    /* 0x04 */ s32 priority;
+    /* 0x08 */ struct OSThread_s **queue;
+    /* 0x0C */ struct OSThread_s *tlnext;
+    /* 0x10 */ u16 state;
+    /* 0x12 */ u16 flags;
+    /* 0x14 */ s32 id;
+    /* 0x18 */ s32 fp;
+    /* 0x20 */ __OSThreadContext context;
+} OSThread; /* size 0x1B0 */
 
 typedef struct {
     /* 0x00 */ u32 w0;
@@ -149,17 +168,6 @@ typedef struct {
 
 typedef u64 OSTime;
 
-/* The head of OSThread (the full struct is 0x1B0 bytes) */
-typedef struct OSThreadHdr_s {
-    /* 0x00 */ struct OSThreadHdr_s *next;
-    /* 0x04 */ s32 priority;
-    /* 0x08 */ struct OSThreadHdr_s **queue;
-    /* 0x0C */ struct OSThreadHdr_s *tlnext;
-    /* 0x10 */ u16 state;
-    /* 0x12 */ u16 flags;
-    /* 0x14 */ s32 id;
-    /* 0x18 */ s32 fp;
-} OSThreadHdr;
 
 #define OS_STATE_STOPPED 1
 #define OS_STATE_RUNNABLE 2

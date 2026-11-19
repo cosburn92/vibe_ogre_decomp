@@ -3,11 +3,11 @@
 
 /* libultra createmesgqueue.c */
 
-extern OSThreadHdr *D_800AA790; /* __osThreadTail */
+extern OSThread *__osThreadTail;
 
 void osCreateMesgQueue(OSMesgQueue *mq, OSMesg *msg, s32 msgCount) {
-    mq->mtqueue = &D_800AA790;
-    mq->fullqueue = &D_800AA790;
+    mq->mtqueue = &__osThreadTail;
+    mq->fullqueue = &__osThreadTail;
     mq->validCount = 0;
     mq->first = 0;
     mq->msgCount = msgCount;

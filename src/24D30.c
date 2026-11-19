@@ -1,3 +1,13 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/24D30", osGetThreadPri);
+/* libultra getthreadpri.c */
+
+extern OSThread *__osRunningThread;
+
+s32 osGetThreadPri(OSThread *thread) {
+    if (thread == NULL) {
+        thread = __osRunningThread;
+    }
+    return thread->priority;
+}

@@ -1,3 +1,20 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/25000", __osDequeueThread);
+/* libultra thread.c */
+
+void __osDequeueThread(OSThread **queue, OSThread *t) {
+    register OSThread *pred;
+    register OSThread *succ;
+
+    pred = (OSThread *)queue;
+    succ = pred->next;
+    while (succ != NULL) {
+        if (succ == t) {
+            pred->next = t->next;
+            return;
+        }
+        pred = succ;
+        succ = pred->next;
+    }
+}
