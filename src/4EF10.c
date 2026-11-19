@@ -54,6 +54,11 @@ void func_80179060_ovl_040E80(void) {
     func_8017907C_ovl_040E80(0x100);
 }
 
+extern u8 *D_80190F50_ovl_040E80;
+s32 func_8017AD3C_ovl_040E80(s32 id);
+s32 func_8017AE20_ovl_040E80(s32 id);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017907C_ovl_040E80);
 
 void func_801792BC_ovl_040E80(void) {
@@ -116,11 +121,66 @@ void func_8017A714_ovl_040E80(void) {
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A720_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A8E8_ovl_040E80);
+s32 func_8017A8E8_ovl_040E80(s32 id) {
+    if (id >= 0x1000) {
+        return 0;
+    }
+    if ((D_80190F50_ovl_040E80[id >> 3] >> (id & 7)) & 1) {
+        return func_8017AD3C_ovl_040E80(id);
+    }
+    return func_8017AE20_ovl_040E80(id);
+}
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A94C_ovl_040E80);
+/* JIS X 0208 code to Shift-JIS */
+u16 func_8017A94C_ovl_040E80(u16 c) {
+    u16 hi = (c & 0x7F7F) >> 8;
+    u16 lo = c & 0x7F;
+    s32 h;
 
+    if (hi & 1) {
+        lo += 0x1F;
+    } else {
+        lo += 0x7D;
+    }
+    if (lo >= 0x7F) {
+        lo++;
+    }
+    h = (hi - 0x21) >> 1;
+    hi = h + 0x81;
+    if (hi >= 0xA0) {
+        hi = h + 0xC1;
+    }
+    return lo | (hi << 8);
+}
+
+/* Shift-JIS code to EUC (JIS | 0x8080) */
+#ifdef NON_MATCHING
+/* u16/int temporaries of the high byte differ */
+u16 func_8017A9B0_ovl_040E80(u16 c) {
+    u16 b = c >> 8;
+    u16 lo = c & 0xFF;
+    s32 hi = b;
+    s32 h;
+
+    if (b >= 0xE0) {
+        hi = b - 0x40;
+    }
+    h = (hi - 0x81) * 2;
+    hi = h + 0x21;
+    if (lo >= 0x80) {
+        lo--;
+    }
+    if (lo < 0x9E) {
+        lo -= 0x1F;
+    } else {
+        hi = h + 0x22;
+        lo -= 0x7D;
+    }
+    return (lo | (hi << 8)) | 0x8080;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A9B0_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AA18_ovl_040E80);
 
