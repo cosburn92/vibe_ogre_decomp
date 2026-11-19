@@ -140,33 +140,30 @@ void func_80224268_ovl_1BA050(u8 *p, u16 mask, u8 v) {
     }
 }
 
-#ifdef NON_MATCHING
-/* and/addu operand order (2 instructions) */
 void func_80224320_ovl_1BA050(u8 *p, u16 mask) {
     u16 bit = 1;
     u32 i;
+    u8 *q;
 
     while (mask != 0) {
         if (mask & bit) {
             for (i = 0; i < 16; i++) {
-                if (bit & FIELD(p, u16, 0x12 + i * 6)) {
+                if (FIELD(p, u16, 0x12 + i * 6) & bit) {
                     break;
                 }
             }
             if (i < 16) {
                 mask ^= bit;
-                FIELD(p + i * 6, u16, 0x12) = 0;
-                (p + i * 6)[0x14] = 0;
-                (p + i * 6)[0x15] = 0;
-                (p + i * 6)[0x16] = 0;
+                q = p + i * 6;
+                FIELD(q, u16, 0x12) = 0;
+                q[0x14] = 0;
+                q[0x15] = 0;
+                q[0x16] = 0;
             }
         }
         bit <<= 1;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224320_ovl_1BA050);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802243A0_ovl_1BA050);
 
