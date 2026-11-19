@@ -313,6 +313,13 @@ void func_801707F4_ovl_040E80(void) {
     D_80197B1C_ovl_040E80 = NULL;
 }
 
+extern u8 D_80196A93_ovl_040E80[];
+extern u8 D_80196A30_ovl_040E80[];
+void func_80171FE0_ovl_040E80(s32 a, s32 b);
+void DateAdvanceDay(void *d);
+void func_8016C70C_ovl_040E80(void *d);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170954_ovl_040E80);
@@ -405,9 +412,32 @@ u8 func_80172A0C_ovl_040E80(u8 i) {
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172A28_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172B10_ovl_040E80);
+/* Sets the 2-bit field n (1-based) */
+#ifdef NON_MATCHING
+/* param masking/register order differs */
+void func_80172B10_ovl_040E80(u8 n, u8 v) {
+    s32 i = n - 1;
+    s32 sh = (i & 3) * 2;
 
+    D_80196A86_ovl_040E80[i / 4] = (D_80196A86_ovl_040E80[i / 4] & ~(3 << sh)) | (v << sh);
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/46090", func_80172B10_ovl_040E80);
+#endif
+
+/* Sets bit flag n (1-based) */
+#ifdef NON_MATCHING
+/* param masking/register order differs */
+void func_80172B68_ovl_040E80(u8 n, u8 v) {
+    s32 i = n - 1;
+    s32 s;
+
+    s = i & 7;
+    D_80196A81_ovl_040E80[i / 8] = (D_80196A81_ovl_040E80[i / 8] & ~(1 << s)) | (v << s);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172B68_ovl_040E80);
+#endif
 
 u8 func_80172BBC_ovl_040E80(u8 n) {
     s32 i = n - 1;
@@ -415,7 +445,16 @@ u8 func_80172BBC_ovl_040E80(u8 n) {
     return (D_80196A81_ovl_040E80[i / 8] >> (i & 7)) & 1;
 }
 
+#ifdef NON_MATCHING
+/* param masking/register order differs */
+void func_80172BF0_ovl_040E80(u8 n, u8 v) {
+    s32 i = n - 1;
+
+    D_80196A93_ovl_040E80[i / 8] = (D_80196A93_ovl_040E80[i / 8] & ~(1 << (i & 7))) | (v << (i & 7));
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172BF0_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172C44_ovl_040E80);
 
@@ -423,7 +462,22 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_801730BC_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801731EC_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801732E0_ovl_040E80);
+/* Moves the calendar n days forward (or back for negative n) */
+void func_801732E0_ovl_040E80(s16 n) {
+    s16 i;
+
+    if (n >= 0) {
+        func_80171FE0_ovl_040E80(0x43, 3);
+        for (i = 0; i < n; i++) {
+            DateAdvanceDay(D_80196A30_ovl_040E80);
+            func_80171FE0_ovl_040E80(0x43, 3);
+        }
+    } else {
+        for (n++; n != 1; n++) {
+            func_8016C70C_ovl_040E80(D_80196A30_ovl_040E80);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801733A0_ovl_040E80);
 
