@@ -46,6 +46,15 @@ void func_80197FA4(s32 a, s32 b, u8 c);
 void guRotateF(f32 *mf, f32 a, f32 x, f32 y, f32 z);
 void guMtxCatF(f32 *m, f32 *n, f32 *r);
 #define FIELDX(p, T, off) (*(T *)((u8 *)(p) + (off)))
+extern u8 D_8018F540;
+extern u16 D_8018F542;
+extern u16 D_8018F544;
+extern u16 D_8018F546;
+typedef struct {
+    u16 a;
+    u16 b;
+} Pair0E;
+extern Pair0E D_801ABA70_ovl_0EBBB0[];
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A07D0_ovl_0EBBB0);
@@ -163,7 +172,15 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4204_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A45F4_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A499C_ovl_0EBBB0);
+/* Sky state from the hour (D_8018F481): next of 8 colour pairs and an angle (hour * 20 mod 5400) */
+void func_801A499C_ovl_0EBBB0(void) {
+    u8 k = (D_8018F481 + 1) & 7;
+
+    D_8018F540 = k;
+    D_8018F542 = D_801ABA70_ovl_0EBBB0[k].a;
+    D_8018F544 = D_801ABA70_ovl_0EBBB0[k].b;
+    D_8018F546 = (D_8018F481 * 20) % 5400;
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4A38_ovl_0EBBB0);
 
