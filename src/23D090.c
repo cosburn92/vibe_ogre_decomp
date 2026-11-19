@@ -31,6 +31,18 @@ extern u8 D_801CEAAB;
 
 void func_801E98B4_ovl_23B220(s16 id);
 void func_801EADF8_ovl_23B220(void);
+#include "libultra.h"
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+extern Gfx *D_800E9BA0;
+extern Gfx D_801F0028_ovl_23B220[];
+extern Gfx D_801F01D0_ovl_23B220[];
+void func_801B5CAC(s32 a, s32 b, s32 c);
+void func_801EAAD8_ovl_23B220(void);
+void func_801EAFC8_ovl_23B220(void);
+void func_801EB594_ovl_23B220(void);
+void func_801EBDD8_ovl_23B220(void);
+void func_801EC00C_ovl_23B220(void);
+void func_801ECAB0_ovl_23B220(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
@@ -43,7 +55,20 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801E92D4_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9618_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9834_ovl_23B220);
+void func_801E9834_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    Gfx *g;
+
+    if (s->flags & 1) {
+        g = D_800E9BA0++;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_801F0028_ovl_23B220;
+        func_801B5CAC(FIELD(s, s32, 0x1A0), 0, 0);
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E98B4_ovl_23B220);
 
@@ -63,7 +88,30 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA158_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA224_ovl_23B220);
 
+#ifdef NON_MATCHING
+/* branch layout of the id test differs */
+void func_801EA404_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    s32 i;
+    s32 m = ~0x10;
+
+    for (i = 0; i < 4; i++) {
+        if (FIELD(s, u16, 0x23C) & 1) {
+            if (s->ent[i].id == 0 || s->ent[i].id == 3) {
+                goto set;
+            }
+        } else if ((u16)(s->ent[i].id - 1) < 2) {
+        set:
+            if (s->ent[i].flags & 0x10) {
+                s->ent[i].flags = (s->ent[i].flags & m) | 0x20;
+            }
+        }
+    }
+    FIELD(s, u16, 0x23C)++;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA404_ovl_23B220);
+#endif
 
 /* Whether all four entries have flag 0x10 */
 s32 func_801EA498_ovl_23B220(void) {
@@ -128,7 +176,28 @@ void func_801EB4F0_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 4;
 }
 
+#ifdef NON_MATCHING
+/* display-list pointer store is scheduled after the argument loads */
+void func_801EB508_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    Gfx *g;
+
+    if (s->flags & 4) {
+        g = D_800E9BA0;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_801F01D0_ovl_23B220;
+        D_800E9BA0 = g + 1;
+        func_801B5CAC(FIELD(s, s32, 0x36C), s->x0, s->x1);
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+        func_801EAAD8_ovl_23B220();
+        func_801EAFC8_ovl_23B220();
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB508_ovl_23B220);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB594_ovl_23B220);
 
@@ -156,7 +225,21 @@ void func_801ECC40_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECC58_ovl_23B220);
+void func_801ECC58_ovl_23B220(void) {
+    s32 i;
+    u8 *o;
+
+    if (D_801EFE48_ovl_23B220->flags & 2) {
+        func_801EB594_ovl_23B220();
+        for (i = 0; i < 7; i++) {
+            o = (u8 *)D_801EFE48_ovl_23B220 + 0x378 + i * 0x54;
+            (*(void (**)(u8 *))o)(o);
+        }
+        func_801EBDD8_ovl_23B220();
+        func_801EC00C_ovl_23B220();
+        func_801ECAB0_ovl_23B220();
+    }
+}
 
 /* Fade-out step; returns 1 when done */
 #ifdef NON_MATCHING
