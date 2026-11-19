@@ -96,6 +96,15 @@ void func_8017C584_ovl_040E80();
 void func_80221354(void);
 extern u8 D_80196AEC_ovl_040E80;
 void func_8017F554_ovl_040E80(Node *n);
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    u16 flag;
+    s16 s;
+    s16 t;
+    u8 rgba[4];
+} Vtx514; /* 0x10 */
 /* --- end decls --- */
 
 /* Loads overlay 079730 and enters it (mode 1) */
@@ -515,7 +524,30 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_801805D0_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801807F4_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_80180B1C_ovl_040E80);
+/* Fills the 4 vertices at +0x90 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
+void func_80180B1C_ovl_040E80(Vtx514 *v, s16 x0, s16 y0, s16 x1, s16 y1) {
+    s32 cx = 160;
+    s32 cy = 120;
+    s16 sw = (x1 - x0 > 0 ? x1 - x0 : x0 - x1) - 1;
+    s16 sh = (y1 - y0 > 0 ? y1 - y0 : y0 - y1) - 1;
+
+    v[9].x = cx - x1;
+    v[9].y = cy - y1;
+    v[9].s = 0;
+    v[9].t = sh << 6;
+    v[10].x = cx - x1;
+    v[10].y = cy - y0;
+    v[10].s = 0;
+    v[10].t = 0;
+    v[11].x = cx - x0;
+    v[11].y = cy - y0;
+    v[11].s = sw << 6;
+    v[11].t = 0;
+    v[12].x = cx - x0;
+    v[12].y = cy - y1;
+    v[12].s = sw << 6;
+    v[12].t = sh << 6;
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_80180BDC_ovl_040E80);
 
