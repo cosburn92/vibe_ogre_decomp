@@ -37,6 +37,61 @@ typedef struct {
 #define aInterleave(pkt, l, r)                                           {                                                                        Acmd *_a = (Acmd *)pkt;                                              _a->w0 = _SHIFTL(A_INTERLEAVE, 24, 8);                               _a->w1 = _SHIFTL(l, 16, 16) | _SHIFTL(r, 0, 16);                 }
 #define aSaveBuffer(pkt, s)                                              {                                                                        Acmd *_a = (Acmd *)pkt;                                              _a->w0 = _SHIFTL(A_SAVEBUFF, 24, 8);                                 _a->w1 = (u32)(s);                                               }
 
+#define aDMEMMove(pkt, i, o, c)                                      \
+    {                                                                \
+        Acmd *_a = (Acmd *)pkt;                                      \
+        _a->w0 = _SHIFTL(A_DMEMMOVE, 24, 8) | _SHIFTL(i, 0, 24);     \
+        _a->w1 = _SHIFTL(o, 16, 16) | _SHIFTL(c, 0, 16);             \
+    }
+#define aResample(pkt, f, p, s)                                                          \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = (_SHIFTL(A_RESAMPLE, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(p, 0, 16));   \
+        _a->w1 = (u32)(s);                                                               \
+    }
+#define aLoadBuffer(pkt, s)                                          \
+    {                                                                \
+        Acmd *_a = (Acmd *)pkt;                                      \
+        _a->w0 = _SHIFTL(A_LOADBUFF, 24, 8);                         \
+        _a->w1 = (u32)(s);                                           \
+    }
+#define aSetVolume(pkt, f, v, t, r)                                                      \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = (_SHIFTL(A_SETVOL, 24, 8) | _SHIFTL(f, 16, 16) | _SHIFTL(v, 0, 16));    \
+        _a->w1 = _SHIFTL(t, 16, 16) | _SHIFTL(r, 0, 16);                                 \
+    }
+#define aEnvMixer(pkt, f, s)                                                             \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = _SHIFTL(A_ENVMIXER, 24, 8) | _SHIFTL(f, 16, 8);                         \
+        _a->w1 = (u32)(s);                                                               \
+    }
+#define aPoleFilter(pkt, f, g, s)                                                        \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = (_SHIFTL(A_POLEF, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(g, 0, 16));      \
+        _a->w1 = (u32)(s);                                                               \
+    }
+#define aADPCMdec(pkt, f, s)                                                             \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = _SHIFTL(A_ADPCM, 24, 8) | _SHIFTL(f, 16, 8);                            \
+        _a->w1 = (u32)(s);                                                               \
+    }
+#define aLoadADPCM(pkt, c, d)                                                            \
+    {                                                                                    \
+        Acmd *_a = (Acmd *)pkt;                                                          \
+        _a->w0 = _SHIFTL(A_LOADADPCM, 24, 8) | _SHIFTL(c, 0, 24);                        \
+        _a->w1 = (u32)d;                                                                 \
+    }
+#define aSetLoop(pkt, a)                                             \
+    {                                                                \
+        Acmd *_a = (Acmd *)pkt;                                      \
+        _a->w0 = _SHIFTL(A_SETLOOP, 24, 8);                          \
+        _a->w1 = (u32)(a);                                           \
+    }
+
 #define AL_MAIN_L_OUT 0x440
 #define AL_MAIN_R_OUT 0x580
 #define AL_AUX_L_OUT 0x6C0
