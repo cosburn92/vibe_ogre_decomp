@@ -205,11 +205,24 @@ typedef struct {
     s16 t;
     u8 rgba[4];
 } VtxB8; /* 0x10 */
+s32 func_801CCA50_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC84C_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC974_ovl_087200);
+/* Opens window slot (kind, b) with draw callback fn, rect (x, y, w, h) and target rect (x2..h2); returns the slot */
+s32 func_801CC974_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
+    s32 i = func_801CCA50_ovl_087200(kind, b, fn, x, y, w, h);
+    AnimSlot *e = &D_80196AF8->slots[i];
+
+    e->type = 1;
+    e->v1C = x2;
+    e->v20 = y2;
+    e->v24 = w2;
+    e->v28 = h2;
+    e->mode = 0x8000;
+    return i;
+}
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCA50_ovl_087200);
 
