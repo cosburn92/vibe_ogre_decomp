@@ -42,7 +42,15 @@ typedef struct BattleUnit {
     /* 0x79 */ u8 unk79[3];
     /* 0x7C */ s32 attack;
     /* 0x80 */ s32 unk80;
-} BattleUnit;
+    /* 0x84 */ u8 unk84[0x10];
+    /* 0x94 */ s32 unk94;
+    /* 0x98 */ u8 unk98[0x60];
+} BattleUnit; /* size 0xF8 */
+
+typedef struct {
+    /* 0x000 */ u8 unk000[0x1C4];
+    /* 0x1C4 */ BattleUnit units[20];
+} BattleState;
 
 s32 func_8009C7CC(void);
 s32 func_801C8B84(BattleUnit *u);
@@ -202,6 +210,10 @@ u16 func_8016E030(u8 a, u8 cls);
 u16 func_8016E084(u8 a, u8 cls);
 u8 func_8016E338(u8 a, u8 cls, u8 c);
 s32 func_801C8BA4(BattleUnit *u);
+s32 func_801DF2AC(s32 *p, s32 a, s32 b);
+void func_801D9F8C(s32 a, s32 b, BattleUnit *u, s32 c, s32 d);
+void func_801D9F60(s32 a, s32 b, BattleUnit *u, s32 c);
+extern BattleState *D_801CE8BC;
 s32 func_801BE138(s32 a, s32 cls, s32 c, s32 d);
 void func_801E15E0(BattleUnit *u, s32 cls);
 /* --- end decls --- */
@@ -509,7 +521,7 @@ s32 func_801F0E1C_ovl_22A280(BattleUnit *self) {
 }
 
 /* Changes a unit's class: default equipment, action count and sprite follow the new class */
-void func_801F0F5C_ovl_22A280(BattleUnit *u, s32 cls) {
+inline void func_801F0F5C_ovl_22A280(BattleUnit *u, s32 cls) {
     BattleObj *o;
     s32 v;
     s32 x;
@@ -532,7 +544,27 @@ void func_801F0F5C_ovl_22A280(BattleUnit *u, s32 cls) {
     func_801E15E0(u, cls);
 }
 
+#ifdef NON_MATCHING
+/* loop keeps base and 0x1C4+i*0xF8 offset separate; GCC folds 0x20C */
+void func_801F104C_ovl_22A280(BattleUnit *u, s32 t, s32 cls) {
+    s32 *o = &u->obj->unk44;
+    s32 i;
+
+    t += func_801DF2AC(o, 0x11, 0);
+    t += func_801DF2AC(o, 0x12, 0);
+    for (i = 0; i < 20; i++) {
+        if (D_801CE8BC->units[i].unk48 == 0) {
+            break;
+        }
+    }
+    func_801D9F8C(0x39, t, u, cls, i);
+    func_801D9F60(0x3A, t += 0x23, u, i);
+    func_801F0F5C_ovl_22A280(u, cls);
+    u->unk94 = t;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F104C_ovl_22A280);
+#endif
 
 s32 func_801F11E4_ovl_22A280(BattleUnit *u, s32 d) {
     f32 a[3];
