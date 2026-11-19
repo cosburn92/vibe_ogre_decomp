@@ -44,6 +44,7 @@ void func_801C54EC_ovl_087200(s32 a, u8 b, u8 c);
 extern s16 D_801EE38C_ovl_087200[][2];
 void func_801C6DD0_ovl_087200(f32 *x, f32 *y, s32 i);
 void func_801C79C8_ovl_087200(f32 *x, f32 *y, s32 i);
+extern s16 D_801EE38C_ovl_087200[][2];
 /* --- end decls --- */
 
 /* Pushes the cursor */
@@ -249,7 +250,20 @@ void func_801C779C_ovl_087200(f32 *x, f32 *y, s32 i) {
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C779C_ovl_087200);
 #endif
 
+/* func_801C6BCC minus the layout offset for the current page (D_801EE38C[st+0x19A]) */
+#ifdef NON_MATCHING
+/* The values match. The original loads the page index (st+0x19A) right after the count, before the divisions, and keeps n/3 in a3. */
+void func_801C7840_ovl_087200(f32 *x, f32 *y, s32 n) {
+    f32 c = (*(s32 *)((u8 *)D_80196AF8 + 0x2C0) - 1) / 3 - n / 3;
+    f32 r = 2 - n % 3;
+    s16 *ofs = D_801EE38C_ovl_087200[*(u16 *)((u8 *)D_80196AF8 + 0x19A)];
+
+    *x = c * 72.0f + r * 30.0f - ofs[0] + 0.5f;
+    *y = r * 50.0f - c * 20.0f - ofs[1] + 0.5f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7840_ovl_087200);
+#endif
 
 void func_801C7944_ovl_087200(f32 *x, f32 *y, s32 i) {
     s16 *off;
