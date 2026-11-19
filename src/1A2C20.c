@@ -4,8 +4,23 @@
 /* ovl_1A2C20: camera move / screen colour fade controller */
 
 typedef struct {
-    s32 data[0x16];
-} Camera;
+    /* 0x00 */ f32 persp[5];
+    /* 0x14 */ f32 eye[3];
+    /* 0x20 */ f32 at[3];
+    /* 0x2C */ f32 up[3];
+    /* 0x38 */ s32 rest[8];
+} Camera; /* size 0x58 */
+
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p1;
+    /* 0x08 */ u8 (*mtx)[0x40];
+} FbSet;
 
 typedef struct {
     /* 0x00 */ Camera *cam;
@@ -33,6 +48,12 @@ typedef struct {
 } FadeCtx; /* size 0x54 */
 
 extern u16 *D_801AB850;
+extern FbSet *D_800E9BE0;
+extern Gfx *D_800E9BA0;
+extern u16 D_800C4BE4;
+extern u16 D_800C4C24;
+extern u16 D_800E7A0E;
+extern u8 D_80216F18_ovl_1A2C20[];
 extern u8 D_800EB0B0[];
 extern Camera *D_8018F58C;
 extern u8 D_8018F53C;
@@ -65,6 +86,8 @@ void *HMalloc(s32 size);
 void *HFree(void *p);
 void bzero(void *p, s32 n);
 void *LoadAsset(u32 handle, ...);
+void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
 s16 func_801AB0FC(u16 a, s32 b);
 void func_800EA6B0(void *ch, s32 a, s32 b, s32 c);
 void func_800EA7E4(void *ch, s32 v);
@@ -324,7 +347,44 @@ void func_80215AC8_ovl_1A2C20(void) {
     *D_80216BE0_ovl_1A2C20->cs.cam = *D_80216BE0_ovl_1A2C20->cs.saved;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_80215B1C_ovl_1A2C20);
+/* Sets up a 320x240 orthographic camera looking at the screen centre */
+void func_80215B1C_ovl_1A2C20(void) {
+    FadeCtx *ctx = D_80216BE0_ovl_1A2C20;
+
+    ctx->cs.cam->eye[0] = 160.0f;
+    ctx->cs.cam->eye[1] = 120.0f;
+    ctx->cs.cam->eye[2] = 60.0f;
+    ctx->cs.cam->at[0] = 160.0f;
+    ctx->cs.cam->at[1] = 120.0f;
+    ctx->cs.cam->at[2] = 0.0f;
+    ctx->cs.cam->up[0] = 0.0f;
+    ctx->cs.cam->up[1] = 1.0f;
+    ctx->cs.cam->up[2] = 0.0f;
+    D_800E7A0E = D_800C4BE4;
+    guOrtho(D_800E9BE0->mtx[D_800C4BE4], -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380007;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4] - 0x80000000;
+    }
+    D_800C4C24 = ++D_800C4BE4;
+    guLookAt(D_800E9BE0->mtx[D_800C4C24], ctx->cs.cam->eye[0], ctx->cs.cam->eye[1], ctx->cs.cam->eye[2],
+             ctx->cs.cam->at[0], ctx->cs.cam->at[1], ctx->cs.cam->at[2], ctx->cs.cam->up[0], ctx->cs.cam->up[1],
+             ctx->cs.cam->up[2]);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380005;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDE000000;
+        _g->w1 = (u32)D_80216F18_ovl_1A2C20;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1A2C20", func_80215D30_ovl_1A2C20);
 
