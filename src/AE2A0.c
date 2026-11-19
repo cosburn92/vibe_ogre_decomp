@@ -332,4 +332,21 @@ void func_801C7D78_ovl_087200(s16 *a, s16 *b, s16 *c, s16 *d) {
     *d = 0x9A;
 }
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7D9C_ovl_087200);
+/* For each axis, an 8-pixel span at whichever of the two points is farther from the screen centre */
+#define DIST_FROM(v, c) ((v) - (c) > 0 ? (v) - (c) : (c) - (v))
+void func_801C7D9C_ovl_087200(s16 x0, s16 y0, s16 x1, s16 y1, s16 *ox0, s16 *oy0, s16 *ox1, s16 *oy1) {
+    if (DIST_FROM(x0, 160) >= DIST_FROM(x1, 160)) {
+        *ox0 = x0;
+        *ox1 = x0 + 8;
+    } else {
+        *ox0 = x1 - 8;
+        *ox1 = x1;
+    }
+    if (DIST_FROM(y0, 120) > DIST_FROM(y1, 120)) {
+        *oy0 = y0;
+        *oy1 = y0 + 8;
+    } else {
+        *oy0 = y1 - 8;
+        *oy1 = y1;
+    }
+}
