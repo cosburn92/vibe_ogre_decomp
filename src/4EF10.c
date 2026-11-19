@@ -224,8 +224,6 @@ INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A9B0_ovl_040E80);
 
 /* Encodes string src into dst: {n} becomes byte n - 1, other characters go through func_8017A720
  * ('0' when unknown); terminated with 0xFF */
-#ifdef NON_MATCHING
-/* The code matches. Only the frame differs: the original is 0x38 with src at sp+0x10 and 8 more bytes of locals above it; padding locals end up below src instead. */
 void func_8017AA18_ovl_040E80(u8 *str, u8 *dst) {
     u8 *src = str;
     s32 save = D_8018FC6C_ovl_040E80;
@@ -251,10 +249,10 @@ void func_8017AA18_ovl_040E80(u8 *str, u8 *dst) {
     }
     *dst = 0xFF;
     D_8018FC6C_ovl_040E80 = save;
+    {
+        s32 pad[2];
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AA18_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AAF4_ovl_040E80);
 
