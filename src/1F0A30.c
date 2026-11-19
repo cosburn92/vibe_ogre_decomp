@@ -410,7 +410,28 @@ void func_801B0284_ovl_1F0A30(u8 *o, s32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0300_ovl_1F0A30);
 
+extern u8 *D_801D06F4_ovl_1F0A30;
+
+/* Sky colour for the current map: blends its two palette rows by the camera height */
+#ifdef NON_MATCHING
+/* sky colour lerp: structure exact, float registers differ */
+void func_801B0658_ovl_1F0A30(void *o, f32 *r, f32 *g, f32 *b) {
+    f32 y = FIELD(o, s16, 0x1C) + FIELD(o, s16, 0x20) + 190;
+    u8 *c = D_801D06F4_ovl_1F0A30 + (s32)D_801CEAB0_ovl_1F0A30 * 6;
+
+    if (y < 0.0f) {
+        y = 0.0f;
+    } else if (y > 380.0f) {
+        y = 380.0f;
+    }
+    y = 380.0f - y;
+    *r = y * ((f32)c[3] - (f32)c[0]) / 380.0f + c[0];
+    *g = y * ((f32)c[4] - (f32)c[1]) / 380.0f + c[1];
+    *b = y * ((f32)c[5] - (f32)c[2]) / 380.0f + c[2];
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0658_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0770_ovl_1F0A30);
 
