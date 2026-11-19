@@ -53,6 +53,35 @@ void func_801B619C_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img);
 void func_801B7284_ovl_1F0A30(u8 *img, s32 x, s32 y, s32 s, void *b, void *m, void *a);
+extern u8 D_801976DA;
+extern s32 D_801CEAB0_ovl_1F0A30;
+extern u8 D_801936A7;
+extern u8 D_8018F557;
+extern u8 D_8018F558;
+extern u8 D_8018F559;
+
+/* Map ids 0x22, 0x28, 0x29 and 0x2F-0x39 */
+static inline s32 func_1F8D70_isTintedMap(s32 m) {
+    switch (m) {
+        case 0x22:
+        case 0x28:
+        case 0x29:
+        case 0x2F:
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+        case 0x38:
+        case 0x39:
+            return 1;
+        default:
+            return 0;
+    }
+}
 /* --- end decls --- */
 
 void func_801B58E0_ovl_1F0A30(void) {
@@ -234,11 +263,72 @@ void func_801BC5FC_ovl_1F0A30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC640_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC76C_ovl_1F0A30);
+/* Channel tint for the current map (ids 0x3B/0x2E special-cased) */
+u8 func_801BC76C_ovl_1F0A30(void) {
+    s32 t;
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC838_ovl_1F0A30);
+    if ((D_801976DA ^ 0x18) == 0) {
+        return 0xFF;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x3B && D_801936A7 == 0x20) {
+        return 0xFF;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x2E) {
+        return 0xFF;
+    }
+    if (func_1F8D70_isTintedMap(D_801CEAB0_ovl_1F0A30)) {
+        return 0xFF;
+    }
+    t = D_8018F557 * 128 / 255;
+    if (t + 128 >= 0xFF) {
+        return 0xFF;
+    }
+    return t + 128;
+}
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC914_ovl_1F0A30);
+u8 func_801BC838_ovl_1F0A30(void) {
+    s32 t;
+
+    if ((D_801976DA ^ 0x18) == 0) {
+        return 0xFF;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x3B && D_801936A7 == 0x20) {
+        return 0x80;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x2E) {
+        return 0xD2;
+    }
+    if (func_1F8D70_isTintedMap(D_801CEAB0_ovl_1F0A30)) {
+        return 0xFF;
+    }
+    t = D_8018F558 * 128 / 255;
+    if (t + 128 >= 0xFF) {
+        return 0xFF;
+    }
+    return t + 128;
+}
+
+u8 func_801BC914_ovl_1F0A30(void) {
+    s32 t;
+
+    if ((D_801976DA ^ 0x18) == 0) {
+        return 0xFF;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x3B && D_801936A7 == 0x20) {
+        return 0x80;
+    }
+    if (D_801CEAB0_ovl_1F0A30 == 0x2E) {
+        return 0;
+    }
+    if (func_1F8D70_isTintedMap(D_801CEAB0_ovl_1F0A30)) {
+        return 0xFF;
+    }
+    t = D_8018F559 * 128 / 255;
+    if (t + 128 >= 0xFF) {
+        return 0xFF;
+    }
+    return t + 128;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC9F0_ovl_1F0A30);
 
