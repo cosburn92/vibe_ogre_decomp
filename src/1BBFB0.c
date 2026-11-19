@@ -794,7 +794,47 @@ inline void func_802291BC_ovl_1BA050(s16 a, s16 b, s16 c, s16 d) {
     D_8022A71E_ovl_1BA050 = d;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802291E0_ovl_1BA050);
+typedef struct {
+    s16 x0;
+    s16 y0;
+    s16 x1;
+    s16 y1;
+} Rect1BB;
+
+/* Splits rectangle a minus rectangle b into up to four rectangles in out; returns how many */
+s32 func_802291E0_ovl_1BA050(Rect1BB *a, Rect1BB *b, Rect1BB *out) {
+    s32 n = 0;
+
+    if (a->x0 < b->x0) {
+        out[0].x0 = a->x0;
+        out[0].x1 = b->x0;
+        out[0].y0 = a->y0;
+        out[0].y1 = a->y1;
+        n = 1;
+    }
+    if (b->x1 < a->x1) {
+        out[n].x0 = b->x1;
+        out[n].x1 = a->x1;
+        out[n].y0 = a->y0;
+        out[n].y1 = a->y1;
+        n++;
+    }
+    if (b->y0 > a->y0) {
+        out[n].x0 = b->x0;
+        out[n].x1 = b->x1;
+        out[n].y0 = a->y0;
+        out[n].y1 = b->y0;
+        n++;
+    }
+    if (b->y1 < a->y1) {
+        out[n].x0 = b->x0;
+        out[n].x1 = b->x1;
+        out[n].y0 = b->y1;
+        out[n].y1 = a->y1;
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802292DC_ovl_1BA050);
 
