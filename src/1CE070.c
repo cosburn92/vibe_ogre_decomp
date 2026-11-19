@@ -76,7 +76,7 @@ void func_8016CD50(s32 a);
 extern u8 *D_800A8204[];
 extern u8 *D_800C4BB8;
 void HFree(void *p);
-u8 *func_80199ECC_ovl_1CE070(u8 *t);
+u8 *func_80199ECC_ovl_1CE070(u8 *t, u32 page);
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -300,11 +300,67 @@ void func_80199E48_ovl_1CE070(SkelCE *s, void **out) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199ECC_ovl_1CE070);
+/* Page `page` of image bank t (pages are 8-byte headers followed by pixels, sub-image and palette as flagged) */
+u8 *func_80199ECC_ovl_1CE070(u8 *t, u32 page) {
+    u32 w;
+    s32 h;
+    u32 pix;
+    u32 sub;
+    u32 off;
+    u32 i;
+    u8 *e;
+    u8 f;
+    u8 g;
+
+    if (t == NULL) {
+        return NULL;
+    }
+    f = t[3];
+    w = *(u16 *)(t + 4);
+    h = *(u16 *)(t + 6);
+    if (f & 2) {
+        pix = ((w + 3) >> 2 << 4) * h;
+        sub = 0;
+    } else if (f & 4) {
+        pix = ((w + 7) >> 3 << 3) * h;
+        if (f & 1) {
+            sub = ((w + 15) >> 4 << 3) * h;
+        } else {
+            sub = pix;
+        }
+    } else {
+        pix = ((w + 3) >> 2 << 3) * h;
+        if (f & 1) {
+            sub = ((w + 15) >> 4 << 3) * h;
+        } else {
+            sub = ((w + 7) >> 3 << 3) * h;
+        }
+    }
+    off = 8;
+    e = t + 8;
+    for (i = 0; i < t[2]; i++) {
+        if (i == page) {
+            return e;
+        }
+        g = e[3];
+        off += 8;
+        if (g & 1) {
+            off += pix;
+        }
+        if (g & 2) {
+            off += sub;
+        }
+        if (g & 4) {
+            off += 0x200;
+        }
+        e = t + off;
+    }
+    return NULL;
+}
 
 /* Palette that follows the pixel data of image t's page (NULL if the page has none) */
-u8 *func_80199FF0_ovl_1CE070(u8 *t) {
-    u8 *e = func_80199ECC_ovl_1CE070(t);
+u8 *func_80199FF0_ovl_1CE070(u8 *t, u32 page) {
+    u8 *e = func_80199ECC_ovl_1CE070(t, page);
     u16 w;
     s32 h;
     s32 stride;

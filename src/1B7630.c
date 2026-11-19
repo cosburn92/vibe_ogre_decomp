@@ -2,14 +2,14 @@
 
 /* 1B7630 */
 
-u8 *func_80219F40_ovl_1B2670(u8 *t);
+u8 *func_80219F40_ovl_1B2670(u8 *t, u32 page);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_80219F40_ovl_1B2670);
 
 /* Palette that follows the pixel data of image t's page (NULL if the page has none) */
-u8 *func_8021A064_ovl_1B2670(u8 *t) {
-    u8 *e = func_80219F40_ovl_1B2670(t);
+u8 *func_8021A064_ovl_1B2670(u8 *t, u32 page) {
+    u8 *e = func_80219F40_ovl_1B2670(t, page);
     u16 w;
     s32 h;
     s32 stride;
