@@ -111,7 +111,31 @@ INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7344_ovl_24BCA0);
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F751C_ovl_24BCA0);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7644_ovl_24BCA0);
+/* Position for string str (0xFF-terminated): x of the last character, y and z averaged */
+void func_801F7644_ovl_24BCA0(u8 *str, f32 *out, u8 c) {
+    struct {
+        f32 x;
+        f32 y;
+        f32 z;
+    } sum;
+    struct {
+        f32 x;
+        f32 y;
+        f32 z;
+        s32 w;
+    } p;
+    s16 i;
+
+    bzero(&sum, 0xC);
+    for (i = 0; str[i] != 0xFF; i++) {
+        func_801F7344_ovl_24BCA0(str[i], (u8 *)&p, c);
+        sum.y += p.y;
+        sum.z += p.z;
+    }
+    out[0] = p.x;
+    out[1] = sum.y / i;
+    out[2] = sum.z / i;
+}
 
 /* Map unit index at world position pos (-1 if none or not targetable) */
 s16 func_801F7738_ovl_24BCA0(f32 *pos) {
