@@ -12,7 +12,7 @@ extern s16 D_8022A71A_ovl_1BA050;
 extern s16 D_8022A71C_ovl_1BA050;
 extern s16 D_8022A71E_ovl_1BA050;
 void bzero(void *p, s32 size);
-void *func_8017F334(s32 id);
+void *func_8017F334(u16 id);
 void func_8017C2FC(void *p);
 void func_80225058_ovl_1BA050(s32 a, s32 b);
 void func_802261D0_ovl_1BA050(s32 a, s32 b);
@@ -65,6 +65,14 @@ void func_80220F64_ovl_1BA050(u16 a, u8 b);
 void func_8017C074(s32 a, s32 b, void *fn, s32 c, s32 d, s32 e, s32 f);
 void func_80229BD4_ovl_1BA050(void);
 s32 func_8016FBE0(u8 a, u8 b, void *out);
+typedef void (*ScriptObjFn)(ScriptObj *o);
+extern ScriptObjFn D_8022A020_ovl_1BA050[];
+extern void *D_8022A260_ovl_1BA050[];
+extern void *D_8022A654_ovl_1BA050;
+extern u8 D_8022A658_ovl_1BA050[];
+void *HMalloc(s32 size);
+void *LoadChunk(s32 id);
+void _bcopy(void *src, void *dst, s32 n);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
@@ -73,7 +81,33 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022402C_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224268_ovl_1BA050);
 
+#ifdef NON_MATCHING
+/* and/addu operand order (2 instructions) */
+void func_80224320_ovl_1BA050(u8 *p, u16 mask) {
+    u16 bit = 1;
+    u32 i;
+
+    while (mask != 0) {
+        if (mask & bit) {
+            for (i = 0; i < 16; i++) {
+                if (bit & FIELD(p, u16, 0x12 + i * 6)) {
+                    break;
+                }
+            }
+            if (i < 16) {
+                mask ^= bit;
+                FIELD(p + i * 6, u16, 0x12) = 0;
+                (p + i * 6)[0x14] = 0;
+                (p + i * 6)[0x15] = 0;
+                (p + i * 6)[0x16] = 0;
+            }
+        }
+        bit <<= 1;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224320_ovl_1BA050);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802243A0_ovl_1BA050);
 
@@ -87,9 +121,37 @@ void func_80224A88_ovl_1BA050(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224AAC_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224B5C_ovl_1BA050);
+/* Runs each active script object's type handler */
+void func_80224B5C_ovl_1BA050(void) {
+    s32 i;
+    ScriptObjFn fn;
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224BE8_ovl_1BA050);
+    for (i = 0; i < 4; i++) {
+        if (D_8022A2E8_ovl_1BA050[i].b[0] != 0) {
+            fn = D_8022A020_ovl_1BA050[D_8022A2E8_ovl_1BA050[i].b[0]];
+            if (fn != NULL) {
+                fn(&D_8022A2E8_ovl_1BA050[i]);
+            }
+        }
+    }
+}
+
+void func_80224BE8_ovl_1BA050(void) {
+    void *o = func_8017F334(0x5100);
+    s32 i;
+    s32 n;
+
+    if (o != NULL) {
+        func_8017C2FC(o);
+    }
+    n = 34;
+    for (i = 0; i < n; i++) {
+        if (D_8022A260_ovl_1BA050[i] != NULL) {
+            HFree(D_8022A260_ovl_1BA050[i]);
+            D_8022A260_ovl_1BA050[i] = NULL;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224C60_ovl_1BA050);
 
@@ -225,11 +287,46 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228BF0_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228CE4_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228E88_ovl_1BA050);
+void func_80228E88_ovl_1BA050(s32 i) {
+    void *o;
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228EE4_ovl_1BA050);
+    if (i >= 4) {
+        for (;;) {
+        }
+    }
+    o = func_8017F334(i | 0x5400);
+    if (o != NULL) {
+        func_8017C2FC(o);
+    }
+    D_8022A698_ovl_1BA050[i].used = 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228F54_ovl_1BA050);
+void func_80228EE4_ovl_1BA050(void) {
+    s32 i;
+    void *o;
+
+    for (i = 0; i < 4; i++) {
+        o = func_8017F334(i | 0x5400);
+        if (o != NULL) {
+            func_8017C2FC(o);
+        }
+        D_8022A698_ovl_1BA050[i].used = 0;
+    }
+    HFree(D_8022A654_ovl_1BA050);
+}
+
+void func_80228F54_ovl_1BA050(void) {
+    u8 *p;
+
+    bzero(D_8022A698_ovl_1BA050, 0x80);
+    D_8022A654_ovl_1BA050 = HMalloc(0x2D0);
+    p = LoadChunk(0x1DC873E);
+    _bcopy(p + 0x3E28, D_8022A654_ovl_1BA050, 0x2D0);
+    HFree(p);
+    p = LoadChunk(0x1DCB92C);
+    _bcopy(p + 0x520, D_8022A658_ovl_1BA050, 0x20);
+    HFree(p);
+}
 
 void func_80228FE8_ovl_1BA050(s32 i) {
     Rec698 *r;
