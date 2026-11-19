@@ -456,7 +456,22 @@ void func_801B2CC0_ovl_0FA5E0(u8 *p, s16 a, u16 *x, u16 *y) {
     FIELD(p, s16, 0x8A) = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B2CFC_ovl_0FA5E0);
+/* Steps the 4 values at 0x8C from 0x94 toward 0x9C over 0x8A frames (counter at 0x88) */
+void func_801B2CFC_ovl_0FA5E0(u8 *o) {
+    u32 i;
+
+    if (FIELD(o, s16, 0x88) < FIELD(o, s16, 0x8A)) {
+        for (i = 0; i < 4; i++) {
+            ((s16 *)(o + 0x8C))[i] = ((s16 *)(o + 0x94))[i] +
+                (((s16 *)(o + 0x9C))[i] - ((s16 *)(o + 0x94))[i]) * FIELD(o, s16, 0x88) / FIELD(o, s16, 0x8A);
+        }
+        FIELD(o, s16, 0x88)++;
+    } else {
+        for (i = 0; i < 4; i++) {
+            ((s16 *)(o + 0x8C))[i] = ((s16 *)(o + 0x9C))[i];
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B2DBC_ovl_0FA5E0);
 
