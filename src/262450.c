@@ -30,6 +30,10 @@ void func_8020DD60_ovl_25EE90(s32 a, Task *t);
 
 
 
+extern s32 D_80220D90_ovl_25EE90;
+extern Task **D_80220D94_ovl_25EE90;
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/262450", func_8020D8A0_ovl_25EE90);
 
 void func_8020D9D8_ovl_25EE90(void) {
@@ -97,7 +101,18 @@ void func_8020DC90_ovl_25EE90(Task *t) {
     t->next = NULL;
 }
 
+/* Runs task t's function with t as the current task (task stack D_80220D94) */
+#ifdef NON_MATCHING
+/* register choice after the call differs (a0/a1 vs v1/a0) */
+void func_8020DCAC_ovl_25EE90(Task *t, u16 a) {
+    D_80220FE8_ovl_25EE90 = t;
+    D_80220D94_ovl_25EE90[--D_80220D90_ovl_25EE90] = t;
+    t->func(a, t->data);
+    D_80220FE8_ovl_25EE90 = D_80220D94_ovl_25EE90[++D_80220D90_ovl_25EE90];
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/262450", func_8020DCAC_ovl_25EE90);
+#endif
 
 void func_8020DD34_ovl_25EE90(u16 a) {
     Task *t = D_80220FE8_ovl_25EE90;
@@ -111,9 +126,35 @@ void func_8020DF00_ovl_25EE90(s32 a) {
     func_8020DD60_ovl_25EE90(a, D_80220FE8_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020DF24_ovl_25EE90);
+/* Unlinks task t and returns it to the free list */
+inline void func_8020DF24_ovl_25EE90(Task *t) {
+    Task *prev = t->prev;
+    Task *next = t->next;
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020DFB8_ovl_25EE90);
+    if (prev != NULL) {
+        prev->next = next;
+    }
+    if (next != NULL) {
+        next->prev = prev;
+    }
+    if (D_80220D88_ovl_25EE90 == t) {
+        D_80220D88_ovl_25EE90 = prev;
+    }
+    if (D_80220D8C_ovl_25EE90 == t) {
+        D_80220D8C_ovl_25EE90 = next;
+    }
+    t->func = NULL;
+    t->parent = NULL;
+    t->prev = NULL;
+    t->next = NULL;
+    t->state = 0;
+    t->nextFree = D_80220E8E_ovl_25EE90;
+    D_80220E8E_ovl_25EE90 = t - D_80220D84_ovl_25EE90;
+}
+
+void func_8020DFB8_ovl_25EE90(void) {
+    func_8020DF24_ovl_25EE90(D_80220FE8_ovl_25EE90);
+}
 
 #ifdef NON_MATCHING
 /* Two instructions short: the original leaves its branch delay slots unfilled. */
