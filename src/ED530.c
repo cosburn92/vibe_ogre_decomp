@@ -99,7 +99,35 @@ void func_801A3A5C_ovl_0EBBB0(Tree0E *n) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3A9C_ovl_0EBBB0);
 
+/* Whether a box (8 corners) is at least partly inside the view: fails if all corners are behind any of the 4 side planes */
+#ifdef NON_MATCHING
+/* GCC biases the plane pointer (+80); the original keeps offsets 72..80 */
+s32 func_801A3B4C_ovl_0EBBB0(f32 *cam, f32 (*pts)[3]) {
+    f32 x = cam[0];
+    f32 y = cam[1];
+    f32 z = cam[2];
+    s32 k;
+    s32 i;
+
+    for (k = 0; k < 4; k++, cam += 3) {
+        f32 nx = cam[18];
+        f32 ny = cam[19];
+        f32 nz = cam[20];
+
+        for (i = 0; i < 8; i++) {
+            if ((pts[i][0] - x) * nx + (pts[i][1] - y) * ny + (pts[i][2] - z) * nz >= 0.0f) {
+                break;
+            }
+        }
+        if (i == 8) {
+            return 0;
+        }
+    }
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3B4C_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3BEC_ovl_0EBBB0);
 
