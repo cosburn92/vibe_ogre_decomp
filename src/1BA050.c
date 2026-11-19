@@ -76,6 +76,7 @@ void func_8017C2FC(void *o);
 void func_8017C384(void *o);
 void *LoadAsset(s32 file, s32 id, s32 a, s32 b);
 void bzero(void *p, s32 n);
+#define U16AT(p, off) (*(u16 *)((u8 *)(p) + (off)))
 /* --- end decls --- */
 
 void func_80220F64_ovl_1BA050(u16 id, u8 v) {
@@ -522,9 +523,37 @@ s32 func_8022280C_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022284C_ovl_1BA050);
+s32 func_8022284C_ovl_1BA050(ScriptCtx *c) {
+    u8 *o = func_80222EA0_ovl_1BA050(c->pc[1]);
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802228DC_ovl_1BA050);
+    o[0] = 1;
+    U16AT(o, 2) = U16AT(c->pc, 4);
+    U16AT(o, 4) = U16AT(c->pc, 6);
+    U16AT(o, 0x10) = 0;
+    U16AT(o, 0xE) = 0;
+    U16AT(o, 6) = U16AT(o, 0xA) = U16AT(o, 2);
+    U16AT(o, 8) = U16AT(o, 0xC) = U16AT(o, 4);
+    func_80224268_ovl_1BA050(o, U16AT(c->pc, 2), 1);
+    c->pc += 8;
+    return 0;
+}
+
+s32 func_802228DC_ovl_1BA050(ScriptCtx *c) {
+    u8 *o = func_80222EEC_ovl_1BA050(c->pc[1]);
+
+    if (o[0] != 1) {
+        for (;;) {
+        }
+    }
+    U16AT(o, 6) = U16AT(o, 2);
+    U16AT(o, 8) = U16AT(o, 4);
+    U16AT(o, 0xA) = U16AT(c->pc, 4);
+    U16AT(o, 0xC) = U16AT(c->pc, 6);
+    U16AT(o, 0xE) = U16AT(c->pc, 2);
+    U16AT(o, 0x10) = 0;
+    c->pc += 8;
+    return 0;
+}
 
 s32 func_8022296C_ovl_1BA050(ScriptCtx *ctx) {
     u8 *o = func_80222EEC_ovl_1BA050(ctx->pc[1]);
