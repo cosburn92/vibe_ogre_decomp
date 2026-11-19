@@ -21,6 +21,17 @@ void *HMalloc(s32 size);
 extern s32 D_80220DA4_ovl_25EE90;
 void func_801B55C4(void);
 void func_8020E224_ovl_25EE90(s32 a);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+typedef struct {
+    s32 m[16];
+} Mtx40;
+extern Gfx *D_800E9BA0;
+extern Mtx40 *D_801969B0;
+void guOrtho(Mtx40 *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void func_800987E0(Mtx40 *m);
 /* --- end decls --- */
 
 /* Pool of 256 blocks chained through `next`, plus a pointer table */
@@ -50,7 +61,23 @@ void func_8020E1F4_ovl_25EE90(void) {
 
 INCLUDE_ASM("asm/nonmatchings/262CC0", func_8020E224_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/262CC0", func_8020E3A0_ovl_25EE90);
+/* 2D pass: orthographic 320x240 projection and identity model view, then draws the blocks of layer a */
+void func_8020E3A0_ovl_25EE90(u16 a) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+    guOrtho(D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, -500.0f, 2000.0f, 1.0f);
+    func_800987E0(D_801969B0 + 1);
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380007;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380003;
+    g->w1 = (u32)D_801969B0++;
+    func_8020E224_ovl_25EE90(a);
+}
 
 void func_8020E4A0_ovl_25EE90(void) {
     func_801B55C4();
