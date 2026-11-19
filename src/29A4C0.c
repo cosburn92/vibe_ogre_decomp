@@ -83,7 +83,39 @@ void func_8022AC90_ovl_29A4C0(s32 *in) {
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AD6C_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AE84_ovl_29A4C0);
+/* Periodic drift: every `period` ticks (or each tick when -1) add delta to x/z, `total` ticks */
+typedef struct {
+    s16 period;
+    s16 count;
+    s16 total;
+    s16 pad;
+    f32 delta;
+} Drift29;
+
+void func_8022AE84_ovl_29A4C0(void) {
+    s32 i;
+    Drift29 *d;
+    u8 *u;
+
+    for (i = 0; i < 0x1C; i++) {
+        d = FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4);
+        if (d == NULL) {
+            continue;
+        }
+        if (++d->count == d->total) {
+            HFree(d);
+            FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4) = NULL;
+        } else {
+            u = FLD(D_8022A974, u8 *, 0x18 + i * 4);
+            if (d->period == -1 || d->period - 1 == d->count % d->period) {
+                FLD(u, f32, 0x120) += d->delta;
+                if (!(u[0x145] & 4)) {
+                    FLD(u, f32, 0x128) += d->delta;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AF94_ovl_29A4C0);
 

@@ -703,7 +703,23 @@ s32 func_801CA534_ovl_1F0A30(u8 *p) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA5A0_ovl_1F0A30);
+extern u8 D_801CFC98_ovl_1F0A30[];
+extern u8 D_801CFCA4_ovl_1F0A30[];
+extern u8 D_801CFCB0_ovl_1F0A30[];
+
+/* Tint of colour c for fade level t: three bands between 0.208 and 0.791 */
+u8 func_801CA5A0_ovl_1F0A30(u8 c, f32 t) {
+    if (t >= 0.208 && t < 0.375) {
+        return D_801CFC98_ovl_1F0A30[(u8)c];
+    }
+    if (t >= 0.375 && t < 0.625) {
+        return D_801CFCA4_ovl_1F0A30[(u8)c];
+    }
+    if (t >= 0.625 && t < 0.791) {
+        return D_801CFCB0_ovl_1F0A30[(u8)c];
+    }
+    return c;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA680_ovl_1F0A30);
 
