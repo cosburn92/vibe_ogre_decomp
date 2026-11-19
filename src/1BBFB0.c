@@ -33,6 +33,7 @@ ScriptObj *func_80222EEC_ovl_1BA050(s32 i) {
 }
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+void func_80180B1C(u8 *n, s16 x0, s16 y0, s16 x1, s16 y1);
 s32 func_801794C8(void *text);
 void func_802284B4_ovl_1BA050();
 void func_80228BF0_ovl_1BA050(s32 id);
@@ -58,10 +59,10 @@ typedef struct {
     /* 0x10 */ u16 h10;
     /* 0x12 */ u16 h12;
     /* 0x14 */ u16 h14;
-    /* 0x16 */ u16 h16;
-    /* 0x18 */ u16 h18;
-    /* 0x1A */ u16 h1A;
-    /* 0x1C */ u16 h1C;
+    /* 0x16 */ s16 h16;
+    /* 0x18 */ s16 h18;
+    /* 0x1A */ s16 h1A;
+    /* 0x1C */ s16 h1C;
     /* 0x1E */ u8 unk1E[2];
 } Rec698; /* size 0x20 */
 extern Rec698 D_8022A698_ovl_1BA050[];
@@ -621,7 +622,48 @@ void func_80228BF0_ovl_1BA050(s32 id) {
     func_80179034(FIELD(r, void *, 4), FIELD(r, s16, 0xA) - FIELD(r, u16, 0xE) / 2 + 8, FIELD(r, s16, 0xC) - 8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228CE4_ovl_1BA050);
+/* Window open/close animation over 10 frames (states 1 and 2), then updates the frames of framed
+ * windows */
+void func_80228CE4_ovl_1BA050(void) {
+    s32 i;
+    Rec698 *r;
+    u8 *n;
+    s32 st;
+
+    for (i = 0; i < 4; i++) {
+        r = &D_8022A698_ovl_1BA050[i];
+        if (r->used == 0) {
+            continue;
+        }
+        st = r->state;
+        if (st != 0) {
+            if (st < 3) {
+                if (++r->h1C >= 10) {
+                    r->h1C = 10;
+                    r->h10 = r->h14;
+                    r->h16 = r->h1A;
+                    if (r->state == 1) {
+                        r->state = 0;
+                    } else {
+                        r->state = 3;
+                    }
+                } else {
+                    r->h10 = r->h12 + (r->h14 - r->h12) * r->h1C / 10;
+                    r->h16 = r->h18 + (r->h1A - r->h18) * r->h1C / 10;
+                }
+            }
+        }
+        if (!(r->flags & 2)) {
+            continue;
+        }
+        n = (u8 *)r->used;
+        FIELD(n, s32, 0x2C) = r->hA - r->h10 / 2;
+        FIELD(n, s32, 0x30) = r->hC - 11;
+        FIELD(n, s32, 0x34) = FIELD(n, s32, 0x2C) + r->h10;
+        FIELD(n, s32, 0x38) = FIELD(n, s32, 0x30) + 0x15;
+        func_80180B1C(n, FIELD(n, s16, 0x2E), FIELD(n, s16, 0x32), FIELD(n, s16, 0x36), FIELD(n, s32, 0x38));
+    }
+}
 
 void func_80228E88_ovl_1BA050(s32 i) {
     void *o;
