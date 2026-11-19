@@ -146,6 +146,12 @@ void func_8017D6D0(Win28 *w, u8 a, u8 b, u8 c, s32 d, s32 e, s32 f);
 s32 strlen(const char *s);
 u16 func_801794C8(char *s);
 TimeStamp *func_8022EC34_ovl_286BD0(u8 i);
+typedef struct {
+    u8 unk0[4];
+    u8 **ptrs;
+} PtrTbl28;
+void bzero(void *p, s32 n);
+void func_80080998(void *dst, void *src, s32 n);
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -575,7 +581,23 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238910_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238A00_ovl_286BD0);
 
+/* Copies block idx (0x500 bytes) into o and rebases its sub-block pointers into o */
+#ifdef NON_MATCHING
+/* loop count test is blez (signed) in the original; register order differs */
+void func_80238C4C_ovl_286BD0(u8 *o, u16 idx, PtrTbl28 *t) {
+    s32 n = o[0x5F4];
+    u8 *src = t->ptrs[idx];
+    s32 i;
+
+    bzero(o, 0x500);
+    func_80080998(o, src, 0x500);
+    for (i = 0; i < n; i++) {
+        *(u8 **)(o + 0x530 + i * 4) = o + (t->ptrs[idx + i] - t->ptrs[idx]);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238C4C_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238D14_ovl_286BD0);
 
@@ -690,7 +712,53 @@ s32 func_80239634_ovl_286BD0(s32 n) {
     return 0;
 }
 
+/* Whether list row n is the last entry of its date group */
+#ifdef NON_MATCHING
+/* return-1 block placement differs */
+s32 func_802396F0_ovl_286BD0(s32 n) {
+    s32 k = 0;
+    u8 mid = 0;
+    u16 hi = 0;
+    s32 i;
+    TimeStamp *t;
+
+    for (i = 0; i < 121; i++) {
+        t = func_8022EC34_ovl_286BD0(i);
+        if (t == NULL) {
+            return 0;
+        }
+        if (hi != t->hi) {
+            mid = t->mid;
+            hi = t->hi;
+            if (n == k) {
+                return 0;
+            }
+            k++;
+            if (n == k) {
+                return 1;
+            }
+        } else {
+            if (mid != t->mid) {
+                if (n == k) {
+                    return 0;
+                }
+                k++;
+                mid = t->mid;
+                if (n == k) {
+                    return 1;
+                }
+            }
+            if (n == k) {
+                return 0;
+            }
+        }
+        k++;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802396F0_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802397B8_ovl_286BD0);
 
