@@ -11,6 +11,11 @@ void _bcopy(const void *src, void *dst, s32 n);
 void func_801CC684_ovl_087200(u8 *w, void (*f)(), s32 a, s32 b, s32 c, s32 d);
 void func_801B6394_ovl_087200();
 void func_801B3B00_ovl_087200();
+u8 func_801D080C_ovl_087200(u16 row);
+void func_801CE540_ovl_087200(void);
+void func_801CE66C_ovl_087200(void);
+void func_801CE374_ovl_087200(void);
+void func_801CE28C_ovl_087200(void);
 void func_801AA2B8_ovl_087200();
 void func_801C7CA0_ovl_087200(s16 *a, s16 *b, s16 *c, s16 *d);
 void func_801CCA50_ovl_087200(s32 a, s32 b, void (*f)(), s32 c, s32 d, s32 e, s32 g);
@@ -213,7 +218,38 @@ void func_801CA80C_ovl_087200(u16 r, u16 c) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA80C_ovl_087200);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA900_ovl_087200);
+/* Marks every unit placed in the ten grid rows as deployed (flag 8, counting down the free total),
+ * recomputes each row's value and refreshes the lists */
+void func_801CA900_ovl_087200(void) {
+    s32 i;
+    s32 k;
+    u8 *row;
+    u8 *rec;
+    u8 u;
+
+    for (i = 0; i < 10; i++) {
+        row = D_80196AF8 + 0x10D4 + i * 14;
+        if (row[8] == 0) {
+            continue;
+        }
+        for (k = 0; k < 5; k++) {
+            u = (row + k)[2];
+            if (u == 0xFF) {
+                continue;
+            }
+            rec = D_80196AF8 + (u * 54 + 0x117C);
+            if (!(rec[1] & 8)) {
+                FIELD(D_80196AF8, s32, 0x2C0)--;
+                rec[1] |= 8;
+            }
+        }
+        row[0xA] = func_801D080C_ovl_087200(i);
+    }
+    func_801CE540_ovl_087200();
+    func_801CE66C_ovl_087200();
+    func_801CE374_ovl_087200();
+    func_801CE28C_ovl_087200();
+}
 
 void func_801CA9FC_ovl_087200(void) {
     u8 *b = D_80196AF8 + 0x1160;
