@@ -18,6 +18,14 @@ void HFree(void *p);
 
 
 
+#define SCENE_PARENT(i) (D_800E82C8[i].parent)
+extern s32 D_800C4C20;
+extern u16 D_800C4C26;
+extern u8 D_800E7A32;
+void func_80077F88(s32 i);
+void *HMallocBack(s32 size);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800764E0);
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800765D8);
@@ -84,11 +92,75 @@ INCLUDE_ASM("asm/nonmatchings/68E0", func_80076F5C);
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_8007705C);
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80077160);
+/* Closes every child scene of the current scene (D_800C4C20) */
+void func_80077160(void) {
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80077200);
+    if (D_800C4C20 < 0) {
+        return;
+    }
+    for (i = 0; i < 6; i++) {
+        if (i == D_800C4C20) {
+            continue;
+        }
+        if (!(D_800E82C8[i].flags & 0x8000)) {
+            continue;
+        }
+        if (SCENE_PARENT(i) != D_800C4C20) {
+            continue;
+        }
+        func_80077F88(i);
+    }
+    {
+        u8 *p = &D_800E7A32;
 
+        *p |= 2;
+    }
+}
+
+/* Closes every child scene of scene id */
+void func_80077200(s32 id) {
+    s32 i;
+
+    if (id < 0) {
+        return;
+    }
+    for (i = 0; i < 6; i++) {
+        if (i == id) {
+            continue;
+        }
+        if (!(D_800E82C8[i].flags & 0x8000)) {
+            continue;
+        }
+        if (SCENE_PARENT(i) != id) {
+            continue;
+        }
+        func_80077F88(i);
+    }
+}
+
+#ifdef NON_MATCHING
+/* lhu result is re-masked with andi in the original */
+void func_80077288(void) {
+    s32 i;
+
+    func_80077F80();
+    if (D_800C4C26 == 0xFFFF) {
+        return;
+    }
+    for (i = 0; i < 6; i++) {
+        if (!(D_800E82C8[i].flags & 0x8000)) {
+            continue;
+        }
+        if (!(D_800E82C8[i].flags3 & 4)) {
+            continue;
+        }
+        func_80077F88(i);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/68E0", func_80077288);
+#endif
 
 s32 func_80077314(void *owner) {
     s32 i;
@@ -158,7 +230,24 @@ void func_80077F80(void) {
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_80077F88);
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_800780D4);
+/* Saves n bytes of src into a new back-heap block: [kind, pad, n, n, data...] */
+void func_800780D4(u8 kind, void *src, u16 n, u8 **out) {
+    u8 *p;
+
+    if (n == 0) {
+        *out = NULL;
+        return;
+    }
+    if (kind & 1) {
+        return;
+    }
+    p = HMallocBack(n + 6);
+    *out = p;
+    p[0] = kind;
+    *(u16 *)(p + 2) = n;
+    *(u16 *)(p + 4) = n;
+    _bcopy(src, p + 6, n);
+}
 
 /* Copies a packet's payload (u16 size at +2, data at +6) to dst and frees the packet. */
 void func_80078164(u8 *p, void *dst) {

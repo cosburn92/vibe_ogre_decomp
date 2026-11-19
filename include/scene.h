@@ -7,7 +7,8 @@
 typedef struct {
     /* 0x00 */ u16 flags;
     /* 0x02 */ u8 flags2; /* 0x10: moved up 0x1C lines */
-    /* 0x03 */ u8 unk03[3];
+    /* 0x03 */ u8 flags3;
+    /* 0x04 */ u8 unk04[2];
     /* 0x06 */ s16 x;
     /* 0x08 */ s16 y;
     /* 0x0A */ s16 x2;
@@ -33,7 +34,9 @@ typedef struct {
     /* 0x95 */ u8 unk95;
     /* 0x96 */ u8 unk96;
     /* 0x97 */ u8 unk97;
-    /* 0x98 */ u8 unk98[0x10];
+    /* 0x98 */ u8 unk98[0xA];
+    /* 0xA2 */ s16 parent;
+    /* 0xA4 */ u8 unkA4[4];
 } Scene; /* size 0xA8 */
 
 extern Scene D_800E82C8[];
