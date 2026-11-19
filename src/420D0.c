@@ -9,11 +9,17 @@ typedef struct {
     u8 minutes;
     u8 seconds;
 } Clock420;
+
+typedef struct {
+    u16 year;
+    u8 month;
+    u8 day;
+} Date420;
 extern Clock420 D_80196A2C_ovl_040E80;
 extern u8 D_80196A30_ovl_040E80[];
 extern u8 D_80196A34_ovl_040E80;
 extern u8 D_80196A35_ovl_040E80;
-void DateAdvanceDay(void *d);
+s32 DateAdvanceDay(Date420 *d);
 u64 osGetTime(void);
 extern u8 D_80196A28_ovl_040E80[];
 extern u8 D_80196A32_ovl_040E80;
@@ -30,11 +36,6 @@ extern u8 D_801936AD_ovl_040E80;
 extern u8 D_80196AA4_ovl_040E80;
 extern u8 D_80197810_ovl_040E80[];
 void *memset(void *p, s32 c, s32 n);
-typedef struct {
-    u16 year;
-    u8 month;
-    u8 day;
-} Date420;
 extern u8 D_80186FFF_ovl_040E80[];
 void ProfileFlagSet(s32 flag, s32 v);
 /* --- end decls --- */
@@ -78,7 +79,35 @@ inline u8 func_8016C528_ovl_040E80(Clock420 *c, u8 mode) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/420D0", DateAdvanceDay);
+/* Steps the date forward one day (month 3 gets an extra day in leap years); stops at 25/15/999 */
+s32 DateAdvanceDay(Date420 *d) {
+    s32 leap = 0;
+    u16 y;
+
+    if (d->day == 25) {
+        if (d->month == 15) {
+            if (d->year == 999) {
+                return 0;
+            }
+        }
+    }
+    if (d->month == 3) {
+        if (func_8016C1D0_ovl_040E80(d->year, 1) == 1) {
+            leap = 1;
+        }
+    }
+    if (++d->day > leap + D_80186FFF_ovl_040E80[d->month]) {
+        d->day = 1;
+        if (++d->month >= 16) {
+            d->month = 1;
+            y = d->year;
+            if ((d->year = y + 1) == 999) {
+                d->year = y;
+            }
+        }
+    }
+    return 0;
+}
 
 /* Steps the date back one day (month 4 gets an extra day in leap years) */
 s32 func_8016C70C_ovl_040E80(Date420 *d) {
@@ -109,7 +138,7 @@ void func_8016C81C_ovl_040E80(void) {
     if (++*t >= D_80196A34_ovl_040E80) {
         *t = 0;
         if (func_8016C528_ovl_040E80(&D_80196A2C_ovl_040E80, 1) == 1) {
-            DateAdvanceDay(D_80196A30_ovl_040E80);
+            DateAdvanceDay((Date420 *)D_80196A30_ovl_040E80);
         }
     }
 }
