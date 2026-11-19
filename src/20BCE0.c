@@ -168,7 +168,7 @@ s32 func_801C8BC0_ovl_1F0A30(u8 a, u8 b) {
     return func_801C8B84_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(a)) ^ func_801C8B84_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(b));
 }
 
-s32 func_801C8C3C_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8C3C_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -316,7 +316,7 @@ s32 func_801C8E80_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 2) & 1;
 }
 
-s32 func_801C8E9C_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8E9C_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -690,9 +690,58 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC124_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC234_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC37C_ovl_1F0A30);
+/* 1 when one side has no active units left (dead, retreated or flag 1 excluded) */
+s32 func_801CC37C_ovl_1F0A30(void) {
+    s32 enemy = 0;
+    s32 player = 0;
+    s32 i;
+    BattleUnit *u;
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC44C_ovl_1F0A30);
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (func_801C8E30_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (func_801C8C3C_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (func_801C8E9C_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (func_801C8B84_ovl_1F0A30(u)) {
+            player++;
+        } else {
+            enemy++;
+        }
+    }
+    return (player == 0) | (enemy == 0);
+}
+
+/* 1 when one side is gone or no active unit has +0x6C < +0x70 (likely: battle round finished) */
+s32 func_801CC44C_ovl_1F0A30(void) {
+    s32 i;
+    BattleUnit *u;
+
+    if (func_801CC37C_ovl_1F0A30()) {
+        return 1;
+    }
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (func_801C8E30_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (func_801C8E9C_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (func_801C8C3C_ovl_1F0A30(u)) {
+            continue;
+        }
+        if (FIELD(u, s32, 0x6C) < FIELD(u, s32, 0x70)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 /* Whether the player's squad carries consumable id */
 s32 func_801CC51C_ovl_1F0A30(s32 id) {
