@@ -22,6 +22,16 @@ void nuGfxTaskAllEndWait(void);
 void *osViGetCurrentFramebuffer(void);
 void func_80080998(void *dst, void *src, s32 n);
 void func_80234E50_ovl_29A4C0(void);
+extern u8 D_8018FC19;
+extern s32 D_80197774;
+extern u8 D_8022A960;
+void func_801C22E8(s32 a);
+void func_801C45E0(void);
+void func_801B7E9C(void);
+void func_8023AA84(s32 a);
+void func_8023BF30(u8 a, s32 b);
+void func_80233580_ovl_29A4C0(void);
+void func_8022BDDC_ovl_29A4C0(void);
 /* --- end decls --- */
 
 /* Copies the displayed frame (2 x 0x12C00 bytes) into the capture buffer */
@@ -72,7 +82,25 @@ void func_80234BE0_ovl_29A4C0(void) {
     func_80233398_ovl_29A4C0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A3F20", func_80234C04_ovl_29A4C0);
+/* Battle teardown: in mode 2 hands back to func_801B7E9C, otherwise releases the 20 handles at 0x1C04 */
+void func_80234C04_ovl_29A4C0(void) {
+    u8 i;
+
+    func_801C22E8(1);
+    func_801C45E0();
+    if (D_8018FC19 == 2) {
+        D_80197774 = 0;
+        func_801B7E9C();
+    } else {
+        for (i = 0; i < 20; i++) {
+            func_8023AA84(((s32 *)((u8 *)D_8022A974 + 0x1C04))[i]);
+            ((s32 *)((u8 *)D_8022A974 + 0x1C04))[i] = 0;
+        }
+        func_8023BF30(D_8022A960, 0);
+    }
+    func_80233580_ovl_29A4C0();
+    func_8022BDDC_ovl_29A4C0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A3F20", func_80234CBC_ovl_29A4C0);
 
