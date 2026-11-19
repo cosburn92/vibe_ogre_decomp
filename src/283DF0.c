@@ -85,7 +85,35 @@ INCLUDE_ASM("asm/nonmatchings/283DF0", func_802282B8_ovl_281860);
 
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A1F8_ovl_281860);
 
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A32C_ovl_281860);
+/* Script marker search from start: dir 1 finds the next 0x80000002; otherwise goes to the 0x80000000
+ * end marker and walks back to the n-th 0x80000002. -1 when not found */
+s32 func_8022A32C_ovl_281860(s32 *p, s32 start, s32 n, s32 dir) {
+    s32 cnt = 0;
+    s32 i;
+
+    if (dir == 1) {
+        for (i = start; i <= 0xFFFFFFE; i++) {
+            if (p[i] == 0x80000002) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    for (i = start; i <= 0xFFFFFFE; i++) {
+        if (p[i] == 0x80000000) {
+            for (; start < i; i--) {
+                if (p[i] == 0x80000002) {
+                    cnt++;
+                    if (n == cnt) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+    }
+    return -1;
+}
 
 /* Index of the (0x80000005, a) pair in the list, or 0 */
 s32 func_8022A428_ovl_281860(s32 a, s32 *p) {
