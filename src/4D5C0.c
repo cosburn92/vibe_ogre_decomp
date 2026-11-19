@@ -46,6 +46,9 @@ void func_8017223C_ovl_040E80(s32 arg);
 void func_80076E00(void);
 void func_801792BC_ovl_040E80(void);
 void func_8017BF10_ovl_040E80(void);
+s32 func_8019BCEC(void);
+void func_80172368_ovl_040E80(void);
+extern s32 D_8018FB34_ovl_040E80;
 typedef struct {
     /* 0x0 */ u16 *fb[2];  /* 64-byte aligned frame buffers */
     /* 0x8 */ u16 *raw[2]; /* the allocations */
@@ -269,7 +272,35 @@ void func_80177A1C_ovl_040E80(void) {
     func_8019B2E0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80177A38_ovl_040E80);
+/* Next game state from the title menu choice (choice 4 alternates between states 0xB and 0xC) */
+void func_80177A38_ovl_040E80(void) {
+    switch (func_8019BCEC()) {
+        case 1:
+            func_80172368_ovl_040E80();
+            func_80172394_ovl_040E80();
+            func_8017223C_ovl_040E80(1);
+            func_801707F4_ovl_040E80();
+            D_800C4C26 = D_8018F1A2_ovl_040E80;
+            break;
+        case 2:
+            D_800C4C26 = 0x8012;
+            break;
+        case 3:
+            D_800C4C26 = 0x17;
+            break;
+        case 4:
+            switch (D_8018FB34_ovl_040E80) {
+                case 0:
+                    D_800C4C26 = 0xB;
+                    break;
+                case 1:
+                    D_800C4C26 = 0xC;
+                    break;
+            }
+            D_8018FB34_ovl_040E80 = (D_8018FB34_ovl_040E80 + 1) % 2;
+            break;
+    }
+}
 
 void func_80177B40_ovl_040E80(void) {
     func_8019D548();
