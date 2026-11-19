@@ -50,66 +50,62 @@ void func_80197DB8_ovl_06E660(void) {
 
 /* Texture set: [2] count, [3] flags (1 image, 2 4-bit, 4 8-bit), u16 width at 4, height at 6;
  * each image header has its own flags (1 texels, 2 second plane, 4 palette). Returns image index. */
-#ifdef NON_MATCHING
-/* The flags and height registers (a2/a3) are swapped. */
-u8 *func_80197DE4_ovl_06E660(u8 *desc, u32 index) {
-    u8 f;
+u8 *func_80197DE4_ovl_06E660(u8 *t, u32 page) {
     u32 w;
-    u32 h;
-    s32 texSize;
-    s32 planeSize;
+    s32 h;
+    u32 pix;
+    u32 sub;
     u32 off;
     u32 i;
-    u8 *p;
+    u8 *e;
+    u8 f;
+    u8 g;
 
-    if (desc == NULL) {
+    if (t == NULL) {
         return NULL;
     }
-    f = desc[3];
-    w = *(u16 *)(desc + 4);
-    h = *(u16 *)(desc + 6);
+    f = t[3];
+    w = *(u16 *)(t + 4);
+    h = *(u16 *)(t + 6);
     if (f & 2) {
-        texSize = (((w + 3) >> 2) << 4) * h;
-        planeSize = 0;
+        pix = ((w + 3) >> 2 << 4) * h;
+        sub = 0;
     } else if (f & 4) {
-        texSize = (((w + 7) >> 3) << 3) * h;
+        pix = ((w + 7) >> 3 << 3) * h;
         if (f & 1) {
-            planeSize = (((w + 15) >> 4) << 3) * h;
+            sub = ((w + 15) >> 4 << 3) * h;
         } else {
-            planeSize = texSize;
+            sub = pix;
         }
     } else {
-        texSize = (((w + 3) >> 2) << 3) * h;
+        pix = ((w + 3) >> 2 << 3) * h;
         if (f & 1) {
-            planeSize = (((w + 15) >> 4) << 3) * h;
+            sub = ((w + 15) >> 4 << 3) * h;
         } else {
-            planeSize = (((w + 7) >> 3) << 3) * h;
+            sub = ((w + 7) >> 3 << 3) * h;
         }
     }
     off = 8;
-    p = desc + 8;
-    for (i = 0; i < desc[2]; i++) {
-        if (i == index) {
-            return p;
+    e = t + 8;
+    for (i = 0; i < t[2]; i++) {
+        if (i == page) {
+            return e;
         }
-        f = p[3];
+        g = e[3];
         off += 8;
-        if (f & 1) {
-            off += texSize;
+        if (g & 1) {
+            off += pix;
         }
-        if (f & 2) {
-            off += planeSize;
+        if (g & 2) {
+            off += sub;
         }
-        if (f & 4) {
+        if (g & 4) {
             off += 0x200;
         }
-        p = desc + off;
+        e = t + off;
     }
     return NULL;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/6E660", func_80197DE4_ovl_06E660);
-#endif
 
 /* Returns the palette that follows the image data of the texture described by desc */
 u8 *func_80197F08_ovl_06E660(u8 *desc, u32 index) {
