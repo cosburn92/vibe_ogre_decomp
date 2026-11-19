@@ -1462,7 +1462,7 @@ segments:
     subsegments:
       - [0x286BD0, asm]
       - [0x289780, asm]
-      - [0x28A7B0, asm]
+      - [0x28A7B0, c]
       - [0x296CE0, asm]
       - [0x299D50, data, 286BD0]
       - [0x299D60, data, 289780]
@@ -1470,7 +1470,9 @@ segments:
       - [0x29A030, data, 296CE0]
       - [0x29A080, rodata, 286BD0]
       - [0x29A0A0, rodata, 289780]
-      - [0x29A0B8, rodata, 28A7B0]
+      - [0x29A0B8, rodata, 28A7B0_ro0]
+      - [0x29A0C0, .rodata, 28A7B0]
+      - [0x29A1A0, rodata, 28A7B0_ro]
       - [0x29A408, rodata, 296CE0]
       - { type: bss, vram: 0x8023E580, name: 286BD0 }
       - { type: bss, vram: 0x8023E5A0, name: 28A7B0 }
