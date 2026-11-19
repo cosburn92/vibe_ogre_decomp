@@ -2,6 +2,23 @@
 #include "scene.h"
 extern u16 D_800C49D0;
 extern void *D_800AF0B0;
+extern u8 D_800C4C10[];
+extern s32 D_800E79A0;
+typedef struct {
+    /* 0x0 */ u16 h0;
+    /* 0x2 */ u8 b2;
+    /* 0x3 */ u8 b3;
+    /* 0x4 */ u8 b4;
+} Pad0A0;
+extern Pad0A0 D_800AF0A0;
+extern u8 D_800AF0A2;
+extern u8 D_800AF0A3;
+extern u8 D_800AF0A4;
+extern u16 D_800AF0A6[];
+extern Pad0A0 *D_800AF090[];
+u64 osGetTime(void);
+void func_8009C7C0(u32 seed);
+void bzero(void *p, s32 n);
 extern void *D_800E7A68[];
 extern void *D_800E7A90[];
 extern char D_800ADF88[];
@@ -26,7 +43,29 @@ void func_80077F88(s32 i);
 void *HMallocBack(s32 size);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_800764E0);
+/* Scene system init: clears the six scene slots and the input state, seeds the random generator */
+void func_800764E0(void) {
+    u16 i;
+
+    osGetTime();
+    bzero(D_800E82C8, 0x3F0);
+    bzero(D_800C4C10, 0xC);
+    D_800C4C20 = 1;
+    D_800E79A0 = 8;
+    D_800C49D0 = 0;
+    D_800AF0B0 = NULL;
+    D_800AF0A0.h0 = 0;
+    D_800AF0A0.b3 = 0;
+    D_800AF0A0.b2 = 0;
+    D_800AF0A0.b4 = 0;
+    for (i = 0; i < 4; i++) {
+        D_800AF0A6[i] = 0;
+        D_800AF090[i] = &D_800AF0A0;
+    }
+    func_8009C7C0(osGetTime());
+    D_800AF0B0 = func_80173B60(D_800AF0B0);
+    func_8007819C();
+}
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800765D8);
 
