@@ -37,6 +37,7 @@ void func_801C4778(s32 a);
 void func_801ADB00(void *p);
 void func_801ADBC0(void *p);
 void func_8023D2DC_ovl_2A8D20(s32 a);
+extern u8 D_8022A980;
 /* --- end decls --- */
 
 /* Battle overlay init */
@@ -377,7 +378,29 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DCD4_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DE14_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DF70_ovl_2A8D20);
+/* Sets up the cursor box (x, y, w, h; w = h = -1 means 24x24) */
+void func_8023DF70_ovl_2A8D20(s32 w, s32 h, s32 x, s32 y, s32 a, s32 b) {
+    D_8022A980 = 0x80;
+    if (D_8022A978 == NULL) {
+        D_8022A978 = HMalloc(0xE);
+    }
+    if (w == -1 && h == -1) {
+        ((s16 *)D_8022A978)[2] = 24;
+        ((s16 *)D_8022A978)[3] = 24;
+    } else {
+        ((s16 *)D_8022A978)[2] = w;
+        ((s16 *)D_8022A978)[3] = h;
+    }
+    {
+        s16 *p = (s16 *)D_8022A978;
+
+        p[0] = x;
+        p[1] = y;
+        p[4] = 0;
+        p[5] = a;
+        p[6] = b;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023E050_ovl_2A8D20);
 
