@@ -336,7 +336,7 @@ segments:
       - [0x2DDF0, asm]
       - [0x2DE10, asm]
       # .data: one chunk per text file in text order (tools/section_chunks.py data 2E570 3E100 --cut 38CF0).
-      - [0x2DE50, asm]
+      - [0x2DE50, c]
       - [0x2E450, asm]
       - [0x2E570, data]
       - [0x385C0, data, 1060]
