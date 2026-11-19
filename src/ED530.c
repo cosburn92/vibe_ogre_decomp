@@ -21,6 +21,8 @@ typedef struct {
     /* 0x14E */ u8 r;
     /* 0x14F */ u8 g;
     /* 0x150 */ u8 b;
+    /* 0x151 */ u8 unk151[0xB];
+    /* 0x15C */ f32 f15C;
 } Scene0E;
 
 extern Gfx *D_800E9BA0;
@@ -331,7 +333,7 @@ void func_801A9304_ovl_0EBBB0(void) {
 }
 
 #ifdef NON_MATCHING
-/* display-list pointer updates are scheduled after the command stores */
+/* With f15C as a struct member the pointer updates land correctly. What remains is register allocation (g in v1, the scene pointer in a0) and the float-to-u32 branch layout (bc1t with g copied in the delay slot). */
 void func_801A93A4_ovl_0EBBB0(void) {
     Gfx *g;
 
@@ -340,7 +342,7 @@ void func_801A93A4_ovl_0EBBB0(void) {
     g->w1 = 0;
     g = D_800E9BA0++;
     g->w0 = 0xFA000000;
-    g->w1 = (u8)(u32)(FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x15C) * 255.0f);
+    g->w1 = (u8)(u32)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A93A4_ovl_0EBBB0);
