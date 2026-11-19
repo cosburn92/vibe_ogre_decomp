@@ -19,7 +19,8 @@ RUN32      ?= $(shell $(KMC_DIR)/cc1 --version >/dev/null 2>&1 || echo qemu-i386
 CC1        := $(RUN32) $(KMC_DIR)/cc1
 CPP        := cpp -P -undef -nostdinc
 CPPFLAGS   := -I include -I src -D_LANGUAGE_C -D__GNUC__=2 -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32
-CFLAGS     := -quiet -O2 -G0 -mips3 -mgp32 -mfp32
+OPTFLAGS   := -O2
+CFLAGS      = -quiet $(OPTFLAGS) -G0 -mips3 -mgp32 -mfp32
 KMC_ASFLAGS := -EB -mcpu=vr4300 -mips3 -G0
 
 ASFLAGS    := -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mno-shared -G 0 -no-pad-sections -I include
@@ -30,6 +31,9 @@ C_FILES    := $(shell find src -name '*.c' 2>/dev/null)
 ASM_FILES  := $(shell find asm -name '*.s' -not -path 'asm/nonmatchings/*' 2>/dev/null)
 BIN_FILES  := $(shell find assets -name '*.bin' 2>/dev/null)
 O_FILES    := $(C_FILES:%.c=build/%.o) $(ASM_FILES:%.s=build/%.o) $(BIN_FILES:%.bin=build/%.o)
+
+# Files the original build compiled unoptimized (NuSystem boot)
+build/src/FC80.o: OPTFLAGS := -O0
 
 GCC_URL    := https://github.com/decompals/mips-gcc-2.7.2/releases/download/v0.1/gcc-2.7.2-linux.tar.gz
 BINUTILS_URL := https://github.com/decompals/mips-binutils-2.6/releases/download/v0.3/binutils-2.6-linux.tar.gz
