@@ -124,7 +124,31 @@ void func_801ADADC_ovl_1F0A30(s32 v) {
     c->listA[c->nA++] = v;
 }
 
+/* Removes v from listA, shifting the rest down */
+#ifdef NON_MATCHING
+/* original indexes i*4+c each pass (no induction pointer), inner loop test at top */
+void func_801ADB00_ovl_1F0A30(s32 v) {
+    s32 pad;
+    Ctx1F *c = D_801CE8BC_ovl_1F0A30;
+    u32 i;
+
+    for (i = 0; i < c->nA; i++) {
+        if (c->listA[i] == v) {
+            Ctx1F *d = c;
+
+            while (i < d->nA - 1) {
+                d->listA[i] = d->listA[i + 1];
+                i++;
+            }
+            c->nA--;
+            c->listA[c->nA] = 0;
+            return;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801ADB00_ovl_1F0A30);
+#endif
 
 void func_801ADB9C_ovl_1F0A30(s32 v) {
     Ctx1F *c = D_801CE8BC_ovl_1F0A30;
@@ -132,7 +156,19 @@ void func_801ADB9C_ovl_1F0A30(s32 v) {
     c->listB[c->nB++] = v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801ADBC0_ovl_1F0A30);
+/* Removes v from listB */
+void func_801ADBC0_ovl_1F0A30(s32 v) {
+    s32 i;
+
+    for (i = 0; i < D_801CE8BC_ovl_1F0A30->nB; i++) {
+        if (D_801CE8BC_ovl_1F0A30->listB[i] == v) {
+            _bcopy(&D_801CE8BC_ovl_1F0A30->listB[i + 1], &D_801CE8BC_ovl_1F0A30->listB[i], (D_801CE8BC_ovl_1F0A30->nB - i - 1) * 4);
+            D_801CE8BC_ovl_1F0A30->nB--;
+            D_801CE8BC_ovl_1F0A30->listB[D_801CE8BC_ovl_1F0A30->nB] = 0;
+            return;
+        }
+    }
+}
 
 void func_801ADC60_ovl_1F0A30(Spr1F *s, Mot1F *m) {
     m->vx += m->ax;
@@ -165,14 +201,23 @@ void func_801AECA4_ovl_1F0A30(s32 a) {
     func_801CA680_ovl_1F0A30(a);
 }
 
-Opt1F *func_801AED14_ovl_1F0A30(s32 i) {
+inline Opt1F *func_801AED14_ovl_1F0A30(s32 i) {
     if (func_8016FEF4(D_801CE900_ovl_1F0A30[i].flag) && ((D_801939CC >> i) & 1)) {
         return &D_801CE900_ovl_1F0A30[i];
     }
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AED84_ovl_1F0A30);
+/* Number of tactic options currently available */
+s32 func_801AED84_ovl_1F0A30(void) {
+    s32 n = 0;
+    u32 i;
+
+    for (i = 0; i < 6; i++) {
+        n += func_801AED14_ovl_1F0A30(i) != NULL;
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEE18_ovl_1F0A30);
 
