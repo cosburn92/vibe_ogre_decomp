@@ -104,6 +104,11 @@ extern StockEntry D_80193AC0[]; /* consumables, 0x28 entries */
 
 s32 guRandom(void);
 void osSyncPrintf(const char *fmt, ...);
+extern u8 D_800E7A90[]; /* pointer table; +0x29 scene slot, +0x35 map data slot */
+extern s32 D_801F1070_ovl_101CE0; /* location count */
+extern MapUnit *D_801F0D28_ovl_101CE0;
+
+f32 func_801A63FC(s32 slot, f32 x, f32 z);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -346,7 +351,40 @@ s32 func_801DA2B4_ovl_101CE0(MapUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA2B4_ovl_101CE0);
 #endif
 
+/* Map position of a location (-1: the first one with flag 0x10); y from the terrain */
+#ifdef NON_MATCHING
+/* Stage test shape differs: the target uses range compares for 0x2F-0x30 and 0x3C-0x3D, each paired with loc == 0. */
+void func_801DA340_ovl_101CE0(s32 loc, Vec3f *out) {
+    s32 i;
+    f32 *p;
+    f32 x;
+    f32 z;
+    f32 *o = (f32 *)out;
+
+    if (loc == -1) {
+        for (i = 0; i < D_801F1070_ovl_101CE0; i++) {
+            if (D_801951CC[i].flags & 0x10) {
+                break;
+            }
+        }
+    } else {
+        i = loc;
+    }
+    p = (f32 *)(((u8 **)D_800E7A90)[D_800E7A90[0x35]] + 0x1C) + i * 2;
+    x = p[0];
+    z = p[1];
+    if ((D_8018F481 == 0x27 || D_8018F481 == 0x2F || D_8018F481 == 0x30 || D_8018F481 == 0x3C || D_8018F481 == 0x3D ||
+         D_8018F481 == 0x33) && loc == 0) {
+        x = D_801F0D28_ovl_101CE0->x;
+        z = D_801F0D28_ovl_101CE0->z;
+    }
+    *o++ = x;
+    *o = func_801A63FC(D_800E7A90[0x29], x, z);
+    o[1] = z;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA340_ovl_101CE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA478_ovl_101CE0);
 
