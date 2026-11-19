@@ -1,3 +1,16 @@
 #include "common.h"
+#include "libaudio.h"
 
-INCLUDE_ASM("asm/nonmatchings/1FC50", func_8008F850);
+
+void alHeapInit(ALHeap *hp, u8 *base, s32 len) {
+    s32 extraAlign = (AL_CACHE_ALIGN + 1) - ((s32)base & AL_CACHE_ALIGN);
+
+    if (extraAlign != AL_CACHE_ALIGN + 1) {
+        hp->base = base + extraAlign;
+    } else {
+        hp->base = base;
+    }
+    hp->len = len;
+    hp->count = 0;
+    hp->cur = hp->base;
+}

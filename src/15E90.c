@@ -18,13 +18,13 @@ extern u32 D_800B1A8C; /* extra */
 extern s32 D_800A9BA0;
 
 void *alHeapDBAlloc(u8 *file, s32 line, void *hp, s32 num, s32 size);
-void func_8008F850(MusHeap *hp, u8 *base, s32 len); /* alHeapInit */
+void alHeapInit(MusHeap *hp, u8 *base, s32 len); /* alHeapInit */
 void func_80085B30(void *dest, u8 value, u32 length);
 
 /* __MusIntMemInit */
 void func_80085A90(u8 *heap, s32 length) {
     func_80085B30(heap, 0, length);
-    func_8008F850(&D_800B1A70, heap, length);
+    alHeapInit(&D_800B1A70, heap, length);
 }
 
 void *__MusIntMemMalloc(s32 size) {

@@ -1,3 +1,6 @@
 #include "common.h"
+#include "libaudio.h"
 
-INCLUDE_ASM("asm/nonmatchings/20360", alSynDelete);
+void alSynDelete(ALSynth *drvr) {
+    drvr->head = 0;
+}
