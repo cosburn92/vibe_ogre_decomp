@@ -327,6 +327,11 @@ void *func_80071C04(s32 size);
 void *LoadChunkRaw(void *dst, s32 id);
 s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
+extern u8 D_8018F320_ovl_040E80;
+extern u8 D_8018F321_ovl_040E80;
+extern s16 D_8018F322_ovl_040E80;
+u8 func_8016FF5C_ovl_040E80(u8 a, u8 b);
+void func_80172610_ovl_040E80(u8 i);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
@@ -478,7 +483,31 @@ u8 func_80172A0C_ovl_040E80(u8 i) {
     return (D_801936A6_ovl_040E80 >> (i * 2)) & 3;
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172A28_ovl_040E80);
+/* Mode 1: applies func_80172610 to every unit matching val; otherwise records a pending request */
+void func_80172A28_ovl_040E80(s32 mode, s32 kind, s32 val, u8 extra) {
+    u8 *st = &D_8018F320_ovl_040E80;
+    u16 i;
+
+    *st = 0;
+    if (mode == 1) {
+        for (i = 0; i < 100; i++) {
+            if (func_8016FF5C_ovl_040E80(D_80193BD1_ovl_040E80[i].v, val) == 1) {
+                func_80172610_ovl_040E80(i);
+                func_8016BA6C_ovl_040E80(0, i);
+            }
+        }
+    } else {
+        if (kind == 0) {
+            *st = 1;
+        } else if (kind == 2) {
+            *st = 4;
+        } else {
+            *st = 3;
+        }
+        D_8018F322_ovl_040E80 = val;
+        D_8018F321_ovl_040E80 = extra;
+    }
+}
 
 /* Sets the 2-bit field n (1-based) */
 #ifdef NON_MATCHING
