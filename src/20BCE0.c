@@ -487,7 +487,25 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA038_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA100_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA1C4_ovl_1F0A30);
+/* Unit index at (lane, row), or -1 */
+s32 func_801CA1C4_ovl_1F0A30(u32 lane, s32 row) {
+    s32 i;
+    BattleUnit *u;
+
+    if (lane >= 3 || row < 0) {
+        return -1;
+    }
+    if (row >= 9) {
+        return -1;
+    }
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (u != NULL && !(u->flags & 1) && u->unk54 == lane && u->unk58 == row) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 s32 func_801CA268_ovl_1F0A30(BattleUnit *a, BattleUnit *b) {
     s32 r = a->unk54 > b->unk54;
@@ -515,9 +533,33 @@ s32 func_801CA29C_ovl_1F0A30(BattleUnit *u) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA2E0_ovl_1F0A30);
+/* Living unit at (lane, row), or NULL */
+BattleUnit *func_801CA2E0_ovl_1F0A30(u32 lane, s32 row) {
+    s32 i;
+    BattleUnit *u;
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA384_ovl_1F0A30);
+    if (lane >= 3 || row < 0) {
+        return NULL;
+    }
+    if (row >= 9) {
+        return NULL;
+    }
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (u != NULL && !(u->flags & 1) && u->unk54 == lane && u->unk58 == row) {
+            return u;
+        }
+    }
+    return NULL;
+}
+
+/* The unit's squad strategy: the in-battle setting (state +0x1C0) for the player side, the squad record for the enemy */
+s32 func_801CA384_ovl_1F0A30(BattleUnit *u) {
+    if (func_801C8B84_ovl_1F0A30(u)) {
+        return *(s32 *)(D_801CE8BC_ovl_1F0A30 + 0x1C0);
+    }
+    return gSquads[D_801976DC[1].b[0]].unk17[0];
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA3E0_ovl_1F0A30);
 

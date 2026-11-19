@@ -658,7 +658,7 @@ __osPfsReleasePages = 0x8009616C; // type:func
 __osPfsDeclearPage = 0x80095E9C; // type:func
 audioTask = 0x800C4B50; // size:0x58
 // --- Battle targeting (ovl_22A280, notes only; not yet renamed) ---
-// func_801CA384_ovl_1F0A30 (0x801CA384): unit's strategy: player side (flags bit 8) -> battle state +0x1C0,
+// func_801CA384_ovl_1F0A30 (0x801CA384): unit's strategy: player side (flags bit 8 clear) -> battle state +0x1C0,
 //   enemy side -> gSquads[D_801976E8].strategy (+0x17). 0 Autonomous, 1 Attack Strongest, 2 Attack Leader, 3 Attack Weakest
 // func_801F0514_ovl_22A280: builds the candidate list: per lane (own, then lane+-1), the frontmost living enemy; far lane as fallback
 // func_801F0A3C_ovl_22A280: picks from the candidates by strategy:

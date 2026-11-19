@@ -26,7 +26,7 @@ typedef struct BattleUnit {
     /* 0x36 */ u16 items[4];
     /* 0x3E */ u8 unk3E;
     /* 0x3F */ u8 unk3F;
-    /* 0x40 */ u32 flags; /* bit 0 down, bit 8 player side, bit 9 leader, bit 12 not targetable */
+    /* 0x40 */ u32 flags; /* bit 0 down, bit 8 enemy side, bit 9 leader, bit 12 not targetable */
     /* 0x44 */ u8 unk44[4];
     /* 0x48 */ s32 unk48;
     /* 0x4C */ s32 cls;
