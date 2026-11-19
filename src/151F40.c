@@ -433,7 +433,39 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80207068_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207210_ovl_14EBE0);
 
+typedef struct {
+    u8 b[12];
+} Ent151;
+#define ENT151(i) ((u8 *)((Ent151 *)D_80213778_ovl_14EBE0 + (u8)(i)))
+
+/* Fills n 8-byte list rows from the entries starting at `first` */
+#ifdef NON_MATCHING
+/* register assignment of out/first/i differs (t0/t1/a3) */
+s32 func_80207380_ovl_14EBE0(u8 *out, s32 first, u8 n) {
+    u8 i;
+
+    for (i = 0; i < n; i++, first++) {
+        u8 *e = ENT151(first);
+        u8 *o = i * 8 + out;
+
+        FIELD(o, s32, 0) = FIELD(e, s32, 0x68);
+        o[4] = e[0x63] & 0x80;
+        o[5] = ENT151(first)[0x61];
+        o[7] = 0;
+        o[6] = ENT151(first)[0x62];
+        if (ENT151(first)[0x63] & 1) {
+            o[6] = 0xFF;
+            o[7] |= 1;
+        }
+        if (ENT151(first)[0x63] & 2) {
+            o[4] |= 1;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207380_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020746C_ovl_14EBE0);
 
