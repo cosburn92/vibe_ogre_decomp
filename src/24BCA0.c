@@ -48,6 +48,8 @@ extern u16 D_801CEF10[];
 void func_801C5938(void *a, u16 b);
 s32 guRandom(void);
 void func_801BC3A0(s16 x, s16 y, s32 a, s32 b);
+void func_8020A348(f32 *a, f32 *b, f32 *out);
+void guMtxIdentF(f32 (*m)[4]);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -143,7 +145,28 @@ void func_801F7BE4_ovl_24BCA0(f32 *d, f32 *a, f32 *b) {
     d[2] = a[2] - b[2];
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7C18_ovl_24BCA0);
+/* Rotation matrix whose z axis is dir (y up); dir is used as given (not normalised) */
+void func_801F7C18_ovl_24BCA0(f32 *dir, f32 (*m)[4]) {
+    f32 b[3][3];
+    s32 i;
+    s32 j;
+    s32 k;
+
+    b[1][0] = 0.0f;
+    b[1][1] = 1.0f;
+    b[1][2] = 0.0f;
+    b[2][0] = dir[0];
+    b[2][1] = dir[1];
+    b[2][2] = dir[2];
+    func_8020A348(b[1], b[2], b[0]);
+    func_8020A348(b[2], b[0], b[1]);
+    guMtxIdentF(m);
+    for (i = 0, k = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            m[i][j] = b[0][k++];
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7CF4_ovl_24BCA0);
 
