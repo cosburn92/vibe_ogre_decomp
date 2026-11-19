@@ -1,4 +1,5 @@
 #include "common.h"
+#include "scene.h"
 
 /* 49820 */
 
@@ -12,6 +13,12 @@ extern SceneSlot D_800E82CA[];
 
 s32 func_80077314(void *p);
 void func_80079618();
+extern s32 D_80190F20_ovl_040E80;
+extern u8 *D_801977CC_ovl_040E80;
+extern u8 *D_800C4BB8;
+extern u16 D_800C4C26;
+void func_80089BC0(void);
+void _bcopy(const void *src, void *dst, s32 n);
 /* --- end decls --- */
 
 u8 *func_80173920_ovl_040E80(void) {
@@ -20,7 +27,15 @@ u8 *func_80173920_ovl_040E80(void) {
 
 INCLUDE_ASM("asm/nonmatchings/49820", func_8017392C_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/49820", func_80173A18_ovl_040E80);
+/* Copies the current frame buffer into the capture buffer if the scene asked for it */
+void func_80173A18_ovl_040E80(void) {
+    func_80089BC0();
+    if (D_800E82C8[D_80190F20_ovl_040E80].unk8B & 2) {
+        _bcopy(D_800C4BB8, D_801977CC_ovl_040E80, 0x25800);
+        D_800E82C8[D_80190F20_ovl_040E80].flags2 |= 2;
+        D_800C4C26 = 0xFFFE;
+    }
+}
 
 void func_80173AC4_ovl_040E80(void) {
 }
