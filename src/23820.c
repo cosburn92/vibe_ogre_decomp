@@ -1,7 +1,35 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/23820", strchr);
+/* libultra libc string.c */
 
-INCLUDE_ASM("asm/nonmatchings/23820", strlen);
+const char *strchr(const char *s, int c) {
+    const char ch = c;
 
-INCLUDE_ASM("asm/nonmatchings/23820", memcpy);
+    while (*s != ch) {
+        if (*s == '\0') {
+            return NULL;
+        }
+        s++;
+    }
+    return s;
+}
+
+u32 strlen(const char *s) {
+    const char *sc = s;
+
+    while (*sc != '\0') {
+        sc++;
+    }
+    return sc - s;
+}
+
+void *memcpy(void *s1, const void *s2, u32 n) {
+    char *su1 = (char *)s1;
+    const char *su2 = (const char *)s2;
+
+    while (n > 0) {
+        *su1++ = *su2++;
+        n--;
+    }
+    return s1;
+}

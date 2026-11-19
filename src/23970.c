@@ -1,3 +1,15 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/23970", osCreateMesgQueue);
+/* libultra createmesgqueue.c */
+
+extern OSThreadHdr *D_800AA790; /* __osThreadTail */
+
+void osCreateMesgQueue(OSMesgQueue *mq, OSMesg *msg, s32 msgCount) {
+    mq->mtqueue = &D_800AA790;
+    mq->fullqueue = &D_800AA790;
+    mq->validCount = 0;
+    mq->first = 0;
+    mq->msgCount = msgCount;
+    mq->msg = msg;
+}

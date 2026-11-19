@@ -149,6 +149,30 @@ typedef struct {
 
 typedef u64 OSTime;
 
+/* The head of OSThread (the full struct is 0x1B0 bytes) */
+typedef struct OSThreadHdr_s {
+    /* 0x00 */ struct OSThreadHdr_s *next;
+    /* 0x04 */ s32 priority;
+    /* 0x08 */ struct OSThreadHdr_s **queue;
+    /* 0x0C */ struct OSThreadHdr_s *tlnext;
+    /* 0x10 */ u16 state;
+    /* 0x12 */ u16 flags;
+    /* 0x14 */ s32 id;
+    /* 0x18 */ s32 fp;
+} OSThreadHdr;
+
+#define OS_STATE_STOPPED 1
+#define OS_STATE_RUNNABLE 2
+#define OS_STATE_RUNNING 4
+#define OS_STATE_WAITING 8
+
+#define MQ_IS_EMPTY(mq) ((mq)->validCount == 0)
+#define MQ_IS_FULL(mq) ((mq)->validCount >= (mq)->msgCount)
+
+#define va_list char *
+#define va_start(AP, LASTARG) (AP = ((char *)__builtin_next_arg(LASTARG)))
+#define va_end(AP)
+
 typedef struct OSTimer_s {
     /* 0x00 */ struct OSTimer_s *next;
     /* 0x04 */ struct OSTimer_s *prev;
