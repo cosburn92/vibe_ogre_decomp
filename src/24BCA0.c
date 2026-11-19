@@ -41,9 +41,29 @@ extern u8 *(*D_80209734_ovl_24BCA0[])(u16 id);
 extern u8 *(*D_80209740_ovl_24BCA0[])(u16 id, u8 x);
 extern s32 D_8020A170_ovl_24BCA0[];
 u8 *func_80214CF0(u16 id, s32 a);
+extern s32 (*D_80209700_ovl_24BCA0[])(u8 c);
+void func_80218104(f32 x, f32 y, s32 z, s32 w);
 /* --- end decls --- */
 
+#ifdef NON_MATCHING
+/* range chain: the original branches where GCC uses set-compares for the last test */
+s32 func_801F7128_ovl_24BCA0(u8 c) {
+    s32 k;
+
+    if (c < 20) {
+        k = 0;
+    } else if ((u8)(c - 20) < 27) {
+        k = 1;
+    } else if ((u8)(c - 47) < 40) {
+        k = 2;
+    } else {
+        k = 0xFF;
+    }
+    return D_80209700_ovl_24BCA0[k](c) >= 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7128_ovl_24BCA0);
+#endif
 
 s32 func_801F71A0_ovl_24BCA0(u8 c) {
     return (c - 20) / 3;
@@ -236,13 +256,34 @@ u8 *func_801F9870_ovl_24BCA0(u16 id, f32 scale) {
     return o;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F98D0_ovl_24BCA0);
+void func_801F98D0_ovl_24BCA0(u8 a, u8 *b, u8 n) {
+    u8 tmp[16];
+    s16 i;
+    u8 *p;
+
+    func_801F7344_ovl_24BCA0(a, tmp, b[2] & 0xF0);
+    for (i = 0; i < n; i++) {
+        p = b;
+        b += 6;
+        func_801F85C0_ovl_24BCA0(tmp, p);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9950_ovl_24BCA0);
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9BEC_ovl_24BCA0);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9CD8_ovl_24BCA0);
+void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
+    struct {
+        f32 x;
+        f32 y;
+        s32 z;
+        s32 w;
+    } t;
+
+    func_801F7344_ovl_24BCA0(a, (u8 *)&t, 0x20);
+    func_80218104(t.x, t.y, t.z, b);
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9D1C_ovl_24BCA0);
 
