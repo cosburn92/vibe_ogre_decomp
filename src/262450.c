@@ -68,7 +68,36 @@ void func_8020DB34_ovl_25EE90(Task *t) {
     D_80220E8E_ovl_25EE90 = t - D_80220D84_ovl_25EE90;
 }
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020DB80_ovl_25EE90);
+/* Links task n after `after` (or at the end of the list when after is NULL) */
+void func_8020DB80_ovl_25EE90(Task *after, Task *n) {
+    /* +0x10 is the forward link, +0xC the backward one */
+    if (after == NULL) {
+        if (D_80220D8C_ovl_25EE90 != NULL) {
+            if (D_80220D8C_ovl_25EE90->prev != NULL) {
+                do {
+                    D_80220D8C_ovl_25EE90 = D_80220D8C_ovl_25EE90->prev;
+                } while (D_80220D8C_ovl_25EE90->prev != NULL);
+            }
+            D_80220D8C_ovl_25EE90->prev = n;
+        }
+        n->next = D_80220D8C_ovl_25EE90;
+        D_80220D8C_ovl_25EE90 = n;
+        if (D_80220D88_ovl_25EE90 == NULL) {
+            D_80220D88_ovl_25EE90 = n;
+        }
+    } else {
+        n->prev = after->prev;
+        after->prev = n;
+        if (n->prev != NULL) {
+            n->prev->next = n;
+        }
+        n->next = after;
+        n->parent = after;
+        if (n->prev == NULL) {
+            D_80220D8C_ovl_25EE90 = n;
+        }
+    }
+}
 
 /* Unlinks a task from the run list. */
 void func_8020DC30_ovl_25EE90(Task *t) {
