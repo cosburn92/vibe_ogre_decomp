@@ -30,10 +30,17 @@ extern u8 D_801936AD_ovl_040E80;
 extern u8 D_80196AA4_ovl_040E80;
 extern u8 D_80197810_ovl_040E80[];
 void *memset(void *p, s32 c, s32 n);
+typedef struct {
+    u16 year;
+    u8 month;
+    u8 day;
+} Date420;
+extern u8 D_80186FFF_ovl_040E80[];
+void ProfileFlagSet(s32 flag, s32 v);
 /* --- end decls --- */
 
 /* Leap-year test; era 1 years are offset by 1748 */
-s32 func_8016C1D0_ovl_040E80(u16 year, u8 era) {
+inline s32 func_8016C1D0_ovl_040E80(u16 year, u8 era) {
     s32 r;
 
     if (era) {
@@ -73,7 +80,24 @@ inline u8 func_8016C528_ovl_040E80(Clock420 *c, u8 mode) {
 
 INCLUDE_ASM("asm/nonmatchings/420D0", DateAdvanceDay);
 
-INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C70C_ovl_040E80);
+/* Steps the date back one day (month 4 gets an extra day in leap years) */
+s32 func_8016C70C_ovl_040E80(Date420 *d) {
+    s32 leap = 0;
+
+    if (d->month == 4) {
+        if (func_8016C1D0_ovl_040E80(d->year, 1) == 1) {
+            leap = 1;
+        }
+    }
+    if (--d->day == 0) {
+        if (--d->month == 0) {
+            d->month = 15;
+            d->year--;
+        }
+        d->day = D_80186FFF_ovl_040E80[d->month] + leap;
+    }
+    return 0;
+}
 
 void func_8016C814_ovl_040E80(void) {
 }
