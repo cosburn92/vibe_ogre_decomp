@@ -142,7 +142,43 @@ s32 func_801CD058_ovl_1F0A30(u32 n) {
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD108_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD19C_ovl_1F0A30);
+/* Whether tiles a and b (1-based) are blocked in direction dir (2/8/4/16 test wall bits 8/4/2/1) */
+s32 func_801CD19C_ovl_1F0A30(s32 a, s32 b, u32 dir) {
+    u8 *t;
+    s32 r;
+
+    switch (dir) {
+        case 2:
+            t = D_801D06D0_ovl_1F0A30;
+            r = 0;
+            if ((t[a - 1] & 8) || (t[b - 1] & 8)) {
+                r = 1;
+            }
+            return r;
+        case 8:
+            t = D_801D06D0_ovl_1F0A30;
+            r = 0;
+            if ((t[a - 1] & 4) || (t[b - 1] & 4)) {
+                r = 1;
+            }
+            return r;
+        case 4:
+            t = D_801D06D0_ovl_1F0A30;
+            r = 0;
+            if ((t[a - 1] & 2) || (t[b - 1] & 2)) {
+                r = 1;
+            }
+            return r;
+        case 16:
+            t = D_801D06D0_ovl_1F0A30;
+            r = 0;
+            if ((t[a - 1] & 1) || (t[b - 1] & 1)) {
+                r = 1;
+            }
+            return r;
+    }
+    return 0;
+}
 
 /* Walks the combination trie (section 1) over n sorted elements; returns the last participant
  * mask reached (0 if none) */
