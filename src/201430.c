@@ -287,13 +287,86 @@ u32 func_801BEA70_ovl_1F0A30(Rgba201 in) {
     return *(u32 *)&c;
 }
 
+/* Sepia tone of an RGBA5551 colour */
+#ifdef NON_MATCHING
+/* constant 30000 reciprocal loaded early; a1/a2 allocation differs */
+u16 func_801BEB28_ovl_1F0A30(u16 c) {
+    u32 r = (c >> 8) & 0xF8;
+    u32 g = (c >> 3) & 0xF8;
+    u32 b = (c << 2) & 0xF8;
+    u32 lum = r * 30 + g * 59 + b * 11;
+
+    r = lum * 255 / 30000;
+    g = lum / 150;
+    b = lum * 130 / 30000;
+    return ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEB28_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEBE4_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BED08_ovl_1F0A30);
+/* Blue-tinted shade of an RGBA8888 colour by its brightest channel */
+#ifdef NON_MATCHING
+/* new r/g registers (a3/t0) swapped */
+u32 func_801BED08_ovl_1F0A30(u32 c) {
+    s32 r;
+    s32 g = (c >> 16) & 0xFF;
+    s32 b = (c >> 8) & 0xFF;
+    s32 m = c >> 24;
+    s32 a = c & 0xFF;
 
+    if (m < g) {
+        m = g;
+    }
+    if (m < b) {
+        m = b;
+    }
+    if (m < 0x80) {
+        r = m * 112 / 128 + 24;
+        g = m * 112 / 128 + 28;
+        b = m * 96 / 128 + 8;
+    } else {
+        r = m * 80 / 128 + 56;
+        g = m * 80 / 128 + 60;
+        b = m * 80 / 128 + 40;
+    }
+    return (r << 24) + (g << 16) + (b << 8) | a;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/201430", func_801BED08_ovl_1F0A30);
+#endif
+
+/* RGBA5551 version of the tint above */
+#ifdef NON_MATCHING
+/* c&1 hoisted early in original; register order differs */
+u16 func_801BEDC8_ovl_1F0A30(u16 c) {
+    u32 r;
+    u32 g = (c >> 3) & 0xF8;
+    u32 b = (c << 2) & 0xF8;
+    s32 m = (c >> 8) & 0xF8;
+
+    if (m < g) {
+        m = g;
+    }
+    if (m < b) {
+        m = b;
+    }
+    if (m < 0x80) {
+        r = m * 112 / 128 + 24;
+        g = m * 112 / 128 + 28;
+        b = m * 96 / 128 + 8;
+    } else {
+        r = m * 80 / 128 + 56;
+        g = m * 80 / 128 + 60;
+        b = m * 80 / 128 + 40;
+    }
+    return ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEDC8_ovl_1F0A30);
+#endif
 
 /* Whether c is at least half opaque */
 static inline s32 transp201(Rgba201 c) {
