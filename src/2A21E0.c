@@ -27,6 +27,7 @@ extern u8 *D_8022A974;
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void HFree(void *p);
+void nuGfxTaskAllEndWait(void);
 Rec2A *func_80232C28_ovl_29A4C0(void);
 void func_801BFBA0(void *p);
 /* --- end decls --- */
@@ -66,7 +67,7 @@ void func_802329E0_ovl_29A4C0(s32 keep) {
 }
 
 /* Frees the record for (id, kind) and clears it */
-void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
+static inline void Rec2AFree(s32 id, s32 kind) {
     Rec2A *r;
     u32 i;
     u32 k;
@@ -93,6 +94,10 @@ void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
             return;
         }
     }
+}
+
+void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
+    Rec2AFree(id, kind);
 }
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232C28_ovl_29A4C0);
@@ -145,7 +150,22 @@ u8 func_80232EA8_ovl_29A4C0(s32 id, s32 k) {
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232EE8_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233134_ovl_29A4C0);
+/* Frees the record for (id, kind) unless a unit with that id and kind has a different w */
+void func_80233134_ovl_29A4C0(s32 id, s32 w, s32 kind) {
+    u32 i;
+    u8 *u;
+
+    nuGfxTaskAllEndWait();
+    for (i = 0; i < 28; i++) {
+        u = FIELD(D_8022A974, u8 *, 0x18 + i * 4);
+        if (u != NULL && FIELD(u, s32, 0xE8) == id && kind == u[0x146] && w != FIELD(u, s32, 0xE4)) {
+            break;
+        }
+    }
+    if (i == 28) {
+        Rec2AFree(id, kind);
+    }
+}
 
 /* Ages every list entry; entries unused for 3 ticks are freed */
 void func_802332A0_ovl_29A4C0(void) {
