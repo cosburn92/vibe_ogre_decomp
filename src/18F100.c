@@ -9,13 +9,30 @@ extern s32 D_801F0B9C;
 
 void *func_8017BFB0(s32 a, s32 b, void *c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i, s32 j, s32 k);
 void func_802159B0_ovl_18F100(void);
+extern void *D_8021B174_ovl_18F100;
+extern s32 D_8021B2AC_ovl_18F100;
+extern s32 D_8021B2A4_ovl_18F100;
+extern u8 D_80210219;
+void func_8017C384(void *w);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_80214F80_ovl_18F100);
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_802150FC_ovl_18F100);
 
-INCLUDE_ASM("asm/nonmatchings/18F100", func_80215298_ovl_18F100);
+/* Closes this screen's windows */
+void func_80215298_ovl_18F100(void) {
+    s32 pad[4];
+
+    if (D_8021B170_ovl_18F100 != NULL) {
+        func_8017C384(D_8021B170_ovl_18F100);
+    }
+    if (D_8021B2AC_ovl_18F100 != -1) {
+        func_8017C384(D_8021B174_ovl_18F100);
+    }
+    D_8021B2A4_ovl_18F100 = 0;
+    D_80210219 = 0x11;
+}
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_802152F4_ovl_18F100);
 
