@@ -55,6 +55,9 @@ typedef struct {
     u16 b;
 } Pair0E;
 extern Pair0E D_801ABA70_ovl_0EBBB0[];
+f32 *func_80080040(f32 *out, f32 *a, f32 *b);
+f32 *func_8007FEE0(f32 *out, f32 *a, f32 *b);
+void func_801A9AB0_ovl_0EBBB0(f32 a, f32 b, f32 *p, f32 *q, f32 *axis, f32 c, s32 d);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A07D0_ovl_0EBBB0);
@@ -106,7 +109,18 @@ void func_801A3A5C_ovl_0EBBB0(Tree0E *n) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3A9C_ovl_0EBBB0);
+/* Builds the axis perpendicular to (q - p) within the plane of the up vector at 0x2C, then draws */
+void func_801A3A9C_ovl_0EBBB0(s32 arg, u8 *o) {
+    f32 d[3];
+    f32 c[3];
+    f32 n[3];
+
+    func_80080040(d, (f32 *)(o + 0x20), (f32 *)(o + 0x14));
+    func_8007FEE0(c, (f32 *)(o + 0x2C), d);
+    func_8007FEE0(n, d, c);
+    func_801A9AB0_ovl_0EBBB0(FIELDX(o, f32, 0), FIELDX(o, f32, 4), (f32 *)(o + 0x14), (f32 *)(o + 0x20), n,
+                             FIELDX(o, f32, 0xC), arg);
+}
 
 /* Whether a box (8 corners) is at least partly inside the view: fails if all corners are behind any of the 4 side planes */
 #ifdef NON_MATCHING
