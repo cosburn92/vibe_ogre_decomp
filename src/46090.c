@@ -12,6 +12,8 @@ u16 func_8016B738_ovl_040E80(u16 a);
 u16 func_8016B6FC_ovl_040E80(u16 a);
 typedef struct { u8 unk0; u8 flags; u8 members[5]; u8 pos[5]; u8 harmony; u8 items[10]; u8 strategy; u8 legion; } SquadRec;
 extern SquadRec D_801971F0_ovl_040E80[];
+extern u8 D_801969B8_ovl_040E80[];
+void bzero(void *p, s32 n);
 extern u8 D_80197B00_ovl_040E80[];
 extern u8 D_801936A8_ovl_040E80;
 extern u16 D_80197B08_ovl_040E80;
@@ -589,7 +591,38 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80172C44_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_801730BC_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801731EC_ovl_040E80);
+/* Default 11-byte record using the legion of the first squad found with member 1 (the member test
+ * only ever looks at squad 0) */
+void func_801731EC_ovl_040E80(void) {
+    u8 i;
+    u8 k;
+    SquadRec *sq;
+    u8 *r = D_801969B8_ovl_040E80;
+
+    bzero(r, 0xB);
+    for (i = 0; i < 30; i++) {
+        for (k = 0; k < 5; k++) {
+            if (D_801971F0_ovl_040E80[0].members[k] == 1) {
+                break;
+            }
+        }
+        if (k < 5) {
+            break;
+        }
+    }
+    sq = &D_801971F0_ovl_040E80[i];
+    for (k = 0; k < 5; k++) {
+    }
+    r[0] = 1;
+    r[1] = 1;
+    r[3] = 0xFF;
+    r[4] = 0xFF;
+    r[5] = 0xFF;
+    r[6] = 0xFF;
+    r[8] = 1;
+    r[9] = sq->legion;
+    r[0xA] = 10;
+}
 
 /* Moves the calendar n days forward (or back for negative n) */
 void func_801732E0_ovl_040E80(s16 n) {
