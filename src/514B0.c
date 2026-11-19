@@ -340,7 +340,40 @@ void func_8017C2FC_ovl_040E80(Node *n) {
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C384_ovl_040E80);
 
+/* Window fill render state with alpha a (opaque when 0xFF) */
+#ifdef NON_MATCHING
+/* display list pointer/global store scheduling differs around the alpha branch */
+void func_8017C4B4_ovl_040E80(u32 a) {
+    Gfx *g;
+    u32 w0;
+    u32 w1;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xFA000000;
+    g->w1 = a | 0xFFFFFF00;
+    g = D_800E9BA0++;
+    g->w0 = 0xE3000C00;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xE3001201;
+    g->w1 = 0;
+    if (a == 0xFF) {
+        w0 = 0xE200001C;
+        w1 = 0x0F0A7008;
+    } else {
+        w0 = 0xE200001C;
+        w1 = 0x00504240;
+    }
+    g = D_800E9BA0++;
+    g->w0 = w0;
+    g->w1 = w1;
+    g = D_800E9BA0++;
+    g->w0 = 0xFC119623;
+    g->w1 = 0xFF2FFFFF;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C4B4_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C584_ovl_040E80);
 
@@ -510,7 +543,28 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_80181C2C_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_80182578_ovl_040E80);
 
+/* Starts the open/close animation: current rect = from, step = (to - from) / frames */
+#ifdef NON_MATCHING
+/* from-x int kept in a register instead of reloaded with lwc1 */
+void func_80184130_ovl_040E80(Node *n) {
+    f32 t = FIELD(n, u16, 0x1E);
+    f32 dx = (FIELD(n, s32, 0x3C) - FIELD(n, s32, 0x2C)) / t;
+    f32 dy = (FIELD(n, s32, 0x40) - FIELD(n, s32, 0x30)) / t;
+    f32 dw = (FIELD(n, s32, 0x44) - FIELD(n, s32, 0x34)) / t;
+    f32 dh = (FIELD(n, s32, 0x48) - FIELD(n, s32, 0x38)) / t;
+
+    FIELD(n, f32, 0x5C) = FIELD(n, s32, 0x2C);
+    FIELD(n, f32, 0x60) = FIELD(n, s32, 0x30);
+    FIELD(n, f32, 0x64) = FIELD(n, s32, 0x34);
+    FIELD(n, f32, 0x68) = FIELD(n, s32, 0x38);
+    FIELD(n, f32, 0x6C) = dx;
+    FIELD(n, f32, 0x70) = dy;
+    FIELD(n, f32, 0x74) = dw;
+    FIELD(n, f32, 0x78) = dh;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_80184130_ovl_040E80);
+#endif
 
 INCLUDE_RODATA("asm/nonmatchings/514B0", D_80190E4C_ovl_040E80);
 
