@@ -35,9 +35,43 @@ void func_80081A54(s32 h, s32 a);
 void func_80081DF0(void *p);
 s32 func_80081770(s32 a);
 void func_800EA488_ovl_03F1B0(SoundChannel *ch);
+extern u8 D_2B8BA0[];
+extern u8 D_2BF250[];
+extern u8 D_423FF0[];
+extern u8 D_429CD0[];
+extern u8 D_4E3140[];
+extern u8 D_4F0FB0[];
+extern u8 D_80164770_ovl_03F1B0[];
+extern u8 D_8010A760_ovl_03F1B0[];
+extern s32 D_800EB4F0_ovl_03F1B0[];
+extern s32 D_800EB4F4_ovl_03F1B0[];
+extern s32 D_800EB2E0_ovl_03F1B0[];
+extern s32 D_800EB2E4_ovl_03F1B0[];
+extern s32 D_800EB174_ovl_03F1B0;
+void PiDmaRead(void *rom, void *ram, s32 size);
+void func_80081DB4(void *ram, void *romEnd);
+void func_80081F7C(void *bank);
+void MusFxBankSetPtrBank(void *fx, void *ptr);
+void MusSetMasterVolume(s32 flags, s32 vol);
+s32 MusStartSong(void *song);
+void func_80081D2C(s32 h, s32 v);
 /* --- end decls --- */
 
+/* Loads the sound banks from ROM and registers them with the music library */
+#ifdef NON_MATCHING
+/* original re-materialises the ROM end addresses instead of keeping them in saved registers */
+void func_800E9C20_ovl_03F1B0(void) {
+    PiDmaRead(D_2B8BA0, D_80164770_ovl_03F1B0, D_2BF250 - D_2B8BA0);
+    PiDmaRead(D_423FF0, D_80104710_ovl_03F1B0, D_429CD0 - D_423FF0);
+    PiDmaRead(D_4E3140, D_8010A760_ovl_03F1B0, D_4F0FB0 - D_4E3140);
+    func_80081DB4(D_80164770_ovl_03F1B0, D_2BF250);
+    func_80081DB4(D_80104710_ovl_03F1B0, D_429CD0);
+    func_80081F7C(D_8010A760_ovl_03F1B0);
+    MusFxBankSetPtrBank(D_8010A760_ovl_03F1B0, D_80104710_ovl_03F1B0);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9C20_ovl_03F1B0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9CEC_ovl_03F1B0);
 
@@ -89,7 +123,27 @@ void func_800EA3E4_ovl_03F1B0(SoundChannel *ch) {
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA3E4_ovl_03F1B0);
 #endif
 
+/* Loads song saved[0] (1-based) from ROM into the channel buffer and starts it */
+#ifdef NON_MATCHING
+/* channel/index saved registers assigned differently */
+void func_800EA488_ovl_03F1B0(SoundChannel *ch) {
+    s32 k = ch->saved[0] - 1;
+
+    if (func_80081B08(ch->handle)) {
+        func_80081A54(ch->handle, 0);
+    }
+    PiDmaRead((void *)D_800EB4F0_ovl_03F1B0[k * 2], (void *)CHF(ch, 0x48), D_800EB4F4_ovl_03F1B0[k * 2] - D_800EB4F0_ovl_03F1B0[k * 2] + 4);
+    MusSetMasterVolume(2, D_800EB2E0_ovl_03F1B0[k * 2]);
+    if (&ch->handle != &D_800EB174_ovl_03F1B0) {
+        func_80081DF0(D_80104710_ovl_03F1B0);
+    }
+    ch->handle = MusStartSong((void *)CHF(ch, 0x48));
+    func_80081D2C(ch->handle, D_800EB2E4_ovl_03F1B0[k * 2]);
+    CHF(ch, 0x20) = ch->saved[0];
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA488_ovl_03F1B0);
+#endif
 
 void func_800EA568_ovl_03F1B0(SoundChannel *ch) {
     if (CHF(ch, 0x18) != 0) {
