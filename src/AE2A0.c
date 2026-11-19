@@ -283,7 +283,47 @@ void func_801C7C4C_ovl_087200(s32 x, s32 y) {
     m->bob[0].y = y + v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7CA0_ovl_087200);
+/* Window rectangle for the current list mode (mode 3/4 drop a step depending on 0x14D) */
+void func_801C7CA0_ovl_087200(s16 *x, s16 *y, s16 *w, s16 *h) {
+    s32 mode = *(u16 *)((u8 *)D_80196AF8 + 0x182);
+    u8 sub;
+
+    if (mode == 3) {
+        sub = *((u8 *)D_80196AF8 + 0x14D);
+        if (sub == 1) {
+            mode = 2;
+        }
+    } else if (mode == 4) {
+        sub = *((u8 *)D_80196AF8 + 0x14D);
+        if (sub == 2) {
+            mode = 3;
+        } else if (sub == 1) {
+            mode = 2;
+        }
+    }
+    switch (mode) {
+        case 0:
+        case 1:
+        case 2:
+            *x = 0x18;
+            *y = 0x14;
+            *w = 0x128;
+            *h = 0x38;
+            break;
+        case 3:
+            *x = 0x18;
+            *y = 0x14;
+            *w = 0x128;
+            *h = 0x38;
+            break;
+        case 4:
+            *x = 0x9A;
+            *y = 0x14;
+            *w = 0x128;
+            *h = 0x42;
+            break;
+    }
+}
 
 void func_801C7D78_ovl_087200(s16 *a, s16 *b, s16 *c, s16 *d) {
     *a = 0x18;
