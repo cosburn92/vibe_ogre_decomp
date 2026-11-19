@@ -1204,7 +1204,7 @@ segments:
       - [0x213B50, asm]
       - [0x21C970, c]
       - [0x21D7F0, asm]
-      - [0x222190, asm]
+      - [0x222190, c]
       - [0x224F30, asm]
       - [0x228D70, data, 213B10]
       - [0x228D90, data, 213B50]
@@ -1214,7 +1214,7 @@ segments:
       - [0x2298D0, rodata, 213B50]
       - [0x229DB0, .rodata, 21C970]
       - [0x229F00, rodata, 21D7F0]
-      - [0x22A1D0, rodata, 222190]
+      - [0x22A1D0, .rodata, 222190]
       - [0x22A240, rodata, 224F30]
 
   - name: ovl_22A280
