@@ -497,33 +497,39 @@ void func_80227F14_ovl_1BA050(u32 i, s32 v) {
     func_80220F64_ovl_1BA050(i | 0x5200, v);
 }
 
+/* Unlinks script resource slot i and frees its buffers */
+static inline void ScriptResFree(s32 i) {
+    ScriptRes *e;
+
+    if (i >= 4) {
+        for (;;);
+    }
+    e = &D_8022A4E0_ovl_1BA050[i];
+    if (FIELD(e, u8 *, 4) != NULL) {
+        FIELD(FIELD(e, u8 *, 4), u8 *, 8) = FIELD(e, u8 *, 8);
+    } else {
+        D_8022A650_ovl_1BA050 = FIELD(e, u8 *, 8);
+    }
+    if (FIELD(e, u8 *, 8) != NULL) {
+        FIELD(FIELD(e, u8 *, 8), u8 *, 4) = FIELD(e, u8 *, 4);
+    }
+    if (FIELD(e, void *, 0x34) != NULL) {
+        HFree(FIELD(e, void *, 0x34));
+        FIELD(e, void *, 0x34) = NULL;
+    }
+    if (FIELD(e, void *, 0x4C) != NULL) {
+        HFree(FIELD(e, void *, 0x4C));
+        FIELD(e, void *, 0x4C) = NULL;
+    }
+    e->used = 0;
+}
+
 /* Releases script resource slot i unless object 0x5200 | i still exists; returns whether it did */
 s32 func_80227F68_ovl_1BA050(s32 i) {
     void *o = func_8017F334(i | 0x5200);
-    ScriptRes *e;
 
     if (o == NULL) {
-        if (i >= 4) {
-            for (;;);
-        }
-        e = &D_8022A4E0_ovl_1BA050[i];
-        if (FIELD(e, u8 *, 4) != NULL) {
-            FIELD(FIELD(e, u8 *, 4), u8 *, 8) = FIELD(e, u8 *, 8);
-        } else {
-            D_8022A650_ovl_1BA050 = FIELD(e, u8 *, 8);
-        }
-        if (FIELD(e, u8 *, 8) != NULL) {
-            FIELD(FIELD(e, u8 *, 8), u8 *, 4) = FIELD(e, u8 *, 4);
-        }
-        if (FIELD(e, void *, 0x34) != NULL) {
-            HFree(FIELD(e, void *, 0x34));
-            FIELD(e, void *, 0x34) = NULL;
-        }
-        if (FIELD(e, void *, 0x4C) != NULL) {
-            HFree(FIELD(e, void *, 0x4C));
-            FIELD(e, void *, 0x4C) = NULL;
-        }
-        e->used = 0;
+        ScriptResFree(i);
     }
     return o == NULL;
 }
@@ -551,7 +557,19 @@ void func_802282D0_ovl_1BA050(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228378_ovl_1BA050);
+/* Deletes the objects of all four script resource slots and releases the slots */
+void func_80228378_ovl_1BA050(void) {
+    s32 i;
+    void *o;
+
+    for (i = 0; i < 4; i++) {
+        o = func_8017F334(i | 0x5200);
+        if (o != NULL) {
+            func_8017C2FC(o);
+        }
+        ScriptResFree(i);
+    }
+}
 
 void func_8022845C_ovl_1BA050(void) {
     bzero(D_8022A4E0_ovl_1BA050, 0x170);
