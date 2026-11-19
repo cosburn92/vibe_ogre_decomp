@@ -314,7 +314,27 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80202B70_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202E10_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202F54_ovl_14EBE0);
+/* Draws gauge cap: tiles 10/11/12 by fill level (pct / 14.29, 0-6) */
+void func_80202F54_ovl_14EBE0(u8 *p, s32 b, u8 pct) {
+    u16 v = pct / 14.285714f;
+
+    if (v > 6) {
+        v = 6;
+    }
+    switch (v) {
+        case 0:
+        case 1:
+            func_80200DD0_ovl_14EBE0(p - (v * 2 - 12), b + 8, 10);
+            break;
+        case 5:
+        case 6:
+            func_80200DD0_ovl_14EBE0(p - (v * 2 - 12), b + 8, 12);
+            break;
+        default:
+            func_80200DD0_ovl_14EBE0(p - (v * 2 - 12), b + 8, 11);
+            break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80203050_ovl_14EBE0);
 
