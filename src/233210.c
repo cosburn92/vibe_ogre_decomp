@@ -942,14 +942,12 @@ void func_801F4A8C_ovl_22A280(s32 i, s32 *x, s32 *y) {
     }
 }
 
-#ifdef NON_MATCHING
 /* addu operand order (1 byte) */
-u8 *func_801F4B48_ovl_22A280(u8 *p, s32 i) {
-    return (u8 *)(i * 3 + (s32)(p + 0x14));
+u8 *func_801F4B48_ovl_22A280(u8 *p, s32 i)
+{
+  s32 new_var;
+  return (u8 *) ((i * 3) + (new_var = (s32) (p + 0x14)));
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F4B48_ovl_22A280);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F4B5C_ovl_22A280);
 

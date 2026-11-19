@@ -26,17 +26,22 @@ s16 func_802394A0(s32 line);
 extern s8 *D_800C47F0;
 /* --- end decls --- */
 
-#ifdef NON_MATCHING
 /* Delay-slot use differs by one instruction. */
-s32 func_80227E20_ovl_281860(void) {
-    if (D_8022A95C_ovl_281860 != NULL) {
-        return 1;
+s32 func_80227E20_ovl_281860(void)
+{
+  if (D_8022A95C_ovl_281860 != ((void *) 0))
+  {
+    if (D_8022A95C_ovl_281860)
+    {
+      return 1;
     }
-    return D_8022A958_ovl_281860 == NULL;
+    else
+    {
+      return 1;
+    }
+  }
+  return D_8022A958_ovl_281860 == ((void *) 0);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227E20_ovl_281860);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227E44_ovl_281860);
 

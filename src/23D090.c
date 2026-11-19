@@ -173,20 +173,16 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA4D4_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA770_ovl_23B220);
 
-#ifdef NON_MATCHING
 /* The constant 20 is loaded once into a0 in the target. */
-void func_801EA990_ovl_23B220(void) {
-    Ctx23 *c = D_801EFE48_ovl_23B220;
-
-    c->y1 = 0xA2;
-    c->y0 = 0x14;
-    c->x0 = 0x14;
-    c->x1 = 0xF2;
-    c->h652 = 0;
+void func_801EA990_ovl_23B220(void)
+{
+  Ctx23 *c = D_801EFE48_ovl_23B220;
+  c->y0 = 0x14;
+  c->y1 = 0xA2;
+  c->x0 = 0x14;
+  c->x1 = 0xF2;
+  c->h652 = 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA990_ovl_23B220);
-#endif
 
 /* Closes the panel by 8 px a frame and fades out; 1 when the fade completes */
 #ifdef NON_MATCHING
