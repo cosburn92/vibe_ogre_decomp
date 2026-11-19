@@ -7,6 +7,44 @@
 
 #define AL_CACHE_ALIGN 15
 
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Acmd;
+
+#define _SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define _SHIFTR(v, s, w) ((u32)(((u32)(v) >> (s)) & ((0x01 << (w)) - 1)))
+
+#define A_ADPCM 1
+#define A_CLEARBUFF 2
+#define A_ENVMIXER 3
+#define A_LOADBUFF 4
+#define A_RESAMPLE 5
+#define A_SAVEBUFF 6
+#define A_SEGMENT 7
+#define A_SETBUFF 8
+#define A_SETVOL 9
+#define A_DMEMMOVE 10
+#define A_LOADADPCM 11
+#define A_MIXER 12
+#define A_INTERLEAVE 13
+#define A_POLEF 14
+#define A_SETLOOP 15
+
+#define aClearBuffer(pkt, d, c)                                          {                                                                        Acmd *_a = (Acmd *)pkt;                                              _a->w0 = _SHIFTL(A_CLEARBUFF, 24, 8) | _SHIFTL(d, 0, 24);            _a->w1 = (u32)(c);                                               }
+#define aSetBuffer(pkt, f, i, o, c)                                                          {                                                                                            Acmd *_a = (Acmd *)pkt;                                                                  _a->w0 = (_SHIFTL(A_SETBUFF, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(i, 0, 16));            _a->w1 = _SHIFTL(o, 16, 16) | _SHIFTL(c, 0, 16);                                     }
+#define aMix(pkt, f, g, i, o)                                                                {                                                                                            Acmd *_a = (Acmd *)pkt;                                                                  _a->w0 = (_SHIFTL(A_MIXER, 24, 8) | _SHIFTL(f, 16, 8) | _SHIFTL(g, 0, 16));              _a->w1 = _SHIFTL(i, 16, 16) | _SHIFTL(o, 0, 16);                                     }
+#define aInterleave(pkt, l, r)                                           {                                                                        Acmd *_a = (Acmd *)pkt;                                              _a->w0 = _SHIFTL(A_INTERLEAVE, 24, 8);                               _a->w1 = _SHIFTL(l, 16, 16) | _SHIFTL(r, 0, 16);                 }
+#define aSaveBuffer(pkt, s)                                              {                                                                        Acmd *_a = (Acmd *)pkt;                                              _a->w0 = _SHIFTL(A_SAVEBUFF, 24, 8);                                 _a->w1 = (u32)(s);                                               }
+
+#define AL_MAIN_L_OUT 0x440
+#define AL_MAIN_R_OUT 0x580
+#define AL_AUX_L_OUT 0x6C0
+#define AL_AUX_R_OUT 0x800
+
+typedef Acmd *(*ALCmdHandler)(void *, s16 *, s32, s32, Acmd *);
+typedef s32 (*ALSetParam)(void *, s32, void *);
+
 typedef struct ALLink_s {
     /* 0x00 */ struct ALLink_s *next;
     /* 0x04 */ struct ALLink_s *prev;
@@ -21,8 +59,8 @@ typedef struct {
 
 typedef struct ALFilter_s {
     /* 0x00 */ struct ALFilter_s *source;
-    /* 0x04 */ s32 (*handler)(void *, s16 *, s32, s32, void *);
-    /* 0x08 */ s32 (*setParam)(void *, s32, void *);
+    /* 0x04 */ ALCmdHandler handler;
+    /* 0x08 */ ALSetParam setParam;
     /* 0x0C */ s16 inp;
     /* 0x0E */ s16 outp;
     /* 0x10 */ s32 type;
@@ -42,7 +80,7 @@ typedef struct {
     /* 0x00 */ ALFilter filter;
     /* 0x14 */ s32 sourceCount;
     /* 0x18 */ s32 maxSources;
-    /* 0x1C */ void **sources;
+    /* 0x1C */ ALFilter **sources;
     /* 0x20 */ ALFx fx[1];
 } ALAuxBus; /* size 0x4C */
 
@@ -52,6 +90,12 @@ typedef struct {
     /* 0x18 */ s32 maxSources;
     /* 0x1C */ ALFilter **sources;
 } ALMainBus;
+
+typedef struct {
+    /* 0x00 */ ALFilter filter;
+    /* 0x14 */ s32 dramout;
+    /* 0x18 */ s32 first;
+} ALSave;
 
 typedef struct ALPlayer_s {
     /* 0x00 */ struct ALPlayer_s *next;
