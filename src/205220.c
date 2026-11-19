@@ -24,6 +24,21 @@ extern u8 D_800EB1F0[];
 extern u8 D_800EB240[];
 extern u8 D_800EB290[];
 extern u16 D_800E810E;
+typedef struct {
+    s32 x0;
+    s32 y0;
+    s32 x1;
+    s32 y1;
+} BBox205;
+typedef struct {
+    s32 unk0;
+    s32 x;
+    s32 y;
+    s32 w;
+    s32 h;
+    s32 unk14[5];
+} Item205;
+extern BBox205 D_801D03A0_ovl_1F0A30;
 extern u8 D_801CEEE0_ovl_1F0A30[]; /* event length by type */
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 void func_800EA6B0(void *ch, s32 a, s32 b);
@@ -89,7 +104,28 @@ s32 func_801C1E44_ovl_1F0A30(void *a, void *b) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C1EE8_ovl_1F0A30);
+/* Bounding box of all items of (a, b), starting from the default box */
+BBox205 func_801C1EE8_ovl_1F0A30(void *a, void *b) {
+    Item205 it;
+    BBox205 bb = D_801D03A0_ovl_1F0A30;
+    s32 i;
+
+    for (i = 0; func_801C2178_ovl_1F0A30(a, b, i, (s32 *)&it); i++) {
+        if (it.x < bb.x0) {
+            bb.x0 = it.x;
+        }
+        if (it.y < bb.y0) {
+            bb.y0 = it.y;
+        }
+        if (bb.x1 < it.x + it.w) {
+            bb.x1 = it.x + it.w;
+        }
+        if (bb.y1 < it.y + it.h) {
+            bb.y1 = it.y + it.h;
+        }
+    }
+    return bb;
+}
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C1FF4_ovl_1F0A30);
 
