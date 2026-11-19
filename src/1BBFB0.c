@@ -90,6 +90,9 @@ void func_80226E8C_ovl_1BA050(ScriptRes *r);
 void func_802292DC_ovl_1BA050(s16 *p);
 s32 ChunkSize(s32 id);
 void *LoadChunkRaw(void *dst, s32 id);
+void *func_8017BFB0(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
+void func_80229B98_ovl_1BA050();
+void func_802261D0_ovl_1BA050();
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
@@ -241,7 +244,31 @@ s32 func_80226198_ovl_1BA050(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802261D0_ovl_1BA050);
 
+#ifdef NON_MATCHING
+/* original copies x/y through extra temps (t2/t1/t4); b/fn assigned straight into a1/a2 */
+void func_8022630C_ovl_1BA050(u8 id, s32 x, s32 y, u8 alt) {
+    s32 x1 = x - 4;
+    s32 y1 = y + 4;
+    s32 x2 = x - 0x3C;
+    s32 y2 = y + 0x28;
+    s32 x3 = x;
+    s32 y3 = y;
+    s32 x4 = x;
+    u8 b;
+    void (*fn)();
+
+    if (alt) {
+        b = 3;
+        fn = func_80229B98_ovl_1BA050;
+    } else {
+        b = 0;
+        fn = func_802261D0_ovl_1BA050;
+    }
+    func_8017BFB0(id | 0x5300, b, fn, x, y, x1, y1, x2, y3, x4, y2);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022630C_ovl_1BA050);
+#endif
 
 /* Pad edge detection: pressed = held & ~previous, for both controllers */
 void func_802263CC_ovl_1BA050(void) {
