@@ -99,7 +99,27 @@ void func_80217DE4_ovl_25EE90(s32 unused, void *dst) {
 
 INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217E1C_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/26C1F0", func_8021802C_ovl_25EE90);
+/* Cubic spline value at x through n knots (xs, ys) with per-knot coefficients m */
+f32 func_8021802C_ovl_25EE90(f32 x, s32 n, f32 *xs, f32 *ys, f32 *m) {
+    s32 lo = 0;
+    s32 hi = n - 1;
+    s32 mid;
+    f32 t;
+    f32 h;
+
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        if (xs[mid] < x) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    lo -= (lo > 0);
+    t = x - xs[lo];
+    h = xs[lo + 1] - xs[lo];
+    return ((((m[lo + 1] - m[lo]) * t / h + m[lo] * 3.0f) * t + ((ys[lo + 1] - ys[lo]) / h - (m[lo] + m[lo] + m[lo + 1]) * h)) * t) + ys[lo];
+}
 
 void func_80218104_ovl_25EE90(f32 a, f32 b, s32 c, s32 d) {
     D_801D06F0 = a;
