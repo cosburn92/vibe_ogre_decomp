@@ -17,11 +17,31 @@ extern Blk78 *D_80220DA8_ovl_25EE90;
 extern void *D_80220DAC_ovl_25EE90;
 
 void *HFree(void *p);
+void *HMalloc(s32 size);
+extern s32 D_80220DA4_ovl_25EE90;
 void func_801B55C4(void);
 void func_8020E224_ovl_25EE90(s32 a);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/262CC0", func_8020E110_ovl_25EE90);
+/* Pool of 256 blocks chained through `next`, plus a pointer table */
+void func_8020E110_ovl_25EE90(void) {
+    Blk78 *p;
+    s32 i;
+
+    D_80220DA4_ovl_25EE90 = 0x100;
+    p = HMalloc(0x7800);
+    D_80220DA8_ovl_25EE90 = p;
+    for (i = 0; i < D_80220DA4_ovl_25EE90; i++) {
+        p[i].w4 = 0;
+        p[i].wC = 0;
+    }
+    D_80220DAC_ovl_25EE90 = HMalloc(D_80220DA4_ovl_25EE90 * 4);
+    D_80220DA0_ovl_25EE90 = 0;
+    for (i = 0; i < D_80220DA4_ovl_25EE90 - 1; i++) {
+        D_80220DA8_ovl_25EE90[i].next = i + 1;
+    }
+    D_80220DA8_ovl_25EE90[i].next = 0xFFFF;
+}
 
 void func_8020E1F4_ovl_25EE90(void) {
     HFree(D_80220DA8_ovl_25EE90);
