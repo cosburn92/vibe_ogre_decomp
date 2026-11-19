@@ -21,6 +21,8 @@ extern Block26 *D_80220D58_ovl_25EE90;
 void *HMalloc(s32 size);
 void *HFree(void *p);
 void func_801ADB00(void *p);
+void func_801ADADC(void *p);
+void func_801ADADC(void *p);
 /* --- end decls --- */
 
 /* Builds a free list of 0x80-byte blocks */
@@ -70,7 +72,36 @@ inline void func_8020D1CC_ovl_25EE90(void *p) {
     D_80220D50_ovl_25EE90 = b - D_80220D58_ovl_25EE90;
 }
 
-INCLUDE_ASM("asm/nonmatchings/261C90", func_8020D1F8_ovl_25EE90);
+/* Takes a block, stores a in its first payload word and registers it */
+/* func_8020D174 as inlined here (flag byte written last) */
+static inline void *takeBlock261(void) {
+    Block26 *b;
+
+    if (D_80220D50_ovl_25EE90 != 0xFFFF) {
+        b = &D_80220D58_ovl_25EE90[D_80220D50_ovl_25EE90];
+        D_80220D50_ovl_25EE90 = b->next;
+    } else {
+        for (;;) {
+        }
+    }
+    b->w10 = 0;
+    b->wC = 0;
+    b->w8 = 0;
+    b->w14 = 0;
+    b->b18 = 1;
+    return b->unk04;
+}
+
+/* Takes a block, stores a in its first payload word and registers it */
+void *func_8020D1F8_ovl_25EE90(s32 a) {
+    s32 *r = takeBlock261();
+
+    if (r != NULL) {
+        r[0] = a;
+        func_801ADADC(r);
+    }
+    return r;
+}
 
 void func_8020D280_ovl_25EE90(void *p) {
     if (p != NULL) {
