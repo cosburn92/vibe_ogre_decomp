@@ -53,13 +53,83 @@ void func_8016C814_ovl_040E80(u8 *p);
 void func_801A101C(void);
 void func_801B7FA0(u8 *p);
 void func_8019B040(s32 a);
+extern u8 ovl_079730_TEXT_START[];
+extern u8 ovl_079730_TEXT_END[];
+extern u8 ovl_079730_DATA_START[];
+extern u8 ovl_079730_RODATA_END[];
+extern u8 ovl_079730_BSS_START[];
+extern u8 ovl_079730_BSS_END[];
+extern u8 ovl_079730_ROM_START[];
+extern u8 ovl_079730_ROM_END[];
+extern u8 ovl_079730_VRAM[];
+extern u8 ovl_087200_TEXT_START[];
+extern u8 ovl_087200_TEXT_END[];
+extern u8 ovl_087200_DATA_START[];
+extern u8 ovl_087200_RODATA_END[];
+extern u8 ovl_087200_BSS_START[];
+extern u8 ovl_087200_BSS_END[];
+extern u8 ovl_087200_ROM_START[];
+extern u8 ovl_087200_ROM_END[];
+extern u8 ovl_087200_VRAM[];
+extern u8 ovl_071280_TEXT_START[];
+extern u8 ovl_071280_TEXT_END[];
+extern u8 ovl_071280_DATA_START[];
+extern u8 ovl_071280_RODATA_END[];
+extern u8 ovl_071280_BSS_START[];
+extern u8 ovl_071280_BSS_END[];
+extern u8 ovl_071280_ROM_START[];
+extern u8 ovl_071280_ROM_END[];
+extern u8 ovl_071280_VRAM[];
+void osInvalICache(void *p, s32 n);
+void osInvalDCache(void *p, s32 n);
+void RomRead(void *rom, void *dst, s32 size);
+void bzero(void *p, s32 n);
+void func_80073164(u8 relative, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f);
+void func_8019A7A0(void);
+void func_801C1990(void);
+void func_8019A864(void);
+s32 func_8019D65C(void);
+extern u16 D_800C4C26;
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017B5EC_ovl_040E80);
+/* Loads overlay 079730 and enters it (mode 1) */
+void func_8017B5EC_ovl_040E80(void) {
+    osInvalICache(ovl_079730_TEXT_START, ovl_079730_TEXT_END - ovl_079730_TEXT_START);
+    osInvalDCache(ovl_079730_DATA_START, ovl_079730_RODATA_END - ovl_079730_DATA_START);
+    RomRead(ovl_079730_ROM_START, ovl_079730_VRAM, ovl_079730_ROM_END - ovl_079730_ROM_START);
+    if (ovl_079730_BSS_START != ovl_079730_BSS_END) {
+        bzero(ovl_079730_BSS_START, ovl_079730_BSS_END - ovl_079730_BSS_START);
+    }
+    func_80073164(0, 8, 2, 0x40, 0x40, 0x100, 0x1800);
+    func_8019A7A0();
+    D_801977C8_ovl_040E80 = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017B6B0_ovl_040E80);
+/* Loads overlay 087200 and enters it (mode 2) */
+void func_8017B6B0_ovl_040E80(void) {
+    osInvalICache(ovl_087200_TEXT_START, ovl_087200_TEXT_END - ovl_087200_TEXT_START);
+    osInvalDCache(ovl_087200_DATA_START, ovl_087200_RODATA_END - ovl_087200_DATA_START);
+    RomRead(ovl_087200_ROM_START, ovl_087200_VRAM, ovl_087200_ROM_END - ovl_087200_ROM_START);
+    if (ovl_087200_BSS_START != ovl_087200_BSS_END) {
+        bzero(ovl_087200_BSS_START, ovl_087200_BSS_END - ovl_087200_BSS_START);
+    }
+    func_80073164(0, 1, 1, 0x40, 1, 0x600, 0x2200);
+    func_801C1990();
+    D_801977C8_ovl_040E80 = 2;
+}
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017B774_ovl_040E80);
+/* Loads overlay 071280 and enters it (mode 3) */
+void func_8017B774_ovl_040E80(void) {
+    osInvalICache(ovl_071280_TEXT_START, ovl_071280_TEXT_END - ovl_071280_TEXT_START);
+    osInvalDCache(ovl_071280_DATA_START, ovl_071280_RODATA_END - ovl_071280_DATA_START);
+    RomRead(ovl_071280_ROM_START, ovl_071280_VRAM, ovl_071280_ROM_END - ovl_071280_ROM_START);
+    if (ovl_071280_BSS_START != ovl_071280_BSS_END) {
+        bzero(ovl_071280_BSS_START, ovl_071280_BSS_END - ovl_071280_BSS_START);
+    }
+    func_80073164(0, 8, 2, 0x40, 0x40, 0x100, 0x3000);
+    func_8019A864();
+    D_801977C8_ovl_040E80 = 3;
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017B838_ovl_040E80);
 
@@ -87,7 +157,18 @@ void *func_8017BA34_ovl_040E80(void) {
     return D_8018FDA0_ovl_040E80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BA40_ovl_040E80);
+void func_8017BA40_ovl_040E80(void) {
+    osInvalICache(ovl_071280_TEXT_START, ovl_071280_TEXT_END - ovl_071280_TEXT_START);
+    osInvalDCache(ovl_071280_DATA_START, ovl_071280_RODATA_END - ovl_071280_DATA_START);
+    RomRead(ovl_071280_ROM_START, ovl_071280_VRAM, ovl_071280_ROM_END - ovl_071280_ROM_START);
+    if (ovl_071280_BSS_START != ovl_071280_BSS_END) {
+        bzero(ovl_071280_BSS_START, ovl_071280_BSS_END - ovl_071280_BSS_START);
+    }
+    func_80073164(0, 8, 2, 0x40, 0x40, 0x100, 0x3000);
+    if (func_8019D65C()) {
+        D_800C4C26 = 9;
+    }
+}
 
 void func_8017BB08_ovl_040E80(void) {
     if (func_8019C67C()) {
