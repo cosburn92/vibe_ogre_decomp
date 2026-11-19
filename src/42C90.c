@@ -34,6 +34,8 @@ void *HMalloc(s32 size);
 void HFree(void *p);
 void bzero(void *p, s32 n);
 void _bcopy(const void *src, void *dst, s32 n);
+void func_80074494(void *a, void *table);
+void func_8017AA18_ovl_040E80(u8 *str, u8 *dst);
 /* --- end decls --- */
 
 void func_8016CD90_ovl_040E80(Bits42 *p) {
@@ -76,7 +78,26 @@ void func_8016CEC4_ovl_040E80(s32 a) {
     func_8016CC2C_ovl_040E80(D_80196A28_ovl_040E80);
 }
 
-INCLUDE_ASM("asm/nonmatchings/42C90", func_8016CF64_ovl_040E80);
+/* Same for the player roster, bracketed by func_8016BA10(0/1) */
+void func_8016CF64_ovl_040E80(s32 a) {
+    u8 **save;
+    s32 i;
+
+    func_8016BA10_ovl_040E80(0);
+    save = HMalloc(0x190);
+    for (i = 0; i < 100; i++) {
+        save[i] = HMalloc(0x10);
+        _bcopy(D_80193BC0_ovl_040E80 + i * 0x38, save[i], 0x10);
+        func_8017AA18_ovl_040E80(save[i], D_80193BC0_ovl_040E80 + i * 0x38);
+    }
+    func_80074494((void *)a, D_80187444_ovl_040E80);
+    for (i = 0; i < 100; i++) {
+        _bcopy(save[i], D_80193BC0_ovl_040E80 + i * 0x38, 0x10);
+        HFree(save[i]);
+    }
+    HFree(save);
+    func_8016BA10_ovl_040E80(1);
+}
 
 /* Loads the enemy roster and fixes up the 100 character names */
 void func_8016D068_ovl_040E80(s32 a) {
@@ -94,4 +115,21 @@ void func_8016D068_ovl_040E80(s32 a) {
     HFree(name);
 }
 
-INCLUDE_ASM("asm/nonmatchings/42C90", func_8016D100_ovl_040E80);
+/* Runs func_80074494 on the enemy roster with names converted to the game encoding, then restores them */
+void func_8016D100_ovl_040E80(s32 a) {
+    u8 **save;
+    s32 i;
+
+    save = HMalloc(0x190);
+    for (i = 0; i < 100; i++) {
+        save[i] = HMalloc(0x10);
+        _bcopy(D_80195560_ovl_040E80 + i * 0x34, save[i], 0x10);
+        func_8017AA18_ovl_040E80(save[i], D_80195560_ovl_040E80 + i * 0x34);
+    }
+    func_80074494((void *)a, D_80187618_ovl_040E80);
+    for (i = 0; i < 100; i++) {
+        _bcopy(save[i], D_80195560_ovl_040E80 + i * 0x34, 0x10);
+        HFree(save[i]);
+    }
+    HFree(save);
+}
