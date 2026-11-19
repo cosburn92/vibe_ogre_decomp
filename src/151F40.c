@@ -465,7 +465,44 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80205F2C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80206340_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80206C70_ovl_14EBE0);
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+/* Steps the cursor blink (0x5F3), bob offset (0x5F4) and pulse counter (0x5F5) */
+void func_80206C70_ovl_14EBE0(void) {
+    u8 v;
+
+    v = D_80213778_ovl_14EBE0[0x5F3];
+    if ((s8)(v & 0x7F) >= 0x10) {
+        D_80213778_ovl_14EBE0[0x5F3] = v & 0x80;
+        D_80213778_ovl_14EBE0[0x5F3] ^= 0x80;
+    }
+    D_80213778_ovl_14EBE0[0x5F3]++;
+    if (D_80213778_ovl_14EBE0[0x5F3] & 0x80) {
+        D_80213778_ovl_14EBE0[0x5F4] += 2;
+    } else {
+        D_80213778_ovl_14EBE0[0x5F4] -= 2;
+    }
+    v = D_80213778_ovl_14EBE0[0x5F5];
+    if (v & 0x80) {
+        if (v & 0xF) {
+            D_80213778_ovl_14EBE0[0x5F5] = v - 1;
+            D_80213778_ovl_14EBE0[0x5F5] |= 0x80;
+        } else {
+            D_80213778_ovl_14EBE0[0x5F5] = 0;
+        }
+    } else if ((v & 0xF) < 4) {
+        D_80213778_ovl_14EBE0[0x5F5] = v + 1;
+        D_80213778_ovl_14EBE0[0x5F5] &= 0x7F;
+    } else {
+        D_80213778_ovl_14EBE0[0x5F5] = 0x84;
+    }
+    func_80179018();
+}
 
 #ifdef NON_MATCHING
 /* addu operand order (1 instruction) */
