@@ -38,6 +38,13 @@ extern s16 D_800E9C0A[];
 extern u8 D_8019EE40[];
 
 void bzero(void *p, s32 n);
+extern s16 D_8022A994;
+extern u8 D_8018FC19;
+extern u8 D_8022A997;
+void func_80227FD8(s32 a, s32 b);
+void func_8023998C(void);
+void func_8023A98C(void);
+void func_80227010(void);
 void *HFree(void *p);
 void func_801CCA5C(s32 a, s32 b, s32 c);
 u8 func_80233968_ovl_29A4C0(s32 a, s16 b, s32 c, u8 d, u8 *r, u8 *g, u8 *bl);
@@ -78,7 +85,30 @@ void func_8022D120_ovl_29A4C0(void) {
     func_802329B0_ovl_29A4C0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D1AC_ovl_29A4C0);
+/* Battle start: allocates the battle state, sets up the mode and loads the LZ battle data 0x109EEB0 */
+void func_8022D1AC_ovl_29A4C0(void) {
+    void *raw;
+
+    D_8022A974 = HMalloc(0x1CB8);
+    bzero(D_8022A974, 0x1CB8);
+    func_80227FD8(D_8022A994, 0);
+    if (D_8018FC19 == 2) {
+        func_8023998C();
+    } else if (D_8018FC19 == 0) {
+        D_8022A997 = 0;
+        func_8023A98C();
+    }
+    if (D_8022A97C != NULL) {
+        HFree(D_8022A97C);
+    }
+    raw = HMalloc(ChunkSize(0x109EEB0));
+    LoadChunkRaw(raw, 0x109EEB0);
+    D_8022A97C = HMalloc(ReadU32BE(raw));
+    DecodeLZ(D_8022A97C, raw);
+    HFree(raw);
+    func_802329B0_ovl_29A4C0();
+    func_80227010();
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D2A8_ovl_29A4C0);
 
