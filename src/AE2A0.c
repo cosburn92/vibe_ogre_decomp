@@ -199,7 +199,16 @@ void func_801C6B28_ovl_087200(f32 *x, f32 *y, s32 i) {
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6B28_ovl_087200);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6BCC_ovl_087200);
+/* Screen position of cell n in the 3-row grid, columns counted back from the last (st+0x2C0 entries) */
+void func_801C6BCC_ovl_087200(f32 *x, f32 *y, s32 n) {
+    s32 col = (*(s32 *)((u8 *)D_80196AF8 + 0x2C0) - 1) / 3 - n / 3 + 1;
+    s32 row = 2 - n % 3;
+    f32 c = col;
+    f32 r = row;
+
+    *x = c * 72.0f + r * 30.0f + 0.5f;
+    *y = r * 50.0f - c * 20.0f + 0.5f - 72.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6CA4_ovl_087200);
 
