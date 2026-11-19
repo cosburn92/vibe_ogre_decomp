@@ -21,7 +21,7 @@ typedef struct {
 
 extern s16 D_8021AFB0_ovl_171EA0;
 extern u8 D_8021AFB2_ovl_171EA0;
-extern u8 D_8021AFB3_ovl_171EA0;
+extern s8 D_8021AFB3_ovl_171EA0;
 extern u8 D_8021AFB4_ovl_171EA0;
 extern u8 D_80214E84;
 extern Ctx17 *D_8021AA70_ovl_171EA0;
@@ -51,6 +51,7 @@ extern u8 D_800E7A33;
 void func_802150C8_ovl_171EA0(void);
 void func_80216CD8_ovl_171EA0(void);
 void func_80215378_ovl_171EA0(void);
+void *LoadAsset(u32 handle, ...);
 /* --- end decls --- */
 
 void func_80214F80_ovl_171EA0(s16 a, u8 b, u8 c, u8 d) {
@@ -91,7 +92,15 @@ void func_80214FFC_ovl_171EA0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/171EA0", func_802150C8_ovl_171EA0);
 
-INCLUDE_ASM("asm/nonmatchings/171EA0", func_80215378_ovl_171EA0);
+/* Loads the four images from asset 0x218E9B4 (frame, then variants picked by the three parameters) */
+void func_80215378_ovl_171EA0(void) {
+    if (D_8021AA70_ovl_171EA0->w70 == 0) {
+        D_8021AA70_ovl_171EA0->w70 = (s32)LoadAsset(0x218E9B4, 0x16, -3, 0);
+        D_8021AA70_ovl_171EA0->w74 = (s32)LoadAsset(0x218E9B4, 0x16, -3, D_8021AFB4_ovl_171EA0 + 0x14);
+        D_8021AA70_ovl_171EA0->w78 = (s32)LoadAsset(0x218E9B4, 0x16, -3, D_8021AFB2_ovl_171EA0 + 1);
+        D_8021AA70_ovl_171EA0->w7C = (s32)LoadAsset(0x218E9B4, 0x16, -3, D_8021AFB3_ovl_171EA0 + 0xC);
+    }
+}
 
 void func_80215444_ovl_171EA0(void) {
     if (D_8021AA70_ovl_171EA0->w70 != 0) {
