@@ -321,6 +321,7 @@ void func_8016C70C_ovl_040E80(void *d);
 extern s16 D_80197B06_ovl_040E80;
 void func_80171B94_ovl_040E80(void);
 void func_80171ED8_ovl_040E80(void);
+void func_8016B774_ovl_040E80(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
@@ -400,7 +401,36 @@ s32 func_801725C0_ovl_040E80(u8 c) {
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172610_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172800_ovl_040E80);
+/* Adds n of item id to the stock (max 99), using the first empty slot for a new item */
+void func_80172800_ovl_040E80(u16 id, s32 n) {
+    u16 i;
+    u16 free = 0xFFFF;
+
+    if (id == 0) {
+        return;
+    }
+    for (i = 0; i < 0x116; i++) {
+        if (D_80196B00_ovl_040E80[i].id == id) {
+            u8 c = D_80196B03_ovl_040E80[i].v + n;
+
+            D_80196B03_ovl_040E80[i].v = c;
+            if (c >= 100) {
+                D_80196B03_ovl_040E80[i].v = 99;
+            }
+            break;
+        }
+        if (D_80196B00_ovl_040E80[i].id == 0 && free == 0xFFFF) {
+            free = i;
+        }
+    }
+    if (i >= 0x116) {
+        if (free != 0xFFFF) {
+            D_80196B00_ovl_040E80[free].id = id;
+            D_80196B03_ovl_040E80[free].v = n;
+        }
+    }
+    func_8016B774_ovl_040E80();
+}
 
 s32 func_801728EC_ovl_040E80(u8 id) {
     u16 slot = func_8016B738_ovl_040E80(id);
