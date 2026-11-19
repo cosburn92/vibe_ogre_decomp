@@ -52,6 +52,13 @@ typedef struct {
 } FadeCtx; /* size 0x54 */
 
 extern u16 *D_801AB850;
+extern u8 D_801F365D;
+extern s32 D_8018F590;
+extern u16 *D_800C4BDC; /* buttons pressed */
+extern u16 *D_801F0CA0; /* two button masks */
+extern s32 D_801F0DE0;
+extern s32 D_801F0DE8;
+extern u8 D_800E7A90[]; /* +0x29: scene slot */
 extern FbSet *D_800E9BE0;
 extern Gfx *D_800E9BA0;
 extern u16 D_800C4BE4;
@@ -106,6 +113,8 @@ s16 func_801AB0FC(u16 a, s32 b);
 void func_800EA6B0(void *ch, s32 a, s32 b, s32 c);
 void func_800EA7E4(void *ch, s32 v);
 void func_80215B1C_ovl_1A2C20(void);
+void func_8017BED4(void);
+void func_801C9AA4(void);
 void func_80215D30_ovl_1A2C20(void);
 void func_8021608C_ovl_1A2C20(void);
 
@@ -270,7 +279,7 @@ void func_802154E0_ovl_1A2C20(void) {
 INCLUDE_ASM("asm/nonmatchings/1A2C20", func_802154E0_ovl_1A2C20);
 #endif
 
-void func_8021562C_ovl_1A2C20(void) {
+inline void func_8021562C_ovl_1A2C20(void) {
     CamSave *cs = &D_80216BE0_ovl_1A2C20->cs;
 
     *cs->cam = *cs->saved;
@@ -479,4 +488,33 @@ u8 func_802163AC_ovl_1A2C20(void) {
     return D_80216BE4_ovl_1A2C20;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_802163B8_ovl_1A2C20);
+s32 func_802163B8_ovl_1A2C20(void) {
+    s32 state;
+    s32 ret = 0;
+
+    D_801F365D |= 1;
+    state = D_80216BE4_ovl_1A2C20;
+    if (state == 0) {
+        D_8018F590 = 1;
+        func_8017BED4();
+        func_802154E0_ovl_1A2C20();
+    }
+    if ((*D_800C4BDC & D_801F0CA0[0]) || (*D_800C4BDC & D_801F0CA0[1])) {
+        if (state == 4) {
+            func_80214F80_ovl_1A2C20();
+        }
+    }
+    if (state == 1) {
+        func_8021562C_ovl_1A2C20();
+        ret = -3;
+        D_801F0DE0 = 0;
+        D_801F0DE8 = 0;
+        D_801F365D &= ~1;
+        D_800E82C8[D_800E7A90[0x29]].unk8B &= ~4;
+        func_801C9AA4();
+        D_8018F590 = 0;
+    } else {
+        func_802157F0_ovl_1A2C20();
+    }
+    return ret;
+}
