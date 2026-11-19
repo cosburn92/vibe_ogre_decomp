@@ -47,6 +47,15 @@ extern u8 *D_801969B0;
 extern Gfx D_801F0090_ovl_23B220[];
 void guMtxF2L(void *mf, void *m);
 void func_801E9DFC_ovl_23B220(s16 a, s32 b);
+typedef struct {
+    u8 id;
+    u8 pad[3];
+    u8 *text;
+} Title23;
+extern Title23 D_801EFF04_ovl_23B220[27];
+extern s8 D_801EFE8C_ovl_23B220[][2];
+extern s8 D_801EFE8D_ovl_23B220[][2];
+extern u8 D_801EFE34_ovl_23B220[];
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
@@ -297,7 +306,36 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBCFC_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBDD8_ovl_23B220);
 
+/* Selects the title text for id and right-aligns it (x = 0x113 - width) */
+#ifdef NON_MATCHING
+/* register allocation: original keeps the title ptr in t0 and second kern in a0 */
+void func_801EBF58_ovl_23B220(u8 id) {
+    u8 *t = (u8 *)D_801EFE48_ovl_23B220 + 0x5C8;
+    u32 i;
+    u8 *s;
+    u8 c;
+    s32 w;
+
+    FIELD(D_801EFE48_ovl_23B220, u8 *, 0x5CC) = D_801EFE34_ovl_23B220;
+    for (i = 0; i < 27; i++) {
+        if (D_801EFF04_ovl_23B220[i].id == id) {
+            FIELD(t, u8 *, 4) = D_801EFF04_ovl_23B220[i].text;
+        }
+    }
+    s = FIELD(t, u8 *, 4);
+    w = 0;
+    while (*s != 0) {
+        c = *s++;
+        w -= D_801EFE8C_ovl_23B220[c - 'A'][0];
+        w += 16;
+        w -= D_801EFE8D_ovl_23B220[c - 'A'][0];
+    }
+    FIELD(t, s16, 8) = 0x113 - w;
+    FIELD(t, s16, 0xA) = 0x1E;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBF58_ovl_23B220);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC00C_ovl_23B220);
 
