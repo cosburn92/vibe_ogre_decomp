@@ -22,6 +22,7 @@ extern s32 D_80220CB0_ovl_25EE90;
 extern Ent260 *D_80220CB8_ovl_25EE90[];
 void HFree(void *p);
 void bzero(void *p, s32 n);
+void *HMalloc(s32 size);
 Ent260 *func_8020BA6C_ovl_25EE90(void *p);
 
 static inline void CacheRelease(Ent260 *e) {
@@ -41,7 +42,22 @@ static inline void CacheRelease(Ent260 *e) {
 }
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020B870_ovl_25EE90);
+/* Cache pool: 128 entries chained through nextFree, plus a 32-bucket table */
+void func_8020B870_ovl_25EE90(void) {
+    s32 i;
+
+    D_80220CA0_ovl_25EE90 = 0x80;
+    D_80220CA8_ovl_25EE90 = HMalloc(0xA00);
+    bzero(D_80220CA8_ovl_25EE90, 0xA00);
+    for (i = 0; i < D_80220CA0_ovl_25EE90 - 1; i++) {
+        D_80220CA8_ovl_25EE90[i].nextFree = i + 1;
+    }
+    D_80220CA8_ovl_25EE90[i].nextFree = 0xFFFF;
+    D_80220CA4_ovl_25EE90 = 0;
+    D_80220CAC_ovl_25EE90 = 0x20;
+    D_80220CB0_ovl_25EE90 = 0;
+    bzero(D_80220CB8_ovl_25EE90, 0x80);
+}
 
 void func_8020B940_ovl_25EE90(void) {
     s32 i;
