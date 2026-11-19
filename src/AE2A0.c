@@ -211,7 +211,19 @@ void func_801C6BCC_ovl_087200(f32 *x, f32 *y, s32 n) {
     *y = r * 50.0f - c * 20.0f + 0.5f - 72.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6CA4_ovl_087200);
+/* Screen position of grid slot i (three per column, newest column first) */
+void func_801C6CA4_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s32 c = ((*(s32 *)((u8 *)D_80196AF8 + 0x2C0)) - 1) / 3 - i / 3 + 1;
+    s32 r = 2 - i % 3;
+    f32 col = c;
+    f32 row = r;
+    s16 *o = D_801EE38C_ovl_087200[(*(u16 *)((u8 *)D_80196AF8 + 0x19A))];
+
+    *x = col * 72.0f + row * 30.0f + 0.5f;
+    *y = row * 50.0f - col * 20.0f + 0.5f - 72.0f;
+    *x = *x - o[0] + 0.5f;
+    *y = *y - o[1] + 0.5f;
+}
 
 /* slot order (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n"
