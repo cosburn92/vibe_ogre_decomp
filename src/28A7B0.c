@@ -145,6 +145,7 @@ u8 func_8016FF5C(u8 cls, u8 x);
 void func_8017D6D0(Win28 *w, u8 a, u8 b, u8 c, s32 d, s32 e, s32 f);
 s32 strlen(const char *s);
 u16 func_801794C8(char *s);
+TimeStamp *func_8022EC34_ovl_286BD0(u8 i);
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -588,7 +589,33 @@ void *func_8023906C_ovl_286BD0(void) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802390AC_ovl_286BD0);
+/* Index of the first save entry in date group n (groups split on hi/mid of the timestamp) */
+s16 func_802390AC_ovl_286BD0(s32 n) {
+    s32 g = 0;
+    u8 mid = 0;
+    u16 hi = 0;
+    s32 i;
+    TimeStamp *t;
+
+    for (i = 0; i < 121; i++) {
+        t = func_8022EC34_ovl_286BD0(i);
+        if (t == NULL) {
+            break;
+        }
+        if (hi != t->hi) {
+            hi = t->hi;
+            mid = t->mid;
+            g++;
+        } else if (mid != t->mid) {
+            g++;
+            mid = t->mid;
+        }
+        if (n == g - 1) {
+            return i;
+        }
+    }
+    return g;
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
 
@@ -596,7 +623,37 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239394_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802394A0_ovl_286BD0);
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239570_ovl_286BD0);
+/* List row of date group n's header (rows count group headers plus entries) */
+s16 func_80239570_ovl_286BD0(s32 n) {
+    s32 g = 0;
+    u8 mid = 0;
+    u16 hi = 0;
+    s32 r = 0;
+    s32 i;
+    TimeStamp *t;
+
+    for (i = 0; i < 121; i++) {
+        t = func_8022EC34_ovl_286BD0(i);
+        if (t == NULL) {
+            break;
+        }
+        if (hi != t->hi) {
+            hi = t->hi;
+            mid = t->mid;
+            g++;
+            r++;
+        } else if (mid != t->mid) {
+            g++;
+            r++;
+            mid = t->mid;
+        }
+        if (n + 1 == g) {
+            break;
+        }
+        r++;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239634_ovl_286BD0);
 
