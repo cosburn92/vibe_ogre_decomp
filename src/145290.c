@@ -1,4 +1,5 @@
 #include "common.h"
+#include "libultra.h"
 
 typedef struct {
     /* 0x00 */ u32 flags;
@@ -46,6 +47,20 @@ typedef struct MapObj {
 } MapObj;
 extern u16 D_801FDA32_ovl_145210;
 extern MapEntry **D_801FDA34_ovl_145210;
+extern Gfx *D_800E9BA0;
+extern Gfx D_801FCF70_ovl_145210[];
+extern Gfx D_801FCF98_ovl_145210[];
+typedef struct {
+    /* 0x00 */ MapUnit *u;
+    /* 0x04 */ u16 flags;
+    /* 0x06 */ u8 b6;
+    /* 0x07 */ u8 b7;
+    /* 0x08 */ u8 unk08[0x2A];
+    /* 0x32 */ u8 b32;
+    /* 0x33 */ u8 b33;
+} MapMarker;
+u8 func_801F4ED8_ovl_145210(MapUnit *u);
+
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
@@ -191,7 +206,24 @@ s32 func_801F4C24_ovl_145210(s32 v) {
     return D_801FDA20_ovl_145210 == v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4C38_ovl_145210);
+/* Switches the map's display mode, emitting the matching display list once */
+void func_801F4C38_ovl_145210(s32 on) {
+    Gfx *g;
+
+    if (on != 0) {
+        if (D_801FDA24_ovl_145210 != 1) {
+            D_801FDA24_ovl_145210 = 1;
+            g = D_800E9BA0++;
+            g->w0 = 0xDE000000;
+            g->w1 = (u32)D_801FCF70_ovl_145210;
+        }
+    } else if (D_801FDA24_ovl_145210 != 2) {
+        D_801FDA24_ovl_145210 = 2;
+        g = D_800E9BA0++;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_801FCF98_ovl_145210;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4CD0_ovl_145210);
 
@@ -273,7 +305,21 @@ u8 func_801F6B64_ovl_145210(s32 id) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F6BC0_ovl_145210);
+s32 func_801F6BC0_ovl_145210(s32 id) {
+    s32 pad;
+    s32 i;
+
+    for (i = 0; i < D_801FDA32_ovl_145210; i++) {
+        if (D_801FDA34_ovl_145210[i] != NULL && D_801FDA34_ovl_145210[i]->id == id) {
+            break;
+        }
+    }
+    if (i >= D_801FDA32_ovl_145210) {
+        for (;;) {
+        }
+    }
+    return (D_801FDA34_ovl_145210[i]->flags >> 6) & 1;
+}
 
 void func_801F6C48_ovl_145210(s32 id) {
     MapEntry *e = func_801F69A0_ovl_145210(id);
@@ -283,9 +329,37 @@ void func_801F6C48_ovl_145210(s32 id) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F6CB4_ovl_145210);
+void func_801F6CB4_ovl_145210(s32 id) {
+    s32 pad;
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F6D3C_ovl_145210);
+    for (i = 0; i < D_801FDA32_ovl_145210; i++) {
+        if (D_801FDA34_ovl_145210[i] != NULL && D_801FDA34_ovl_145210[i]->id == id) {
+            break;
+        }
+    }
+    if (i >= D_801FDA32_ovl_145210) {
+        for (;;) {
+        }
+    }
+    D_801FDA34_ovl_145210[i]->flags |= 0x800;
+}
+
+s32 func_801F6D3C_ovl_145210(s32 id) {
+    s32 pad;
+    s32 i;
+
+    for (i = 0; i < D_801FDA32_ovl_145210; i++) {
+        if (D_801FDA34_ovl_145210[i] != NULL && D_801FDA34_ovl_145210[i]->id == id) {
+            break;
+        }
+    }
+    if (i >= D_801FDA32_ovl_145210) {
+        for (;;) {
+        }
+    }
+    return (*(u32 *)&D_801FDA34_ovl_145210[i]->flags & 0xC000000) != 0;
+}
 
 void func_801F6DC8_ovl_145210(void) {
     D_801FDA30_ovl_145210 = 1;
@@ -317,4 +391,19 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F86A8_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F8774_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F8830_ovl_145210);
+void func_801F8830_ovl_145210(MapMarker *m) {
+    s32 r;
+
+    if (m->b7 == 0) {
+        r = 0;
+        if (m->u->unk70 == 1) {
+            u32 t = m->u->flags & 0x40;
+
+            r = t == 0;
+        }
+        m->b33 = r;
+        m->b32 = func_801F4ED8_ovl_145210(m->u);
+        m->b6 = 0;
+        m->flags &= 0xFBFF;
+    }
+}
