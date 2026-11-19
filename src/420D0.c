@@ -15,6 +15,21 @@ extern u8 D_80196A34_ovl_040E80;
 extern u8 D_80196A35_ovl_040E80;
 void DateAdvanceDay(void *d);
 u64 osGetTime(void);
+extern u8 D_80196A28_ovl_040E80[];
+extern u8 D_80196A32_ovl_040E80;
+extern u8 D_80196A33_ovl_040E80;
+extern u8 D_80196A36_ovl_040E80;
+extern u16 D_80193678_ovl_040E80;
+extern u8 D_8019367A_ovl_040E80;
+extern u8 D_8019367B_ovl_040E80;
+extern u8 D_801936A7_ovl_040E80;
+extern u8 D_801936A9_ovl_040E80;
+extern u8 D_801936AA_ovl_040E80;
+extern u8 D_801936AC_ovl_040E80;
+extern u8 D_801936AD_ovl_040E80;
+extern u8 D_80196AA4_ovl_040E80;
+extern u8 D_80197810_ovl_040E80[];
+void *memset(void *p, s32 c, s32 n);
 /* --- end decls --- */
 
 /* Leap-year test; era 1 years are offset by 1748 */
@@ -75,7 +90,31 @@ void func_8016C81C_ovl_040E80(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/420D0", NewGameInit);
+/* New game: day 251 of year 4 (era 1), 06:00, default party settings, clears the event flags */
+void NewGameInit(void) {
+    u16 *p;
+
+    func_8016CB08_ovl_040E80(D_80196A28_ovl_040E80);
+    p = &D_80193678_ovl_040E80;
+    *(u16 *)D_80196A30_ovl_040E80 = 0xFB;
+    D_80196A36_ovl_040E80 = 0;
+    D_80196A32_ovl_040E80 = 4;
+    D_80196A33_ovl_040E80 = 1;
+    D_80196A2C_ovl_040E80.hours = 6;
+    D_80196A2C_ovl_040E80.minutes = 0;
+    D_80196A2C_ovl_040E80.seconds = 0;
+    bzero(p, 0x3A);
+    D_801936AA_ovl_040E80 = 7;
+    D_801936A9_ovl_040E80 = 50;
+    D_801936A7_ovl_040E80 = 0;
+    *p = 0xF9;
+    D_8019367A_ovl_040E80 = 1;
+    D_8019367B_ovl_040E80 = 1;
+    D_801936AD_ovl_040E80 = 4;
+    D_801936AC_ovl_040E80 = 2;
+    D_80196AA4_ovl_040E80 = 2;
+    memset(D_80197810_ovl_040E80, 0xFF, 0x2D6);
+}
 
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C9FC_ovl_040E80);
 
@@ -100,4 +139,7 @@ void PlayTimeUpdate(Clock420 *c) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/420D0", func_8016CC2C_ovl_040E80);
+/* Restarts the play-time counter at the time in c */
+void func_8016CC2C_ovl_040E80(Clock420 *c) {
+    osSetTime(((u64)c->hours * 3600 + (u64)c->minutes * 60 + (u64)c->seconds) * 46875000);
+}
