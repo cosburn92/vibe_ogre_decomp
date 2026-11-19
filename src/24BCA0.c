@@ -43,6 +43,8 @@ extern u8 *(*D_8020974C_ovl_24BCA0[])(u16 id, s32 a, s32 x, s32 b, s32 y);
 extern s32 D_8020A170_ovl_24BCA0[];
 u8 *func_80214CF0(u16 id, s32 a);
 extern s32 (*D_80209700_ovl_24BCA0[])(u8 c);
+extern u32 D_8020A2D4_ovl_24BCA0;
+extern u8 *D_80209770_ovl_24BCA0[];
 void func_80218104(f32 x, f32 y, s32 z, s32 w);
 s32 func_801C8E30(u8 *u);
 extern u16 D_801CEF10[];
@@ -358,7 +360,31 @@ void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
     func_80218104(t.x, t.y, t.z, b);
 }
 
+/* Plays voice k for class c (0-19, 20-46, 47-86) on the next of two channels; the class handler
+ * picks between the two variants */
+#ifdef NON_MATCHING
+/* Same range-chain set-compare issue as func_801F7128 and func_801F9DFC: GCC turns the last range test into xori/negu/and instead of a branch, and keeps k in s0 later. */
+void func_801F9D1C_ovl_24BCA0(u8 c, s32 k) {
+    s32 t;
+
+    if (c < 20) {
+        t = 0;
+    } else if ((u8)(c - 20) < 27) {
+        t = 1;
+    } else if ((u8)(c - 47) < 40) {
+        t = 2;
+    } else {
+        t = 0xFF;
+    }
+    k = k * 2 + (D_80209700_ovl_24BCA0[t](c) >= 0);
+    func_801C5938(D_80209770_ovl_24BCA0[D_8020A2D4_ovl_24BCA0], D_801CEF10[k]);
+    if (++D_8020A2D4_ovl_24BCA0 >= 2) {
+        D_8020A2D4_ovl_24BCA0 = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9D1C_ovl_24BCA0);
+#endif
 
 static inline s32 cls24(u8 c) {
     s32 k;
