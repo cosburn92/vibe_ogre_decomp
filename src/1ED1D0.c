@@ -16,6 +16,12 @@ typedef struct {
     u8 step;
 } Seq1ED;
 extern Seq1ED *D_801BA6D0_ovl_1CE070;
+typedef struct {
+    /* 0x000 */ u8 unk00[0x84];
+    /* 0x084 */ u8 *data;
+    /* 0x088 */ u8 unk88[0x100];
+    /* 0x188 */ s32 size;
+} BgJob;
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 extern NUScTask D_800E7D90[];
 extern OSMesgQueue D_800E9BA8;
@@ -32,6 +38,9 @@ extern u64 D_800C6D70[];
 extern u32 D_800A9E70;
 extern volatile u32 D_800E79A4;
 extern u8 D_801B9998_ovl_1CE070[];
+void BgDecodeHu(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgJpegTask);
@@ -109,7 +118,39 @@ INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgDecodeHu);
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B7B7C_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgLoad);
+/* Background image: "HU" data is decoded straight away; anything else is a JPEG job
+ * (state block at D_801BA6D0) and returns 1 */
+s32 BgLoad(u8 *data, u8 a, u8 b) {
+    u8 *p = data;
+    s8 type = p[2];
+    u16 w = *(u16 *)(p + 4);
+    u16 h = *(u16 *)(p + 6);
+    u8 *q;
+    u8 *r;
+
+    nuGfxTaskAllEndWait();
+    p += 8;
+    if (*(u16 *)data == 0x4855) {
+        BgDecodeHu(type, w, h, p, a, b);
+        return 0;
+    } else {
+        D_801BA6D0_ovl_1CE070 = HMalloc(0x190);
+        bzero(D_801BA6D0_ovl_1CE070, 0x190);
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x7E] = 0;
+        ((BgJob *)D_801BA6D0_ovl_1CE070)->data = data;
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x81] = 1;
+        ((BgJob *)D_801BA6D0_ovl_1CE070)->size = 0;
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x82] = a;
+        ((BgJob *)D_801BA6D0_ovl_1CE070)->size = 8;
+        r = p;
+        p += 0x10;
+        ((BgJob *)D_801BA6D0_ovl_1CE070)->size = *(u16 *)(r + 4) * *(u16 *)(r + 6) * 2 + 0x18;
+        q = p;
+        p += 8;
+        BgDecodeHu(q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
+        return 1;
+    }
+}
 
 void func_801B8048_ovl_1CE070(void) {
     do {

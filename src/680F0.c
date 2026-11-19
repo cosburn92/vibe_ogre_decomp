@@ -25,6 +25,15 @@ extern u64 D_800C6D70[];
 extern u32 D_800A9E70;
 extern volatile u32 D_800E79A4;
 extern u8 D_8019A388_ovl_066E10[];
+typedef struct {
+    u8 unk00[0x84];
+    u8 *data;
+    u8 unk88[0x100];
+    s32 size;
+} BgJob_680F0;
+void func_801999E8_ovl_066E10(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/680F0", func_80198E50_ovl_066E10);
@@ -101,7 +110,39 @@ INCLUDE_ASM("asm/nonmatchings/680F0", func_801999E8_ovl_066E10);
 
 INCLUDE_ASM("asm/nonmatchings/680F0", func_80199D10_ovl_066E10);
 
-INCLUDE_ASM("asm/nonmatchings/680F0", func_8019A088_ovl_066E10);
+/* Background image: "HU" data is decoded straight away; anything else is a JPEG job
+ * (state block at D_801BA6D0) and returns 1 */
+s32 func_8019A088_ovl_066E10(u8 *data, u8 a, u8 b) {
+    u8 *p = data;
+    s8 type = p[2];
+    u16 w = *(u16 *)(p + 4);
+    u16 h = *(u16 *)(p + 6);
+    u8 *q;
+    u8 *r;
+
+    nuGfxTaskAllEndWait();
+    p += 8;
+    if (*(u16 *)data == 0x4855) {
+        func_801999E8_ovl_066E10(type, w, h, p, a, b);
+        return 0;
+    } else {
+        D_8019A660_ovl_066E10 = HMalloc(0x190);
+        bzero(D_8019A660_ovl_066E10, 0x190);
+        ((u8 *)D_8019A660_ovl_066E10)[0x7E] = 0;
+        ((BgJob_680F0 *)D_8019A660_ovl_066E10)->data = data;
+        ((u8 *)D_8019A660_ovl_066E10)[0x81] = 1;
+        ((BgJob_680F0 *)D_8019A660_ovl_066E10)->size = 0;
+        ((u8 *)D_8019A660_ovl_066E10)[0x82] = a;
+        ((BgJob_680F0 *)D_8019A660_ovl_066E10)->size = 8;
+        r = p;
+        p += 0x10;
+        ((BgJob_680F0 *)D_8019A660_ovl_066E10)->size = *(u16 *)(r + 4) * *(u16 *)(r + 6) * 2 + 0x18;
+        q = p;
+        p += 8;
+        func_801999E8_ovl_066E10(q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
+        return 1;
+    }
+}
 
 void func_8019A1DC_ovl_066E10(void) {
     do {
