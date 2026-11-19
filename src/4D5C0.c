@@ -189,6 +189,16 @@ extern u16 D_80197B60_ovl_040E80;
 void func_801D0A8C(void);
 void func_801D14E8(void);
 void func_801AFC0C(s32 a);
+typedef struct {
+    s16 h[4];
+} Rec8_4D;
+extern u8 D_8022A999;
+extern u8 D_8022A980;
+extern Rec8_4D D_80190C80_ovl_040E80;
+extern void *D_80197AF0_ovl_040E80;
+void *HMalloc(s32 size);
+void func_80178E60_ovl_040E80(s32 id, Rec8_4D *out);
+void func_80226F88(void);
 /* --- end decls --- */
 
 /* Enters battle: optional pre-battle overlay (23A3A0), then the battle overlays */
@@ -555,7 +565,64 @@ void func_80178534_ovl_040E80(void) {
     D_800E9C0A[1] = D_80190F30_ovl_040E80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178548_ovl_040E80);
+void func_80178548_ovl_040E80(void) {
+    u8 v;
+    Rec8_4D t;
+    u16 *p;
+
+    D_8022A999 = 0;
+    D_80190F30_ovl_040E80 = D_800E9C0A[1];
+    v = D_801976D8_ovl_040E80;
+    if ((v & 8) || D_80197B60_ovl_040E80 != 0) {
+        osInvalICache(ovl_23A3A0_TEXT_START, ovl_23A3A0_TEXT_END - ovl_23A3A0_TEXT_START);
+        osInvalDCache(ovl_23A3A0_DATA_START, ovl_23A3A0_RODATA_END - ovl_23A3A0_DATA_START);
+        RomRead(ovl_23A3A0_ROM_START, ovl_23A3A0_VRAM, ovl_23A3A0_ROM_END - ovl_23A3A0_ROM_START);
+        if (ovl_23A3A0_BSS_START != ovl_23A3A0_BSS_END) {
+            bzero(ovl_23A3A0_BSS_START, ovl_23A3A0_BSS_END - ovl_23A3A0_BSS_START);
+        }
+        func_801D0A8C();
+    } else if (v & 0x40) {
+        osInvalICache(ovl_23A3A0_TEXT_START, ovl_23A3A0_TEXT_END - ovl_23A3A0_TEXT_START);
+        osInvalDCache(ovl_23A3A0_DATA_START, ovl_23A3A0_RODATA_END - ovl_23A3A0_DATA_START);
+        RomRead(ovl_23A3A0_ROM_START, ovl_23A3A0_VRAM, ovl_23A3A0_ROM_END - ovl_23A3A0_ROM_START);
+        if (ovl_23A3A0_BSS_START != ovl_23A3A0_BSS_END) {
+            bzero(ovl_23A3A0_BSS_START, ovl_23A3A0_BSS_END - ovl_23A3A0_BSS_START);
+        }
+        func_801D14E8();
+    }
+    t = D_80190C80_ovl_040E80;
+    func_80178E60_ovl_040E80(D_8018F1A0_ovl_040E80 & 0x3FFF, &t);
+    if (t.h[3] == 1) {
+        D_80197AF0_ovl_040E80 = HMalloc(0x25800);
+    } else {
+        D_80197AF0_ovl_040E80 = NULL;
+    }
+    func_801C8850();
+    p = &D_8018F1A0_ovl_040E80;
+    if ((*p & 0x8000) || *p == 0) {
+        D_8018FC19_ovl_040E80 = 2;
+        osInvalICache(ovl_213B10_TEXT_START, ovl_213B10_TEXT_END - ovl_213B10_TEXT_START);
+        osInvalDCache(ovl_213B10_DATA_START, ovl_213B10_RODATA_END - ovl_213B10_DATA_START);
+        RomRead(ovl_213B10_ROM_START, ovl_213B10_VRAM, ovl_213B10_ROM_END - ovl_213B10_ROM_START);
+        if (ovl_213B10_BSS_START != ovl_213B10_BSS_END) {
+            bzero(ovl_213B10_BSS_START, ovl_213B10_BSS_END - ovl_213B10_BSS_START);
+        }
+        osInvalICache(ovl_22A280_TEXT_START, ovl_22A280_TEXT_END - ovl_22A280_TEXT_START);
+        osInvalDCache(ovl_22A280_DATA_START, ovl_22A280_RODATA_END - ovl_22A280_DATA_START);
+        RomRead(ovl_22A280_ROM_START, ovl_22A280_VRAM, ovl_22A280_ROM_END - ovl_22A280_ROM_START);
+        if (ovl_22A280_BSS_START != ovl_22A280_BSS_END) {
+            bzero(ovl_22A280_BSS_START, ovl_22A280_BSS_END - ovl_22A280_BSS_START);
+        }
+        *p = 0;
+        func_801D0840();
+        func_801AFC0C(0);
+        func_80073164(0, 0x10, 0x10, 0x200, 0x10, 0x800, 0x1900);
+        D_8022A980 = 0xFF;
+    } else {
+        func_80073164(0, 8, 8, 0x400, 8, 0x800, 0x2400);
+        func_80226F88();
+    }
+}
 
 void func_80178898_ovl_040E80(void) {
     u16 *p = &D_8018F1A0_ovl_040E80;
