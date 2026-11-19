@@ -32,6 +32,7 @@ void *HMalloc(s32 size);
 void *HFree(void *p);
 void func_8022BB58_ovl_29A4C0(s32 a, s32 b);
 void func_801C22E8(s32 a);
+#define FLD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AC90_ovl_29A4C0);
@@ -44,7 +45,23 @@ INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AF94_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B100_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B414_ovl_29A4C0);
+void func_8022B414_ovl_29A4C0(s32 i) {
+    s32 k;
+    s32 end;
+
+    if (i == -1) {
+        i = 0;
+        end = 30;
+    } else {
+        end = i + 1;
+    }
+    for (k = i; k < end; k++) {
+        if (FLD(D_8022A974, void *, 0x1AC0 + k * 4) != NULL) {
+            HFree(FLD(D_8022A974, void *, 0x1AC0 + k * 4));
+            FLD(D_8022A974, void *, 0x1AC0 + k * 4) = NULL;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B4A8_ovl_29A4C0);
 
@@ -80,7 +97,23 @@ void func_8022BDDC_ovl_29A4C0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022BE30_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022BF5C_ovl_29A4C0);
+void func_8022BF5C_ovl_29A4C0(s32 *a) {
+    s16 i = FLD(a, s16, 2);
+    u8 *p;
+
+    if (D_8022A974->p1944[i] != NULL) {
+        HFree(D_8022A974->p1944[i]);
+    }
+    p = HMalloc(7);
+    D_8022A974->p1944[i] = p;
+    p[0] = a[7];
+    p[1] = a[1];
+    p[2] = a[2];
+    p[3] = a[3];
+    p[4] = a[4];
+    p[5] = a[5];
+    p[6] = a[6];
+}
 
 void func_8022BFFC_ovl_29A4C0(void) {
     s32 i;
@@ -152,7 +185,27 @@ void func_8022CD00_ovl_29A4C0(void) {
     D_801D082C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022CD70_ovl_29A4C0);
+void func_8022CD70_ovl_29A4C0(s32 i, s32 v) {
+    s32 end;
+    u8 *u;
+
+    if (i == -1) {
+        i = 0;
+        end = 28;
+    } else {
+        end = i + 1;
+    }
+    for (; i < end; i++) {
+        u = FLD(D_8022A974, u8 *, 0x18 + i * 4);
+        if (u != NULL) {
+            if (v != -1) {
+                FLD(u, f32, 0x120) = v;
+            }
+            FLD(u, s32, 0x128) = 0;
+            u[0x145] = (u[0x145] & ~1) | 4;
+        }
+    }
+}
 
 /* small s16 tables (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_80239190_ovl_29A4C0\nD_80239190_ovl_29A4C0:\n.half 0, 9, 6, 3\n.global D_80239198_ovl_29A4C0\nD_80239198_ovl_29A4C0:\n.half 0, 9, 8, 3, 7, 7, 2, 6, 5, 1, 4, 4\n.section .text\n");
