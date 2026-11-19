@@ -113,6 +113,7 @@ void func_8022995C_ovl_1BA050(void);
 void func_80228E88_ovl_1BA050(s32 i);
 void func_80228FE8_ovl_1BA050(s32 i);
 s32 func_80229040_ovl_1BA050(s32 i);
+void *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags);
 /* --- end decls --- */
 
 inline void func_80220F64_ovl_1BA050(u16 id, u8 v) {
@@ -249,7 +250,40 @@ void func_80221750_ovl_1BA050(ScriptCtx *ctx) {
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022176C_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802218E4_ovl_1BA050);
+/* Script command: open window cmd[3] with text cmd->w8 at (h4, h6), flags cmd[1]; registers it with
+ * value cmd[2] + 1 */
+s32 func_802218E4_ovl_1BA050(u8 *ctx) {
+    s32 k = *(s32 *)(*(u8 **)(ctx + 8) + 8);
+    u8 *cmd;
+    u8 *text;
+    s32 i;
+    u16 id;
+    u8 v;
+
+    if (D_8022A214_ovl_1BA050 == NULL) {
+        for (;;);
+    }
+    text = (u8 *)D_8022A214_ovl_1BA050 + D_8022A214_ovl_1BA050[k];
+    func_8022905C_ovl_1BA050((*(u8 **)(ctx + 8))[3], text,
+                             *(s16 *)(*(u8 **)(ctx + 8) + 4), *(s16 *)(*(u8 **)(ctx + 8) + 6), (*(u8 **)(ctx + 8))[1]);
+    cmd = *(u8 **)(ctx + 8);
+    id = cmd[3] | 0x5400;
+    v = cmd[2] + 1;
+    for (i = 0; i < 8; i++) {
+        if (D_8022A1F0_ovl_1BA050[i].used == 0) {
+            break;
+        }
+    }
+    if (i >= 8) {
+        for (;;) {
+        }
+    }
+    D_8022A1F0_ovl_1BA050[i].id = id;
+    D_8022A1F0_ovl_1BA050[i].value = v;
+    D_8022A1F0_ovl_1BA050[i].used = 1;
+    *(u8 **)(ctx + 8) += 12;
+    return 0;
+}
 
 ScriptCtx *func_802219E0_ovl_1BA050(u8 *base, s32 off, s32 idx) {
     ScriptCtx *c;
