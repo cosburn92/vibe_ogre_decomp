@@ -18,9 +18,44 @@ void *HMalloc(s32 size);
 s32 func_801C8B68(u8 *u);
 s32 func_801C8C90(u8 *u);
 u8 func_801C1AA4(s32 a, s32 b, u8 c, s16 d, s16 e, s32 f, u8 *g, u8 *h, u8 *i);
+extern s16 D_8022A994;
+extern u8 D_8018FC19;
+extern u8 D_801976E8;
+void bzero(void *p, s32 n);
+void func_801C22D0(s32 a);
+void func_801C45E0(void);
+void func_8020B098(void);
+void func_801CBD48(void);
+void func_801BD1F4(void);
+void func_801707F4(void);
+void func_80227FD8(s16 a, s32 b);
+void func_8022D120(void);
+void func_80227010(void);
+void func_8023998C_ovl_2A8D20(void);
+u8 *func_801C8FE8(s32 i);
+void func_801C4778(s32 a);
+void func_801ADB00(void *p);
+void func_801ADBC0(void *p);
+void func_8023D2DC_ovl_2A8D20(s32 a);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_802395C0_ovl_2A8D20);
+/* Battle overlay init */
+void func_802395C0_ovl_2A8D20(void) {
+    D_8022A974 = HMalloc(0x1CB8);
+    bzero(D_8022A974, 0x1CB8);
+    func_801C22D0(2);
+    func_801C45E0();
+    func_8020B098();
+    func_801CBD48();
+    func_801BD1F4();
+    func_801707F4();
+    func_80227FD8(D_8022A994, 0);
+    if (D_8018FC19 == 2) {
+        func_8023998C_ovl_2A8D20();
+    }
+    func_8022D120();
+    func_80227010();
+}
 
 s32 func_8023965C_ovl_2A8D20(u8 *o) {
     u8 *u;
@@ -302,7 +337,33 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D1E8_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D2DC_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D7A8_ovl_2A8D20);
+/* Removes all 20 enemy units (and their attached effects) and resets the enemy squad */
+void func_8023D7A8_ovl_2A8D20(void) {
+    s32 i;
+    u32 k;
+    u8 *u;
+
+    for (i = 0; i < 20; i++) {
+        u = func_801C8FE8(i);
+        if (func_801C8B68(u) == 0) {
+            continue;
+        }
+        func_801C4778(FIELD(u, s32, 0x50));
+        for (k = 0; k < 3; k++) {
+            if (((u8 **)u)[k] != NULL) {
+                FIELD(((u8 **)u)[k], s32, 0x18) = 0;
+                FIELD(((u8 **)u)[k + 3], s32, 0x18) = 0;
+                func_801ADB00(((u8 **)u)[k]);
+                func_801ADBC0(((u8 **)u)[k + 3]);
+                ((u8 **)u)[k] = NULL;
+                ((u8 **)u)[k + 3] = NULL;
+            }
+        }
+        bzero(u, 0xF8);
+    }
+    func_8023D2DC_ovl_2A8D20(0x1E);
+    D_801976E8 = 0x1E;
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D878_ovl_2A8D20);
 
