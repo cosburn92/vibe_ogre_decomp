@@ -199,6 +199,7 @@ extern void *D_80197AF0_ovl_040E80;
 void *HMalloc(s32 size);
 void func_80178E60_ovl_040E80(s32 id, Rec8_4D *out);
 void func_80226F88(void);
+void func_801C58F0(void);
 /* --- end decls --- */
 
 /* Enters battle: optional pre-battle overlay (23A3A0), then the battle overlays */
@@ -650,7 +651,22 @@ void func_80178B20_ovl_040E80(s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178B5C_ovl_040E80);
+void func_80178B5C_ovl_040E80(void) {
+    HFree(D_80197AF0_ovl_040E80);
+    D_800E9C0A[1] = D_80190F30_ovl_040E80;
+    func_80227348();
+    if (D_8018FC19_ovl_040E80 != 0) {
+        func_801B00B0();
+    }
+    func_80178E30_ovl_040E80();
+    if (D_800C4BBC != NULL && D_800C4BBC->state == 0xD) {
+        D_800C4BBC->state = 2;
+    }
+    func_801C58F0();
+    if (D_8018FC10_ovl_040E80 != NULL) {
+        HFree(D_8018FC10_ovl_040E80);
+    }
+}
 
 void func_80178BF4_ovl_040E80(void) {
     func_80227348();
