@@ -271,7 +271,36 @@ s32 func_8022C594_ovl_29A4C0(s32 i) {
     return r;
 }
 
+/* Frees the 0x248 buffer of unit slot i (all 30 when i is -1) and resets the unit's three 0x142 bytes */
+#ifdef NON_MATCHING
+/* The logic matches. The original sets k through a temporary (v0 then s2) and keeps k*4 in s0 across the HFree call, using one more saved register. */
+void func_8022C5C8_ovl_29A4C0(s32 i) {
+    s16 k;
+    s16 end;
+    s16 j;
+    u8 *u;
+
+    if (i == -1) {
+        k = 0;
+        end = 30;
+    } else {
+        k = i;
+        end = i + 1;
+    }
+    for (; k < end; k++) {
+        HFree(D_8022A974->p248[k]);
+        u = FLD(D_8022A974, u8 *, 0x18 + k * 4);
+        D_8022A974->p248[k] = NULL;
+        if (u != NULL) {
+            for (j = 0; j < 3; j++) {
+                u[0x142 + j] = 0xFF;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C5C8_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C6C4_ovl_29A4C0);
 
