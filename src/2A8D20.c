@@ -334,7 +334,50 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023CFA0_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D0EC_ovl_2A8D20);
 
+/* Swaps display slot `slot` with the slot showing the unit at map cell `cell` (row * 3 + lane) */
+#ifdef NON_MATCHING
+/* register allocation and swap addressing differ */
+void func_8023D1E8_ovl_2A8D20(u8 slot, s32 cell) {
+    s32 i;
+    s32 k;
+    s32 row = cell / 3;
+    u8 *base;
+    u8 *q;
+    u8 **ps;
+
+    for (i = 0; i < 20; i++) {
+        u8 *u = D_801CE8BC + 0x1C4 + i * 0xF8;
+
+        if (FIELD(u, s32, 0x48) != 0 && FIELD(u, s32, 0x58) == row && FIELD(u, s32, 0x54) == cell - FIELD(u, s32, 0x58) * 3) {
+            break;
+        }
+    }
+    if (i < 20) {
+        k = 0;
+        base = D_8022A974;
+        ps = (u8 **)(base + slot * 4 + 0x18);
+        for (q = base; k < 28; k++, q += 4) {
+            if (FIELD(q, u8 *, 0x18) != NULL && FIELD(q, u8 *, 0x18)[0x147] == i) {
+                u8 **pk = (u8 **)(base + (u8)k * 4 + 0x18);
+                u8 *a = *ps;
+                u8 *b = *pk;
+
+                *pk = a;
+                *ps = b;
+                if (b != NULL) {
+                    FIELD(b, s32, 0xE4) = slot;
+                }
+                if (a != NULL) {
+                    FIELD(a, s32, 0xE4) = (u8)k;
+                }
+                return;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D1E8_ovl_2A8D20);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D2DC_ovl_2A8D20);
 
