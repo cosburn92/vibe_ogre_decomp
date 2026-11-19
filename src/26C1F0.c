@@ -65,7 +65,6 @@ inline void func_80217680_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
 }
 
 /* Rotation matrix whose z axis is -dir (y up) */
-/* original keeps only the side vector in a saved register; frame 0x58 */
 void func_80217760_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
     f32 n[3];
 
@@ -76,7 +75,6 @@ void func_80217760_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
 }
 
 /* Same, facing against the camera direction D_80220610 */
-/* same as func_80217760 */
 void func_80217848_ovl_25EE90(f32 (*m)[4]) {
     f32 n[3];
 
