@@ -4,7 +4,7 @@
 
 typedef struct {
     /* 0x0 */ s16 timer;
-    /* 0x2 */ s16 unk2;
+    /* 0x2 */ u16 id;
     /* 0x4 */ s32 unk4;
     /* 0x8 */ s32 handle;
     /* 0xC */ u16 next;
@@ -18,6 +18,7 @@ void *HMalloc(s32 size);
 void *HFree(void *p);
 void bzero(void *p, s32 n);
 void func_8020C074_ovl_25EE90(s32 h);
+s32 func_8020CA58_ovl_25EE90(u16 id);
 /* --- end decls --- */
 
 void func_8020EAE0_ovl_25EE90(void) {
@@ -46,7 +47,7 @@ void func_8020EB7C_ovl_25EE90(void) {
         if (p->timer != 0) {
             if (--p->timer == 0) {
                 func_8020C074_ovl_25EE90(p->handle);
-                p->unk2 = 0;
+                p->id = 0;
                 p->unk4 = 0;
                 p->next = D_80220E10_ovl_25EE90;
                 p->handle = 0;
@@ -56,4 +57,28 @@ void func_8020EB7C_ovl_25EE90(void) {
     }
 }
 
+/* Handle for (id, key), cached for 5 countdown ticks; a miss takes a free slot and creates it */
+#ifdef NON_MATCHING
+/* Only register allocation differs: the original copies id from a0 to a2 at entry and keeps the loop end in a0; the free-slot pointer goes through v1 before s0. */
+s32 func_8020EC2C_ovl_25EE90(u16 id, s32 key) {
+    Slot263 *p;
+
+    for (p = D_80220E14_ovl_25EE90; p < (Slot263 *)((u8 *)D_80220E14_ovl_25EE90 + 0x400); p++) {
+        if (p->timer != 0 && p->id == id && p->unk4 == key) {
+            p->timer = 5;
+            return p->handle;
+        }
+    }
+    p = Slot263Take();
+    p->timer = 5;
+    p->id = id;
+    p->unk4 = key;
+    D_80220E10_ovl_25EE90 = p->next;
+    if ((p->handle = func_8020CA58_ovl_25EE90(id)) == 0) {
+        for (;;);
+    }
+    return p->handle;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/263690", func_8020EC2C_ovl_25EE90);
+#endif
