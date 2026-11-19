@@ -45,6 +45,14 @@ void func_801BC15C_ovl_1F0A30(s16 a, s16 b, s32 c, s32 d, s32 e);
 void func_801C5D64_ovl_1F0A30(void);
 void func_801BDC78_ovl_1F0A30(void);
 void func_801C62E4_ovl_1F0A30(s32 a, u8 *b, u8 c);
+extern u8 D_80197178[];
+extern void *D_800E9BA0;
+extern u8 D_801969B0[];
+void func_801B5D58_ovl_1F0A30(void *a, void *b, u8 *img);
+void func_801B619C_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
+void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
+void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img);
+void func_801B7284_ovl_1F0A30(u8 *img, s32 x, s32 y, s32 s, void *b, void *m, void *a);
 /* --- end decls --- */
 
 void func_801B58E0_ovl_1F0A30(void) {
@@ -100,15 +108,63 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B6DB0_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7284_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B77CC_ovl_1F0A30);
+/* Draws image img: '64' bitmaps, or 'B5' banks by format (1, 3, other) */
+void func_801B77CC_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
+    if (*(u16 *)img == 0x3634) {
+        func_801B7284_ovl_1F0A30(img, -160, -120, 2, b, D_801969B0, a);
+    } else if (img[2] == 1) {
+        func_801B6DB0_ovl_1F0A30(a, b, img);
+    } else if (img[2] == 3) {
+        func_801B6970_ovl_1F0A30(a, b, img, c, d, e);
+    } else {
+        func_801B619C_ovl_1F0A30(a, b, img, c, d, e);
+    }
+}
 
+/* Draws a full-screen image into the main display list */
+#ifdef NON_MATCHING
+/* original hoists the D_80197178/D_800E9BA0 args above the format test; frame 0x28 */
+void func_801B7888_ovl_1F0A30(u8 **pp, void *b) {
+    u8 *img = *pp;
+
+    if (*(u16 *)img == 0x4235) {
+        if (img[2] == 1) {
+            func_801B6DB0_ovl_1F0A30(D_80197178, &D_800E9BA0, img);
+        } else if (img[2] == 3) {
+            func_801B6970_ovl_1F0A30(D_80197178, &D_800E9BA0, img, 0, 0, 0);
+        } else {
+            func_801B619C_ovl_1F0A30(D_80197178, &D_800E9BA0, img, 0, 0, 0);
+        }
+    } else {
+        func_801B5D58_ovl_1F0A30(pp, b, img);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7888_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7914_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7A7C_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7CBC_ovl_1F0A30);
+/* Frees a 'B5' image bank (and its chained pages) */
+void func_801B7CBC_ovl_1F0A30(u8 *p) {
+    if (p != NULL) {
+        if (p[0] == 'B' && p[1] == '5') {
+            u8 *bank = p;
+            u8 *e = *(u8 **)(p + 0x14);
+            u32 i;
+
+            for (i = 1; i < bank[3]; i++) {
+                u8 *cur = e;
+
+                e = *(u8 **)(cur + 0xC);
+                HFree(cur);
+            }
+        }
+        HFree(p);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7D54_ovl_1F0A30);
 
