@@ -63,7 +63,7 @@ __allocParam_800889A8 = 0x800889A8; // type:func
 __freeParam_800889D4 = 0x800889D4; // type:func
 _n_freePVoice = 0x80088A4C; // type:func
 nuGfxTaskAllEndWait = 0x80089A10; // type:func
-osProfileFlush = 0x8008A354; // type:func
+nuContDataClose = 0x8008A354; // type:func
 osSetIntMask = 0x8008B820; // type:func
 osCreatePiManager = 0x8008B8C0; // type:func
 osEPiRawStartDma = 0x8008BA50; // type:func
@@ -306,7 +306,7 @@ __osPfsInodeCache = 0x800E8110;
 __osEventStateTab = 0x800E8218;
 __osPfsPifRam_800E86C0 = 0x800E86C0;
 __osPfsPifRam_800E86FC = 0x800E86FC;
-__osProfFlushMQ = 0x800E9BF0;
+nuContDataMutexQ = 0x800E9BF0;
 
 // libultra/libaudio/libc statics and functions n64sym missed, identified by hand from each source
 // file's function order and call structure. osSyncPrintf/rmonPrintf are identical stubs; the
