@@ -179,7 +179,20 @@ s32 func_801C8C74_ovl_1F0A30(BattleUnit *u) {
     return u->cls == 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8C90_ovl_1F0A30);
+s32 func_801C8C90_ovl_1F0A30(BattleUnit *u) {
+    s32 r;
+    s32 c;
+
+    if (u == NULL) {
+        return 0;
+    }
+    c = u->cls;
+    r = 0;
+    if (c == 10 || c == 25 || c == 123) {
+        r = 1;
+    }
+    return r;
+}
 
 s32 func_801C8CD4_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
@@ -197,7 +210,22 @@ s32 func_801C8CF0_ovl_1F0A30(s32 c) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8D24_ovl_1F0A30);
+s32 func_801C8D24_ovl_1F0A30(BattleUnit *u) {
+    s32 c;
+    s32 r;
+
+    if (u == NULL) {
+        return 0;
+    }
+    c = u->cls;
+    r = 0;
+    if ((u32)(c - 45) < 2 || c == 47) {
+        r = 1;
+    } else if (c == 48) {
+        r = 1;
+    }
+    return r;
+}
 
 s32 func_801C8D68_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
@@ -206,23 +234,25 @@ s32 func_801C8D68_ovl_1F0A30(BattleUnit *u) {
     return (u32)(u->cls - 2) < 0x22;
 }
 
-#ifdef NON_MATCHING
 /* The original tests with branches (bnez / bne) rather than set-compares; GCC merges these. */
 /* Young Dragon..Tiamat (56-68) or Death Bahamut (164). */
 s32 IsDragon(BattleUnit *u) {
     s32 c;
+    s32 r;
 
     if (u == NULL) {
         return 0;
     }
     c = u->cls;
-    return (u32)(c - 0x38) < 13 || c == 0xA4;
+    r = 0;
+    if ((u32)(c - 56) < 13) {
+        r = 1;
+    } else if (c == 164) {
+        r = 1;
+    }
+    return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20BCE0", IsDragon);
-#endif
 
-#ifdef NON_MATCHING
 /* The original tests with branches (bnez / bne) rather than set-compares; GCC merges these. */
 s32 func_801C8DBC_ovl_1F0A30(BattleUnit *u) {
     s32 c;
@@ -233,14 +263,13 @@ s32 func_801C8DBC_ovl_1F0A30(BattleUnit *u) {
     }
     c = u->unk48;
     r = 0;
-    if ((u32)(c - 0x87) < 2 || c == 0xA1) {
+    if ((u32)(c - 135) < 2) {
+        r = 1;
+    } else if (c == 161) {
         r = 1;
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8DBC_ovl_1F0A30);
-#endif
 
 s32 func_801C8DF4_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
@@ -291,7 +320,16 @@ s32 func_801C8EB8_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 4) & 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8ED4_ovl_1F0A30);
+s32 func_801C8ED4_ovl_1F0A30(s32 a) {
+    s32 r = 0;
+
+    if ((u32)(a - 32) < 2 || a == 34) {
+        r = 1;
+    } else if (a == 35 || a == 103) {
+        r = 1;
+    }
+    return r;
+}
 
 s32 func_801C8F18_ovl_1F0A30(s32 a) {
     return a == 12;
