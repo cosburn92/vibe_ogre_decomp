@@ -89,6 +89,7 @@ void *LoadChunkRaw(void *dst, s32 id);
 s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -319,7 +320,49 @@ void func_80199C3C_ovl_1CE070(void *root, SkelCE *s, MtxCE *out) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199CF0_ovl_1CE070);
+/* Turns the offsets in a loaded model blob into pointers */
+void func_80199CF0_ovl_1CE070(void *mv) {
+    u8 *m = mv;
+    u32 i;
+    u32 k;
+    u32 *p;
+    u32 *q;
+
+    FIELD(m, u32, 0x8) += (u32)m;
+    FIELD(m, u32, 0xC) += (u32)m;
+    FIELD(m, u32, 0x10) += (u32)m;
+    if (FIELD(m, u32, 0x14) != 0) {
+        FIELD(m, u32, 0x14) += (u32)m;
+    }
+    FIELD(m, u32, 0x18) += (u32)m;
+    for (i = 0; i < FIELD(m, u32, 4); i++) {
+        p = (u32 *)(i * 4 + (u32)FIELD(m, u32 *, 8));
+        if (*p != 0) {
+            *p += (u32)m;
+            q = (u32 *)FIELD(m, u32 *, 8)[i];
+            for (k = 0; k < 10; k++, q++) {
+                if (*q != 0) {
+                    *q += (u32)m;
+                    *(u32 *)*q += (u32)m;
+                }
+            }
+        }
+    }
+    for (i = 0; i < FIELD(m, u32, 4); i++) {
+        u16 f = *(u16 *)(FIELD(m, u8 *, 0xC) + i * 10 + 2);
+
+        if (f & 0x8000) {
+            k = f & 0x7FFF;
+            FIELD(m, u32 *, 0x14)[k] += (u32)m;
+        }
+    }
+    for (i = 0; i < FIELD(m, u32, 4); i++) {
+        p = (u32 *)(i * 4 + (u32)FIELD(m, u32 *, 0x18));
+        if (*p != 0) {
+            *p += (u32)m;
+        }
+    }
+}
 
 void func_80199E48_ovl_1CE070(SkelCE *s, void **out) {
     u32 i;
