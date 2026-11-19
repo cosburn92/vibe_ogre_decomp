@@ -23,6 +23,12 @@ s32 func_8020ABE8_ovl_25EE90(Ent26 *e);
 s32 func_8020AC10_ovl_25EE90(Ent26 *e);
 void func_801AD9D4(void *p, s32 a);
 void _bcopy(void *src, void *dst, s32 n);
+void func_8020A418_ovl_25EE90(f32 *v);
+void func_8020A348_ovl_25EE90(f32 *a, f32 *b, f32 *out);
+void guMtxIdentF(f32 (*m)[4]);
+extern f32 D_80220610_ovl_25EE90;
+extern f32 D_80220614_ovl_25EE90;
+extern f32 D_80220618_ovl_25EE90;
 /* --- end decls --- */
 
 void func_80217640_ovl_25EE90(Vec3f *v) {
@@ -34,11 +40,95 @@ void func_80217640_ovl_25EE90(Vec3f *v) {
     func_8020A980_ovl_25EE90(&n);
 }
 
-INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217680_ovl_25EE90);
+/* Rotation matrix whose z axis is dir (y up) */
+void func_80217680_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
+    f32 b[3][3];
+    s32 i;
+    s32 j;
+    s32 k;
 
+    b[2][0] = dir[0];
+    b[2][1] = dir[1];
+    b[2][2] = dir[2];
+    func_8020A418_ovl_25EE90(b[2]);
+    b[1][0] = 0.0f;
+    b[1][1] = 1.0f;
+    b[1][2] = 0.0f;
+    func_8020A348_ovl_25EE90(b[1], b[2], b[0]);
+    func_8020A348_ovl_25EE90(b[2], b[0], b[1]);
+    guMtxIdentF(m);
+    for (i = 0, k = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            m[i][j] = b[0][k++];
+        }
+    }
+}
+
+/* Rotation matrix whose z axis is -dir (y up) */
+#ifdef NON_MATCHING
+/* original keeps only the side vector in a saved register; frame 0x58 */
+void func_80217760_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
+    f32 n[3];
+    f32 b[3][3];
+    s32 i;
+    s32 j;
+    s32 k;
+
+    n[0] = -dir[0];
+    n[1] = -dir[1];
+    n[2] = -dir[2];
+    b[2][0] = n[0];
+    b[2][1] = n[1];
+    b[2][2] = n[2];
+    func_8020A418_ovl_25EE90(b[2]);
+    b[1][0] = 0.0f;
+    b[1][1] = 1.0f;
+    b[1][2] = 0.0f;
+    func_8020A348_ovl_25EE90(b[1], b[2], b[0]);
+    func_8020A348_ovl_25EE90(b[2], b[0], b[1]);
+    guMtxIdentF(m);
+    for (i = 0, k = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            m[i][j] = b[0][k++];
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217760_ovl_25EE90);
+#endif
 
+/* Same, facing against the camera direction D_80220610 */
+#ifdef NON_MATCHING
+/* same as func_80217760 */
+void func_80217848_ovl_25EE90(f32 (*m)[4]) {
+    f32 n[3];
+    f32 b[3][3];
+    s32 i;
+    s32 j;
+    s32 k;
+
+    n[0] = -D_80220610_ovl_25EE90;
+    n[1] = -D_80220614_ovl_25EE90;
+    n[2] = -D_80220618_ovl_25EE90;
+    b[2][0] = n[0];
+    b[2][1] = n[1];
+    b[2][2] = n[2];
+    func_8020A418_ovl_25EE90(b[2]);
+    b[1][0] = 0.0f;
+    b[1][1] = 1.0f;
+    b[1][2] = 0.0f;
+    func_8020A348_ovl_25EE90(b[1], b[2], b[0]);
+    func_8020A348_ovl_25EE90(b[2], b[0], b[1]);
+    guMtxIdentF(m);
+    for (i = 0, k = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+            m[i][j] = b[0][k++];
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217848_ovl_25EE90);
+#endif
 
 void func_8021793C_ovl_25EE90(s32 a, Vec3f *out) {
     if (func_801C8B68(a) != func_801C8E48(a)) {
