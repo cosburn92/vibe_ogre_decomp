@@ -26,7 +26,7 @@ f32 func_801BC35C(s16 a, s16 b);
 void func_801D9FBC_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f);
 void func_801D9F60_ovl_213B10(s32 a, s32 b, s32 c, s32 d);
 void func_801E0D34_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
-u8 *func_801E14FC_ovl_213B10(void);
+u8 *func_801E14FC_ovl_213B10(s32 enemy);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 typedef struct {
     s32 w[20];
@@ -41,6 +41,14 @@ f32 func_801BE264(s32 cls, s32 base);
 void func_801AD9D4(Blob50 *b, s32 a);
 s32 func_801AE4EC(s32 a, Blob50 *b, s32 c);
 s32 func_801DFB80_ovl_213B10(u8 *o, s32 a, u8 b);
+typedef struct {
+    u8 b0;
+    u8 flags;
+    u8 members[5];
+    u8 rest[4];
+} Squad222; /* 11 bytes, 10 of them at D_801969B8 */
+extern u8 D_801969B9[]; /* squad records (11 bytes) start at 0x801969B8: [1] flags, [2..6] members */
+extern u8 D_801969BA[];
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -176,12 +184,41 @@ inline u8 *func_801E14C0_ovl_213B10(s32 side) {
         p -= 12;
     }
     if (p[1] & 1) {
-        return func_801E14FC_ovl_213B10();
+        return func_801E14FC_ovl_213B10(side);
     }
     return NULL;
 }
 
+/* The squad (enemy side if enemy != 0, else the player's) containing the current unit, or NULL */
+#ifdef NON_MATCHING
+/* induction variables and the flags-byte addressing differ */
+u8 *func_801E14FC_ovl_213B10(s32 enemy) {
+    u8 *key = D_801976E8;
+    s32 i;
+    u8 *res;
+    u8 *mb;
+    u8 *m;
+
+    if (enemy == 0) {
+        key -= 0xC;
+    }
+    res = D_801969BA - 2;
+    mb = D_801969BA;
+    for (i = 0; i < 10; i++, res += 11, mb += 11) {
+        if (D_801969B9[i * 11] & 1) {
+            m = mb;
+            do {
+                if (*m == *key) {
+                    return res;
+                }
+            } while (++m < mb + 5);
+        }
+    }
+    return NULL;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E14FC_ovl_213B10);
+#endif
 
 u8 func_801E1590_ovl_213B10(s32 side) {
     u8 *r = func_801E14C0_ovl_213B10(side);
