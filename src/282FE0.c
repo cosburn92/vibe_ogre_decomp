@@ -2,7 +2,13 @@
 
 extern u8 D_800EB0B0[];
 extern s32 D_8022A8A8_ovl_281860[];
-extern void *D_8022A8C4_ovl_281860;
+typedef struct {
+    s16 h0;
+    s16 h2;
+    s16 h4;
+    s16 h6;
+} St8C4;
+extern St8C4 *D_8022A8C4_ovl_281860;
 extern s32 D_8022A990_ovl_281860;
 extern u8 D_8018FC19;
 extern u8 D_8022A980_ovl_281860;
@@ -52,6 +58,9 @@ void func_802282B8_ovl_281860(void);
 void func_800EA86C(s32 ch, s32 v);
 void func_800EA89C(s32 ch, s32 v);
 void func_800EA8B4(s32 ch, s32 v);
+extern s32 D_800EB2E0[];
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
 /* --- end decls --- */
 
 void func_80227010_ovl_281860(void) {
@@ -85,7 +94,25 @@ void func_80227210_ovl_281860(s32 i) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227254_ovl_281860);
+void func_80227254_ovl_281860(s32 mode, s32 idx, s32 n, s32 h) {
+    s32 half = n / 2;
+
+    if (D_8022A8C4_ovl_281860 == NULL) {
+        D_8022A8C4_ovl_281860 = HMalloc(4);
+        bzero(D_8022A8C4_ovl_281860, 4);
+        if ((u32)(mode - 2) < 5) {
+            D_8022A8C4_ovl_281860->h2 = 0x7FFF;
+        } else {
+            D_8022A8C4_ovl_281860->h2 = D_800EB2E0[idx * 2];
+        }
+        if (n > 0) {
+            D_8022A8C4_ovl_281860->h2 -= half * h;
+        }
+    }
+    D_8022A8C4_ovl_281860->h0 = half;
+    D_8022A8C4_ovl_281860->h4 = h;
+    D_8022A8C4_ovl_281860->h6 = mode;
+}
 
 void func_80227348_ovl_281860(void) {
     HFree(D_8022A8C4_ovl_281860);
