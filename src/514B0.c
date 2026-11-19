@@ -90,6 +90,12 @@ void func_801C1990(void);
 void func_8019A864(void);
 s32 func_8019D65C(void);
 extern u16 D_800C4C26;
+Node *func_8017C074_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
+void func_801807F4_ovl_040E80(Node *n, s32 a);
+void func_8017C584_ovl_040E80();
+void func_80221354(void);
+extern u8 D_80196AEC_ovl_040E80;
+void func_8017F554_ovl_040E80(Node *n);
 /* --- end decls --- */
 
 /* Loads overlay 079730 and enters it (mode 1) */
@@ -258,7 +264,18 @@ void func_8017BF10_ovl_040E80(void) {
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BF10_ovl_040E80);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BFB0_ovl_040E80);
+Node *func_8017BFB0_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
+    Node *n = func_8017C074_ovl_040E80(kind, b, fn, x, y, w, h);
+
+    FIELD(n, s16, 0x18) = 0;
+    FIELD(n, s32, 0x3C) = x2;
+    FIELD(n, s32, 0x40) = y2;
+    FIELD(n, s32, 0x44) = w2;
+    FIELD(n, s32, 0x48) = h2;
+    FIELD(n, s16, 0x28) = 1;
+    FIELD(n, u16, 0x26) = 0x8000;
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C074_ovl_040E80);
 
@@ -339,7 +356,18 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EAE8_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EC84_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EE64_ovl_040E80);
+void func_8017EE64_ovl_040E80(s32 a, u16 kind, s16 x, s16 y, s16 w, s16 h) {
+    Node *n = func_8017C074_ovl_040E80(kind | 0x100, 0, func_8017C584_ovl_040E80, x, y, w, h);
+
+    FIELD(n, s16, 0x28) = 1;
+    FIELD(n, s16, 0x18) = 0;
+    FIELD(n, s32, 0x3C) = x;
+    FIELD(n, s32, 0x40) = y;
+    FIELD(n, s32, 0x44) = w;
+    FIELD(n, s32, 0x48) = h;
+    FIELD(n, u16, 0x26) = 0x8000;
+    func_801807F4_ovl_040E80(n, a);
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EF24_ovl_040E80);
 
@@ -409,7 +437,7 @@ static inline Node *tail514(void) {
     }
     return n;
 }
-Node *func_8017F408_ovl_040E80(void) {
+inline Node *func_8017F408_ovl_040E80(void) {
     Node *n;
 
     if (D_8018FDC0_ovl_040E80 == NULL) {
@@ -428,7 +456,17 @@ Node *func_8017F408_ovl_040E80(void) {
     return n;
 }
 
+#ifdef NON_MATCHING
+/* inlined F408 loop: a0/v1 register swap */
+void func_8017F490_ovl_040E80(void) {
+    if (D_801936E0_ovl_040E80 && (D_80196AEC_ovl_040E80 & 0x80)) {
+        func_80221354();
+    }
+    func_8017F554_ovl_040E80(func_8017F408_ovl_040E80());
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F554_ovl_040E80);
 
