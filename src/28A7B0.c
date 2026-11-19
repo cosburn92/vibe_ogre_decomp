@@ -859,8 +859,9 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AA70_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AB74_ovl_286BD0);
 
-#ifdef NON_MATCHING
 /* The a and b saved registers are swapped. */
+#ifdef NON_MATCHING
+/* a and b saved registers swapped (s1/s2); tried param types and an inline split */
 u8 *func_8023AD10_ovl_286BD0(Win28 *w, s32 a, u8 b) {
     u8 *t;
 
