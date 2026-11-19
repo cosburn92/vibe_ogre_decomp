@@ -2,9 +2,17 @@
 
 /* 233210 */
 
+typedef struct BattleObj {
+    /* 0x00 */ u8 unk00[0x18];
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ u8 unk1C[0x28];
+    /* 0x44 */ s32 unk44;
+} BattleObj;
+
 /* Battle unit (0xF8 bytes, 20 of them at battle state +0x1C4) */
 typedef struct BattleUnit {
-    /* 0x00 */ u8 unk00[0x20];
+    /* 0x00 */ struct BattleObj *obj;
+    /* 0x04 */ u8 unk04[0x1C];
     /* 0x20 */ u16 hp;
     /* 0x22 */ u16 maxHp;
     /* 0x24 */ u16 unk24;
@@ -15,14 +23,14 @@ typedef struct BattleUnit {
     /* 0x31 */ u8 unk31[2];
     /* 0x33 */ u8 unk33;
     /* 0x34 */ u8 unk34[2];
-    /* 0x36 */ u16 stats[4];
+    /* 0x36 */ u16 items[4];
     /* 0x3E */ u8 unk3E;
     /* 0x3F */ u8 unk3F;
     /* 0x40 */ u32 flags; /* bit 0 down, bit 8 player side, bit 9 leader, bit 12 not targetable */
     /* 0x44 */ u8 unk44[4];
     /* 0x48 */ s32 unk48;
     /* 0x4C */ s32 cls;
-    /* 0x50 */ u8 unk50[4];
+    /* 0x50 */ s32 unk50;
     /* 0x54 */ s32 lane;
     /* 0x58 */ s32 unk58;
     /* 0x5C */ u8 unk5C[0xC];
@@ -132,15 +140,15 @@ static inline s32 BattleUnitItemSum7EC(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
-    s = u->stats[0] != 0 ? func_8016F7EC(u->stats[0]) : 0;
-    if (u->stats[1] != 0) {
-        s += func_8016F7EC(u->stats[1]);
+    s = u->items[0] != 0 ? func_8016F7EC(u->items[0]) : 0;
+    if (u->items[1] != 0) {
+        s += func_8016F7EC(u->items[1]);
     }
-    if (u->stats[2] != 0) {
-        s += func_8016F7EC(u->stats[2]);
+    if (u->items[2] != 0) {
+        s += func_8016F7EC(u->items[2]);
     }
-    if (u->stats[3] != 0) {
-        return s + func_8016F7EC(u->stats[3]);
+    if (u->items[3] != 0) {
+        return s + func_8016F7EC(u->items[3]);
     }
     return s;
 }
@@ -151,15 +159,15 @@ static inline s32 BattleUnitItemSum6AC(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
-    s = u->stats[0] != 0 ? func_8016F6AC(u->stats[0]) : 0;
-    if (u->stats[1] != 0) {
-        s += func_8016F6AC(u->stats[1]);
+    s = u->items[0] != 0 ? func_8016F6AC(u->items[0]) : 0;
+    if (u->items[1] != 0) {
+        s += func_8016F6AC(u->items[1]);
     }
-    if (u->stats[2] != 0) {
-        s += func_8016F6AC(u->stats[2]);
+    if (u->items[2] != 0) {
+        s += func_8016F6AC(u->items[2]);
     }
-    if (u->stats[3] != 0) {
-        return s + func_8016F6AC(u->stats[3]);
+    if (u->items[3] != 0) {
+        return s + func_8016F6AC(u->items[3]);
     }
     return s;
 }
@@ -167,6 +175,14 @@ BattleUnit *func_801CA2E0(s32 lane, s32 row);
 s32 func_801CD19C(s32 a, s32 cls, s32 flag);
 s32 func_801C8B08(BattleUnit *u);
 u8 func_8016FF5C(u8 a, u8 b);
+u16 func_8016DF88(u8 a, u8 cls);
+u16 func_8016DFDC(u8 a, u8 cls);
+u16 func_8016E030(u8 a, u8 cls);
+u16 func_8016E084(u8 a, u8 cls);
+u8 func_8016E338(u8 a, u8 cls, u8 c);
+s32 func_801C8BA4(BattleUnit *u);
+s32 func_801BE138(s32 a, s32 cls, s32 c, s32 d);
+void func_801E15E0(BattleUnit *u, s32 cls);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
@@ -179,7 +195,7 @@ u8 func_801F0298_ovl_22A280(BattleUnit *u) {
     s32 r;
     u8 k;
 
-    r = func_8016FB50(u->stats[0], u->stats[1], u->stats[2], u->stats[3]) & 0xFFFF;
+    r = func_8016FB50(u->items[0], u->items[1], u->items[2], u->items[3]) & 0xFFFF;
     if (r != 0 || (r = func_801C8FB8(u) & 0xFFFF) != 0) {
         k = func_8016F5E0(r);
         if (k != 8) {
@@ -395,7 +411,42 @@ s32 func_801F0CC4_ovl_22A280(BattleUnit *u) {
     return func_801CA29C(func_801F0A3C_ovl_22A280(u, list, n));
 }
 
+/* Support target: the leader for Attack Leader if reachable, otherwise the highest threat */
+#ifdef NON_MATCHING
+/* case-2 found block is laid out before the loop in the original */
+s32 func_801F0D24_ovl_22A280(BattleUnit *self, u8 mode) {
+    BattleUnit *list[6];
+    BattleUnit *t;
+    s32 n;
+    s32 i;
+
+    n = func_801F0514_ovl_22A280(list, (func_801C8B84(self) == 0) << 3, self->lane);
+    if (n == 0) {
+        return -1;
+    }
+    switch ((u32)func_801CA384(self)) {
+        case 2:
+            for (i = 0; i < n; i++) {
+                if (func_801C8C58(list[i])) {
+                    t = list[i];
+                    goto done;
+                }
+            }
+        case 0:
+        case 1:
+        case 3:
+            t = func_801F089C_ovl_22A280(self, list, n, mode);
+            break;
+        default:
+            t = NULL;
+            break;
+    }
+done:
+    return func_801CA29C(t);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F0D24_ovl_22A280);
+#endif
 
 /* Heal target: the unit missing the largest share of its HP (missing capped at 999) */
 s32 func_801F0E1C_ovl_22A280(BattleUnit *self) {
@@ -436,7 +487,29 @@ s32 func_801F0E1C_ovl_22A280(BattleUnit *self) {
     return bestIdx;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F0F5C_ovl_22A280);
+/* Changes a unit's class: default equipment, action count and sprite follow the new class */
+void func_801F0F5C_ovl_22A280(BattleUnit *u, s32 cls) {
+    BattleObj *o;
+    s32 v;
+    s32 x;
+
+    if (u->cls == u->unk48) {
+        u->unk48 = cls;
+    }
+    u->cls = cls;
+    u->items[0] = func_8016DF88(u->unk48, cls);
+    u->items[1] = func_8016DFDC(u->unk48, cls);
+    u->items[2] = func_8016E030(u->unk48, cls);
+    u->items[3] = func_8016E084(u->unk48, cls);
+    u->actsMax = func_8016E338(u->unk48, u->cls, func_801C9FA4(u->unk58));
+    x = func_801C8B68(u);
+    v = func_801BE138(u->unk48, cls, x, func_801C8BA4(u));
+    o = u->obj;
+    u->unk50 = v;
+    o->unk44 = v;
+    o->unk18 = v;
+    func_801E15E0(u, cls);
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F104C_ovl_22A280);
 
@@ -467,8 +540,8 @@ s32 func_801F139C_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     if (func_801C8D84(b)) {
         if (a->cls == 20) {
             r = 5;
-        } else if ((func_8016F580(a->stats[0]) | func_8016F580(a->stats[1]) | func_8016F580(a->stats[2]) |
-                    func_8016F580(a->stats[3])) & 1) {
+        } else if ((func_8016F580(a->items[0]) | func_8016F580(a->items[1]) | func_8016F580(a->items[2]) |
+                    func_8016F580(a->items[3])) & 1) {
             r = 5;
         }
     }
@@ -481,8 +554,8 @@ s32 func_801F1444_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     if (func_801C8D84(a)) {
         if (b->cls == 20) {
             r = 5;
-        } else if ((func_8016F598(b->stats[0]) | func_8016F598(b->stats[1]) | func_8016F598(b->stats[2]) |
-                    func_8016F598(b->stats[3])) & 1) {
+        } else if ((func_8016F598(b->items[0]) | func_8016F598(b->items[1]) | func_8016F598(b->items[2]) |
+                    func_8016F598(b->items[3])) & 1) {
             r = 5;
         }
     }
@@ -552,17 +625,17 @@ s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
 
     p = (f32)(base + BattleUnitWeaponBonus(a)) / 6.0f;
     s = 0;
-    if (!func_8016F9F0(a->stats[0])) {
-        s = func_8016F65C(a->stats[0]);
+    if (!func_8016F9F0(a->items[0])) {
+        s = func_8016F65C(a->items[0]);
     }
-    if (!func_8016F9F0(a->stats[1])) {
-        s += func_8016F65C(a->stats[1]);
+    if (!func_8016F9F0(a->items[1])) {
+        s += func_8016F65C(a->items[1]);
     }
-    if (!func_8016F9F0(a->stats[2])) {
-        s += func_8016F65C(a->stats[2]);
+    if (!func_8016F9F0(a->items[2])) {
+        s += func_8016F65C(a->items[2]);
     }
-    if (!func_8016F9F0(a->stats[3])) {
-        s += func_8016F65C(a->stats[3]);
+    if (!func_8016F9F0(a->items[3])) {
+        s += func_8016F65C(a->items[3]);
     }
     p *= (f32)(a->unk24 + s + 50) / 50.0f;
     p *= (f32)(a->unk2E + BattleUnitItemSum7EC(a) + 100) / 100.0f;
@@ -640,17 +713,17 @@ u8 func_801F45C0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     if (id != 0) {
         inflict = func_8016F580(id);
     }
-    if (b->stats[0] != 0) {
-        protect = func_8016F598(b->stats[0]);
+    if (b->items[0] != 0) {
+        protect = func_8016F598(b->items[0]);
     }
-    if (b->stats[1] != 0) {
-        protect |= func_8016F598(b->stats[1]);
+    if (b->items[1] != 0) {
+        protect |= func_8016F598(b->items[1]);
     }
-    if (b->stats[2] != 0) {
-        protect |= func_8016F598(b->stats[2]);
+    if (b->items[2] != 0) {
+        protect |= func_8016F598(b->items[2]);
     }
-    if (b->stats[3] != 0) {
-        protect |= func_8016F598(b->stats[3]);
+    if (b->items[3] != 0) {
+        protect |= func_8016F598(b->items[3]);
     }
     if (func_801CD19C(b->unk48, b->cls, 4)) {
         protect |= 2;
