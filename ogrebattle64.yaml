@@ -1442,14 +1442,14 @@ segments:
     subsegments:
       - [0x281860, c]
       - [0x282FE0, c]
-      - [0x283DF0, asm]
+      - [0x283DF0, c]
       - [0x2866F0, data, 281860]
       - [0x286704, data, 282FE0]
       - [0x286920, data, 283DF0]
       - [0x286940, data, 281860_vars]
       - [0x286B50, .rodata, 281860]
       - [0x286B78, .rodata, 282FE0]
-      - [0x286B90, rodata, 283DF0]
+      - [0x286B90, .rodata, 283DF0]
       - { type: bss, vram: 0x8022AC00, name: 282FE0 }
       - { type: bss, vram: 0x8022AC80, name: ovl_281860_common }
 
