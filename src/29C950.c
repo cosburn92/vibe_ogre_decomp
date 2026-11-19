@@ -38,6 +38,9 @@ extern s16 D_800E9C0A[];
 extern u8 D_8019EE40[];
 
 void bzero(void *p, s32 n);
+s32 func_80080D70(f32 y);
+f32 sqrtf(f32 x);
+f32 fabsf(f32 x);
 extern s16 D_8022A994;
 extern u8 D_8018FC19;
 extern u8 D_8022A997;
@@ -121,7 +124,27 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D534_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D928_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D988_ovl_29A4C0);
+/* Slope from unit u to point p (horizontal distance over height difference), 0 when p is at or
+ * below ground, 6 when both are on the same height step; capped at 5 */
+f32 func_8022D988_ovl_29A4C0(BUnit *u, f32 *p) {
+    f32 r = 6.0f;
+    f32 dx;
+    f32 dz;
+
+    if (p[1] <= 0.0f) {
+        r = 0.0f;
+    } else if (func_80080D70(FIELD(u, f32, 0x120)) != func_80080D70(p[1])) {
+        dx = FIELD(u, f32, 0x11C) - p[0];
+        dz = FIELD(u, f32, 0x124) - p[2];
+        dx = sqrtf(dx * dx + dz * dz);
+        r = dx / (p[1] - FIELD(u, f32, 0x120));
+    }
+    r = fabsf(r);
+    if (5.0f < r) {
+        r = 5.0f;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DA84_ovl_29A4C0);
 
