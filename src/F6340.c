@@ -46,10 +46,8 @@ INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA8A4_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AAE10_ovl_0EBBB0);
 
-/* Opens a scene for this screen and sets its fade parameters */
-#ifdef NON_MATCHING
-/* a/b land in s1/s0 swapped */
-void func_801AB020_ovl_0EBBB0(s32 a, s32 b) {
+/* Opens a scene for this screen and sets its fade parameters; returns the scene slot */
+s32 func_801AB020_ovl_0EBBB0(s32 a, u8 b) {
     s32 i = func_8007705C(0xC000, func_801AB2A4_ovl_0EBBB0, 0, 0, 0, 0, 0xF000);
 
     D_800E82C8[i].unk89 = 11;
@@ -61,12 +59,24 @@ void func_801AB020_ovl_0EBBB0(s32 a, s32 b) {
     D_800E82C8[i].unk8E = 0xFF;
     D_800E82C8[i].unk8F = 0;
     D_800E82C8[i].unk97 = 0;
+    return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB020_ovl_0EBBB0);
-#endif
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB0FC_ovl_0EBBB0);
+/* Same with fade mode 15 */
+s32 func_801AB0FC_ovl_0EBBB0(s32 a, u8 b) {
+    s32 i = func_8007705C(0xC000, func_801AB2A4_ovl_0EBBB0, 0, 0, 0, 0, 0xF000);
+
+    D_800E82C8[i].unk89 = 15;
+    D_800E82C8[i].unk88 = a;
+    D_800E82C8[i].unk8A = b;
+    D_800E82C8[i].unk8B = 0;
+    D_800E82C8[i].unk8C = 0;
+    D_800E82C8[i].unk8D = 0;
+    D_800E82C8[i].unk8E = 0;
+    D_800E82C8[i].unk8F = 0xFF;
+    D_800E82C8[i].unk97 = 0;
+    return i;
+}
 
 void func_801AB1D8_ovl_0EBBB0(void) {
     func_8007705C(0xC000, func_801AB2A4_ovl_0EBBB0, 0, 0, 0, 0, 0xF000);
