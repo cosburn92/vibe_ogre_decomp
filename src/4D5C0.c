@@ -46,6 +46,11 @@ void func_8017223C_ovl_040E80(s32 arg);
 void func_80076E00(void);
 void func_801792BC_ovl_040E80(void);
 void func_8017BF10_ovl_040E80(void);
+typedef struct {
+    /* 0x0 */ u16 *fb[2];  /* 64-byte aligned frame buffers */
+    /* 0x8 */ u16 *raw[2]; /* the allocations */
+} FrameBufs;
+extern FrameBufs D_8018FC00_ovl_040E80;
 void func_80073398(void);
 extern void *D_8018FC10_ovl_040E80;
 extern u8 D_8018FC30_ovl_040E80[];
@@ -715,7 +720,26 @@ void func_80178D10_ovl_040E80(void) {
     func_8017BDC0_ovl_040E80();
 }
 
+/* Allocates the two 640x480x16 frame buffers (plus slack) and aligns their usable starts to 64 bytes */
+#ifdef NON_MATCHING
+/* The struct form gets the s0 base for raw[0]. The original computes both alignment offsets before storing and writes fb[0] twice through a base register (a2 = &fb[0]); this version adds fb[1] first. */
+void func_80178D3C_ovl_040E80(void) {
+    func_80076E00();
+    func_801792BC_ovl_040E80();
+    func_8017BF10_ovl_040E80();
+    D_8018FC00_ovl_040E80.raw[0] = HMalloc(0x96040);
+    D_8018FC00_ovl_040E80.raw[1] = HMalloc(0x96040);
+    D_8018FC00_ovl_040E80.fb[0] = D_8018FC00_ovl_040E80.raw[0];
+    D_8018FC00_ovl_040E80.fb[1] = D_8018FC00_ovl_040E80.raw[1];
+    D_8018FC00_ovl_040E80.fb[0] += (0x40 - ((u32)D_8018FC00_ovl_040E80.fb[0] & 0x3F)) / 2;
+    D_8018FC00_ovl_040E80.fb[1] += (0x40 - ((u32)D_8018FC00_ovl_040E80.fb[1] & 0x3F)) / 2;
+    func_80179060_ovl_040E80();
+    func_80076E2C();
+    func_8017BDC0_ovl_040E80();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178D3C_ovl_040E80);
+#endif
 
 void func_80178DFC_ovl_040E80(void) {
     if (!D_8018FC18_ovl_040E80) {
