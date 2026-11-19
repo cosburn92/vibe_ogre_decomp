@@ -1255,14 +1255,14 @@ segments:
       - [0x23B220, asm]
       - [0x23B3E0, asm]
       - [0x23B680, asm]
-      - [0x23D090, asm]
+      - [0x23D090, c]
       - [0x241610, asm]
       - [0x243F20, data, 23B220]
       - [0x243F40, data, 23B680]
       - [0x2440A4, data, 23D090]
       - [0x244674, data, 241610]
       - [0x2446E0, rodata, 23B680]
-      - [0x244700, rodata, 23D090]
+      - [0x244700, .rodata, 23D090]
       - [0x244770, rodata, 241610]
       - { type: bss, vram: 0x801F0530, name: 23B3E0 }
       - { type: bss, vram: 0x801F0540, name: 241610 }
