@@ -1,3 +1,10 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/255E0", osViGetNextFramebuffer);
+void *osViGetNextFramebuffer(void) {
+    register u32 saveMask = __osDisableInt();
+    void *framep = __osViNext->framep;
+
+    __osRestoreInt(saveMask);
+    return framep;
+}

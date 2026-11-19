@@ -1,3 +1,10 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/25BD0", osViSwapBuffer);
+void osViSwapBuffer(void *frameBufPtr) {
+    u32 saveMask = __osDisableInt();
+
+    __osViNext->framep = frameBufPtr;
+    __osViNext->state |= VI_STATE_BUFFER_UPDATED;
+    __osRestoreInt(saveMask);
+}

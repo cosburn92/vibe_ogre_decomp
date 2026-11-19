@@ -240,6 +240,62 @@ void __osSiCreateAccessQueue(void);
 OSTime osGetTime(void);
 s32 osSetTimer(OSTimer *t, OSTime value, OSTime interval, OSMesgQueue *mq, OSMesg msg);
 
+typedef struct {
+    /* 0x00 */ u32 ctrl;
+    /* 0x04 */ u32 width;
+    /* 0x08 */ u32 burst;
+    /* 0x0C */ u32 vSync;
+    /* 0x10 */ u32 hSync;
+    /* 0x14 */ u32 leap;
+    /* 0x18 */ u32 hStart;
+    /* 0x1C */ u32 xScale;
+    /* 0x20 */ u32 vCurrent;
+} OSViCommonRegs;
+
+typedef struct {
+    /* 0x00 */ u32 origin;
+    /* 0x04 */ u32 yScale;
+    /* 0x08 */ u32 vStart;
+    /* 0x0C */ u32 vBurst;
+    /* 0x10 */ u32 vIntr;
+} OSViFieldRegs;
+
+typedef struct {
+    /* 0x00 */ u8 type;
+    /* 0x04 */ OSViCommonRegs comRegs;
+    /* 0x28 */ OSViFieldRegs fldRegs[2];
+} OSViMode;
+
+typedef struct {
+    /* 0x00 */ f32 factor;
+    /* 0x04 */ u16 offset;
+    /* 0x08 */ u32 scale;
+} __OSViScale;
+
+typedef struct {
+    /* 0x00 */ u16 state;
+    /* 0x02 */ u16 retraceCount;
+    /* 0x04 */ void *framep;
+    /* 0x08 */ OSViMode *modep;
+    /* 0x0C */ u32 control;
+    /* 0x10 */ OSMesgQueue *msgq;
+    /* 0x14 */ OSMesg msg;
+    /* 0x18 */ __OSViScale x;
+    /* 0x24 */ __OSViScale y;
+} __OSViContext;
+
+#define VI_STATE_MODE_UPDATED 0x01
+#define VI_STATE_XSCALE_UPDATED 0x02
+#define VI_STATE_YSCALE_UPDATED 0x04
+#define VI_STATE_CTRL_UPDATED 0x08
+#define VI_STATE_BUFFER_UPDATED 0x10
+#define VI_STATE_BLACK 0x20
+#define VI_STATE_REPEATLINE 0x40
+#define VI_STATE_FADE 0x80
+
+extern __OSViContext *__osViCurr;
+extern __OSViContext *__osViNext;
+
 u32 __osDisableInt(void);
 void __osRestoreInt(u32 mask);
 s32 osJamMesg(OSMesgQueue *mq, OSMesg msg, s32 flag);
