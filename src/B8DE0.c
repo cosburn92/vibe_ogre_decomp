@@ -208,7 +208,57 @@ typedef struct {
 s32 func_801CCA50_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC84C_ovl_087200);
+/* Starts closing slot i: collapses towards the screen edge nearest each side (8 px), or back to the start rect */
+void func_801CC84C_ovl_087200(s16 i) {
+    AnimSlot *e = &D_80196AF8->slots[i];
+
+    if (e->cur[0] == e->start[0] && e->cur[1] == e->start[1] && e->cur[2] == e->start[2] && e->cur[3] == e->start[3]) {
+        s32 d0;
+        s32 d1;
+        s32 top;
+        s32 bot;
+
+        d0 = e->cur[0] - 160;
+        if (d0 < 0) {
+            d0 = -d0;
+        }
+        d1 = e->cur[2] - 160;
+        if (d1 < 0) {
+            d1 = -d1;
+        }
+        if (d1 < d0) {
+            e->v1C = e->cur[0];
+            e->v24 = e->cur[0] + 8;
+        } else {
+            e->v1C = e->cur[2] - 8;
+            e->v24 = e->cur[2];
+        }
+        top = e->cur[1];
+        bot = e->cur[3];
+        d0 = top - 120;
+        if (d0 < 0) {
+            d0 = -d0;
+        }
+        d1 = bot - 120;
+        if (d1 < 0) {
+            d1 = -d1;
+        }
+        if (d1 < d0) {
+            e->v20 = e->cur[1];
+            e->v28 = e->cur[1] + 8;
+        } else {
+            e->v20 = e->cur[3] - 8;
+            e->v28 = e->cur[3];
+        }
+    } else {
+        e->v1C = e->start[0];
+        e->v20 = e->start[1];
+        e->v24 = e->start[2];
+        e->v28 = e->start[3];
+    }
+    e->type = 2;
+    e->mode = 0x8000;
+}
 
 /* Opens window slot (kind, b) with draw callback fn, rect (x, y, w, h) and target rect (x2..h2); returns the slot */
 s32 func_801CC974_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
