@@ -297,7 +297,48 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A66C8_ovl_0EBBB0);
 
+/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
+ * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
+/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
+ * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
+/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
+ * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
+/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
+ * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
+/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
+ * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
+#ifdef NON_MATCHING
+/* run-length grid lookup: logic right, the counter/index/word registers (a2/a3/t0) are allocated differently */
+u16 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row) {
+    u16 *p = &grid[14] + grid[14 + row];
+    u16 i;
+    u16 j;
+    u16 w;
+
+    if (x < 0 || x >= grid[0] || row < 0 || row >= grid[1]) {
+        return 0;
+    }
+    i = 0;
+    j = 0;
+    while (1) {
+        w = p[j++];
+        if ((w >> 8) != 0xFF) {
+            if (i >= x) {
+                return w;
+            }
+            i++;
+        } else {
+            i += w & 0xFF;
+            if (i - 1 >= x) {
+                return p[j];
+            }
+            j++;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A69A4_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A6A78_ovl_0EBBB0);
 
