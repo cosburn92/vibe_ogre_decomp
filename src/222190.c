@@ -49,6 +49,10 @@ typedef struct {
 } Squad222; /* 11 bytes, 10 of them at D_801969B8 */
 extern u8 D_801969B9[]; /* squad records (11 bytes) start at 0x801969B8: [1] flags, [2..6] members */
 extern u8 D_801969BA[];
+s32 func_801C8B08(u8 *u);
+s32 func_801C8B84(u8 *u);
+s32 func_801C8C58(u8 *u);
+u8 func_8016FF5C(u8 a, u8 b);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -115,7 +119,33 @@ s32 func_801DF2AC_ovl_213B10(Blob50 *o, s32 a, s32 c) {
     return func_801AE4EC(FIELD(FIELD(o, u8 *, 0x4C), s32, 0x40), &copy, c);
 }
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801DF334_ovl_213B10);
+s32 func_801DF334_ovl_213B10(u8 *u, u32 f) {
+    s32 r = 0;
+    s32 k = func_801C8B08(u);
+
+    if (f & 0x8000) {
+        return 0;
+    }
+    if (func_801C8B84(u) && (f & 0x400)) {
+        r = 1;
+    }
+    if (func_801C8B68(u) && !(f & 0x400)) {
+        r = 1;
+    }
+    if (k == 0) {
+        r = 0;
+    }
+    if (r) {
+        if (k == 0xFF) {
+            if (!func_801C8C58(u)) {
+                r = 0;
+            }
+        } else if (!func_8016FF5C(*(s32 *)(u + 0x48), k)) {
+            r = 0;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/222190", func_801DF404_ovl_213B10);
 

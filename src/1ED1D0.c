@@ -10,6 +10,11 @@ extern void *D_800A8204[3];
 extern u8 D_800E7A0C;
 extern void *D_800C4BB8;
 extern void *D_800A8204[3];
+typedef struct {
+    u8 unk00[0x7E];
+    u8 step;
+} Seq1ED;
+extern Seq1ED *D_801BA6D0_ovl_1CE070;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgJpegTask);
@@ -18,7 +23,14 @@ INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B6E48_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B6F90_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B7388_ovl_1CE070);
+void func_801B7388_ovl_1CE070(void) {
+    if (D_801BA6D0_ovl_1CE070->step == 1) {
+        D_801BA6D0_ovl_1CE070->step++;
+    }
+    if (D_801BA6D0_ovl_1CE070->step == 4) {
+        D_801BA6D0_ovl_1CE070->step++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B73D4_ovl_1CE070);
 
