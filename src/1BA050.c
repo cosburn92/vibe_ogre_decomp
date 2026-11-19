@@ -22,7 +22,7 @@ typedef struct {
     u16 id;
 } ScriptSlot;
 
-extern u8 D_8022A1F0_ovl_1BA050[];
+extern ScriptSlot D_8022A1F0_ovl_1BA050[];
 extern u8 *D_8022A248_ovl_1BA050;
 extern s32 D_8022A24C_ovl_1BA050;
 extern s32 D_8022A250_ovl_1BA050;
@@ -44,7 +44,7 @@ extern u16 *D_80229CF8_ovl_1BA050[];
 extern u16 *D_80229D04_ovl_1BA050[];
 extern s8 D_800E9C0A[];
 u8 *func_80226164_ovl_1BA050(u8 id);
-s32 func_802219E0_ovl_1BA050(s32 a, s32 b, u16 c);
+ScriptCtx *func_802219E0_ovl_1BA050(u8 *base, s32 off, s32 idx);
 u8 *func_80222EA0_ovl_1BA050(u16 id);
 extern u8 *D_8022A234_ovl_1BA050;
 extern u8 D_801936E0;
@@ -69,9 +69,44 @@ void func_80220F40_ovl_1BA050(void) {
     bzero(D_8022A1F0_ovl_1BA050, 0x20);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80220F64_ovl_1BA050);
+extern s32 D_8022A210_ovl_1BA050;
+extern s32 D_8022A230_ovl_1BA050;
+void *func_8017F334(u16 id);
+void func_8017C2FC(void *o);
+void func_8017C384(void *o);
+void *LoadAsset(s32 file, s32 id, s32 a, s32 b);
+void bzero(void *p, s32 n);
+/* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80220FD0_ovl_1BA050);
+void func_80220F64_ovl_1BA050(u16 id, u8 v) {
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        if (D_8022A1F0_ovl_1BA050[i].used == 0) {
+            break;
+        }
+    }
+    if (i >= 8) {
+        for (;;) {
+        }
+    }
+    D_8022A1F0_ovl_1BA050[i].value = v;
+    D_8022A1F0_ovl_1BA050[i].id = id;
+    D_8022A1F0_ovl_1BA050[i].used = 1;
+}
+
+void func_80220FD0_ovl_1BA050(u16 id) {
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        if (D_8022A1F0_ovl_1BA050[i].used != 0 && D_8022A1F0_ovl_1BA050[i].id == id) {
+            D_8022A1F0_ovl_1BA050[i].value = 0;
+            D_8022A1F0_ovl_1BA050[i].id = 0;
+            D_8022A1F0_ovl_1BA050[i].used = 0;
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221030_ovl_1BA050);
 
@@ -91,7 +126,19 @@ u8 *func_802212AC_ovl_1BA050(s32 i) {
     return (u8 *)((s32)D_8022A214_ovl_1BA050 + D_8022A214_ovl_1BA050[i]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802212D4_ovl_1BA050);
+void func_802212D4_ovl_1BA050(s32 id) {
+    if (D_8022A210_ovl_1BA050 != id) {
+        if (D_8022A210_ovl_1BA050 != -1) {
+            ((void (*)(s32, s32, s32))func_80079618)(0x21C3C38, D_8022A210_ovl_1BA050, -0x11);
+        }
+        D_8022A210_ovl_1BA050 = id;
+    }
+    if (id != -1) {
+        D_8022A214_ovl_1BA050 = LoadAsset(0x21C3C38, id, -4, 0);
+    } else {
+        D_8022A214_ovl_1BA050 = NULL;
+    }
+}
 
 void func_80221354_ovl_1BA050(void) {
     u32 i;
@@ -167,7 +214,20 @@ INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022176C_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_802218E4_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802219E0_ovl_1BA050);
+ScriptCtx *func_802219E0_ovl_1BA050(u8 *base, s32 off, s32 idx) {
+    ScriptCtx *c;
+
+    if (idx < 0 || idx >= D_8022A230_ovl_1BA050) {
+        for (;;) {
+        }
+    }
+    c = (ScriptCtx *)(D_8022A234_ovl_1BA050 + idx * 0x38);
+    bzero(c, 0x38);
+    c->pc = base + off;
+    c->unk00 = 1;
+    c->base = base;
+    return c;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221A6C_ovl_1BA050);
 
@@ -316,7 +376,21 @@ s32 func_80222328_ovl_1BA050(ScriptCtx *ctx) {
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222328_ovl_1BA050);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022239C_ovl_1BA050);
+s32 func_8022239C_ovl_1BA050(ScriptCtx *c) {
+    void *o = func_8017F334(c->pc[3] | 0x5200);
+
+    if (o == NULL) {
+        for (;;) {
+        }
+    }
+    if (c->pc[2] != 0) {
+        func_8017C384(o);
+    } else {
+        func_8017C2FC(o);
+    }
+    c->pc += 4;
+    return 0;
+}
 
 s32 func_80222418_ovl_1BA050(ScriptCtx *ctx) {
     u8 *o = func_80226164_ovl_1BA050(ctx->pc[3]);
@@ -425,7 +499,7 @@ s32 func_80222728_ovl_1BA050(ScriptCtx *ctx) {
 s32 func_8022275C_ovl_1BA050(ScriptCtx *ctx) {
     u8 *pc = ctx->pc;
 
-    func_802219E0_ovl_1BA050(*(s32 *)(pc + 4), *(s32 *)(pc + 8), *(u16 *)(pc + 2));
+    func_802219E0_ovl_1BA050(*(u8 **)(pc + 4), *(s32 *)(pc + 8), *(u16 *)(pc + 2));
     ctx->pc += 12;
     return 0;
 }
