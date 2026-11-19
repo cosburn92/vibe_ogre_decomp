@@ -47,6 +47,7 @@ s32 func_8009C7CC(void);
 s32 func_801793E4(s32 c, s32 b);
 void func_801B01FC_ovl_0FA5E0(u8 *p);
 void func_801B2FF8_ovl_0FA5E0(void **p);
+void HFree(void *p);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AD5A0_ovl_0FA5E0);
@@ -134,7 +135,27 @@ void func_801AED6C_ovl_0FA5E0(u8 *p) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEDEC_ovl_0FA5E0);
+/* Releases the screen's sub-objects and its 18 buffers */
+void func_801AEDEC_ovl_0FA5E0(Widget3390 *w) {
+    u8 *p = (u8 *)w;
+    u32 i;
+    u32 j;
+
+    FIELD(p, s32, 0x194) = 0;
+    for (i = 0; i < 3; i++) {
+        if (FIELD(p, void *, 0x524 + i * 4) != NULL) {
+            func_801B2FF8_ovl_0FA5E0(FIELD(p, void *, 0x524 + i * 4));
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        if (FIELD(p, void *, 0x530 + i * 4) != NULL) {
+            func_801B2FF8_ovl_0FA5E0(FIELD(p, void *, 0x530 + i * 4));
+        }
+    }
+    for (j = 0; j < 18; j++) {
+        HFree(FIELD(p, void *, 0x19C + j * 4));
+    }
+}
 
 void func_801AEE94_ovl_0FA5E0(s32 i, void *v) {
     u8 *p = D_801B3E20_ovl_0FA5E0;
