@@ -47,6 +47,10 @@ u8 func_801D8AE0_ovl_087200(void);
 void func_801C18AC_ovl_087200(s32 a, s32 b, s32 c);
 extern void (*D_801EF1E0_ovl_087200[])(void);
 void func_801D8A60_ovl_087200(s32 a);
+extern u8 D_80191010[];
+extern u8 D_80190F81;
+u16 func_801CBC98_ovl_087200(u8 i);
+void func_801CE074_ovl_087200(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
@@ -193,7 +197,28 @@ INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAA64_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAB68_ovl_087200);
 
+#ifdef NON_MATCHING
+/* store order/scheduling of the release block differs */
+void func_801CAD90_ovl_087200(u16 id) {
+    if (id != 0xFF) {
+        if (id >= 100) {
+            u16 r = func_801CBC98_ovl_087200(id);
+
+            D_80190EBC[id] = 0;
+            D_80191010[id] = 0;
+            D_80190F81 += r;
+            FIELD(D_80196AF8, u8, 0x1872 + id * 2) = 0;
+        }
+        if (FIELD(D_80196AF8, u8, 0x1872 + id * 2) & 8) {
+            FIELD(D_80196AF8, s32, 0x5D4)++;
+        }
+        FIELD(D_80196AF8, u8, 0x1872 + id * 2) = 0;
+        func_801CE074_ovl_087200();
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAD90_ovl_087200);
+#endif
 
 #ifdef NON_MATCHING
 /* addu operand order (3 instructions) */
