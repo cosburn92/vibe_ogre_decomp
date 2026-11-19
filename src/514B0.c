@@ -378,7 +378,7 @@ Node *func_8017F36C_ovl_040E80(u16 id) {
 }
 
 /* The last node of the list, or NULL. */
-Node *func_8017F3C0_ovl_040E80(void) {
+inline Node *func_8017F3C0_ovl_040E80(void) {
     Node *n;
 
     if (D_8018FDC0_ovl_040E80 == NULL) {
@@ -393,7 +393,40 @@ Node *func_8017F3C0_ovl_040E80(void) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F408_ovl_040E80);
+/* The last node whose flag 0x10 is clear, walking back from the tail (NULL if none) */
+static inline Node *tail514(void) {
+    Node *n;
+
+    if (D_8018FDC0_ovl_040E80 == NULL) {
+        return NULL;
+    }
+    n = D_8018FDC0_ovl_040E80->next;
+    if (n == NULL) {
+        return NULL;
+    }
+    while (n->next != NULL) {
+        n = n->next;
+    }
+    return n;
+}
+Node *func_8017F408_ovl_040E80(void) {
+    Node *n;
+
+    if (D_8018FDC0_ovl_040E80 == NULL) {
+        return NULL;
+    }
+    if (D_8018FDC0_ovl_040E80->next == NULL) {
+        return NULL;
+    }
+    n = func_8017F3C0_ovl_040E80();
+    while (n != NULL) {
+        if (!(FIELD(n, u8, 0x14) & 0x10)) {
+            return n;
+        }
+        n = (n->prev != D_8018FDC0_ovl_040E80->next) ? n->prev : NULL;
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
 
