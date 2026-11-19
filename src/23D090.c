@@ -56,6 +56,10 @@ extern Title23 D_801EFF04_ovl_23B220[27];
 extern s8 D_801EFE8C_ovl_23B220[][2];
 extern s8 D_801EFE8D_ovl_23B220[][2];
 extern u8 D_801EFE34_ovl_23B220[];
+void func_8016F11C(void *p, s32 n);
+extern s32 D_801EFE70_ovl_23B220[];
+void func_801EB968_ovl_23B220();
+void guMtxIdentF(void *m);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
@@ -300,7 +304,44 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB6C8_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB968_ovl_23B220);
 
+/* Loads unit u's stats and sets up the seven stat bars (length = stat / 150 * 60) */
+#ifdef NON_MATCHING
+/* GCC hoists the func_801EB968 address into s8; the original reloads it each pass */
+void func_801EBB5C_ovl_23B220(u8 *u) {
+    u8 *s = (u8 *)D_801EFE48_ovl_23B220;
+    u16 *st;
+    s32 i;
+    s32 y;
+
+    s[0x629] = FIELD(u, s32, 0x48);
+    s[0x62A] = FIELD(u, s32, 0x4C);
+    func_8016F11C(s + 0x618, 8);
+    FIELD(u, u16, 0x22) = FIELD(s, u16, 0x62E);
+    FIELD(u, u16, 0x24) = FIELD(s, u16, 0x634);
+    FIELD(u, u16, 0x26) = FIELD(s, u16, 0x636);
+    FIELD(u, u16, 0x28) = FIELD(s, u16, 0x638);
+    FIELD(u, u16, 0x2A) = FIELD(s, u16, 0x63A);
+    FIELD(u, u16, 0x2C) = FIELD(s, u16, 0x63C);
+    FIELD(u, u16, 0x2E) = FIELD(s, u16, 0x63E);
+    st = (u16 *)(u + 0x22);
+    for (i = 0, y = 75; i < 7; i++, y -= 8) {
+        u8 *b = (u8 *)D_801EFE48_ovl_23B220 + 0x378 + i * 0x54;
+
+        FIELD(b, s16, 0x44) = 0;
+        FIELD(b, s16, 0x46) = 2;
+        FIELD(b, s16, 0x48) = 2;
+        FIELD(b, s32, 0x4C) = D_801EFE70_ovl_23B220[i];
+        FIELD(b, s16, 0x50) = st[i] / 150.0f * 60.0f;
+        guMtxIdentF(b + 4);
+        FIELD(b, void *, 0) = func_801EB968_ovl_23B220;
+        FIELD(b, f32, 0x34) = 105.0f;
+        FIELD(b, f32, 0x38) = y;
+        FIELD(b, f32, 0x3C) = -10.0f;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBB5C_ovl_23B220);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBCFC_ovl_23B220);
 
