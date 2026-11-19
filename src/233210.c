@@ -15,10 +15,10 @@ typedef struct BattleUnit {
     /* 0x04 */ u8 unk04[0x1C];
     /* 0x20 */ u16 hp;
     /* 0x22 */ u16 maxHp;
-    /* 0x24 */ u16 unk24;
-    /* 0x26 */ u16 unk26;
+    /* 0x24 */ u16 str;
+    /* 0x26 */ u16 vit;
     /* 0x28 */ u8 unk28[6];
-    /* 0x2E */ u16 unk2E;
+    /* 0x2E */ u16 dex;
     /* 0x30 */ u8 unk30;
     /* 0x31 */ u8 unk31[2];
     /* 0x33 */ u8 unk33;
@@ -117,6 +117,8 @@ s32 func_8016D2FC(u8 a, u8 b);
 s8 func_8016F65C(u16 id);
 s8 func_8016F6AC(u16 id);
 s8 func_8016F7EC(u16 id);
+u8 func_8016D3A4(u8 a, u8 cls);
+f32 func_801F1B98_ovl_22A280(BattleUnit *a, BattleUnit *b);
 s32 func_8016F9F0(u16 id);
 f32 func_801F1884_ovl_22A280(BattleUnit *a, BattleUnit *b);
 
@@ -168,6 +170,25 @@ static inline s32 BattleUnitItemSum6AC(BattleUnit *u) {
     }
     if (u->items[3] != 0) {
         return s + func_8016F6AC(u->items[3]);
+    }
+    return s;
+}
+
+static inline s32 BattleUnitItemSum65C(BattleUnit *u) {
+    s16 s;
+
+    if (u == NULL) {
+        return 0;
+    }
+    s = u->items[0] != 0 ? func_8016F65C(u->items[0]) : 0;
+    if (u->items[1] != 0) {
+        s += func_8016F65C(u->items[1]);
+    }
+    if (u->items[2] != 0) {
+        s += func_8016F65C(u->items[2]);
+    }
+    if (u->items[3] != 0) {
+        return s + func_8016F65C(u->items[3]);
     }
     return s;
 }
@@ -617,7 +638,7 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2340_ovl_22A280);
 /* Physical attack power: (class power + weapon) / 6 * (str + item str + 50) / 50
  * * (stat 0x2E + item bonus + 100) / 100 * (100 + func_801F1884) / 100 */
 #ifdef NON_MATCHING
-/* formula right; item-sum helper's register flow differs */
+/* formula right; inlined item-sum helper's register flow differs */
 s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     u8 base = func_8016D2FC(a->unk48, a->cls);
     f32 p;
@@ -637,8 +658,8 @@ s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     if (!func_8016F9F0(a->items[3])) {
         s += func_8016F65C(a->items[3]);
     }
-    p *= (f32)(a->unk24 + s + 50) / 50.0f;
-    p *= (f32)(a->unk2E + BattleUnitItemSum7EC(a) + 100) / 100.0f;
+    p *= (f32)(a->str + s + 50) / 50.0f;
+    p *= (f32)(a->dex + BattleUnitItemSum7EC(a) + 100) / 100.0f;
     p *= (func_801F1884_ovl_22A280(a, b) + 100.0f) / 100.0f;
     return p;
 }
@@ -646,17 +667,31 @@ s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2484_ovl_22A280);
 #endif
 
+/* Physical defence of b against a: class defence / 20 * (0x26 + item bonus + 25) / 25
+ * * (0x24 + item bonus + 100) / 100 * (100 + func_801F1B98) / 100 */
+#ifdef NON_MATCHING
+/* formula right; inlined item-sum helper's register flow differs */
+s32 func_801F26D4_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    f32 p = func_8016D3A4(b->unk48, b->cls) / 20.0f;
+
+    p *= (f32)(b->vit + BattleUnitItemSum6AC(b) + 25) / 25.0f;
+    p *= (f32)(b->str + BattleUnitItemSum65C(b) + 100) / 100.0f;
+    p *= (func_801F1B98_ovl_22A280(a, b) + 100.0f) / 100.0f;
+    return p;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F26D4_ovl_22A280);
+#endif
 
 #ifdef NON_MATCHING
-/* formula right; item-sum helper's register flow differs */
+/* formula right; inlined item-sum helper's register flow differs */
 s32 func_801F28E0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     u8 base = func_8016D2FC(a->unk48, a->cls);
     f32 p;
 
     p = (f32)(base + BattleUnitItemSum7EC(a)) / 6.0f;
-    p *= (f32)(a->unk2E + 50) / 50.0f;
-    p *= (f32)(a->unk26 + BattleUnitItemSum6AC(a) + 100) / 100.0f;
+    p *= (f32)(a->dex + 50) / 50.0f;
+    p *= (f32)(a->vit + BattleUnitItemSum6AC(a) + 100) / 100.0f;
     p *= (func_801F1884_ovl_22A280(a, b) + 100.0f) / 100.0f;
     return p;
 }
