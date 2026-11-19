@@ -28,9 +28,13 @@ typedef struct {
 } CamSave;
 
 typedef struct {
+    /* 0x00 */ void *image;
+} TexRef;
+
+typedef struct {
     /* 0x00 */ s16 unk00;
     /* 0x04 */ CamSave cs;
-    /* 0x0C */ void *asset;
+    /* 0x0C */ TexRef tex;
     /* 0x10 */ s16 unk10;
     /* 0x12 */ s16 unk12;
     /* 0x14 */ s16 unk14;
@@ -54,6 +58,8 @@ extern u16 D_800C4BE4;
 extern u16 D_800C4C24;
 extern u16 D_800E7A0E;
 extern u8 D_80216F18_ovl_1A2C20[];
+extern u8 D_80216BF0_ovl_1A2C20[];
+extern void *D_80216EE8_ovl_1A2C20[];
 extern u8 D_800EB0B0[];
 extern Camera *D_8018F58C;
 extern u8 D_8018F53C;
@@ -87,6 +93,10 @@ void *HFree(void *p);
 void bzero(void *p, s32 n);
 void *LoadAsset(u32 handle, ...);
 void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
+void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
+void guMtxCatF(f32 a[4][4], f32 b[4][4], f32 out[4][4]);
+void guMtxF2L(f32 mf[4][4], void *m);
 void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
 s16 func_801AB0FC(u16 a, s32 b);
 void func_800EA6B0(void *ch, s32 a, s32 b, s32 c);
@@ -237,7 +247,7 @@ void func_802154E0_ovl_1A2C20(void) {
     ctx->cs.cam = D_8018F58C;
     *ctx->cs.saved = *D_8018F58C;
     ctx = D_80216BE0_ovl_1A2C20;
-    ctx->asset = LoadAsset(0x218E9B4, 0x19, -3, 2);
+    ctx->tex.image = LoadAsset(0x218E9B4, 0x19, -3, 2);
     ctx->unk18 = 0x22;
     ctx->unk16 = 0;
     ctx->unk10 = 0;
@@ -386,7 +396,44 @@ void func_80215B1C_ovl_1A2C20(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_80215D30_ovl_1A2C20);
+#define GFX(w0_, w1_)                      {                                          Gfx *_g = D_800E9BA0++;                                                       _g->w0 = (w0_);                        _g->w1 = (w1_);                    }
+
+/* Draws the 544x... image in four 136-pixel strips, scaled and centred on screen */
+void func_80215D30_ovl_1A2C20(void) {
+    FadeCtx *ctx = D_80216BE0_ovl_1A2C20;
+    TexRef *tex = &ctx->tex;
+    f32 mf[4][4];
+    f32 scale[4][4];
+    s16 i;
+
+    if (!(D_80216F70_ovl_1A2C20 & 1)) {
+        return;
+    }
+    GFX(0xDE000000, (u32)D_80216BF0_ovl_1A2C20);
+    GFX(0xFA000000, -1);
+    GFX(0xFD100000, (u32)ctx->tex.image);
+    GFX(0xE8000000, 0);
+    GFX(0xF5000100, 0x07000000);
+    GFX(0xE6000000, 0);
+    GFX(0xF0000000, 0x073FC000);
+    GFX(0xE7000000, 0);
+    func_80098B60(scale, ctx->scaleX, ctx->scaleY, 0.0f);
+    func_80098D00(mf, 160.0f, 120.0f, 0.0f);
+    guMtxCatF(scale, mf, mf);
+    guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
+    GFX(0xDA380003, (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000);
+    for (i = 0; i < 4; i++) {
+        GFX(0xFD480087, (u32)tex->image + 0x200);
+        GFX(0xF5480A00, 0x07000000);
+        GFX(0xE6000000, 0);
+        GFX(0xF4000000 | ((((i * 34) << 2) & 0xFFF) << 12), 0x0700007C | ((((i * 34 + 33) << 2) & 0xFFF) << 12));
+        GFX(0xE7000000, 0);
+        GFX(0xF5480A00, 0);
+        GFX(0xF2000000 | ((((i * 34) << 2) & 0xFFF) << 12), ((((i * 34 + 33) << 2) & 0xFFF) << 12) | 0x7C);
+        GFX(0xF2000000, 0x0008407C);
+        GFX(0xDE000000, (u32)D_80216EE8_ovl_1A2C20[i]);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1A2C20", func_8021608C_ovl_1A2C20);
 
