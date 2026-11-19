@@ -33,6 +33,13 @@ ScriptObj *func_80222EEC_ovl_1BA050(s32 i) {
 }
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+s32 func_8017B550(u8 c);
+extern u8 D_8022A0A8_ovl_1BA050;
+extern u8 D_8022A0A4_ovl_1BA050;
+extern u8 D_8022A09D_ovl_1BA050;
+extern u8 D_8022A09C_ovl_1BA050;
+extern u8 D_8022A099_ovl_1BA050;
+extern u8 D_8022A098_ovl_1BA050;
 typedef struct {
     /* 0x00 */ s32 used;
     /* 0x04 */ u8 unk04[5];
@@ -406,7 +413,33 @@ void func_80226430_ovl_1BA050(u8 *p, s32 a) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022648C_ovl_1BA050);
+/* How well code c matches the current one: 4 if all four bytes match, 2 for a valid code,
+ * otherwise 1 plus the length up to the terminator when it starts with the alternate lead byte */
+s32 func_8022648C_ovl_1BA050(u8 *c) {
+    s32 n;
+    s32 i;
+    u8 buf[16]; /* unused, but the original frame has room for it */
+
+    if (c[0] == 0) {
+        return 0;
+    }
+    if (func_8017B550(c[0])) {
+        n = 2;
+        if (c[0] == D_8022A098_ovl_1BA050 && c[1] == D_8022A099_ovl_1BA050 && c[2] == D_8022A09C_ovl_1BA050 &&
+            c[3] == D_8022A09D_ovl_1BA050) {
+            n = 4;
+        }
+        return n;
+    }
+    n = 1;
+    if (c[0] == D_8022A0A4_ovl_1BA050) {
+        for (i = 1; c[i] != D_8022A0A8_ovl_1BA050; i++) {
+            n++;
+        }
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80226564_ovl_1BA050);
 
