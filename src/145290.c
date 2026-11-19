@@ -29,15 +29,51 @@ void func_801F4358_ovl_145210(s32 kind, void *msg);
 
 
 
+typedef struct {
+    s32 a;
+    u8 b;
+    u8 c;
+    u8 pad[2];
+} Msg8;
+typedef struct {
+    /* 0x00 */ s32 id;
+    /* 0x04 */ u16 flags;
+    /* 0x06 */ u8 unk06[5];
+    /* 0x0B */ u8 bB;
+} MapEntry;
+typedef struct MapObj {
+    void (*fn)(struct MapObj *self);
+} MapObj;
+extern u16 D_801FDA32_ovl_145210;
+extern MapEntry **D_801FDA34_ovl_145210;
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4208_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4358_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4578_ovl_145210);
+void func_801F4578_ovl_145210(s32 a, u8 b) {
+    Msg8 m;
+    Msg8 *p = &m;
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F45D0_ovl_145210);
+    bzero(p, 8);
+    m.a = a;
+    m.b = b;
+    func_801F4358_ovl_145210(2, p);
+}
+
+void func_801F45D0_ovl_145210(s32 a, u8 b, u8 c) {
+    Msg8 m;
+    Msg8 *p = &m;
+
+    bzero(p, 8);
+    m.a = a;
+    m.b = b;
+    m.c = c;
+    func_801F4358_ovl_145210(3, p);
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4638_ovl_145210);
 
@@ -80,7 +116,22 @@ void func_801F4A34_ovl_145210(u8 *src, u8 *dst, s32 n) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4A6C_ovl_145210);
+/* Expands n palette indices (from the middle of src) into RGBA16 using the image's palette */
+void func_801F4A6C_ovl_145210(u8 *src, u8 *img, u16 alt, u16 *dst, s32 n) {
+    u16 *pal;
+
+    if (img[0] < 2) {
+        pal = (u16 *)(img + 8);
+    } else if (alt == 0) {
+        pal = (u16 *)(img + 8);
+    } else {
+        pal = (u16 *)(img + 0x208);
+    }
+    src += n / 2;
+    for (; n > 0; n--) {
+        *dst++ = pal[*src++];
+    }
+}
 
 void func_801F4AD0_ovl_145210(void) {
     D_801FDA10_ovl_145210 = 105;
@@ -100,7 +151,17 @@ void func_801F4B38_ovl_145210(void) {
     D_801FDA24_ovl_145210 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4B5C_ovl_145210);
+void func_801F4B5C_ovl_145210(void) {
+    s32 i;
+    MapObj *o;
+
+    for (i = D_801FDA18_ovl_145210 - 1; i >= 0; i--) {
+        o = ((MapObj **)D_801FDA14_ovl_145210)[i];
+        if (o != NULL) {
+            o->fn(o);
+        }
+    }
+}
 
 void func_801F4BBC_ovl_145210(s32 v) {
     D_801FDA14_ovl_145210[D_801FDA18_ovl_145210++] = v;
@@ -187,15 +248,40 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F6540_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F67F0_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F69A0_ovl_145210);
+inline MapEntry *func_801F69A0_ovl_145210(s32 id) {
+    s32 pad;
+    s32 i;
+    MapEntry *r = NULL;
+
+    for (i = 0; i < D_801FDA32_ovl_145210; i++) {
+        if (D_801FDA34_ovl_145210[i] != NULL && D_801FDA34_ovl_145210[i]->id == id) {
+            r = D_801FDA34_ovl_145210[i];
+            break;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F69FC_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F6B64_ovl_145210);
+u8 func_801F6B64_ovl_145210(s32 id) {
+    MapEntry *e = func_801F69A0_ovl_145210(id);
+
+    if (e != NULL) {
+        return e->bB;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F6BC0_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F6C48_ovl_145210);
+void func_801F6C48_ovl_145210(s32 id) {
+    MapEntry *e = func_801F69A0_ovl_145210(id);
+
+    if (e != NULL) {
+        e->flags |= 0x400;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F6CB4_ovl_145210);
 
