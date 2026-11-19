@@ -55,7 +55,7 @@ extern u16 D_8022A4DE_ovl_1BA050;
 extern u16 D_800E79B0;
 extern u16 D_800E9BE4;
 extern void *D_8022A4C0_ovl_1BA050[];
-extern s32 D_8022A650_ovl_1BA050;
+extern u8 *D_8022A650_ovl_1BA050;
 extern s32 D_8022A838_ovl_1BA050;
 extern u8 D_8022A820_ovl_1BA050;
 extern u8 D_8022A834_ovl_1BA050;
@@ -73,6 +73,21 @@ extern u8 D_8022A658_ovl_1BA050[];
 void *HMalloc(s32 size);
 void *LoadChunk(s32 id);
 void _bcopy(void *src, void *dst, s32 n);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} GfxBB;
+extern GfxBB *D_800E9BA0;
+extern u8 D_80229FB8_ovl_1BA050[];
+extern ScriptObjFn D_80229FA4_ovl_1BA050[];
+extern s32 D_8022A720_ovl_1BA050;
+extern s16 D_8022A724_ovl_1BA050;
+extern s16 D_8022A726_ovl_1BA050;
+extern s16 D_8022A728_ovl_1BA050;
+extern s16 D_8022A72A_ovl_1BA050;
+void func_80227234_ovl_1BA050(u8 *p);
+void func_80226E8C_ovl_1BA050(ScriptRes *r);
+void func_802292DC_ovl_1BA050(s16 *p);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
@@ -119,7 +134,21 @@ void func_80224A88_ovl_1BA050(void) {
     bzero(D_8022A2E8_ovl_1BA050, 4 * sizeof(ScriptObj));
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224AAC_ovl_1BA050);
+void func_80224AAC_ovl_1BA050(void) {
+    GfxBB *g;
+    s32 i;
+    ScriptObjFn fn;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xDE000000;
+    g->w1 = (u32)D_80229FB8_ovl_1BA050;
+    for (i = 0; i < 4; i++) {
+        fn = D_80229FA4_ovl_1BA050[D_8022A2E8_ovl_1BA050[i].b[0]];
+        if (fn != NULL) {
+            fn(&D_8022A2E8_ovl_1BA050[i]);
+        }
+    }
+}
 
 /* Runs each active script object's type handler */
 void func_80224B5C_ovl_1BA050(void) {
@@ -267,7 +296,26 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80227F68_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228048_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802282D0_ovl_1BA050);
+void func_802282D0_ovl_1BA050(void) {
+    u8 *n = D_8022A650_ovl_1BA050;
+    u8 *last = NULL;
+    s32 i;
+
+    if (n != NULL) {
+        while (*(u8 **)(n + 8) != NULL) {
+            n = *(u8 **)(n + 8);
+        }
+        last = n;
+    }
+    if (last != NULL) {
+        func_80227234_ovl_1BA050(last);
+    }
+    for (i = 0; i < 4; i++) {
+        if (D_8022A4E0_ovl_1BA050[i].used != 0) {
+            func_80226E8C_ovl_1BA050(&D_8022A4E0_ovl_1BA050[i]);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228378_ovl_1BA050);
 
@@ -365,7 +413,25 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802291E0_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802292DC_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80229604_ovl_1BA050);
+void func_80229604_ovl_1BA050(s16 *list) {
+    if (list == NULL) {
+        s32 *p = &D_8022A720_ovl_1BA050;
+
+        bzero(p, 0xF4);
+        *p = 1;
+        D_8022A72A_ovl_1BA050 = 0xF0;
+        D_8022A726_ovl_1BA050 = 0;
+        D_8022A724_ovl_1BA050 = 0;
+        D_8022A728_ovl_1BA050 = 0x140;
+    } else {
+        s16 *q = list;
+
+        while (q[1] != 0 || q[3] != 0 || q[0] != 0 || q[2] != 0) {
+            func_802292DC_ovl_1BA050(q);
+            q += 4;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802296B0_ovl_1BA050);
 
