@@ -2,7 +2,30 @@
 
 /* 2A21E0 */
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802329B0_ovl_29A4C0);
+typedef struct {
+    /* 0x00 */ s32 id;
+    /* 0x04 */ u8 unk04[8];
+    /* 0x0C */ s32 kind;
+    /* 0x10 */ u8 unk10[0x18];
+    /* 0x28 */ s32 w28;
+    /* 0x2C */ s32 w2C;
+    /* 0x30 */ u8 *w30;
+    /* 0x34 */ u8 unk34[8];
+} Rec2A; /* size 0x3C */
+
+extern Rec2A *D_802395B0_ovl_29A4C0;
+
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
+Rec2A *func_80232C28_ovl_29A4C0(void);
+/* --- end decls --- */
+
+void func_802329B0_ovl_29A4C0(void) {
+    Rec2A *p = HMalloc(0x960);
+
+    D_802395B0_ovl_29A4C0 = p;
+    bzero(p, 0x960);
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802329E0_ovl_29A4C0);
 
@@ -10,11 +33,51 @@ INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232B20_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232C28_ovl_29A4C0);
 
+#ifdef NON_MATCHING
+/* The record pointer and derived field pointer use swapped registers. */
+s32 func_80232DE0_ovl_29A4C0(s32 id, s32 kind) {
+    Rec2A *r = D_802395B0_ovl_29A4C0;
+    s32 i;
+
+    for (i = 40; i-- != 0; r++) {
+        if (r->id == id && r->kind == kind) {
+            return r->w2C;
+        }
+    }
+    return func_80232C28_ovl_29A4C0()->w2C;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232DE0_ovl_29A4C0);
+#endif
 
+#ifdef NON_MATCHING
+/* The record pointer and derived field pointer use swapped registers. */
+s32 func_80232E44_ovl_29A4C0(s32 id, s32 kind) {
+    Rec2A *r = D_802395B0_ovl_29A4C0;
+    s32 i;
+
+    for (i = 40; i-- != 0; r++) {
+        if (r->id == id && r->kind == kind) {
+            return r->w28;
+        }
+    }
+    return func_80232C28_ovl_29A4C0()->w28;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232E44_ovl_29A4C0);
+#endif
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232EA8_ovl_29A4C0);
+u8 func_80232EA8_ovl_29A4C0(s32 id, s32 k) {
+    Rec2A *r = D_802395B0_ovl_29A4C0;
+    s32 i;
+
+    for (i = 40; i-- != 0; r++) {
+        if (r->id == id) {
+            return r->w30[k];
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232EE8_ovl_29A4C0);
 
