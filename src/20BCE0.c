@@ -1,5 +1,7 @@
 #include "common.h"
 
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+
 typedef struct {
     /* 0x00 */ u8 unk00[0x36];
     /* 0x36 */ u16 items[4];
@@ -94,6 +96,10 @@ void func_801C893C_ovl_1F0A30(s16 a) {
 
 u8 func_801C1AA4_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, u8 *g, s32 h, s32 i);
 void func_801C1EE8_ovl_1F0A30(s32 *out, s32 a, u8 b);
+u8 func_801BC76C_ovl_1F0A30(void);
+u8 func_801BC838_ovl_1F0A30(void);
+u8 func_801BC914_ovl_1F0A30(void);
+u8 func_801C1C1C_ovl_1F0A30(u32 a, s32 w, s32 i, u8 *c, u8 *d1, u8 *d2);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
@@ -388,7 +394,28 @@ static inline BattleUnit *BattleGetUnit(u32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9028_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9234_ovl_1F0A30);
+/* Scans the text of t, returning the last two line values */
+void func_801C9234_ovl_1F0A30(u8 *t, s32 *prev, s32 *last) {
+    u8 c;
+    u8 d1;
+    u8 d2;
+    s32 i = 0;
+    u8 r;
+
+    *last = 0;
+    *prev = 0;
+    for (;;) {
+        r = func_801C1C1C_ovl_1F0A30(FIELD(t, u32, 0), (t[0x48] & 1) ? 0x58 : 0x26, i, &c, &d1, &d2);
+        if (r == 0) {
+            break;
+        }
+        i++;
+        if (r == 1) {
+            *prev = *last;
+            *last = c;
+        }
+    }
+}
 
 /* The player side's leader */
 BattleUnit *func_801C92F8_ovl_1F0A30(void) {
@@ -633,7 +660,27 @@ void func_801CBD48_ovl_1F0A30(void) {
     HFree(D_801D0824_ovl_1F0A30);
 }
 
+/* Places object o at cell (x, y, z) (world position = cell * 30) and resets its colour */
+#ifdef NON_MATCHING
+/* stack arg z loaded late in the original; no statement order reproduces it */
+u8 *func_801CBD6C_ovl_1F0A30(u8 *o, s32 a, s32 x, s32 y, s32 z) {
+    FIELD(o, s16, 0x1C) = FIELD(o, s16, 0x28) = x;
+    FIELD(o, s16, 0x1E) = FIELD(o, s16, 0x2A) = y;
+    FIELD(o, s32, 0x18) = a;
+    FIELD(o, s32, 0x4) = x * 30;
+    FIELD(o, s32, 0x8) = y * 30;
+    FIELD(o, s16, 0x20) = FIELD(o, s16, 0x2C) = z;
+    FIELD(o, s32, 0xC) = z * 30;
+    o[0x38] = func_801BC76C_ovl_1F0A30();
+    o[0x39] = func_801BC838_ovl_1F0A30();
+    o[0x3A] = func_801BC914_ovl_1F0A30();
+    o[0x3B] = o[0x3C] = o[0x3D] = 0xFF;
+    o[0x37] = 0;
+    return o;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBD6C_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBE18_ovl_1F0A30);
 
