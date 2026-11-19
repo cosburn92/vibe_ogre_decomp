@@ -41,6 +41,12 @@ void *HFree(void *p);
 extern u8 *D_80213778_ovl_14EBE0;
 extern u8 *D_80213670_ovl_14EBE0;
 extern u16 (*D_80213068_ovl_14EBE0[])(u8 cls, u8 base);
+typedef struct {
+    s32 w0;
+    u8 b[4];
+    s32 w8;
+    s32 wC;
+} Rec151_16;
 extern s8 (*D_80213054_ovl_14EBE0[])(u16 v);
 extern u16 D_80190EBC[];
 extern u16 D_80190F82;
@@ -641,7 +647,22 @@ void func_80208A3C_ovl_14EBE0(u8 *a, s16 n) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80208ADC_ovl_14EBE0);
+/* Insertion sort of n 16-byte records by byte 7, ascending */
+void func_80208ADC_ovl_14EBE0(Rec151_16 *a, s16 n) {
+    s16 i;
+    s16 j;
+    Rec151_16 t;
+    u8 k;
+
+    for (i = 1; i < n; i++) {
+        k = a[i].b[3];
+        t = a[i];
+        for (j = i - 1; j >= 0 && a[j].b[3] > k; j--) {
+            a[j + 1] = a[j];
+        }
+        a[j + 1] = t;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208BE4_ovl_14EBE0);
 
