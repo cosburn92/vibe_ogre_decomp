@@ -3,6 +3,7 @@
 /* 25EE90 */
 
 f32 sqrtf(f32 x);
+void func_8020A5C8_ovl_25EE90(f32 *a, f32 *b, f32 *c, void *m);
 /* --- end decls --- */
 
 /* out = v * s (safe when out overlaps v) */
@@ -19,7 +20,7 @@ void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out) {
 }
 
 /* out = a x b (safe when out overlaps an input) */
-void func_8020A348_ovl_25EE90(f32 *a, f32 *b, f32 *out) {
+inline void func_8020A348_ovl_25EE90(f32 *a, f32 *b, f32 *out) {
     f32 t[3];
 
     t[0] = a[1] * b[2] - a[2] * b[1];
@@ -65,11 +66,24 @@ void func_8020A5A0_ovl_25EE90(f32 *m, f32 *t) {
 
 INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A5C8_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A7A0_ovl_25EE90);
+/* Orthonormal-ish basis from forward a and up b: c = a x b, b = c x a, then builds m */
+void func_8020A7A0_ovl_25EE90(f32 *a, f32 *b, void *m) {
+    f32 c[3];
+
+    func_8020A348_ovl_25EE90(a, b, c);
+    func_8020A348_ovl_25EE90(c, a, b);
+    func_8020A5C8_ovl_25EE90(a, b, c, m);
+}
 
 INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A888_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A980_ovl_25EE90);
+void func_8020A980_ovl_25EE90(f32 *a, f32 *b, void *m) {
+    f32 c[3];
+
+    func_8020A348_ovl_25EE90(b, a, c);
+    func_8020A348_ovl_25EE90(a, c, b);
+    func_8020A5C8_ovl_25EE90(a, c, b, m);
+}
 
 /* out = v * m (row vector times 4x4 matrix) */
 void func_8020AA70_ovl_25EE90(f32 m[4][4], f32 *v, f32 *out) {
