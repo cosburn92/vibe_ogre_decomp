@@ -13,6 +13,7 @@ void func_8017BDC0_ovl_040E80(void);
 void func_8017BF10_ovl_040E80(void);
 void func_8017EE64_ovl_040E80(s32 a, u16 b, s16 c, s16 d, s16 e, s16 f);
 void func_8017F490_ovl_040E80(void);
+void func_8017BFB0_ovl_040E80(u16 a, u8 b, void *c, s16 x0, s16 y0, s16 x1, s16 y1, s16 x2, s16 y2, s16 x3, s16 y3);
 void func_801841F4_ovl_040E80(void);
 void func_80180BDC_ovl_040E80(void);
 /* --- end decls --- */
@@ -60,7 +61,14 @@ void func_80173BE0_ovl_040E80(void *list, s32 a, u16 b, s16 c, s16 d, s16 e, s16
     D_8018FDC0_ovl_040E80 = old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/49A30", func_80173C54_ovl_040E80);
+void func_80173C54_ovl_040E80(void *list, u16 a, u8 b, void *c, s16 x0, s16 y0, s16 x1, s16 y1, s16 x2, s16 y2,
+                              s16 x3, s16 y3) {
+    void *old = D_8018FDC0_ovl_040E80;
+
+    D_8018FDC0_ovl_040E80 = list;
+    func_8017BFB0_ovl_040E80(a, b, c, x0, y0, x1, y1, x2, y2, x3, y3);
+    D_8018FDC0_ovl_040E80 = old;
+}
 
 void func_80173D14_ovl_040E80(void *list) {
     void *old = D_8018FDC0_ovl_040E80;
