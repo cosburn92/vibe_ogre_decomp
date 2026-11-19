@@ -2,6 +2,10 @@
 
 /* 1ED1D0 */
 
+void nuGfxTaskAllEndWait(void);
+s32 func_801B7B7C_ovl_1CE070(void);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgJpegTask);
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B6E48_ovl_1CE070);
@@ -22,4 +26,8 @@ INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B7B7C_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgLoad);
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B8048_ovl_1CE070);
+void func_801B8048_ovl_1CE070(void) {
+    do {
+        nuGfxTaskAllEndWait();
+    } while (!func_801B7B7C_ovl_1CE070());
+}
