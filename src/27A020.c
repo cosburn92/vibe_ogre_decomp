@@ -103,7 +103,7 @@ void func_801C234C(void);
 /* --- end decls --- */
 
 /* Member id of the current squad's slot, made relative to 99 (0 for ids below 100) */
-s32 func_80225890_ovl_27A020(s16 slot) {
+inline s32 func_80225890_ovl_27A020(s16 slot) {
     SquadRec *sq = &gSquads[D_801976DC];
     u8 m = sq->members[slot];
 
@@ -122,7 +122,38 @@ s32 func_802258DC_ovl_27A020(s16 i) {
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022592C_ovl_27A020);
 
+/* Slot i status: -1 empty, 1 down (hp 0), 2 flag 4 set, 0 otherwise */
+#ifdef NON_MATCHING
+/* inlined member lookup: k computed as m-99 then zeroed; branch layout differs */
+s32 func_80225AAC_ovl_27A020(s16 i) {
+    u8 *a = NULL;
+    u8 *b = NULL;
+    s16 k;
+
+    if (D_8022D150_ovl_27A020[i] == 0) {
+        return -1;
+    }
+    k = func_80225890_ovl_27A020(i);
+    if (k == 0) {
+        a = (u8 *)D_8022D150_ovl_27A020[i];
+    } else {
+        b = (u8 *)D_8022D150_ovl_27A020[i];
+    }
+    if (a != NULL) {
+        if (*(u16 *)(a + 0x18) == 0) {
+            return 1;
+        }
+        if (a[0x33] & 4) {
+            return 2;
+        }
+    } else if (b != NULL && (b[k + 0xF3] & 4)) {
+        return 2;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225AAC_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225B90_ovl_27A020);
 
