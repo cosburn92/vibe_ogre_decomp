@@ -25,6 +25,12 @@ char *func_801BDFA0_ovl_1F0A30(u8 i) {
 extern u8 (*D_801D068C_ovl_1F0A30)[2];
 extern u16 *D_801D0690_ovl_1F0A30;
 extern u8 (*D_801D0698_ovl_1F0A30)[2];
+typedef struct {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} Rgba201;
 /* --- end decls --- */
 
 u8 func_801BDFBC_ovl_1F0A30(u8 a) {
@@ -270,7 +276,16 @@ u32 func_801BEA0C_ovl_1F0A30(s32 siz, u32 w) {
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEA0C_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BEA70_ovl_1F0A30);
+/* Sepia tone of c (alpha kept) */
+u32 func_801BEA70_ovl_1F0A30(Rgba201 in) {
+    Rgba201 c = in;
+    u32 lum = c.r * 30 + c.g * 59 + c.b * 11;
+
+    c.r = lum * 255 / 30000;
+    c.g = lum / 150;
+    c.b = lum * 130 / 30000;
+    return *(u32 *)&c;
+}
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEB28_ovl_1F0A30);
 
@@ -280,7 +295,28 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BED08_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEDC8_ovl_1F0A30);
 
+/* Whether c is at least half opaque */
+static inline s32 transp201(Rgba201 c) {
+    s32 r = 0;
+
+    if (c.a < 0x80) {
+        r = 1;
+    }
+    return r;
+}
+#ifdef NON_MATCHING
+/* original keeps a dead 0 and returns (0 == 0) on the opaque path */
+s32 func_801BEEA0_ovl_1F0A30(Rgba201 in) {
+    Rgba201 c = in;
+
+    if (c.a < 0x80) {
+        return 0;
+    }
+    return !transp201(c);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEEA0_ovl_1F0A30);
+#endif
 
 /* Whether an RGBA5551 colour is nonzero, as 0 / 0xFF */
 u8 func_801BEEDC_ovl_1F0A30(u16 c) {
