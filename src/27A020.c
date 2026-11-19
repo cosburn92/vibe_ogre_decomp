@@ -16,7 +16,7 @@ typedef struct {
 
 typedef struct Task27 {
     /* 0x00 */ u8 unk00[4];
-    /* 0x04 */ s16 h4;
+    /* 0x04 */ u16 state; /* >= 0x10: callback runs; 0: idle timer */
     /* 0x06 */ u16 next;
     /* 0x08 */ void (*fn)(s32, struct Task27 *);
     /* 0x0C */ s16 hC;
@@ -77,6 +77,12 @@ void func_8022A95C_ovl_27A020(Obj27 *o);
 void func_8022A750_ovl_27A020(Obj27 *o);
 void func_8022AAA4_ovl_27A020(Obj27 *o);
 void func_8022AC5C_ovl_27A020(Obj27 *o);
+void *LoadChunk(s32 id);
+void func_8017BDC0(void);
+typedef struct {
+    s16 *list;
+    u16 key;
+} Find27;
 /* --- end decls --- */
 
 /* Member id of the current squad's slot, made relative to 99 (0 for ids below 100) */
@@ -178,7 +184,26 @@ void func_80228650_ovl_27A020(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_80228680_ovl_27A020);
+/* Runs task callbacks (states >= 0x10) and counts down idle timers */
+void func_80228680_ovl_27A020(void) {
+    Task27 *t = D_8022D148_ovl_27A020;
+    s32 i;
+
+    for (i = 0; i < D_8022D0F2_ovl_27A020; i++) {
+        Task27 *p = t;
+
+        if (p->fn != NULL) {
+            if (p->state >= 0x10) {
+                p->fn(p->state, t);
+            } else if (p->state == 0 && p->hE != -1) {
+                if (--p->hE <= 0) {
+                    p->state = p->hC;
+                }
+            }
+        }
+        t++;
+    }
+}
 
 /* Takes a task from the free list and starts it with message 0x10 */
 Task27 *func_8022874C_ovl_27A020(void (*fn)(s32, Task27 *)) {
@@ -206,7 +231,7 @@ void func_802287C0_ovl_27A020(Task27 *t) {
 void func_8022881C_ovl_27A020(Task27 *t, s16 a) {
     t->hE = -1;
     t->hC = a;
-    t->h4 = 0;
+    t->state = 0;
     t->h10 = 1;
 }
 
@@ -215,7 +240,19 @@ void func_80228838_ovl_27A020(Task27 *t) {
     t->h10 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_80228844_ovl_27A020);
+s16 func_80228844_ovl_27A020(Find27 *f) {
+    s16 i;
+
+    if (f == NULL || f->list == NULL) {
+        return 0;
+    }
+    for (i = 0; f->list[i] != 0; i++) {
+        if (f->list[i] == f->key) {
+            return f->key;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802288C0_ovl_27A020);
 
@@ -264,7 +301,18 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B1D8_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B36C_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B494_ovl_27A020);
+void func_8022B494_ovl_27A020(void) {
+    D_8022D108_ovl_27A020 = LoadChunk(0x1DB3672);
+    D_8022D10C_ovl_27A020 = LoadChunk(0x1DBB2AC);
+    D_8022D110_ovl_27A020 = LoadChunk(0x1DB47A0);
+    D_8022D114_ovl_27A020 = LoadChunk(0x1DC3320);
+    D_8022D118_ovl_27A020 = LoadChunk(0x1DF98EA);
+    D_8022D11C_ovl_27A020 = LoadChunk(0x1DB156C);
+    D_8022D120_ovl_27A020 = LoadChunk(0x1DC2EE8);
+    D_8022D100_ovl_27A020 = LoadChunk(0x1DC873E);
+    D_8022D104_ovl_27A020 = LoadChunk(0x1DCB92C);
+    func_8017BDC0();
+}
 
 void func_8022B560_ovl_27A020(void) {
     HFree(D_8022D108_ovl_27A020);
