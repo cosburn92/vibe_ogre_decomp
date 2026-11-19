@@ -59,6 +59,9 @@ void func_80179060_ovl_040E80(void) {
 extern u8 *D_80190F50_ovl_040E80;
 u8 *func_8017AD3C_ovl_040E80(s32 id);
 s32 func_8017AE20_ovl_040E80(s32 id);
+extern u8 D_8018FC6C_ovl_040E80;
+s32 func_8017B500_ovl_040E80(u8 **pp);
+s16 func_8017A720_ovl_040E80(u8 **pp);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017907C_ovl_040E80);
@@ -184,7 +187,39 @@ u16 func_8017A9B0_ovl_040E80(u16 c) {
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A9B0_ovl_040E80);
 #endif
 
+/* Encodes string src into dst: {n} becomes byte n - 1, other characters go through func_8017A720
+ * ('0' when unknown); terminated with 0xFF */
+#ifdef NON_MATCHING
+/* The code matches. Only the frame differs: the original is 0x38 with src at sp+0x10 and 8 more bytes of locals above it; padding locals end up below src instead. */
+void func_8017AA18_ovl_040E80(u8 *str, u8 *dst) {
+    u8 *src = str;
+    s32 save = D_8018FC6C_ovl_040E80;
+    s32 c;
+
+    if (save == 1) {
+        D_8018FC6C_ovl_040E80 = 0;
+    }
+    while (*src != 0) {
+        if (*src == '{') {
+            src++;
+            *dst++ = func_8017B500_ovl_040E80(&src) - 1;
+            src++;
+        } else {
+            c = (s16)func_8017A720_ovl_040E80(&src);
+            if (c >= 0) {
+                *dst = c;
+            } else {
+                *dst = '0';
+            }
+            dst++;
+        }
+    }
+    *dst = 0xFF;
+    D_8018FC6C_ovl_040E80 = save;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AA18_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AAF4_ovl_040E80);
 
