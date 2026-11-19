@@ -53,6 +53,7 @@ extern u64 D_8009F540[];
 extern u64 jpegTextStart[];
 extern u64 D_800AC050[];
 extern u64 D_800AC140[];
+f64 func_8007FD90(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CC930_ovl_1F0A30);
@@ -140,7 +141,15 @@ s32 func_801CD058_ovl_1F0A30(u32 n) {
     return 10;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD108_ovl_1F0A30);
+/* Random integer in [-n, n] */
+s32 func_801CD108_ovl_1F0A30(s32 n) {
+    s32 r = n + 1;
+
+    while (r < -n || n < r) {
+        r = func_8007FD90() / 1.5 * n;
+    }
+    return r;
+}
 
 /* Whether tiles a and b (1-based) are blocked in direction dir (2/8/4/16 test wall bits 8/4/2/1) */
 s32 func_801CD19C_ovl_1F0A30(s32 a, s32 b, u32 dir) {

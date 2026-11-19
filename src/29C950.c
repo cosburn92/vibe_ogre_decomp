@@ -77,6 +77,8 @@ typedef struct {
 } Sort29C; /* size 0x34 */
 void BattleAnimStep2(void *a);
 void func_8022EFB0_ovl_29A4C0(void *a);
+f32 func_8009CFE0(f32 y, f32 x);
+f32 func_8022F280_ovl_29A4C0(f32 a);
 /* --- end decls --- */
 
 void func_8022D120_ovl_29A4C0(void) {
@@ -142,7 +144,12 @@ __asm__(".section .rodata\n.global D_802391D0_ovl_29A4C0\nD_802391D0_ovl_29A4C0:
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D534_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D928_ovl_29A4C0);
+/* Turns unit u to face point p (degrees, offset by 180) */
+void func_8022D928_ovl_29A4C0(BUnit *u, f32 *p) {
+    f32 a = func_8009CFE0(FIELD(u, f32, 0x11C) - p[0], p[2] - FIELD(u, f32, 0x124));
+
+    func_8022F280_ovl_29A4C0((f32)(a * 180.0 / 3.14159265358979312) + 180.0f);
+}
 
 /* Slope from unit u to point p (horizontal distance over height difference), 0 when p is at or
  * below ground, 6 when both are on the same height step; capped at 5 */

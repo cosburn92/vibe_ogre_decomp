@@ -99,6 +99,15 @@ void *HMalloc(s32 size);
 void *LoadChunkRaw(void *dst, s32 id);
 s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+extern Gfx *D_800E9BA0;
+void func_801792E8(void);
+void func_80179F04(u8 *s);
+void func_80179328(void);
+extern u8 D_801869C8[];
 /* --- end decls --- */
 
 /* Scene init: full-screen (320x240) window scene with a 0x28-line child scene, loads asset 0x209A7B4 */
@@ -160,7 +169,20 @@ s32 func_801AE7FC_ovl_0FA5E0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AE814_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEB2C_ovl_0FA5E0);
+/* Draws the widget's caption (colour 12) when it is visible */
+void func_801AEB2C_ovl_0FA5E0(void) {
+    Gfx *g;
+
+    if (D_801B3390_ovl_0FA5E0->x88 != 0) {
+        g = D_800E9BA0++;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_801869C8;
+        func_801792E8();
+        func_80179F04("{C12}");
+        func_80179F04((u8 *)D_801B3390_ovl_0FA5E0 + 0x8C);
+        func_80179328();
+    }
+}
 
 /* Width of a string in pixels, stopping at '@'; glyph width 11 marks a two-byte character */
 #ifdef NON_MATCHING

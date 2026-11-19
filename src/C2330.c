@@ -6,6 +6,8 @@
 extern u8 *D_80196AF8;
 extern u8 D_801EF474_ovl_087200[];
 extern s8 D_801EF480_ovl_087200[];
+u8 func_801D6508_ovl_087200(void);
+extern u8 D_801EF487_ovl_087200[];
 /* --- end decls --- */
 
 /* Whether grid cell pos of squad sq has a neighbour (by D_801EF474 direction mask) other than m */
@@ -100,7 +102,18 @@ INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5AD0_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5BF0_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5D10_ovl_087200);
+s32 func_801D5D10_ovl_087200(u8 *out) {
+    u8 r;
+    u8 none;
+
+    *out = 0;
+    r = func_801D6508_ovl_087200();
+    none = r == 0;
+    if (!none) {
+        *out = D_801EF487_ovl_087200[r];
+    }
+    return none;
+}
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5D5C_ovl_087200);
 
