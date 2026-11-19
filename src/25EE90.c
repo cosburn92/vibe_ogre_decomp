@@ -117,7 +117,13 @@ void func_8020A7A0_ovl_25EE90(f32 *a, f32 *b, void *m) {
     func_8020A5C8_ovl_25EE90(a, b, c, (f32 (*)[4])m);
 }
 
-INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A888_ovl_25EE90);
+void func_8020A888_ovl_25EE90(f32 *a, f32 *b, void *m) {
+    f32 c[3];
+
+    func_8020A348_ovl_25EE90(a, b, c);
+    func_8020A348_ovl_25EE90(b, c, a);
+    func_8020A5C8_ovl_25EE90(c, a, b, m);
+}
 
 void func_8020A980_ovl_25EE90(f32 *a, f32 *b, void *m) {
     f32 c[3];
