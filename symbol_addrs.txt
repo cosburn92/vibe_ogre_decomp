@@ -626,3 +626,4 @@ nuScPreNMIFlag = 0x800C4800;
 nuScRetraceCounter = 0x800C4BCC;
 nuScPreNMIFunc = 0x800A9E60;
 rdpstateinit_dl = 0x800A9EF0;
+nuPiSramHandleBody = 0x800BE110; // size:0x74
