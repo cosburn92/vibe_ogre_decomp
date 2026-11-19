@@ -53,6 +53,7 @@ s32 func_80076F5C(s32 a, void *fn, s32 b, s32 c, s32 d, s32 e, s32 f);
 void func_80205F2C_ovl_14EBE0();
 void func_8020CDA0_ovl_14EBE0(s32 a);
 void osSyncPrintf(const char *fmt, ...);
+extern u8 *D_801F36C0;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
@@ -183,7 +184,33 @@ u16 func_80201D1C_ovl_14EBE0(u8 side, u8 idx, u8 stat) {
     return D_80213068_ovl_14EBE0[stat](c->cls, c->baseCls);
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201D9C_ovl_14EBE0);
+/* Equipped item `slot` (1-4) of a character (side 0 player, 1 enemy), 0 if slot is out of range */
+u16 func_80201D9C_ovl_14EBE0(u8 side, u8 idx, u8 slot) {
+    Character *c;
+    u16 v;
+
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    v = 0;
+    switch (slot) {
+        case 1:
+            v = c->items[0];
+            break;
+        case 2:
+            v = c->items[1];
+            break;
+        case 3:
+            v = c->items[2];
+            break;
+        case 4:
+            v = c->items[3];
+            break;
+    }
+    return v;
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201E4C_ovl_14EBE0);
 
@@ -244,7 +271,18 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80203558_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80203D9C_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80203FA4_ovl_14EBE0);
+void func_80203FA4_ovl_14EBE0(s32 a, s32 b) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xD7000002;
+    g->w1 = 0x80008000;
+    func_80200F70_ovl_14EBE0(D_801F36C0 + 0x2E0, D_801F0B90 + 0x27A8, 16, 8, 2);
+    func_80200DD0_ovl_14EBE0((void *)a, b, 0x47);
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80204050_ovl_14EBE0);
 
