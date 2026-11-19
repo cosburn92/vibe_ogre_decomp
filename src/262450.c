@@ -32,6 +32,7 @@ void func_8020DD60_ovl_25EE90(s32 a, Task *t);
 
 extern s32 D_80220D90_ovl_25EE90;
 extern Task **D_80220D94_ovl_25EE90;
+void func_8020DCAC_ovl_25EE90(Task *t, u16 a);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/262450", func_8020D8A0_ovl_25EE90);
@@ -40,7 +41,37 @@ void func_8020D9D8_ovl_25EE90(void) {
     HFree(D_80220EDC_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020D9FC_ovl_25EE90);
+/* Runs every task: states 0x100+ call the task function; state 1 waits unk1A frames (-1 = forever),
+ * state 2 waits until the watched counter (unk1C + 0x10) reaches unk20; both then switch to unk18 */
+void func_8020D9FC_ovl_25EE90(void) {
+    Task *t;
+
+    D_80220FE8_ovl_25EE90 = NULL;
+    for (t = D_80220D88_ovl_25EE90; t != NULL; t = t->prev) {
+        if (t->state >= 0x100) {
+            func_8020DCAC_ovl_25EE90(t, t->state);
+            continue;
+        }
+        switch (t->state) {
+            case 1:
+                if (t->unk1A == -1) {
+                    break;
+                }
+                if (--t->unk1A > 0) {
+                    break;
+                }
+                t->state = t->unk18;
+                break;
+            case 2:
+                if (*(s32 *)(t->unk1C + 0x10) < t->unk20) {
+                    break;
+                }
+                t->state = t->unk18;
+                break;
+        }
+    }
+    D_80220FE8_ovl_25EE90 = NULL;
+}
 
 /* Takes a task from the free list; hangs when the pool is empty. */
 Task *func_8020DAE4_ovl_25EE90(void) {
