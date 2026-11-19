@@ -3,6 +3,7 @@
 /* 151F40 */
 
 #include "tables.h"
+#include "scene.h"
 
 typedef struct {
     u32 w0;
@@ -45,15 +46,66 @@ extern u16 D_80190EBC[];
 extern u16 D_80190F82;
 u16 func_80201D1C_ovl_14EBE0(u8 side, u8 idx, u8 stat);
 void func_802001A8_ovl_14EBE0(void *a, s32 b, u16 c, s32 d);
+extern u8 D_80213780_ovl_14EBE0;
+extern u8 D_80213781_ovl_14EBE0;
+extern char D_80214D10_ovl_14EBE0[];
+s32 func_80076F5C(s32 a, void *fn, s32 b, s32 c, s32 d, s32 e, s32 f);
+void func_80205F2C_ovl_14EBE0();
+void func_8020CDA0_ovl_14EBE0(s32 a);
+void osSyncPrintf(const char *fmt, ...);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200F70_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_8020122C_ovl_14EBE0);
+/* Loads a 256-colour TLUT from pal */
+void func_8020122C_ovl_14EBE0(u32 pal) {
+    Gfx *g;
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_802012D8_ovl_14EBE0);
+    g = D_800E9BA0++;
+    g->w0 = 0xFD100000;
+    g->w1 = pal;
+    g = D_800E9BA0++;
+    g->w0 = 0xE8000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xF5000100;
+    g->w1 = 0x07000000;
+    g = D_800E9BA0++;
+    g->w0 = 0xE6000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xF0000000;
+    g->w1 = 0x073FC000;
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+}
+
+/* Loads a 16-colour TLUT from pal */
+void func_802012D8_ovl_14EBE0(u32 pal) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xFD100000;
+    g->w1 = pal;
+    g = D_800E9BA0++;
+    g->w0 = 0xE8000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xF5000100;
+    g->w1 = 0x07000000;
+    g = D_800E9BA0++;
+    g->w0 = 0xE6000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xF0000000;
+    g->w1 = 0x0703C000;
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201384_ovl_14EBE0);
 
@@ -250,7 +302,24 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80204C3C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020521C_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80205D20_ovl_14EBE0);
+s32 func_80205D20_ovl_14EBE0(u8 a) {
+    u8 *f = &D_80213780_ovl_14EBE0;
+    s32 i;
+    s32 r;
+
+    if (*f != 0) {
+        *f = 0;
+        D_80213781_ovl_14EBE0 = a;
+        i = func_80076F5C(0xC000, func_80205F2C_ovl_14EBE0, 0x19, 0x28, 0x23, 0x32, 0xC8);
+        D_800E82C8[i].unk88 = 0xFF;
+        func_8020CDA0_ovl_14EBE0(6);
+        r = 1;
+    } else {
+        osSyncPrintf(D_80214D10_ovl_14EBE0);
+        r = 0;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80205DC8_ovl_14EBE0);
 
