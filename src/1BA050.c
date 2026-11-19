@@ -25,7 +25,7 @@ typedef struct {
 extern ScriptSlot D_8022A1F0_ovl_1BA050[];
 extern u8 *D_8022A248_ovl_1BA050;
 extern s32 D_8022A24C_ovl_1BA050;
-extern s32 D_8022A250_ovl_1BA050;
+extern volatile s32 D_8022A250_ovl_1BA050;
 extern s32 *D_8022A214_ovl_1BA050;
 extern s32 D_8022A82C_ovl_1BA050;
 extern u16 D_8022A254_ovl_1BA050;
@@ -830,7 +830,34 @@ s32 func_80222CA0_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222CE4_ovl_1BA050);
+static inline void func_80222CE4_clear(void) {
+    if (D_8022A248_ovl_1BA050 != NULL && D_8022A24C_ovl_1BA050 != 0) {
+        bzero(D_8022A248_ovl_1BA050, D_8022A24C_ovl_1BA050);
+    }
+    D_8022A250_ovl_1BA050 = 0;
+}
+
+/* select message table entry (mode 0) or clear it (mode 1) */
+s32 func_80222CE4_ovl_1BA050(ScriptCtx *ctx) {
+    switch (ctx->pc[1]) {
+        case 0: {
+            s32 v;
+
+            if (D_8022A248_ovl_1BA050 != NULL && D_8022A24C_ovl_1BA050 != 0) {
+                bzero(D_8022A248_ovl_1BA050, D_8022A24C_ovl_1BA050);
+            }
+            v = ((s32 *)D_8022A244_ovl_1BA050)[*(u16 *)(ctx->pc + 2)];
+            D_8022A250_ovl_1BA050 = 0;
+            D_8022A250_ovl_1BA050 = v;
+            break;
+        }
+        case 1:
+            func_80222CE4_clear();
+            break;
+    }
+    ctx->pc += 4;
+    return 0;
+}
 
 s32 func_80222DBC_ovl_1BA050(ScriptCtx *ctx) {
     u8 *pc = ctx->pc;
