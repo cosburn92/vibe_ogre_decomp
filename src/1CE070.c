@@ -44,6 +44,33 @@ void func_8009DAEC(void);
 void func_80179060(void);
 void func_8017BDC0(void);
 void func_80076E2C(void);
+typedef struct {
+    /* 0x0 */ u8 unk0[6];
+    /* 0x6 */ u16 h6;
+    /* 0x8 */ u8 unk8[2];
+} RecCE; /* size 0xA */
+typedef struct {
+    /* 0x00 */ u8 unk0[4];
+    /* 0x04 */ u32 n;
+    /* 0x08 */ u8 unk8[4];
+    /* 0x0C */ RecCE *recs;
+    /* 0x10 */ u16 (*links)[2];
+} SkelCE;
+typedef struct {
+    f32 m[4][4];
+    s32 pad;
+} MtxCE; /* size 0x44 */
+extern u8 *D_801B8080_ovl_1CE070[2];
+extern u8 *D_801B8088_ovl_1CE070[2];
+extern u8 D_800E7A0C;
+void *HMalloc(s32 size);
+void guMtxCatF(void *a, void *b, void *c);
+void nuGfxTaskAllEndWait(void);
+void func_80072738(s32 a);
+void func_80089BC0(void);
+void func_80089AB0(void *p, s32 n);
+void osViSetSpecialFeatures(u32 f);
+void func_8016CD50(s32 a);
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -108,7 +135,32 @@ void func_80198EE0_ovl_1CE070(void) {
     D_801B8090_ovl_1CE070 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80198EEC_ovl_1CE070);
+/* Allocates two 0x96000-byte frame buffers (64-byte aligned) and switches the display to them */
+void func_80198EEC_ovl_1CE070(void) {
+    u8 **raw = D_801B8088_ovl_1CE070;
+    u8 **fb;
+    u8 *r0;
+    u8 *r1;
+    u32 mask;
+
+    raw[0] = HMalloc(0x9603F);
+    r1 = D_801B8088_ovl_1CE070[1] = HMalloc(0x9603F);
+    r0 = raw[0];
+    mask = ~0x3F;
+    fb = D_801B8080_ovl_1CE070;
+    D_801B8080_ovl_1CE070[1] = (u8 *)(((u32)r1 + 0x3F) & mask);
+    D_800C4B20 = 0;
+    D_801B8094_ovl_1CE070 = 0;
+    fb[0] = (u8 *)(((u32)r0 + 0x3F) & mask);
+    nuGfxTaskAllEndWait();
+    func_80072738(9);
+    func_80089BC0();
+    func_80089AB0(fb, 2);
+    osViSetSpecialFeatures(0x9A);
+    D_800E7A0C = 0;
+    func_8016CD50(1);
+    D_801B8090_ovl_1CE070 = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80198FB4_ovl_1CE070);
 
@@ -164,11 +216,35 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199560_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199968_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199C3C_ovl_1CE070);
+/* Builds each joint's world matrix: out[joint] = out[joint] * parent's */
+void func_80199C3C_ovl_1CE070(void *root, SkelCE *s, MtxCE *out) {
+    void *m[32];
+    u32 i;
+    MtxCE *dst;
+    void **pm;
+
+    m[0] = root;
+    for (i = 0; i < s->n; i++) {
+        dst = &out[s->links[i][0]];
+        pm = (void **)(s->links[i][1] * 4 + (s32)m);
+        guMtxCatF(dst, *pm, dst);
+        pm[1] = dst;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199CF0_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199E48_ovl_1CE070);
+void func_80199E48_ovl_1CE070(SkelCE *s, void **out) {
+    u32 i;
+
+    for (i = 0; i < s->n; i++) {
+        if (s->recs[i].h6 != 0) {
+            out[i] = HMalloc(0x24);
+        } else {
+            out[i] = NULL;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199ECC_ovl_1CE070);
 
