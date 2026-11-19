@@ -49,6 +49,9 @@ extern s32 D_8022A7A0_ovl_281860;
 s32 func_8016FEF4(s32 flag);
 void func_800EA7E4(s32 a, s32 b);
 void func_802282B8_ovl_281860(void);
+void func_800EA86C(s32 ch, s32 v);
+void func_800EA89C(s32 ch, s32 v);
+void func_800EA8B4(s32 ch, s32 v);
 /* --- end decls --- */
 
 void func_80227010_ovl_281860(void) {
@@ -111,7 +114,29 @@ void func_802274F4_ovl_281860(s32 i, s32 v) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227594_ovl_281860);
+/* Sets the three parameters of sound channel i (all 7 when i is 7); -1 leaves one unchanged */
+void func_80227594_ovl_281860(s32 i, s32 a, s32 b, s32 c) {
+    s32 k = 0;
+    s32 end;
+
+    if (i == 7) {
+        end = 7;
+    } else {
+        k = i;
+        end = i + 1;
+    }
+    for (; k < end; k++) {
+        if (a != -1) {
+            func_800EA86C(D_8022A8A8_ovl_281860[k], a);
+        }
+        if (b != -1) {
+            func_800EA89C(D_8022A8A8_ovl_281860[k], b);
+        }
+        if (c != -1) {
+            func_800EA8B4(D_8022A8A8_ovl_281860[k], c / 128);
+        }
+    }
+}
 
 void func_8022767C_ovl_281860(void) {
 }
