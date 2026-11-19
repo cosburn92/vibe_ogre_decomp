@@ -4,7 +4,12 @@
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
 typedef struct {
-    u8 unk00[0x84];
+    s16 h0;
+    u8 unk02[2];
+    s32 w4;
+    u8 unk08[4];
+    s32 wC;
+    u8 unk10[0x74];
     s32 x84;
     u8 x88;
     u8 x89;
@@ -48,9 +53,74 @@ s32 func_801793E4(s32 c, s32 b);
 void func_801B01FC_ovl_0FA5E0(u8 *p);
 void func_801B2FF8_ovl_0FA5E0(void **p);
 void HFree(void *p);
+typedef struct {
+    /* 0x00 */ u16 flags;
+    /* 0x02 */ u8 flags2;
+    /* 0x03 */ u8 flags3;
+    /* 0x04 */ u8 unk04[2];
+    /* 0x06 */ s16 x;
+    /* 0x08 */ s16 y;
+    /* 0x0A */ s16 x2;
+    /* 0x0C */ s16 y2;
+    /* 0x0E */ u16 hE;
+    /* 0x10 */ u8 unk10[4];
+    /* 0x14 */ void (*update)(void);
+    /* 0x18 */ void (*draw)(void);
+    /* 0x1C */ void (*exit)(void);
+    /* 0x20 */ u16 size;
+    /* 0x22 */ u8 unk22[2];
+    /* 0x24 */ s32 w24;
+} CurSceneFA;
+typedef struct {
+    u8 unk00[0x88];
+    u8 b88;
+    u8 b89;
+    u8 unk8A[0x1E];
+} SceneFA; /* size 0xA8 */
+extern CurSceneFA D_800E7A30;
+extern SceneFA D_800E82C8[];
+extern u8 D_800E91D0[];
+extern u8 D_801A07D0[];
+extern u8 D_8018F564;
+extern u8 D_8018F565;
+extern u8 D_8018F56C;
+extern u8 D_8018F56D;
+void bzero(void *p, s32 n);
+s32 func_8007705C(s32 a, void *b, s32 c, s32 d, s32 e, s32 f, s32 g);
+s32 func_801AB020(s32 id, s32 n);
+void *LoadAsset(u32 handle, ...);
+void func_801AD748_ovl_0FA5E0(void);
+void func_801ADF6C_ovl_0FA5E0(void);
+void func_801AE090_ovl_0FA5E0(void);
+void func_801AEC40_ovl_0FA5E0(Widget3390 *p);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AD5A0_ovl_0FA5E0);
+/* Scene init: full-screen (320x240) window scene with a 0x28-line child scene, loads asset 0x209A7B4 */
+void func_801AD5A0_ovl_0FA5E0(s32 id) {
+    D_800E7A30.update = func_801AD748_ovl_0FA5E0;
+    D_800E7A30.draw = func_801ADF6C_ovl_0FA5E0;
+    D_800E7A30.exit = func_801AE090_ovl_0FA5E0;
+    D_800E7A30.size = 0x53C;
+    D_800E7A30.w24 = 0;
+    D_800E7A30.flags |= 0x200;
+    D_800E7A30.flags2 |= 9;
+    D_800E7A30.flags3 |= 0xC;
+    bzero(D_800E91D0, 0x53C);
+    D_801B3390_ovl_0FA5E0->h0 = id;
+    D_801B3390_ovl_0FA5E0->w4 = 0;
+    D_800E7A30.y2 = 0xF0;
+    D_800E7A30.x2 = 0x140;
+    D_800E7A30.x = 0;
+    D_800E7A30.y = 0;
+    D_800E82C8[func_8007705C(0xC000, D_801A07D0, 0, 0, 0x140, D_800E7A30.y2, (u16)(D_800E7A30.hE - 3))].b88 = 3;
+    D_800E82C8[D_801B3390_ovl_0FA5E0->wC = func_801AB020(id, 0x28)].b89 = 9;
+    D_8018F565 = 1;
+    D_8018F564 = 0;
+    D_8018F56D = 1;
+    D_8018F56C = 1;
+    LoadAsset(0x209A7B4, 0, -6);
+    func_801AEC40_ovl_0FA5E0(D_801B3390_ovl_0FA5E0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AD748_ovl_0FA5E0);
 
