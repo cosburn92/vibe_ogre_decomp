@@ -266,7 +266,34 @@ ScriptCtx *func_802219E0_ovl_1BA050(u8 *base, s32 off, s32 idx) {
     return c;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221A6C_ovl_1BA050);
+/* Starts a script context at base + off in the first free slot */
+ScriptCtx *func_80221A6C_ovl_1BA050(u8 *base, s32 off) {
+    ScriptCtx *ctx;
+    s32 i;
+
+    if (!D_801936E0) {
+        return NULL;
+    }
+    if (D_8022A234_ovl_1BA050 == NULL) {
+        for (;;) {
+        }
+    }
+    for (i = 0; i < D_8022A230_ovl_1BA050; i++) {
+        if (D_8022A234_ovl_1BA050[i * 0x38] == 0) {
+            break;
+        }
+    }
+    if (i < 0 || i >= D_8022A230_ovl_1BA050) {
+        for (;;) {
+        }
+    }
+    ctx = (ScriptCtx *)(D_8022A234_ovl_1BA050 + i * 0x38);
+    bzero(ctx, 0x38);
+    ctx->pc = base + off;
+    ctx->base = base;
+    ctx->unk00 = 1;
+    return ctx;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221B5C_ovl_1BA050);
 
