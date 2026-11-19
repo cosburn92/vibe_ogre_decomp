@@ -12,7 +12,7 @@ typedef struct {
     /* 0x08 */ s16 y;
     /* 0x0A */ s16 x2;
     /* 0x0C */ s16 y2;
-    /* 0x0E */ u8 unk0E[2];
+    /* 0x0E */ u16 unk0E;
     /* 0x10 */ void *owner;
     /* 0x14 */ u8 unk14[0x14];
     /* 0x28 */ s16 unk28;
@@ -20,7 +20,20 @@ typedef struct {
     /* 0x2C */ u8 unk2C[0xC];
     /* 0x38 */ void *slotsA[10];
     /* 0x60 */ void *slotsB[10];
-    /* 0x88 */ u8 unk88[0x20];
+    /* 0x88 */ u8 unk88;
+    /* 0x89 */ u8 unk89;
+    /* 0x8A */ u8 unk8A;
+    /* 0x8B */ u8 unk8B;
+    /* 0x8C */ u8 unk8C;
+    /* 0x8D */ u8 unk8D;
+    /* 0x8E */ u8 unk8E;
+    /* 0x8F */ u8 unk8F;
+    /* 0x90 */ u8 unk90[4];
+    /* 0x94 */ u8 unk94;
+    /* 0x95 */ u8 unk95;
+    /* 0x96 */ u8 unk96;
+    /* 0x97 */ u8 unk97;
+    /* 0x98 */ u8 unk98[0x10];
 } Scene; /* size 0xA8 */
 
 extern Scene D_800E82C8[];
