@@ -23,6 +23,7 @@ extern u8 D_800EB1A0[];
 extern u8 D_800EB1F0[];
 extern u8 D_800EB240[];
 extern u8 D_800EB290[];
+extern u16 D_800E810E;
 void func_800EA6B0(void *ch, s32 a, s32 b);
 void func_800EA604(void *ch, s32 sound);
 void *HMalloc(s32 size);
@@ -261,7 +262,29 @@ void func_801C58F0_ovl_1F0A30(void) {
     D_801D06B0_ovl_1F0A30[0] = -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/205220", SoundRequest);
+/* Remembers the sound requested on channel ch (restarted by func_801C5A20); with no channel it is
+ * played straight away unless the game state is 12 */
+void SoundRequest(u8 *ch, s32 sound) {
+    if (ch == D_800EB240) {
+        D_801D06B0_ovl_1F0A30[5] = sound;
+    } else if (ch == D_800EB290) {
+        D_801D06B0_ovl_1F0A30[6] = sound;
+    } else if (ch == NULL) {
+        if (D_800E810E != 12) {
+            func_800EA604(NULL, sound);
+        }
+    } else if (ch == D_800EB0B0) {
+        D_801D06B0_ovl_1F0A30[0] = sound;
+    } else if (ch == D_800EB100) {
+        D_801D06B0_ovl_1F0A30[1] = sound;
+    } else if (ch == D_800EB150) {
+        D_801D06B0_ovl_1F0A30[2] = sound;
+    } else if (ch == D_800EB1A0) {
+        D_801D06B0_ovl_1F0A30[3] = sound;
+    } else {
+        D_801D06B0_ovl_1F0A30[4] = sound;
+    }
+}
 
 /* Starts the saved sound (-1 = none) on each of the seven sound channels */
 void func_801C5A20_ovl_1F0A30(void) {
