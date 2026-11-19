@@ -704,7 +704,99 @@ s32 func_801DCF20_ovl_101CE0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCF90_ovl_101CE0);
+/* Icon index for the squad leader: special classes 4-24, else by alignment (3 high, 2 middle)
+ * or gender (1 for gender 1, 0 otherwise) */
+s32 func_801DCF90_ovl_101CE0(MapUnit *u) {
+    s32 leader = gSquads[u->squad].members[0];
+    u8 cls = D_80193BC0[leader].c.cls;
+    u8 align = D_80193BC0[leader].c.alignment;
+    u8 gender = D_80193BC0[leader].c.gender;
+    s32 r;
+
+    switch (cls) {
+        case 81:
+        case 82:
+        case 83:
+            r = 4;
+            break;
+        case 163:
+            r = 5;
+            break;
+        case 84:
+        case 85:
+            r = 6;
+            break;
+        case 86:
+        case 87:
+            r = 7;
+            break;
+        case 88:
+            r = 8;
+            break;
+        case 89:
+            r = 9;
+            break;
+        case 90:
+            r = 10;
+            break;
+        case 91:
+            r = 11;
+            break;
+        case 92:
+            r = 12;
+            break;
+        case 93:
+            r = 13;
+            break;
+        case 94:
+            r = 14;
+            break;
+        case 95:
+        case 96:
+            r = 15;
+            break;
+        case 97:
+            r = 16;
+            break;
+        case 117:
+            r = 17;
+            break;
+        case 118:
+            r = 18;
+            break;
+        case 119:
+            r = 19;
+            break;
+        case 120:
+            r = 20;
+            break;
+        case 121:
+            r = 21;
+            break;
+        case 122:
+            r = 22;
+            break;
+        case 123:
+            r = 23;
+            break;
+        case 124:
+            r = 24;
+            break;
+        default:
+            r = 0;
+            break;
+    }
+    if (r == 0) {
+        if (align >= 66) {
+            r = 3;
+        } else if (align >= 35) {
+            r = 2;
+        } else {
+            r = gender == 1;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD0E8_ovl_101CE0);
 
