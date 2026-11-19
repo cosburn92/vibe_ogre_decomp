@@ -56,6 +56,8 @@ void osSyncPrintf(const char *fmt, ...);
 extern u8 *D_801F36C0;
 u16 func_80201B68_ovl_14EBE0(u8 side, u8 idx, u8 slot);
 void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base);
+extern u16 *D_800C4C4C;
+extern u8 *D_80213778_ovl_14EBE0;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
@@ -406,7 +408,24 @@ void func_80206DBC_ovl_14EBE0(u8 a, s16 *p) {
     p[4] = 0xFF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80206DE4_ovl_14EBE0);
+/* Moves the 3-way cursor with the pad (the third entry needs flag +0x5D8 to be reachable) */
+s8 func_80206DE4_ovl_14EBE0(s8 cur) {
+    u16 b = *D_800C4C4C;
+
+    if (b & 0x100) {
+        if (cur != 1 || D_80213778_ovl_14EBE0[0x5D8] != 0) {
+            if (++cur == 2) {
+                func_8020CDA0_ovl_14EBE0(2);
+            }
+        }
+    } else if (b & 0x200) {
+        if (cur >= 2) {
+            cur--;
+            func_8020CDA0_ovl_14EBE0(2);
+        }
+    }
+    return cur < 0 ? 0 : (cur < 3 ? cur : 2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80206EB4_ovl_14EBE0);
 
