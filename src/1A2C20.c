@@ -46,6 +46,7 @@ extern FadeCtx *D_80216BE0_ovl_1A2C20;
 extern u8 D_80216BE4_ovl_1A2C20;
 extern s32 D_80216BE8_ovl_1A2C20; /* finished channels */
 extern s32 D_80216EF8_ovl_1A2C20;
+extern s32 D_80216EFC_ovl_1A2C20;
 extern u16 D_80216F70_ovl_1A2C20;
 extern s32 D_80216F74_ovl_1A2C20; /* target x */
 extern s32 D_80216F78_ovl_1A2C20; /* target y */
@@ -264,7 +265,23 @@ s32 func_802156B8_ovl_1A2C20(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_80215764_ovl_1A2C20);
+s32 func_80215764_ovl_1A2C20(void) {
+    s32 t;
+    f32 scale;
+
+    if (!(D_80216F70_ovl_1A2C20 & 2)) {
+        return 0;
+    }
+    if (D_80216EFC_ovl_1A2C20 >= 120) {
+        D_80216EFC_ovl_1A2C20 = 120;
+    }
+    t = D_80216EFC_ovl_1A2C20;
+    scale = 1.2 - t / 100.0f;
+    D_80216EFC_ovl_1A2C20 = t + 1;
+    D_80216BE0_ovl_1A2C20->unk3C = scale;
+    D_80216BE0_ovl_1A2C20->unk40 = scale;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1A2C20", func_802157F0_ovl_1A2C20);
 
