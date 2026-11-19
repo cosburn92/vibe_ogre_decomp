@@ -5,6 +5,8 @@ extern struct { u8 a; u8 b; } D_801CECF0_ovl_1F0A30[];
 extern u8 *D_801D0680_ovl_1F0A30;
 extern u8 *D_801D0684_ovl_1F0A30;
 extern u8 *D_801D0688_ovl_1F0A30;
+extern u8 D_80187C59[];
+extern u16 *D_801D0694_ovl_1F0A30;
 extern u8 D_801CEE14_ovl_1F0A30[];
 extern u8 *D_801D06A4_ovl_1F0A30;
 extern struct { s16 x; s16 y; s16 z; } *D_801D06A8_ovl_1F0A30;
@@ -140,7 +142,30 @@ u8 func_801BE2E8_ovl_1F0A30(s32 a, s32 b) {
     return D_801D0688_ovl_1F0A30[a * 3 + b];
 }
 
+/* Looks up key in the 4-byte entry list for slot a (if its byte matches b and it has one) or for b;
+ * returns byte k + 1 of the entry, or 0x28 when absent */
+#ifdef NON_MATCHING
+/* The search loop matches. The original keeps the table and entry pointers in t1/t0 (a0/a1 stay live) and branches on tbl[a] != 0xFFFF straight into the loop. */
+u8 func_801BE308_ovl_1F0A30(s32 a, s32 b, s32 key, s32 k) {
+    u16 *tbl = D_801D0694_ovl_1F0A30;
+    u8 *p;
+    u8 c;
+
+    if (D_80187C59[a * 0x48] == b && tbl[a] != 0xFFFF) {
+        p = (u8 *)tbl + tbl[a];
+    } else {
+        p = (u8 *)tbl + tbl[b];
+    }
+    for (; *p != 0xFF; p += 4) {
+        if (*p == key) {
+            return p[k + 1];
+        }
+    }
+    return 0x28;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BE308_ovl_1F0A30);
+#endif
 
 u8 func_801BE3A8_ovl_1F0A30(s32 cls, s32 base) {
     if (gClassTable[cls].baseClass == base && D_801D068C_ovl_1F0A30[cls][0] == 0xFF &&
