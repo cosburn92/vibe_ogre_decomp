@@ -49,7 +49,15 @@ INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9AB0_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9DB0_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA064_ovl_0EBBB0);
+/* func_801AA15C with integer results */
+void func_801AA064_ovl_0EBBB0(s32 i, s32 a, s32 b, s32 *x, s32 *y) {
+    f32 sx;
+    f32 sy;
+
+    func_801A9DB0_ovl_0EBBB0(a, b, &sx, &sy);
+    *x = sx / 320.0f * (D_800E82C8[i].x2 - D_800E82C8[i].x + 1);
+    *y = sy / 240.0f * (D_800E82C8[i].y2 - D_800E82C8[i].y + 1);
+}
 
 /* Projects (a, b) to screen space and scales it from 320x240 to scene i's window size */
 void func_801AA15C_ovl_0EBBB0(s32 i, s32 a, s32 b, f32 *x, f32 *y) {
