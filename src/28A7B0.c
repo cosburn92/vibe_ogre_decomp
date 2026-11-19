@@ -675,7 +675,41 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239394_ovl_286BD0);
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802394A0_ovl_286BD0);
+/* Item index shown on display line `line` (a new group or subgroup adds an extra line);
+ * past the end returns the line count */
+s16 func_802394A0_ovl_286BD0(s32 line) {
+    s32 k = 0;
+    u8 lastB = 0;
+    u16 lastH = 0;
+    s32 i;
+    u8 *e;
+
+    for (i = 0; i < 121; i++) {
+        e = (u8 *)func_8022EC34_ovl_286BD0(i);
+        if (e == NULL) {
+            break;
+        }
+        if (lastH != *(u16 *)(e + 2)) {
+            lastB = e[4];
+            if (line == k) {
+                return i;
+            }
+            lastH = *(u16 *)(e + 2);
+            k++;
+        } else if (lastB != e[4]) {
+            if (line == k) {
+                return i;
+            }
+            k++;
+            lastB = e[4];
+        }
+        if (line == k) {
+            return i;
+        }
+        k++;
+    }
+    return k;
+}
 
 /* List row of date group n's header (rows count group headers plus entries) */
 s16 func_80239570_ovl_286BD0(s32 n) {
