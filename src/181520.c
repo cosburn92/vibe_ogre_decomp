@@ -26,14 +26,49 @@ extern s32 D_801F3620;
 void *HMalloc(s32 size);
 void *HFree(void *p);
 void func_800EA604(void *ch, s32 sound);
-void func_80216AE0_ovl_17F9C0(void);
+s32 func_80216AE0_ovl_17F9C0(void);
 void func_80216F3C_ovl_17F9C0(void);
 void func_80217114_ovl_17F9C0(void);
 void func_801DFF50(void);
 void func_801DFF80(void);
 void func_8017BED4(void);
 
+/* Steps *alphaPtr towards unk10 over unk14 frames; returns 1 once it arrives */
+#ifdef NON_MATCHING
+/* Branch layout differs (the original returns 1 via a jump with the constant in the delay slot). */
+s32 func_80216AE0_ovl_17F9C0(void) {
+    s16 *p = D_8021AF00_ovl_17F9C0->alphaPtr;
+    s16 target = D_8021AF00_ovl_17F9C0->unk10;
+    s32 frames = D_8021AF00_ovl_17F9C0->unk14;
+    s16 d;
+    s16 step;
+
+    if (p == NULL) {
+        return 0;
+    }
+    d = target - *p;
+    if (d == 0) {
+        return 1;
+    }
+    if (d > 0) {
+        step = target / frames;
+    } else {
+        step = -((255 - target) / frames);
+    }
+    *p += step;
+    if (step < 0) {
+        if (target < *p) {
+            return 0;
+        }
+    } else if (*p < target) {
+        return 0;
+    }
+    *p = target;
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/181520", func_80216AE0_ovl_17F9C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/181520", func_80216C08_ovl_17F9C0);
 
