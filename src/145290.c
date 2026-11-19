@@ -66,6 +66,22 @@ u8 func_801F4ED8_ovl_145210(MapUnit *u);
 void func_801F95F8_ovl_145210(s32 a, u8 *o);
 void func_801F6DC8_ovl_145210(void);
 extern u8 D_801FCFC0_ovl_145210[][2];
+typedef struct {
+    u8 next;
+    u8 used;
+    u8 unk02[0x12];
+} Slot145; /* size 0x14 */
+extern s16 D_801FDA00_ovl_145210;
+extern u8 D_801FDA02_ovl_145210;
+extern Slot145 *D_801FDA54_ovl_145210;
+extern u8 D_801FDA31_ovl_145210;
+extern s32 D_801FDA38_ovl_145210;
+extern s16 D_801FDA58_ovl_145210;
+extern void *D_801FDA5C_ovl_145210;
+extern void *D_801FDA50_ovl_145210;
+extern s16 D_801FDA68_ovl_145210;
+extern s16 D_801FDA6A_ovl_145210;
+void func_801F988C_ovl_145210(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
@@ -126,7 +142,21 @@ void func_801F47C4_ovl_145210(u8 a) {
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F480C_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4960_ovl_145210);
+/* Pool of 32 slots chained by index; 0xFF ends the chain */
+void func_801F4960_ovl_145210(void) {
+    s32 i;
+
+    D_801FDA00_ovl_145210 = 0x20;
+    D_801FDA54_ovl_145210 = HMalloc(0x280);
+    bzero(D_801FDA54_ovl_145210, 0x280);
+    for (i = 0; i < D_801FDA00_ovl_145210 - 1; i++) {
+        D_801FDA54_ovl_145210[i].used = 0;
+        D_801FDA54_ovl_145210[i].next = i + 1;
+    }
+    D_801FDA54_ovl_145210[i].used = 0;
+    D_801FDA54_ovl_145210[i].next = 0xFF;
+    D_801FDA02_ovl_145210 = 0;
+}
 
 void func_801F4A34_ovl_145210(u8 *src, u8 *dst, s32 n) {
     n -= n / 2;
@@ -430,7 +460,28 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F7C40_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F83F4_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F8510_ovl_145210);
+void func_801F8510_ovl_145210(void) {
+    s32 n;
+
+    D_801FDA32_ovl_145210 = 0x19;
+    D_801FDA34_ovl_145210 = HMalloc(0x64);
+    bzero(D_801FDA34_ovl_145210, 0x64);
+    D_801FDA31_ovl_145210 = 0;
+    D_801FDA30_ovl_145210 = 0;
+    D_801FDA38_ovl_145210 = -1;
+    func_801F4960_ovl_145210();
+    func_801F988C_ovl_145210();
+    D_801FDA58_ovl_145210 = 0x1A;
+    D_801FDA5C_ovl_145210 = HMalloc(0x68);
+    D_801FDA50_ovl_145210 = HMalloc(0x68);
+    D_801FDA6A_ovl_145210 = 0;
+    D_801FDA68_ovl_145210 = 0;
+    func_801F5504_ovl_145210(0);
+    func_801F4AD0_ovl_145210();
+    n = D_801F367C * 4;
+    D_801FDA3C_ovl_145210 = HMalloc(n);
+    bzero(D_801FDA3C_ovl_145210, n);
+}
 
 void func_801F85F0_ovl_145210(void) {
 }
