@@ -66,6 +66,12 @@ void _bcopy(const void *src, void *dst, s32 n);
 void func_80215654_ovl_25EE90();
 void func_802148C0_ovl_25EE90();
 void guMtxCatF(void *a, void *b, void *out);
+void *func_8020C644_ovl_25EE90(s32 id);
+u16 func_8020CC00_ovl_25EE90(void *mdl);
+void func_80213980_ovl_25EE90(void *mdl, void *mtx, void *slots);
+void func_8021404C_ovl_25EE90(void *mdl, void *mtx, void *slots);
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
 /* --- end decls --- */
 
 void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
@@ -223,7 +229,7 @@ void func_802138C8_ovl_25EE90(s32 n, Src26 *src, f32 v) {
     }
 }
 
-void func_802138FC_ovl_25EE90(Set38 *s, s32 *out) {
+inline void func_802138FC_ovl_25EE90(Set38 *s, s32 *out) {
     u32 i;
 
     for (i = 0; i < s->n; i++) {
@@ -237,7 +243,26 @@ void func_802138FC_ovl_25EE90(Set38 *s, s32 *out) {
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_80213980_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_80213AC8_ovl_25EE90);
+/* Instantiates model id: bone matrices (0x44 each) plus a slot table, 64-byte aligned */
+void func_80213AC8_ovl_25EE90(u8 *m, s32 id) {
+    u8 *mdl;
+    u32 size;
+
+    FIELD(m, s32, 0) = id;
+    mdl = func_8020C644_ovl_25EE90(id);
+    FIELD(m, u8 *, 4) = mdl;
+    size = FIELD(mdl, u32, 4) * 0x44 + FIELD(mdl, u32, 4) * 4;
+    if (size & 0x3F) {
+        size = (size & ~0x3F) + 0x40;
+    }
+    FIELD(m, u8 *, 0x14) = HMalloc(size);
+    bzero(FIELD(m, u8 *, 0x14), size);
+    FIELD(m, u8 *, 8) = FIELD(m, u8 *, 0x14);
+    FIELD(m, u8 *, 0xC) = FIELD(m, u8 *, 0x14) + FIELD(mdl, u32, 4) * 0x44;
+    func_802138FC_ovl_25EE90((Set38 *)mdl, FIELD(m, s32 *, 0xC));
+    FIELD(m, u16, 0x10) = func_8020CC00_ovl_25EE90(mdl);
+    func_80213980_ovl_25EE90(mdl, FIELD(m, void *, 8), FIELD(m, void *, 0xC));
+}
 
 inline void func_80213BE8_ovl_25EE90(Set26 *s) {
     s32 pad;
@@ -269,7 +294,7 @@ void func_80213F28_ovl_25EE90(Set26 *s, u16 a, s32 b, u16 d, s32 e) {
     func_8020C074_ovl_25EE90(s->cnt);
 }
 
-void func_80213FC8_ovl_25EE90(Set38 *s, s32 *out) {
+inline void func_80213FC8_ovl_25EE90(Set38 *s, s32 *out) {
     u32 i;
 
     for (i = 0; i < s->n; i++) {
@@ -283,7 +308,26 @@ void func_80213FC8_ovl_25EE90(Set38 *s, s32 *out) {
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_8021404C_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_8021419C_ovl_25EE90);
+/* Instantiates model id: bone matrices (0x44 each) plus a slot table, 64-byte aligned */
+void func_8021419C_ovl_25EE90(u8 *m, s32 id) {
+    u8 *mdl;
+    u32 size;
+
+    FIELD(m, s32, 0) = id;
+    mdl = func_8020C644_ovl_25EE90(id);
+    FIELD(m, u8 *, 4) = mdl;
+    size = FIELD(mdl, u32, 4) * 0x44 + FIELD(mdl, u32, 4) * 4;
+    if (size & 0x3F) {
+        size = (size & ~0x3F) + 0x40;
+    }
+    FIELD(m, u8 *, 0x14) = HMalloc(size);
+    bzero(FIELD(m, u8 *, 0x14), size);
+    FIELD(m, u8 *, 8) = FIELD(m, u8 *, 0x14);
+    FIELD(m, u8 *, 0xC) = FIELD(m, u8 *, 0x14) + FIELD(mdl, u32, 4) * 0x44;
+    func_80213FC8_ovl_25EE90((Set38 *)mdl, FIELD(m, s32 *, 0xC));
+    FIELD(m, u16, 0x10) = func_8020CC00_ovl_25EE90(mdl);
+    func_8021404C_ovl_25EE90(mdl, FIELD(m, void *, 8), FIELD(m, void *, 0xC));
+}
 
 inline void func_802142BC_ovl_25EE90(Set26 *s) {
     s32 pad;
