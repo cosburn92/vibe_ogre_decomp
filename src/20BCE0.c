@@ -10,6 +10,9 @@ typedef struct {
     /* 0x4C */ s32 cls;
     /* 0x50 */ u8 unk50[4];
     /* 0x54 */ s32 unk54;
+    /* 0x58 */ s32 unk58;
+    /* 0x5C */ u8 unk5C[0x14];
+    /* 0x70 */ s32 actsMax;
 } BattleUnit;
 
 typedef struct {
@@ -29,6 +32,18 @@ extern u8 D_80197B62;
 extern struct { u8 b[12]; } D_801976DC[];
 extern u8 D_800E9C0A[];
 extern u8 *D_801CE8BC_ovl_1F0A30;
+typedef struct {
+    u8 unk0[0xD];
+    u8 items[10];
+    u8 unk17[2];
+} SquadRec; /* size 0x19 */
+extern SquadRec gSquads[];
+typedef struct BattleObj20 {
+    void (*fn)(struct BattleObj20 *self);
+} BattleObj20;
+u8 func_8016E338(u8 a, u8 cls, u8 c);
+s32 func_8016F5C8(u16 id);
+u8 func_801C9FA4_ovl_1F0A30(s32 idx);
 extern void *D_801D0824_ovl_1F0A30;
 u8 func_8016DE1C(u8 a, u8 b);
 u16 func_8016FA34(u16 a, u16 b, u16 c, u16 d);
@@ -282,7 +297,20 @@ s32 func_801C8F18_ovl_1F0A30(s32 a) {
     return a == 12;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8F24_ovl_1F0A30);
+s32 func_801C8F24_ovl_1F0A30(BattleUnit *u) {
+    s32 r;
+
+    if ((u8)(func_8016F5C8(u->items[0]) - 14) < 2) {
+        r = 1;
+    } else if ((u8)(func_8016F5C8(u->items[1]) - 14) < 2) {
+        r = 1;
+    } else if ((u8)(func_8016F5C8(u->items[2]) - 14) < 2) {
+        r = 1;
+    } else {
+        r = (u8)(func_8016F5C8(u->items[3]) - 14) < 2;
+    }
+    return r;
+}
 
 u16 func_801C8FB8_ovl_1F0A30(BattleUnit *u) {
     return func_8016FA34(u->items[0], u->items[1], u->items[2], u->items[3]);
@@ -366,7 +394,23 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9478_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C95D8_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C96D4_ovl_1F0A30);
+/* t (class 33) grants u an extra action */
+void func_801C96D4_ovl_1F0A30(BattleUnit *u, BattleUnit *t) {
+    u32 f;
+
+    if (t != NULL) {
+        if (u != t) {
+            if (t->cls == 33) {
+                f = t->flags;
+                if (!(f & 1)) {
+                    if (!((f >> 1) & 1)) {
+                        u->actsMax = func_8016E338(u->unk48, u->cls, func_801C9FA4_ovl_1F0A30(u->unk58)) + 1;
+                    }
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C974C_ovl_1F0A30);
 
@@ -374,7 +418,21 @@ u8 func_801C9FA4_ovl_1F0A30(s32 idx) {
     return D_801CFC8C_ovl_1F0A30[idx];
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9FB4_ovl_1F0A30);
+/* How many thirds of b fit into a, capped at 3 */
+s32 func_801C9FB4_ovl_1F0A30(s32 a, s32 b) {
+    s32 q = b / 3;
+    s32 n = 0;
+
+    while (a > 0) {
+        a -= q;
+        n++;
+    }
+    a = 3;
+    if (n < 4) {
+        a = n;
+    }
+    return a;
+}
 
 s32 func_801CA000_ovl_1F0A30(s32 a, s32 b) {
     s32 q;
@@ -402,7 +460,22 @@ s32 func_801CA268_ovl_1F0A30(BattleUnit *a, BattleUnit *b) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA29C_ovl_1F0A30);
+/* Index of a battle unit, or -1 */
+s32 func_801CA29C_ovl_1F0A30(BattleUnit *u) {
+    s32 i;
+    u8 *base;
+
+    if (u == NULL) {
+        return -1;
+    }
+    base = D_801CE8BC_ovl_1F0A30;
+    for (i = 0; i < 20; i++) {
+        if ((BattleUnit *)(base + 0x1C4 + i * 0xF8) == u) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA2E0_ovl_1F0A30);
 
@@ -410,7 +483,16 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA384_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA3E0_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA534_ovl_1F0A30);
+s32 func_801CA534_ovl_1F0A30(u8 *p) {
+    s32 i;
+
+    for (i = 0; i < *(s32 *)(D_801CE8BC_ovl_1F0A30 + 0x52BC); i++) {
+        BattleObj20 *o = ((BattleObj20 **)(p + 0xC0))[i];
+
+        o->fn(o);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA5A0_ovl_1F0A30);
 
@@ -436,7 +518,18 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC37C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC44C_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC51C_ovl_1F0A30);
+/* Whether the player's squad carries consumable id */
+s32 func_801CC51C_ovl_1F0A30(s32 id) {
+    SquadRec *sq = &gSquads[D_801976DC[0].b[0]];
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        if (sq->items[i] == id) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC574_ovl_1F0A30);
 
