@@ -37,6 +37,7 @@ void func_8020C130_ovl_25EE90(u16 a, s32 b, s32 c);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
+void func_8020C4EC_ovl_25EE90(void *p);
 /* --- end decls --- */
 
 void func_8020C1F0_ovl_25EE90(void) {
@@ -56,7 +57,35 @@ INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C380_ovl_25EE90);
 
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C4EC_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C644_ovl_25EE90);
+/* Kind-3 resource id: cached copy, or loaded into a new cache entry */
+void *func_8020C644_ovl_25EE90(s32 id) {
+    void *r = NULL;
+    CacheEnt *e;
+
+    if (id > 0) {
+        r = func_8020BF5C_ovl_25EE90(3, id, 0);
+        if (r != NULL) {
+            func_8020BF94_ovl_25EE90(r);
+            return r;
+        }
+        e = func_8020BFE8_ovl_25EE90();
+        if (e != NULL) {
+            r = func_8020C380_ovl_25EE90(3, id);
+            if (r != NULL) {
+                func_8020C4EC_ovl_25EE90(r);
+                e->h0 = 1;
+                e->data = r;
+                e->kind = 3;
+                e->id = id;
+                e->w8 = 0;
+            } else {
+                for (;;) {
+                }
+            }
+        }
+    }
+    return r;
+}
 
 void *func_8020C704_ovl_25EE90(s32 id) {
     void *r = NULL;
