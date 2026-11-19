@@ -36,6 +36,15 @@ void func_80200DD0_ovl_14EBE0(void *a, s32 b, s32 c);
 void func_80179018(void);
 void *LoadChunk(u32 handle);
 void *HFree(void *p);
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+extern u8 *D_80213778_ovl_14EBE0;
+extern u8 *D_80213670_ovl_14EBE0;
+extern u16 (*D_80213068_ovl_14EBE0[])(u8 cls, u8 base);
+extern s8 (*D_80213054_ovl_14EBE0[])(u16 v);
+extern u16 D_80190EBC[];
+extern u16 D_80190F82;
+u16 func_80201D1C_ovl_14EBE0(u8 side, u8 idx, u8 stat);
+void func_802001A8_ovl_14EBE0(void *a, s32 b, u16 c, s32 d);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
@@ -48,7 +57,30 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_802012D8_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201384_ovl_14EBE0);
 
+/* Rank 1-3 of stat i: how many thirds of the cap (D_80190F82) it reaches */
+#ifdef NON_MATCHING
+/* loop condition compiled as a branchless and in the original */
+u16 func_802014C8_ovl_14EBE0(u8 i) {
+    s32 pad;
+    u16 q = D_80190F82 / 3;
+    s32 v = D_80190EBC[i] - q;
+    u16 n = 0;
+
+    do {
+        n++;
+        if (!(v > 0 && n < 3)) {
+            break;
+        }
+        v -= q;
+    } while (1);
+    if (n >= 4) {
+        n = 3;
+    }
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_802014C8_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020153C_ovl_14EBE0);
 
@@ -78,9 +110,26 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80201AFC_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201B68_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201C7C_ovl_14EBE0);
+s16 func_80201C7C_ovl_14EBE0(u8 side, u8 idx, u8 k) {
+    s16 sum = 0;
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201D1C_ovl_14EBE0);
+    for (i = 1; i < 5; i++) {
+        sum += D_80213054_ovl_14EBE0[k](func_80201D1C_ovl_14EBE0(side, idx, i));
+    }
+    return sum;
+}
+
+u16 func_80201D1C_ovl_14EBE0(u8 side, u8 idx, u8 stat) {
+    Character *c;
+
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    return D_80213068_ovl_14EBE0[stat](c->cls, c->baseCls);
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80201D9C_ovl_14EBE0);
 
@@ -108,7 +157,12 @@ void func_80202840_ovl_14EBE0(void) {
     func_80200F70_ovl_14EBE0(D_802102B8_ovl_14EBE0, D_801F0B90 + 0x948, 0x40, 0x40, 2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_802028A4_ovl_14EBE0);
+void func_802028A4_ovl_14EBE0(u8 *p, s32 b, u16 c, u16 d) {
+    func_80200DD0_ovl_14EBE0(p, b, 2);
+    func_802001A8_ovl_14EBE0(p + 0x14, b, c, -3);
+    func_80200DD0_ovl_14EBE0(p + 0x2A, b, 7);
+    func_802001A8_ovl_14EBE0(p + 0x32, b, d, -3);
+}
 
 void func_80202928_ovl_14EBE0(u8 *p, s32 b) {
     func_80200DD0_ovl_14EBE0(p, b, 2);
@@ -177,7 +231,20 @@ u8 func_80204BA4_ovl_14EBE0(Rec151 *r, u8 k) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80204BE8_ovl_14EBE0);
+u8 func_80204BE8_ovl_14EBE0(Rec151 *a, u8 id) {
+    s8 j = -1;
+    u32 i = 0;
+    Rec151 *r;
+
+    do {
+        r = &a[(u8)i];
+        if (r->w8 == id) {
+            j++;
+        }
+        i++;
+    } while (j != (s8)D_80213670_ovl_14EBE0[0x68]);
+    return FIELD(r, u8, 3);
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80204C3C_ovl_14EBE0);
 
@@ -193,7 +260,22 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80206340_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80206C70_ovl_14EBE0);
 
+#ifdef NON_MATCHING
+/* addu operand order (1 instruction) */
+void func_80206D78_ovl_14EBE0(void) {
+    u8 *o = D_80213778_ovl_14EBE0;
+    s8 v = o[0x5E];
+    u8 k = o[0x605 + v * 10];
+
+    if (v == 1) {
+        o[0x5D8] = (o + k * 8)[0x35C];
+    } else {
+        o[0x5D8] = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80206D78_ovl_14EBE0);
+#endif
 
 void func_80206DBC_ovl_14EBE0(u8 a, s16 *p) {
     p[2] = 4;
@@ -227,7 +309,20 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_80208304_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208920_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80208A3C_ovl_14EBE0);
+/* Insertion sort of n bytes, ascending */
+void func_80208A3C_ovl_14EBE0(u8 *a, s16 n) {
+    s16 i;
+    s16 j;
+    u8 t;
+
+    for (i = 1; i < n; i++) {
+        t = a[i];
+        for (j = i - 1; j >= 0 && a[j] > t; j--) {
+            a[j + 1] = a[j];
+        }
+        a[j + 1] = t;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208ADC_ovl_14EBE0);
 
