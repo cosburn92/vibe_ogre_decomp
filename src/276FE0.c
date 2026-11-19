@@ -19,6 +19,12 @@ void func_80207CE4(u8 *p);
 void func_801F9DFC(s32 a, u8 b, s32 c);
 void func_80207F30(u8 a, s32 b, s32 c);
 void func_8020DD34(u16 state);
+void func_8020DF00(void *fn);
+void func_80207FA0(u8 *a, s32 b, s32 c);
+s32 func_8022353C_ovl_275850(u16 msg, u8 *o);
+s32 func_802235D0_ovl_275850(u16 msg, u8 *o);
+s32 func_80223698_ovl_275850(u16 msg, u8 *o);
+s32 func_8022372C_ovl_275850(u16 msg, u8 *o);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/276FE0", func_80222850_ovl_275850);
@@ -27,9 +33,71 @@ INCLUDE_ASM("asm/nonmatchings/276FE0", func_80222DD8_ovl_275850);
 
 INCLUDE_ASM("asm/nonmatchings/276FE0", func_80222F84_ovl_275850);
 
-INCLUDE_ASM("asm/nonmatchings/276FE0", func_80223144_ovl_275850);
+s32 func_80223144_ovl_275850(u16 msg, u8 *o) {
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, s32, 4) = D_80220F6C;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 0));
+            func_8020E0B4(-1, 0x1002);
+            break;
+        case 0x1002:
+            D_80220F6C = FIELD(o, s32, 4);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x3F);
+            func_8020DF00(func_8022353C_ovl_275850);
+            func_8020DF00(func_802235D0_ovl_275850);
+            func_8020DC80(0x1003);
+            break;
+        case 0x1003:
+            func_80207F30(*FIELD(o, u8 *, 4), 0x19, 0x28);
+            func_80207FA0(FIELD(o, u8 *, 4) + 1, 0x1E, 0x14);
+            func_8020E0B4(0x46, 0x1004);
+            break;
+        case 0x1004:
+            func_8020DD34(0x101);
+            break;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/276FE0", func_802232B0_ovl_275850);
+s32 func_802232B0_ovl_275850(u16 msg, u8 *o) {
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, s32, 4) = D_80220F6C;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 0));
+            func_8020E0B4(-1, 0x1002);
+            break;
+        case 0x1002:
+            D_80220F6C = FIELD(o, s32, 4);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x40);
+            func_8020DF00(func_80223698_ovl_275850);
+            func_8020DF00(func_8022372C_ovl_275850);
+            func_8020DC80(0x1003);
+            break;
+        case 0x1003:
+            func_80207F30(*FIELD(o, u8 *, 4), 5, 0x46);
+            func_80207FA0(FIELD(o, u8 *, 4) + 1, 0x1E, 0x1E);
+            func_8020E0B4(0x50, 0x1004);
+            break;
+        case 0x1004:
+            func_8020DD34(0x101);
+            break;
+    }
+    return 0;
+}
 
 s32 func_8022341C_ovl_275850(u16 msg, u8 *o) {
     switch (msg) {
