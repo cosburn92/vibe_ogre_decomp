@@ -40,7 +40,35 @@ void func_802329B0_ovl_29A4C0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_802329E0_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232B20_ovl_29A4C0);
+/* Frees the record for (id, kind) and clears it */
+void func_80232B20_ovl_29A4C0(s32 id, s32 kind) {
+    Rec2A *r;
+    u32 i;
+    u32 k;
+
+    if (D_802395B0_ovl_29A4C0 == NULL) {
+        return;
+    }
+    r = D_802395B0_ovl_29A4C0;
+    for (i = 0; i < 40; r++, i++) {
+        if (r->id == id && r->kind == kind) {
+            for (k = 0; k < r->n; k++) {
+                if (r->list[k] != NULL) {
+                    HFree(r->list[k]);
+                    r->list[k] = NULL;
+                }
+            }
+            HFree(r->age);
+            HFree(r->p08);
+            HFree((void *)r->w2C);
+            HFree((void *)r->w28);
+            HFree(r->p38);
+            HFree(r->p14);
+            bzero(r, 0x3C);
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232C28_ovl_29A4C0);
 
