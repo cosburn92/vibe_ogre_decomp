@@ -123,6 +123,22 @@ typedef struct {
 #define PI_RD_LEN_REG (PI_BASE_REG + 0x08)
 #define PI_WR_LEN_REG (PI_BASE_REG + 0x0C)
 #define PI_STATUS_REG (PI_BASE_REG + 0x10)
+#define PI_BSD_DOM1_LAT_REG (PI_BASE_REG + 0x14)
+#define PI_BSD_DOM1_PWD_REG (PI_BASE_REG + 0x18)
+#define PI_BSD_DOM1_PGS_REG (PI_BASE_REG + 0x1C)
+#define PI_BSD_DOM1_RLS_REG (PI_BASE_REG + 0x20)
+#define PI_BSD_DOM2_LAT_REG (PI_BASE_REG + 0x24)
+#define PI_BSD_DOM2_PWD_REG (PI_BASE_REG + 0x28)
+#define PI_BSD_DOM2_PGS_REG (PI_BASE_REG + 0x2C)
+#define PI_BSD_DOM2_RLS_REG (PI_BASE_REG + 0x30)
+#define PI_STATUS_DMA_BUSY 0x01
+#define PI_STATUS_IO_BUSY 0x02
+#define PI_DOMAIN1 0
+#define PI_DOMAIN2 1
+#define K1_TO_PHYS(x) ((u32)(x) & 0x1FFFFFFF)
+
+#define WAIT_ON_IOBUSY(stat)                                              stat = IO_READ(PI_STATUS_REG);                                        while (stat & (PI_STATUS_IO_BUSY | PI_STATUS_DMA_BUSY))                   stat = IO_READ(PI_STATUS_REG);
+
 #define AI_BASE_REG 0x04500000
 #define AI_DRAM_ADDR_REG (AI_BASE_REG + 0x00)
 #define AI_LEN_REG (AI_BASE_REG + 0x04)
