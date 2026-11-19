@@ -33,6 +33,7 @@ extern u8 D_800E91D0[];
 void bzero(void *p, s32 n);
 void func_801AB33C_ovl_0EBBB0(void);
 void func_801AB55C_ovl_0EBBB0(void);
+void func_801A9DB0_ovl_0EBBB0(s32 a, s32 b, f32 *x, f32 *y);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801A95E0_ovl_0EBBB0);
@@ -49,7 +50,15 @@ INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9DB0_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA064_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA15C_ovl_0EBBB0);
+/* Projects (a, b) to screen space and scales it from 320x240 to scene i's window size */
+void func_801AA15C_ovl_0EBBB0(s32 i, s32 a, s32 b, f32 *x, f32 *y) {
+    f32 sx;
+    f32 sy;
+
+    func_801A9DB0_ovl_0EBBB0(a, b, &sx, &sy);
+    *x = sx / 320.0f * (D_800E82C8[i].x2 - D_800E82C8[i].x + 1);
+    *y = sy / 240.0f * (D_800E82C8[i].y2 - D_800E82C8[i].y + 1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA248_ovl_0EBBB0);
 
