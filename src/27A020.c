@@ -83,6 +83,23 @@ typedef struct {
     s16 *list;
     u16 key;
 } Find27;
+extern void *D_801CE8BC;
+extern u8 *D_8022C5C0_ovl_27A020;
+extern u8 D_8022C5C4_ovl_27A020;
+extern u8 D_801976DA;
+extern u8 D_800E9C0A[];
+extern f32 D_801CE8EC;
+extern f32 D_801CE8F0;
+extern f32 D_801CE8F4;
+void func_801BE894(void);
+void func_800EA76C(void);
+void func_80079618(s32 a);
+void func_8020B098(void);
+void func_801BBC78(void);
+void func_801B0020(void);
+void func_801C1D98(void);
+void func_801C1A9C(void);
+void func_801C234C(void);
 /* --- end decls --- */
 
 /* Member id of the current squad's slot, made relative to 99 (0 for ids below 100) */
@@ -136,7 +153,38 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_80226A24_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80226B5C_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_80226CC0_ovl_27A020);
+/* Leaves the field: saves the cursor/camera state and frees the overlay's resources */
+void func_80226CC0_ovl_27A020(void) {
+    if (D_801CE8BC != NULL) {
+        func_801BE894();
+        func_8022B560_ovl_27A020();
+        func_80228650_ovl_27A020();
+        if (D_8022C5C0_ovl_27A020 != NULL) {
+            f32 x, y, z;
+
+            D_801976DA = D_8022C5C0_ovl_27A020[0x14];
+            x = *(f32 *)(D_8022C5C0_ovl_27A020 + 0x18);
+            y = *(f32 *)(D_8022C5C0_ovl_27A020 + 0x1C);
+            z = *(f32 *)(D_8022C5C0_ovl_27A020 + 0x20);
+            D_800E9C0A[8] = D_8022C5C4_ovl_27A020;
+            D_801CE8EC = x;
+            D_801CE8F0 = y;
+            D_801CE8F4 = z;
+            HFree(D_8022C5C0_ovl_27A020);
+            D_8022C5C0_ovl_27A020 = NULL;
+        }
+        func_800EA76C();
+        func_80079618(-0x11);
+        func_8020B098();
+        func_801BBC78();
+        func_801B0020();
+        func_801C1D98();
+        func_801C1A9C();
+        func_801C234C();
+        HFree(D_801CE8BC);
+        D_801CE8BC = NULL;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80226DA8_ovl_27A020);
 
