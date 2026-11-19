@@ -23,7 +23,7 @@ typedef struct {
     u8 b[0x36];
 } OrgSquad; /* organize-screen squad record, 30 of them at state +0x117C */
 u8 func_801D06F4_ovl_087200(u16 sq);
-void func_801CC974_ovl_087200(s32 id, s32 a, void (*f)(), s32 b, s32 c, s32 d, s32 e, s32 g, s32 h, s32 i, s32 j);
+s32 func_801CC974_ovl_087200(s32 id, s32 a, void (*f)(), s32 b, s32 c, s32 d, s32 e, s32 g, s32 h, s32 i, s32 j);
 void func_801B1FE0_ovl_087200();
 extern u16 D_80190EBC[];
 extern u16 D_80190F82;
@@ -37,6 +37,11 @@ void func_801CC5B4_ovl_087200(u8 *w, s32 a, s32 b, s32 c, s32 d);
 void func_801C67B0_ovl_087200(u8 sq);
 void func_801B4AF4_ovl_087200();
 void func_801B577C_ovl_087200();
+void HFree(void *p);
+s32 func_801CC3B8_ovl_087200(s32 id);
+void func_801C0798_ovl_087200(s16 a, s32 b);
+void func_801A43F4_ovl_087200();
+void func_801AA114_ovl_087200();
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
@@ -70,7 +75,18 @@ void func_801C8050_ovl_087200(s32 a, s32 v) {
     func_801CC410_ovl_087200(0x100)[0xE7] = v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C80A8_ovl_087200);
+void func_801C80A8_ovl_087200(s32 a) {
+    u8 *w = func_801CC410_ovl_087200(5);
+
+    u8 *x = w;
+
+    if (w == NULL) {
+        FIELD(D_80196AF8, s32, 0x10D0) = func_801CC974_ovl_087200(5, 10, func_801A43F4_ovl_087200, 0x9C, 0xD6, 0xA4, 0xDE, 0x18, 0xB6, 0x128, 0xDE);
+    } else {
+        HFree(FIELD(x, void *, 0xF4));
+    }
+    func_801C0798_ovl_087200(func_801CC3B8_ovl_087200(5), a);
+}
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C8158_ovl_087200);
 
@@ -313,7 +329,18 @@ void func_801CBD0C_ovl_087200(s16 a, s16 b, u8 f) {
     }
 }
 
+#ifdef NON_MATCHING
+/* argument evaluation order of the window rect differs */
+void func_801CBD34_ovl_087200(u8 *w) {
+    s16 i = func_801CC974_ovl_087200(4, 0x12, func_801AA114_ovl_087200, (s16)(FIELD(w, s32, 0x24) - 0xC), (s16)(FIELD(w, s32, 0x28) - 8),
+                                     (s16)(FIELD(w, s32, 0x24) - 4), (s16)(FIELD(w, s32, 0x28) + 8), (s16)(FIELD(w, s32, 0x24) - 0x54),
+                                     (s16)(FIELD(w, s32, 0x28) - 0x24), (s16)(FIELD(w, s32, 0x24) - 4), (s16)(FIELD(w, s32, 0x28) + 0x10));
+
+    D_80196AF8[0x737 + i * 0x108] = w[0xE7];
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBD34_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBE08_ovl_087200);
 
