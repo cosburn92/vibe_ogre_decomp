@@ -29,6 +29,16 @@ void guMtxIdentF(f32 (*m)[4]);
 extern f32 D_80220610_ovl_25EE90;
 extern f32 D_80220614_ovl_25EE90;
 extern f32 D_80220618_ovl_25EE90;
+/* Unit facing: -x when func_801C8B68 equals func_801C8E48, +x otherwise */
+static inline void facing26(s32 u, f32 *n) {
+    if (func_801C8B68(u) != func_801C8E48(u)) {
+        n[0] = 1.0f;
+    } else {
+        n[0] = -1.0f;
+    }
+    n[1] = 0.0f;
+    n[2] = 0.0f;
+}
 /* --- end decls --- */
 
 void func_80217640_ovl_25EE90(Vec3f *v) {
@@ -65,7 +75,7 @@ inline void func_80217680_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
 }
 
 /* Rotation matrix whose z axis is -dir (y up) */
-void func_80217760_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
+inline void func_80217760_ovl_25EE90(f32 *dir, f32 (*m)[4]) {
     f32 n[3];
 
     n[0] = -dir[0];
@@ -94,9 +104,21 @@ void func_8021793C_ovl_25EE90(s32 a, Vec3f *out) {
     out->z = 0.0f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/26C1F0", func_802179AC_ovl_25EE90);
+/* Rotation matrix facing along unit u's facing */
+void func_802179AC_ovl_25EE90(s32 u, f32 (*m)[4]) {
+    f32 n[3];
 
-INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217AD4_ovl_25EE90);
+    facing26(u, n);
+    func_80217680_ovl_25EE90(n, m);
+}
+
+/* Rotation matrix facing against unit u's facing */
+void func_80217AD4_ovl_25EE90(s32 u, f32 (*m)[4]) {
+    f32 n[3];
+
+    facing26(u, n);
+    func_80217760_ovl_25EE90(n, m);
+}
 
 void func_80217C14_ovl_25EE90(Ent26 *e, Vec3f *out) {
     out->x = func_8020ABC0_ovl_25EE90(e);
