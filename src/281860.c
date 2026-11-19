@@ -113,6 +113,11 @@ void func_801C8864(void);
 void func_80172394(void);
 void func_80172124(void);
 void func_801707F4(void);
+void func_80226190_ovl_281860(void);
+void func_8022620C_ovl_281860(void);
+void func_802395C0(void);
+s32 func_8023E050(void);
+void func_8023C9EC(void);
 /* --- end decls --- */
 
 /* Reloads the battle overlays and restarts the battle */
@@ -291,7 +296,17 @@ void func_80226190_ovl_281860(void) {
     func_80237620();
 }
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_8022620C_ovl_281860);
+void func_8022620C_ovl_281860(void) {
+    GFX(0xDC080008, (u32)D_8022A7D0_ovl_281860);
+    if (!func_8023E050()) {
+        GFX(0xE7000000, 0);
+        GFX(0xED000060, 0x004FC35C);
+        GFX(0xE7000000, 0);
+    }
+    if (D_8022A998_ovl_281860 == 0) {
+        func_8023C9EC();
+    }
+}
 
 void func_802262C4_ovl_281860(s32 arg) {
     nuGfxTaskAllEndWait();
@@ -304,7 +319,18 @@ void func_802262C4_ovl_281860(s32 arg) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_80226324_ovl_281860);
+void func_80226324_ovl_281860(void) {
+    D_800E7A44.update = func_80226190_ovl_281860;
+    D_800E7A44.draw = func_8022620C_ovl_281860;
+    D_800E7A44.exit = (void (*)(void))func_802263C4_ovl_281860;
+    D_800E7A44.size = 0x5C;
+    D_800E7A54 = 0;
+    D_800E7A32 |= 9;
+    D_800E7A33 |= 1;
+    bzero(D_800E91D0, 0x5C);
+    D_8022A980_ovl_281860 = 1;
+    func_802395C0();
+}
 
 void func_802263C4_ovl_281860(s32 arg) {
     nuGfxTaskAllEndWait();
@@ -324,7 +350,29 @@ void func_802263C4_ovl_281860(s32 arg) {
 
 INCLUDE_ASM("asm/nonmatchings/281860", func_8022643C_ovl_281860);
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_80226538_ovl_281860);
+/* Fade step: interpolates +8 from +9 to +0xA over the remaining frames */
+void func_80226538_ovl_281860(void) {
+    u8 *f = D_8018FC10;
+
+    if (f == NULL) {
+        return;
+    }
+    if (f[7] == 1) {
+        u8 *flags = &D_800E7A32;
+
+        *flags |= 2;
+        return;
+    }
+    if (f[7] == 2) {
+        f[7] = 0;
+    }
+    if (*(s16 *)f > 0) {
+        s16 n = *(s16 *)f - 1;
+
+        f[8] = f[9] + (f[0xA] - f[9]) * n / *(s16 *)(f + 2);
+        *(s16 *)f = n;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/281860", func_802265EC_ovl_281860);
 
