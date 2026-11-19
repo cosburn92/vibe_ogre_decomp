@@ -335,7 +335,6 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023CFA0_ovl_2A8D20);
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D0EC_ovl_2A8D20);
 
 /* Swaps display slot `slot` with the slot showing the unit at map cell `cell` (row * 3 + lane) */
-/* register allocation and swap addressing differ */
 #ifdef NON_MATCHING
 /* loop over slots uses a pointer IV with hoisted base; swap stores the back-refs in the opposite order to func_8023977C */
 void func_8023D1E8_ovl_2A8D20(u8 slot, s32 cell) {
