@@ -34,6 +34,7 @@ typedef struct {
     u8 b;
     u8 a;
 } Rgba201;
+extern s16 *D_801D069C_ovl_1F0A30;
 /* --- end decls --- */
 
 u8 func_801BDFBC_ovl_1F0A30(u8 a) {
@@ -184,7 +185,74 @@ u8 func_801BE410_ovl_1F0A30(s32 cls, s32 base) {
     return D_801D068C_ovl_1F0A30[base][1];
 }
 
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BE478_ovl_1F0A30);
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+/* Row b of table a (11 halfwords each). -1 ends the table; -2 rows carry a full record,
+ * others a short one. Copies into out when given and returns the row's first word. */
+s16 func_801BE478_ovl_1F0A30(s32 a, s32 b, s16 *out) {
+    s16 pad[1];
+    s16 *row;
+    s16 v;
+
+    row = (s16 *)((u8 *)D_801D069C_ovl_1F0A30 + D_801D069C_ovl_1F0A30[a]);
+    row += b * 11;
+    v = row[0];
+
+    if (v != -1) {
+        if (out == NULL) {
+            return v;
+        }
+        if (v == -2) {
+            out[0] = row[1];
+            out[1] = row[2];
+            out[2] = row[3];
+            out[6] = row[4];
+            out[7] = row[5];
+            out[8] = row[6];
+            out[9] = row[7];
+            out[10] = row[8];
+            out[11] = row[9];
+            out[5] = row[10];
+        } else {
+            out[0] = v;
+            out[1] = row[1];
+            out[2] = row[2];
+            out[3] = row[3];
+            out[4] = row[4];
+            out[5] = row[5];
+            out[7] = 1;
+        }
+    }
+    return row[0];
+}
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BE564_ovl_1F0A30);
 
