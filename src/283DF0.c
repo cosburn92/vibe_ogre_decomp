@@ -10,6 +10,7 @@ extern u16 D_800C4B28;
 
 void *HFree(void *p);
 void func_80227FD8_ovl_281860(s32 a, s32 b);
+extern s8 *D_800C47F0;
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -85,7 +86,21 @@ s32 func_8022A428_ovl_281860(s32 a, s32 *p) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A474_ovl_281860);
+/* Whether the analog stick is outside the dead zone (|x| or |y| > 4) */
+s32 func_8022A474_ovl_281860(void) {
+    f32 x = 0.0f;
+    f32 y = x;
+
+    if (D_800C47F0 != NULL) {
+        if ((u8)(D_800C47F0[2] + 4) >= 9) {
+            x = D_800C47F0[2] / 16.0f;
+        }
+        if ((u8)(D_800C47F0[3] + 4) >= 9) {
+            y = D_800C47F0[3] / 16.0f;
+        }
+    }
+    return (x + y) != 0.0;
+}
 
 s32 func_8022A528_ovl_281860(s32 mask) {
     s32 r;
