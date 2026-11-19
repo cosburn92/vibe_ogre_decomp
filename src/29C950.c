@@ -38,9 +38,30 @@ void func_801CCA5C(s32 a, s32 b, s32 c);
 u8 func_80233968_ovl_29A4C0(s32 a, s16 b, s32 c, u8 d, u8 *r, u8 *g, u8 *bl);
 u8 func_8019F174(u8 a);
 void func_8019F2C0(u8 a);
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+extern s16 *D_8022A97C;
+void *HMalloc(s32 size);
+s32 ChunkSize(s32 id);
+void LoadChunkRaw(void *dst, s32 id);
+u32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+void func_802329B0_ovl_29A4C0(void);
+void func_8019F354(u8 a);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D120_ovl_29A4C0);
+void func_8022D120_ovl_29A4C0(void) {
+    u8 *tmp;
+
+    if (D_8022A97C != NULL) {
+        HFree(D_8022A97C);
+    }
+    tmp = HMalloc(ChunkSize(0x109EEB0));
+    LoadChunkRaw(tmp, 0x109EEB0);
+    D_8022A97C = HMalloc(ReadU32BE(tmp));
+    DecodeLZ(D_8022A97C, tmp);
+    HFree(tmp);
+    func_802329B0_ovl_29A4C0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D1AC_ovl_29A4C0);
 
@@ -151,13 +172,42 @@ void func_80230D0C_ovl_29A4C0(s16 a) {
     D_800E9C0A[1] = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230D18_ovl_29A4C0);
+void func_80230D18_ovl_29A4C0(s32 id) {
+    s16 k;
+    u8 *p;
+
+    for (k = 0; k < 28; k++) {
+        p = FIELD(D_8022A974, u8 *, 0x1D8 + k * 4);
+        if (p != NULL && FIELD(p, s16, 2) == id) {
+            HFree(p);
+            FIELD(D_8022A974, u8 *, 0x1D8 + k * 4) = NULL;
+            break;
+        }
+    }
+    func_8019F354(id);
+}
 
 u8 func_80230DAC_ovl_29A4C0(s32 i) {
     return D_8019EE40[i];
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230DBC_ovl_29A4C0);
+void func_80230DBC_ovl_29A4C0(s32 i) {
+    s32 k;
+    s32 end;
+
+    if (i == -1) {
+        i = 0;
+        end = 28;
+    } else {
+        end = i + 1;
+    }
+    for (k = i; k < end; k++) {
+        if (D_8022A974->units[k] != NULL) {
+            HFree(D_8022A974->units[k]);
+            D_8022A974->units[k] = NULL;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80230E50_ovl_29A4C0);
 
@@ -195,10 +245,54 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_80231BBC_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231C54_ovl_29A4C0);
 
+#ifdef NON_MATCHING
+/* s16 range-loop register flow differs */
+void func_80231DE0_ovl_29A4C0(s32 i, s32 unused, f32 v) {
+    s16 k;
+    s16 end;
+    s16 start;
+
+    if (i == -1) {
+        start = 0;
+        end = 28;
+    } else {
+        start = i;
+        end = i + 1;
+    }
+    for (k = start; k < end; k++) {
+        if (D_8022A974->units[k] != NULL) {
+            FIELD(D_8022A974->units[k], f32, 0x12C) = v;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231DE0_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231E60_ovl_29A4C0);
 
+#ifdef NON_MATCHING
+/* s16 range-loop register flow differs */
+void func_80231F2C_ovl_29A4C0(s32 i, u8 v) {
+    s16 k;
+    s16 end;
+    s32 start;
+
+    if (i == -1) {
+        start = 0;
+        end = 28;
+    } else {
+        start = i;
+        end = i + 1;
+    }
+    for (k = start; k < end; k++) {
+        if (D_8022A974->units[k] != NULL) {
+            FIELD(D_8022A974->units[k], u8, 0x13C) = v;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231F2C_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231FB0_ovl_29A4C0);
