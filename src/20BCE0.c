@@ -92,6 +92,10 @@ void func_801C893C_ovl_1F0A30(s16 a) {
     }
 }
 
+u8 func_801C1AA4_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, u8 *g, s32 h, s32 i);
+void func_801C1EE8_ovl_1F0A30(s32 *out, s32 a, u8 b);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
 
 s32 func_801C8AA4_ovl_1F0A30(s32 a) {
@@ -146,7 +150,7 @@ inline s32 func_801C8B84_ovl_1F0A30(BattleUnit *u) {
     return ((u->flags >> 8) ^ 1) & 1;
 }
 
-s32 func_801C8BA4_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8BA4_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -172,7 +176,7 @@ inline s32 func_801C8C58_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 9) & 1;
 }
 
-s32 func_801C8C74_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8C74_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -483,9 +487,54 @@ s32 func_801CA000_ovl_1F0A30(s32 a, s32 b) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA038_ovl_1F0A30);
+/* Amount of healing u can take, capped at max HP; class 1 caps at the current third of max HP */
+#ifdef NON_MATCHING
+/* division hoisting/branch layout differs */
+s32 func_801CA038_ovl_1F0A30(BattleUnit *u, s32 amount) {
+    s32 cap;
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA100_ovl_1F0A30);
+    if (func_801C8C74_ovl_1F0A30(u)) {
+        s32 max = *(u16 *)((u8 *)u + 0x22);
+        s32 h = *(u16 *)((u8 *)u + 0x20);
+        s32 n = 0;
+
+        while (h > 0) {
+            h -= max / 3;
+            n++;
+        }
+        n = n < 4 ? n : 3;
+        cap = max / 3;
+        if (n == 3) {
+            cap = max;
+        } else {
+            cap *= n;
+        }
+    } else {
+        cap = *(u16 *)((u8 *)u + 0x22);
+    }
+    if (cap < *(u16 *)((u8 *)u + 0x20) + amount) {
+        amount = cap - *(u16 *)((u8 *)u + 0x20);
+    }
+    return amount;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA038_ovl_1F0A30);
+#endif
+
+s32 func_801CA100_ovl_1F0A30(BattleUnit *u) {
+    s32 out[4];
+    u8 b;
+    s32 i = 0;
+
+    if (u->unk48 == 0x101) {
+        return 0x26;
+    }
+    while (func_801C1AA4_ovl_1F0A30(u->unk48, u->cls, func_801C8BA4_ovl_1F0A30(u), func_801C8B68_ovl_1F0A30(u), 0, i, &b, 0, 0) != 1) {
+        i++;
+    }
+    func_801C1EE8_ovl_1F0A30(out, *(s32 *)((u8 *)u + 0x50), b);
+    return -out[1];
+}
 
 /* Unit index at (lane, row), or -1 */
 s32 func_801CA1C4_ovl_1F0A30(u32 lane, s32 row) {
