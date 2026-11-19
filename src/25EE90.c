@@ -53,7 +53,33 @@ void func_8020A4A8_ovl_25EE90(f32 *src, f32 *dst) {
     }
 }
 
+/* out = m with its first three rows scaled by s[row] (translation column kept) */
+#ifdef NON_MATCHING
+/* loop induction registers assigned in a different order */
+void func_8020A4D0_ovl_25EE90(f32 *s, f32 m[4][4], f32 out[4][4]) {
+    f32 t[4][4];
+    s32 i;
+    s32 j;
+
+    for (j = 0; j < 3; j++) {
+        for (i = 0; i < 4; i++) {
+            if (i != 3) {
+                t[j][i] = m[j][i] * s[j];
+            } else {
+                t[j][3] = m[j][3];
+            }
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        t[3][i] = m[3][i];
+    }
+    for (i = 0; i < 16; i++) {
+        ((f32 *)out)[i] = ((f32 *)t)[i];
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A4D0_ovl_25EE90);
+#endif
 
 /* Sets the translation row of a 4x4 matrix */
 void func_8020A5A0_ovl_25EE90(f32 *m, f32 *t) {
