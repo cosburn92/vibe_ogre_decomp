@@ -24,6 +24,8 @@ extern u8 D_800EB1F0[];
 extern u8 D_800EB240[];
 extern u8 D_800EB290[];
 extern u16 D_800E810E;
+extern u8 D_801CEEE0_ovl_1F0A30[]; /* event length by type */
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 void func_800EA6B0(void *ch, s32 a, s32 b);
 void func_800EA604(void *ch, s32 sound);
 void *HMalloc(s32 size);
@@ -123,7 +125,34 @@ INCLUDE_ASM("asm/nonmatchings/205220", func_801C234C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C24F8_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C2710_ovl_1F0A30);
+/* Scans the two event streams of o's data (offsets at 0x98 and, from 0x58 on, 0x160) for type-1
+ * events, keeping the last two values of each in 0xA8/0xAA and 0xAC/0xAE */
+void func_801C2710_ovl_1F0A30(u8 *o) {
+    u8 *d = FIELD(o, u8 *, 0x44);
+    u8 *p = d + FIELD(d, s32, 0x98);
+    u32 n = *p++;
+    u32 i;
+
+    FIELD(o, u16, 0xAA) = FIELD(o, u16, 0xA8) = FIELD(o, u16, 0xAE) = FIELD(o, u16, 0xAC) = 0xFFFF;
+    for (i = 0; i < n; i++) {
+        if (*p == 1) {
+            FIELD(o, u16, 0xAA) = FIELD(o, u16, 0xA8);
+            FIELD(o, u16, 0xA8) = p[1];
+        }
+        p += D_801CEEE0_ovl_1F0A30[*p];
+    }
+    if (FIELD(o, u32, 0x4C) >= 0x58) {
+        p = d + FIELD(d, s32, 0x160);
+        n = *p++;
+        for (i = 0; i < n; i++) {
+            if (*p == 1) {
+                FIELD(o, u16, 0xAE) = FIELD(o, u16, 0xAC);
+                FIELD(o, u16, 0xAC) = p[1];
+            }
+            p += D_801CEEE0_ovl_1F0A30[*p];
+        }
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/205220", D_801D03A0_ovl_1F0A30);
 
