@@ -154,6 +154,10 @@ void bzero(void *p, s32 n);
 void func_80080998(void *dst, void *src, s32 n);
 void func_80080998(void *dst, void *src, s32 n);
 void bzero(void *p, s32 n);
+typedef struct {
+    u8 v[3];
+} Ofs3;
+extern Ofs3 D_8023E178_ovl_286BD0;
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -375,7 +379,37 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F864_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F998_ovl_286BD0);
 
+/* Cursor position for slot idx: grid cell (column 0x60+k, row 0x70+k) plus a small offset chosen by
+ * the high nibble of a */
+#ifdef NON_MATCHING
+/* The switch and grid part match. What differs is the stack table indexing (index + sp, not sp + index) and the original loading p[1] before storing p[0], adding 8 to p[1] before the table byte. */
+void func_8022FB60_ovl_286BD0(u8 a, u8 b, u8 idx, u8 k, u8 *o) {
+    Ofs3 tab = D_8023E178_ovl_286BD0;
+    s32 xi = 0;
+    s32 yi = 0;
+    s16 *p;
+
+    switch (a & 0xF0) {
+        case 0xA0:
+        case 0xD0:
+            xi = a & 7;
+            yi = b & 7;
+            break;
+        case 0xB0:
+        case 0xC0:
+            xi = b & 7;
+            yi = a & 7;
+            break;
+    }
+    p = (s16 *)(o + idx * 4);
+    p[0] = (o + k)[0x60] * 60;
+    p[1] = (o + k)[0x70] * 72;
+    p[0] += xi[tab.v];
+    p[1] = yi[tab.v] + (p[1] + 8);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022FB60_ovl_286BD0);
+#endif
 
 /* Whether direction b (high nibble) is not the opposite of a */
 s32 func_8022FC54_ovl_286BD0(s32 a, s32 b) {
