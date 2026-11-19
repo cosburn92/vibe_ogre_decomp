@@ -2,6 +2,7 @@
 #include "scene.h"
 extern u16 D_800C49D0;
 extern void *D_800AF0B0;
+extern u16 D_800E810E;
 extern u8 D_800C4C10[];
 extern s32 D_800E79A0;
 typedef struct {
@@ -127,9 +128,59 @@ u16 func_80076F00(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80076F5C);
+static inline u16 SceneFindFree(void) {
+    u16 i;
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_8007705C);
+    for (i = 0; i < 6; i++) {
+        if (!(D_800E82C8[i].flags & 0x8000)) {
+            return i;
+        }
+    }
+    for (;;);
+}
+
+static inline u16 SceneFindAfterLast(void) {
+    s16 i;
+
+    for (i = 4; i >= 0; i--) {
+        if (D_800E82C8[i].flags & 0x8000) {
+            return i + 1;
+        }
+    }
+    for (;;);
+}
+
+/* Opens a scene in the lowest free slot (hangs when all six are in use) */
+u16 func_80076F5C(u16 flags, void *fn, s16 x, s16 y, u16 x2, u16 y2, u16 z) {
+    u16 i = SceneFindFree();
+
+    D_800E82C8[i].flags = flags;
+    D_800E82C8[i].owner = fn;
+    D_800E82C8[i].x = x;
+    D_800E82C8[i].y = y;
+    D_800E82C8[i].x2 = x2;
+    D_800E82C8[i].y2 = y2;
+    D_800E82C8[i].unk0E = z;
+    D_800E82C8[i].parent = D_800C4C20;
+    *(u16 *)D_800E82C8[i].unkA4 = D_800E810E;
+    return i;
+}
+
+/* Opens a scene in the slot after the highest one in use */
+u16 func_8007705C(u16 flags, void *fn, s16 x, s16 y, u16 x2, u16 y2, u16 z) {
+    u16 i = SceneFindAfterLast();
+
+    D_800E82C8[i].flags = flags;
+    D_800E82C8[i].owner = fn;
+    D_800E82C8[i].x = x;
+    D_800E82C8[i].y = y;
+    D_800E82C8[i].x2 = x2;
+    D_800E82C8[i].y2 = y2;
+    D_800E82C8[i].unk0E = z;
+    D_800E82C8[i].parent = D_800C4C20;
+    *(u16 *)D_800E82C8[i].unkA4 = D_800E810E;
+    return i;
+}
 
 /* Closes every child scene of the current scene (D_800C4C20) */
 void func_80077160(void) {
