@@ -56,6 +56,36 @@ s32 func_801F2AF8_ovl_22A280(BattleUnit *a, BattleUnit *b);
 s32 BattleCalcDamage(BattleUnit *a, BattleUnit *b, f32 power, s32 c, s32 d, s32 e);
 extern s8 D_801F6A30_ovl_22A280[][3];
 s32 func_801F4480_ovl_22A280(BattleUnit *a, BattleUnit *b, s32 c, s32 d, s32 e);
+BattleUnit *func_801F0A3C_ovl_22A280(BattleUnit *self, BattleUnit **list, s32 n);
+#include "tables.h"
+f64 fabs(f64 x);
+typedef struct {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 flags;
+    /* 0x02 */ u8 members[5];
+    /* 0x07 */ u8 pos[5];
+    /* 0x0C */ u8 harmony;
+    /* 0x0D */ u8 items[10];
+    /* 0x17 */ u8 strategy;
+    /* 0x18 */ u8 legion;
+} SquadRec; /* size 0x19 */
+
+typedef struct {
+    /* 0x00 */ Character c;
+    /* 0x34 */ u8 unk34[4];
+} PlayerChar; /* size 0x38 */
+
+extern SquadRec gSquads[];
+extern PlayerChar D_80193BC0[];
+extern Character D_80195560[];
+extern u8 D_801976DC[];
+extern u8 D_801976E8[];
+extern u8 D_80190F80[];
+extern u8 D_801953F0[];
+u8 *func_801E14C0(s32 side);
+s32 func_801C9FB4(u16 a, u16 b);
+s32 func_801C8AC0(s32 a);
+f32 func_8007FE70(f32 *a, f32 *b);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
@@ -81,9 +111,70 @@ u8 func_801F0298_ovl_22A280(BattleUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F0298_ovl_22A280);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F0310_ovl_22A280);
+s32 func_801F0310_ovl_22A280(s32 side) {
+    u8 *st;
+    u8 *tbl;
+    u8 *p;
+    u8 *m;
+    u8 *end;
+    s32 sum;
+    s32 c;
+    s32 idx;
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F043C_ovl_22A280);
+    if (side == 0) {
+        st = D_801976DC;
+        tbl = D_80190F80;
+    } else {
+        st = D_801976E8;
+        tbl = D_801953F0;
+    }
+    p = func_801E14C0(side);
+    if (p == NULL) {
+        return 0;
+    }
+    idx = p[2];
+    if (idx == st[0]) {
+        return 0;
+    }
+    if (fabs(*(f32 *)(st + 8)) < 1.2) {
+        sum = 0;
+        m = gSquads[idx].members;
+        end = m + 5;
+        do {
+            c = *m;
+            if (c == 0) {
+                continue;
+            }
+            if (c < 100) {
+                continue;
+            }
+            c -= 100;
+            if (((u16 *)(tbl + 4))[c] == 0) {
+                continue;
+            }
+            if ((tbl + c)[0xF4] & 4) {
+                continue;
+            }
+            sum += func_801C9FB4(((u16 *)(tbl + 4))[c], *(u16 *)(tbl + 2));
+        } while (++m < end);
+        return sum;
+    }
+    return 0;
+}
+
+/* Which side's squad leader has the lower value at +0x20 (no squad on one side decides it) */
+s32 func_801F043C_ovl_22A280(void) {
+    u8 *a = func_801E14C0(0);
+    u8 *b = func_801E14C0(1);
+
+    if (a != NULL && b == NULL) {
+        return 0;
+    }
+    if (a == NULL && b != NULL) {
+        return 1;
+    }
+    return D_80193BC0[gSquads[a[2]].members[0]].c.intl < D_80195560[gSquads[b[2]].members[0]].intl;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F0514_ovl_22A280);
 
@@ -268,7 +359,18 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F0F5C_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F104C_ovl_22A280);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F11E4_ovl_22A280);
+s32 func_801F11E4_ovl_22A280(BattleUnit *u, s32 d) {
+    f32 a[3];
+    f32 b[3];
+
+    a[0] = func_801C8AC0(4);
+    a[1] = 0.0f;
+    a[2] = 0.0f;
+    b[0] = func_801C8AC0(u->unk58);
+    b[1] = 0.0f;
+    b[2] = 0.0f;
+    return func_8007FE70(a, b) / d;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1274_ovl_22A280);
 
