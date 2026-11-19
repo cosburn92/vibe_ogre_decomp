@@ -1,5 +1,7 @@
 #include "common.h"
 
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+
 /* 29A4C0 */
 
 typedef struct {
@@ -33,6 +35,9 @@ void *HFree(void *p);
 void func_8022BB58_ovl_29A4C0(s32 a, s32 b);
 void func_801C22E8(s32 a);
 #define FLD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+s32 func_801BEA0C(s32 fmt, s32 w);
+u16 func_801BEB28(u16 c);
+u32 func_801BEA70(u32 c);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AC90_ovl_29A4C0);
@@ -63,9 +68,50 @@ void func_8022B414_ovl_29A4C0(s32 i) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B4A8_ovl_29A4C0);
+/* Sepia-filters an image in place (fmt 2: RGBA5551, fmt 3: RGBA8888) */
+void func_8022B4A8_ovl_29A4C0(void *pix, s32 fmt, s32 h, s32 w) {
+    s32 n = func_801BEA0C(fmt, w) * h;
+    s32 i;
 
+    if (fmt == 2) {
+        u16 *p = pix;
+
+        for (i = 0; i < n; i++, p++) {
+            *p = func_801BEB28(*p);
+        }
+    } else if (fmt == 3) {
+        u32 *p = pix;
+
+        for (i = 0; i < n; i++, p++) {
+            *p = func_801BEA70(*p);
+        }
+    }
+}
+
+/* Sepia-filters every RGBA5551 image in a sprite bank */
+#ifdef NON_MATCHING
+/* hdr/k registers swapped (s3/s4) and the a0=2 hoist differs */
+void func_8022B56C_ovl_29A4C0(u8 *bank) {
+    u8 *e = bank + 8;
+    u8 k;
+
+    for (k = 0; k < bank[3]; k++) {
+        u8 *hdr = e;
+        s32 h = FIELD(hdr, u16, 6);
+        s32 n;
+        s32 i;
+
+        e = hdr + 0x10;
+        n = func_801BEA0C(2, FIELD(hdr, u16, 4)) * h;
+        for (i = 0; i < n; i++, e += 2) {
+            *(u16 *)e = func_801BEB28(*(u16 *)e);
+        }
+        e = FIELD(hdr, u8 *, 0xC);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B56C_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B62C_ovl_29A4C0);
 
