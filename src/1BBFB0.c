@@ -33,6 +33,7 @@ ScriptObj *func_80222EEC_ovl_1BA050(s32 i) {
 }
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+void func_80224AAC_ovl_1BA050();
 void func_80180B1C(u8 *n, s16 x0, s16 y0, s16 x1, s16 y1);
 s32 func_801794C8(void *text);
 void func_802284B4_ovl_1BA050();
@@ -306,7 +307,26 @@ void func_80224BE8_ovl_1BA050(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224C60_ovl_1BA050);
+/* Loads the 34 chunks named by table chunk 0x21BFEDC and starts the script object */
+void func_80224C60_ovl_1BA050(void) {
+    s32 n;
+    s32 *tbl;
+    s32 i;
+
+    bzero(D_8022A260_ovl_1BA050, 0x88);
+    bzero(D_8022A2E8_ovl_1BA050, 0x10);
+    i = ChunkSize(0x21BFEDC);
+    n = 34;
+    if (i / 4 != n) {
+        for (;;);
+    }
+    tbl = LoadChunkRaw(NULL, 0x21BFEDC);
+    for (i = 0; i < n; i++) {
+        D_8022A260_ovl_1BA050[i] = LoadChunkRaw(NULL, tbl[i]);
+    }
+    HFree(tbl);
+    func_8017C074(0x5100, 0x13, func_80224AAC_ovl_1BA050, 0, 0, 0, 0);
+}
 
 /* Loads the six event resource chunks listed in chunk 0x21C2F70 */
 void func_80224D60_ovl_1BA050(void) {
