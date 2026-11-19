@@ -72,6 +72,13 @@ void func_801AEA90_ovl_1F0A30();
 void func_801CA680_ovl_1F0A30(s32 a);
 s32 func_8016FEF4(s32 flag);
 void func_801AF730_ovl_1F0A30(void *a, s32 b);
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+void HFree(void *p);
+u16 func_801794C8(s32 a);
+void func_8017C4B4(s16 a);
+void func_80179034(s32 a, s32 x, s32 y);
+s32 func_801AD60C_ovl_1F0A30(s32 id);
+void func_801B0770_ovl_1F0A30(u8 *o, s32 a, s32 b, s32 c, s32 d, s32 e);
 /* --- end decls --- */
 
 void func_801AD5A0_ovl_1F0A30(void) {
@@ -189,11 +196,34 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFC0C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFE30_ovl_1F0A30);
 
+#ifdef NON_MATCHING
+/* addu operand order (1 instruction) */
+void func_801B0020_ovl_1F0A30(void) {
+    u32 i;
+
+    for (i = 0; i < 16; i++) {
+        HFree(*(void **)(i * 12 + (u8 *)D_801CE8BC_ovl_1F0A30));
+    }
+    for (i = 0; i < 10; i++) {
+        HFree(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x180 + i * 4));
+    }
+    bzero(D_801CE8BC_ovl_1F0A30, 0xC0);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0020_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B00B0_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0284_ovl_1F0A30);
+/* Draws label i centred in a 270-pixel field */
+void func_801B0284_ovl_1F0A30(u8 *o, s32 i) {
+    u16 w = func_801794C8(FIELD(FIELD(o, u8 *, 0xD0), s32, 0x530));
+    s32 x;
+
+    x = (270 - w) / 2;
+    func_8017C4B4(((s16 *)(o + 0x18))[i]);
+    func_80179034(FIELD(FIELD(o, u8 *, 0xD0), s32, 0x530), FIELD(o, s32, 0x2C) + x, FIELD(o, s32, 0x30) + 1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0300_ovl_1F0A30);
 
@@ -205,7 +235,18 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", BattleDrawUnitSprite);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B2C08_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B3C3C_ovl_1F0A30);
+s32 func_801B3C3C_ovl_1F0A30(u8 *o) {
+    u8 *p = o;
+    s32 v;
+
+    if (FIELD(o, u32, 0x94) & 4) {
+        v = func_801AD60C_ovl_1F0A30(0x3224BA);
+    } else {
+        v = 0;
+    }
+    func_801B0770_ovl_1F0A30(o, p[0x14] != 3, FIELD(p, u32, 0x94) & 2, v, 0, 0);
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B3CB8_ovl_1F0A30);
 
