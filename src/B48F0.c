@@ -27,6 +27,10 @@ void func_801CC974_ovl_087200(s32 id, s32 a, void (*f)(), s32 b, s32 c, s32 d, s
 void func_801B1FE0_ovl_087200();
 extern u16 D_80190EBC[];
 extern u16 D_80190F82;
+void func_801C7D78_ovl_087200(s16 *a, s16 *b, s16 *c, s16 *d);
+void func_801CC6D4_ovl_087200(u8 *w, void (*f)(), void (*g)(), s32 a, s32 b, s32 c, s32 d);
+void func_801B7F50_ovl_087200();
+void func_801B74CC_ovl_087200();
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
@@ -66,7 +70,27 @@ INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C8158_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C84BC_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C97A0_ovl_087200);
+void func_801C97A0_ovl_087200(void) {
+    s32 pad;
+    u8 *st = D_80196AF8;
+    s16 v = FIELD(st, s16, 0x122);
+
+    switch (v) {
+        case 0:
+            FIELD(st, u16, 0x12E) = 10;
+            FIELD(st, u16, 0x122)++;
+            break;
+        case 1:
+            if (FIELD(st, u16, 0x12E) == 0) {
+                FIELD(st, u16, 0x122) = v + 1;
+            }
+            break;
+        case 2:
+        case 99:
+            FIELD(st, u16, 0x120) = 999;
+            break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C9828_ovl_087200);
 
@@ -269,7 +293,18 @@ void func_801CC034_ovl_087200(void) {
     func_801CCA50_ovl_087200(0, 10, func_801B3B00_ovl_087200, a, b, c, d);
 }
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CC08C_ovl_087200);
+void func_801CC08C_ovl_087200(void) {
+    s16 a;
+    s16 b;
+    s16 c;
+    s16 d;
+    u8 *w = func_801CC410_ovl_087200(0);
+
+    if (w != NULL) {
+        func_801C7D78_ovl_087200(&a, &b, &c, &d);
+        func_801CC6D4_ovl_087200(w, func_801B7F50_ovl_087200, func_801B74CC_ovl_087200, a, b, c, d);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CC100_ovl_087200);
 
