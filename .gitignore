@@ -20,3 +20,6 @@ tools/binutils-2.6/
 
 # Unpacked assets (make extract-assets)
 extracted/
+
+# Local Claude Code state (settings.local.json, locks)
+.claude/
