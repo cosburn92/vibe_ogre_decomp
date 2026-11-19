@@ -3,6 +3,23 @@
 /* 1B7630 */
 
 u8 *func_80219F40_ovl_1B2670(u8 *t, u32 page);
+typedef struct {
+    /* 0x00 */ u16 sec0;
+    /* 0x02 */ u16 unk02;
+    /* 0x04 */ u16 sec1;
+    /* 0x06 */ u8 unk06[0x10];
+    /* 0x16 */ u16 size;
+} TblHdr;
+extern TblHdr *D_8021C9E8_ovl_1B2670;
+extern u8 *D_8021C9E0_ovl_1B2670;
+extern u8 *D_8021C9E4_ovl_1B2670;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void *HMalloc(s32 size);
+void HFree(void *p);
+void bzero(void *p, s32 n);
+void _bcopy(const void *src, void *dst, s32 n);
+void *func_8021B5EC_ovl_1B2670(s32 a, s32 b, s32 c, s32 d, s32 e);
 /* --- end decls --- */
 
 /* Page `page` of image bank t (pages are 8-byte headers followed by pixels, sub-image and palette as flagged) */
@@ -134,7 +151,28 @@ INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B31C_ovl_1B2670);
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B5EC_ovl_1B2670);
 
+/* Loads the shared table chunk (two sections) and creates the two default entries */
+#ifdef NON_MATCHING
+/* Same issue as 6E660 func_80197D20: the original reuses a1 for both section offsets (load, add, load); here the two halfword loads are scheduled together. */
+void **func_8021B93C_ovl_1B2670(void) {
+    TblHdr *tmp = HMalloc(ChunkSize(0x315736));
+    void **r;
+
+    LoadChunkRaw(tmp, 0x315736);
+    D_8021C9E8_ovl_1B2670 = HMalloc(tmp->size);
+    _bcopy(tmp, D_8021C9E8_ovl_1B2670, tmp->size);
+    D_8021C9E0_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + D_8021C9E8_ovl_1B2670->sec0;
+    D_8021C9E4_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + D_8021C9E8_ovl_1B2670->sec1;
+    HFree(tmp);
+    r = HMalloc(8);
+    bzero(r, 8);
+    r[0] = func_8021B5EC_ovl_1B2670(1, 1, 0, 1, 1);
+    r[1] = func_8021B5EC_ovl_1B2670(1, 1, 0, 0, 1);
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B93C_ovl_1B2670);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021BA30_ovl_1B2670);
 
