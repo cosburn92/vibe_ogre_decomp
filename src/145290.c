@@ -64,6 +64,8 @@ typedef struct {
 u8 func_801F4ED8_ovl_145210(MapUnit *u);
 
 void func_801F95F8_ovl_145210(s32 a, u8 *o);
+void func_801F6DC8_ovl_145210(void);
+extern u8 D_801FCFC0_ovl_145210[][2];
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
@@ -293,7 +295,28 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F57D0_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F5AD0_ovl_145210);
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F5C74_ovl_145210);
+/* Advances the 12-frame cycle and picks the frame pair from the key table */
+void func_801F5C74_ovl_145210(u8 *o) {
+    s32 lo;
+    s32 hi;
+    s32 mid;
+
+    if (++o[5] >= 12) {
+        o[5] = 0;
+    }
+    lo = 0;
+    hi = 2;
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        if (o[5] < D_801FCFC0_ovl_145210[mid + 1][0]) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    FIELD(o, s32, 0x10) = FIELD(o, s32 *, 0)[D_801FCFC0_ovl_145210[lo][1]];
+    FIELD(o, s32, 0x14) = FIELD(o, s32 *, 0)[D_801FCFC0_ovl_145210[lo][1] + 3];
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F5D28_ovl_145210);
 
@@ -432,9 +455,51 @@ void func_801F85F8_ovl_145210(u8 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F86A8_ovl_145210);
+void func_801F86A8_ovl_145210(u8 *o) {
+    switch (o[7]) {
+        case 0:
+            FIELD(o, u16, 4) = (FIELD(o, u16, 4) & 0xFFDF) | 0x6000;
+            func_801F95F8_ovl_145210(3, o);
+            func_801F6DC8_ovl_145210();
+            o[7] = 1;
+            break;
+        case 1:
+            if (FIELD(o, u16, 4) & 0x20) {
+                o[7] = 2;
+            }
+            break;
+        case 2:
+            *FIELD(o, u32 *, 0) &= ~0x80000;
+            func_801F6DC8_ovl_145210();
+            o[0xB] = 0xFF;
+            o[6] = 0;
+            FIELD(o, u16, 4) &= 0x9FFF;
+            break;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F8774_ovl_145210);
+void func_801F8774_ovl_145210(u8 *o) {
+    switch (o[7]) {
+        case 0:
+            FIELD(o, u16, 4) = (FIELD(o, u16, 4) & 0xFFBF) | 0x6000;
+            func_801F95F8_ovl_145210(4, o);
+            o[7] = 1;
+            break;
+        case 1:
+            if (!(FIELD(o, u16, 4) & 0x40)) {
+                break;
+            }
+            o[7] = 2;
+            /* fallthrough */
+        case 2:
+            o[0x31] &= 0xFE;
+            if (*FIELD(o, u32 *, 0) & 0x80000) {
+                o[6] = 3;
+                o[7] = 0;
+            }
+            break;
+    }
+}
 
 void func_801F8830_ovl_145210(MapMarker *m) {
     s32 r;
