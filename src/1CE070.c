@@ -76,6 +76,7 @@ void func_8016CD50(s32 a);
 extern u8 *D_800A8204[];
 extern u8 *D_800C4BB8;
 void HFree(void *p);
+u8 *func_80199ECC_ovl_1CE070(u8 *t);
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -301,7 +302,33 @@ void func_80199E48_ovl_1CE070(SkelCE *s, void **out) {
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199ECC_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199FF0_ovl_1CE070);
+/* Palette that follows the pixel data of image t's page (NULL if the page has none) */
+u8 *func_80199FF0_ovl_1CE070(u8 *t) {
+    u8 *e = func_80199ECC_ovl_1CE070(t);
+    u16 w;
+    s32 h;
+    s32 stride;
+
+    if (e == NULL) {
+        return NULL;
+    }
+    w = *(u16 *)(t + 4);
+    h = *(u16 *)(t + 6);
+    if (e[3] & 2) {
+        if (!(e[3] & 1)) {
+            return e + 8;
+        }
+        if (t[3] & 2) {
+            stride = ((u32)(w + 3) >> 2) << 4;
+        } else if (t[3] & 4) {
+            stride = ((u32)(w + 7) >> 3) << 3;
+        } else {
+            stride = ((u32)(w + 3) >> 2) << 3;
+        }
+        return e + (stride * h + 8);
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019A09C_ovl_1CE070);
 
