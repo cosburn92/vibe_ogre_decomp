@@ -74,6 +74,13 @@ extern s32 D_800EB2E0[];
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void func_8022681C_ovl_281860(s32 a, s32 b);
+extern u8 D_801976DC;
+extern u8 D_801971F2[]; /* squad records (25 bytes), leader byte */
+extern u8 D_8022AC40_ovl_281860[];
+extern u8 D_8022A921_ovl_281860[];
+extern u8 *D_8022A8C8_ovl_281860[];
+void func_8009C550(u8 *dst, u8 *src);
+void func_8009C620(u8 *dst, u8 *src);
 /* --- end decls --- */
 
 void func_80227010_ovl_281860(void) {
@@ -334,7 +341,31 @@ void func_80227B80_ovl_281860(void) {
 
 INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227B9C_ovl_281860);
 
+/* Name of the current squad's leader plus the title for its class (NULL when it has none) */
+#ifdef NON_MATCHING
+/* Only the class-title table walk differs: the original tests D_8022A921[0] with a direct lbu and then materialises the pointer separately; GCC here shares the address register. */
+u8 *func_80227CBC_ovl_281860(void) {
+    u8 leader = D_801971F2[D_801976DC * 25];
+    u8 cls = D_80193BC0[leader].b[0x11];
+    u8 *p;
+    s32 k;
+
+    if (cls == 0) {
+        return NULL;
+    }
+    bzero(D_8022AC40_ovl_281860, 0x40);
+    func_8009C550(D_8022AC40_ovl_281860, D_80193BC0[leader].b);
+    for (k = 0; D_8022A921_ovl_281860[k * 2] != 0xFF; k++) {
+        if (D_8022A921_ovl_281860[k * 2] == cls) {
+            func_8009C620(D_8022AC40_ovl_281860, D_8022A8C8_ovl_281860[k]);
+            break;
+        }
+    }
+    return D_8022AC40_ovl_281860;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227CBC_ovl_281860);
+#endif
 
 /* Linear interpolation: b + (a - b) * c / d. */
 s32 func_80227DC4_ovl_281860(s32 a, s32 b, s32 c, s32 d) {
