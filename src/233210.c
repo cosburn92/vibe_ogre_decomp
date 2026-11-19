@@ -674,7 +674,44 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F312C_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F32EC_ovl_22A280);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F356C_ovl_22A280);
+/* Element affinity between two elements: 0 if either is none/7/8/15; Virtue/Bane (5, 6): 1 same, -1 opposite;
+ * 9+ fold onto 1-4; otherwise 1 - |a - b| */
+s32 func_801F356C_ovl_22A280(u8 a, u8 b) {
+    s32 d;
+
+    if (a == 0 || b == 0) {
+        return 0;
+    }
+    if (a == 7 || b == 7) {
+        return 0;
+    }
+    if (a == 8 || b == 8) {
+        return 0;
+    }
+    if (a == 15 || b == 15) {
+        return 0;
+    }
+    if ((u8)(a - 5) < 2) {
+        if ((u8)(b - 5) < 2) {
+            return (a != b) ? -1 : 1;
+        }
+        return 0;
+    }
+    if ((u8)(b - 5) < 2) {
+        return 0;
+    }
+    if (a >= 9) {
+        a = (a - 9) % 4 + 1;
+    }
+    if (b >= 9) {
+        b = (b - 9) % 4 + 1;
+    }
+    d = a - b;
+    if (d <= 0) {
+        d = b - a;
+    }
+    return 1 - d;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleCalcDamage);
 
@@ -741,7 +778,58 @@ u8 func_801F45C0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return inflict;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F46DC_ovl_22A280);
+/* Whether u is not protected against status effect `effect` (4, 3, 8, 10 map to protect bits 2, 8, 4, 0x20) */
+s32 func_801F46DC_ovl_22A280(s32 effect, BattleUnit *u) {
+    u8 p = 0;
+    s32 r;
+
+    if (u->items[0] != 0) {
+        p = func_8016F598(u->items[0]);
+    }
+    if (u->items[1] != 0) {
+        p |= func_8016F598(u->items[1]);
+    }
+    if (u->items[2] != 0) {
+        p |= func_8016F598(u->items[2]);
+    }
+    if (u->items[3] != 0) {
+        p |= func_8016F598(u->items[3]);
+    }
+    if (func_801CD19C(u->unk48, u->cls, 4)) {
+        p |= 2;
+    }
+    if (func_801CD19C(u->unk48, u->cls, 8)) {
+        p |= 4;
+    }
+    if (func_801CD19C(u->unk48, u->cls, 2)) {
+        p |= 8;
+    }
+    if (func_801CD19C(u->unk48, u->cls, 0x10)) {
+        p |= 0x20;
+    }
+    switch ((u32)effect) {
+        case 4:
+            r = p & 2;
+            break;
+        case 3:
+            r = p & 8;
+            break;
+        case 8:
+            r = p & 4;
+            break;
+        case 10:
+            r = p & 0x20;
+            break;
+        default:
+            return 1;
+    }
+    if (r != 0) {
+        r = 0;
+    } else {
+        r = 1;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F4828_ovl_22A280);
 
