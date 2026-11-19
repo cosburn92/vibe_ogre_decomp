@@ -266,7 +266,21 @@ s16 func_80231B94_ovl_29A4C0(s32 i) {
     return D_8022A974->objs[i]->hC;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231BBC_ovl_29A4C0);
+/* Index of cell a * 10 + b in list id (header table holds 2 halves per id); -1 if absent or flag set */
+s16 func_80231BBC_ovl_29A4C0(s32 id, s32 a, s32 b, s32 flag) {
+    s16 *list = D_8022A97C + D_8022A97C[(s16)((id - 1) * 2)];
+    s16 i;
+
+    for (i = 0; list[i] != -1; i++) {
+        if (a * 10 + b == list[i]) {
+            if (!flag) {
+                return i;
+            }
+            return -1;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231C54_ovl_29A4C0);
 
