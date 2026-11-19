@@ -1,3 +1,19 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/274D0", __osPfsSelectBank);
+/* libultra pfsselectbank.c */
+
+s32 __osPfsSelectBank(OSPfs *pfs, u8 bank) {
+    u8 temp[BLOCKSIZE];
+    int i;
+    s32 ret = 0;
+
+    for (i = 0; i < BLOCKSIZE; i++) {
+        temp[i] = bank;
+    }
+    ret = __osContRamWrite(pfs->queue, pfs->channel, 0x8000 / BLOCKSIZE, temp, 0);
+    if (ret == 0) {
+        pfs->activebank = bank;
+    }
+    return ret;
+}

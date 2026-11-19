@@ -335,6 +335,75 @@ typedef struct {
 extern __OSViContext *__osViCurr;
 extern __OSViContext *__osViNext;
 
+typedef struct {
+    /* 0x00 */ s32 status;
+    /* 0x04 */ OSMesgQueue *queue;
+    /* 0x08 */ s32 channel;
+    /* 0x0C */ u8 id[32];
+    /* 0x2C */ u8 label[32];
+    /* 0x4C */ s32 version;
+    /* 0x50 */ s32 dir_size;
+    /* 0x54 */ s32 inode_table;
+    /* 0x58 */ s32 minode_table;
+    /* 0x5C */ s32 dir_table;
+    /* 0x60 */ s32 inode_start_page;
+    /* 0x64 */ u8 banks;
+    /* 0x65 */ u8 activebank;
+} OSPfs;
+
+typedef struct {
+    /* 0x00 */ u8 dummy;
+    /* 0x01 */ u8 txsize;
+    /* 0x02 */ u8 rxsize;
+    /* 0x03 */ u8 cmd;
+    /* 0x04 */ u8 addrh;
+    /* 0x05 */ u8 addrl;
+    /* 0x06 */ u8 data[32];
+    /* 0x26 */ u8 datacrc;
+} __OSContRamReadFormat;
+
+typedef struct {
+    /* 0x00 */ u8 txsize;
+    /* 0x01 */ u8 rxsize;
+    /* 0x02 */ u8 cmd;
+    /* 0x03 */ u8 typeh;
+    /* 0x04 */ u8 typel;
+    /* 0x05 */ u8 status;
+} __OSContRequesFormatShort;
+
+#define CONT_CMD_READ_MEMPACK 2
+#define CONT_CMD_WRITE_MEMPACK 3
+#define CONT_CMD_READ_MEMPACK_TX 3
+#define CONT_CMD_READ_MEMPACK_RX 33
+#define CONT_CMD_WRITE_MEMPACK_TX 35
+#define CONT_CMD_WRITE_MEMPACK_RX 1
+#define CONT_CARD_ON 0x01
+#define CONT_CARD_PULL 0x02
+#define CONT_ADDR_CRC_ER 0x04
+#define PFS_ERR_NOPACK 1
+#define PFS_ERR_NEW_PACK 2
+#define PFS_ERR_INCONSISTENT 3
+#define PFS_ERR_CONTRFAIL 4
+#define PFS_ERR_INVALID 5
+#define PFS_ERR_BAD_DATA 6
+#define PFS_DATA_FULL 7
+#define PFS_DIR_FULL 8
+#define PFS_ERR_EXIST 9
+#define PFS_ERR_ID_FATAL 10
+#define PFS_ERR_DEVICE 11
+#define BLOCKSIZE 32
+#define PFS_LABEL_AREA 7
+
+extern OSPifRam __osPfsPifRam_800E86C0; /* __osPfsPifRam */
+extern u8 __osPfsInodeCacheBank;
+
+s32 __osContRamRead(OSMesgQueue *mq, int channel, u16 address, u8 *buffer);
+s32 __osContRamWrite(OSMesgQueue *mq, int channel, u16 address, u8 *buffer, int force);
+s32 __osPfsGetStatus(OSMesgQueue *queue, int channel);
+s32 __osPfsSelectBank(OSPfs *pfs, u8 bank);
+u8 __osContAddressCrc(u16 addr);
+u8 __osContDataCrc(u8 *data);
+
 u32 __osDisableInt(void);
 void __osRestoreInt(u32 mask);
 s32 osJamMesg(OSMesgQueue *mq, OSMesg msg, s32 flag);
