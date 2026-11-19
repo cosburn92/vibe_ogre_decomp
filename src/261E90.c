@@ -36,7 +36,7 @@ void func_8020D3B0_ovl_25EE90(void) {
 INCLUDE_ASM("asm/nonmatchings/261E90", func_8020D3D4_ovl_25EE90);
 
 /* Takes a node from the free list (hangs when empty) */
-Node26 *func_8020D6B4_ovl_25EE90(void) {
+inline Node26 *func_8020D6B4_ovl_25EE90(void) {
     Node26 *n;
 
     if (D_80220D64_ovl_25EE90 != 0xFFFF) {
@@ -55,7 +55,7 @@ void func_8020D704_ovl_25EE90(Node26 *n) {
     D_80220D64_ovl_25EE90 = n - D_80220D6C_ovl_25EE90;
 }
 
-void func_8020D758_ovl_25EE90(Task26 *t) {
+inline void func_8020D758_ovl_25EE90(Task26 *t) {
     t->h8 = 7;
     t->fn = NULL;
     t->hA = 0;
@@ -63,7 +63,17 @@ void func_8020D758_ovl_25EE90(Task26 *t) {
     t->w10 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/261E90", func_8020D778_ovl_25EE90);
+/* Starts a task running fn (called once with message 0) */
+Task26 *func_8020D778_ovl_25EE90(s32 (*fn)(s32, Task26 *)) {
+    Task26 *t = (Task26 *)func_8020D6B4_ovl_25EE90();
+
+    if (t != NULL) {
+        func_8020D758_ovl_25EE90(t);
+        t->fn = fn;
+        fn(0, t);
+    }
+    return t;
+}
 
 void func_8020D814_ovl_25EE90(Task26 *t) {
     t->hA &= 0x3FFF;
