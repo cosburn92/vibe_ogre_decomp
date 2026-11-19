@@ -54,6 +54,8 @@ void func_80205F2C_ovl_14EBE0();
 void func_8020CDA0_ovl_14EBE0(s32 a);
 void osSyncPrintf(const char *fmt, ...);
 extern u8 *D_801F36C0;
+u16 func_80201B68_ovl_14EBE0(u8 side, u8 idx, u8 slot);
+void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
@@ -139,7 +141,19 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_8020153C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_802017C0_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201A44_ovl_14EBE0);
+/* Sum of stat k's bonus over the four item slots */
+s16 func_80201A44_ovl_14EBE0(s32 side, s32 idx, s32 k) {
+    u8 cls;
+    u8 base;
+    s16 sum = 0;
+    s32 i;
+
+    func_80201AFC_ovl_14EBE0(side, idx, &cls, &base);
+    for (i = 1; i < 5; i++) {
+        sum += (s8)D_80213054_ovl_14EBE0[(u8)k](func_80201B68_ovl_14EBE0(side, idx, i));
+    }
+    return sum;
+}
 
 #ifdef NON_MATCHING
 /* Index clamp and table select laid out differently. */
