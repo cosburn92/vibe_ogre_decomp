@@ -28,7 +28,7 @@ extern s32 D_8018F2F4_ovl_040E80;
 extern s32 D_80190F10_ovl_040E80;
 extern u8 D_275DD2C[];
 extern s32 D_80197B10_ovl_040E80;
-extern s32 D_80197B0C_ovl_040E80;
+extern volatile s32 D_80197B0C_ovl_040E80; /* option mask (re-read after stores) */
 extern u8 D_80197B01_ovl_040E80;
 extern u8 D_80197B02_ovl_040E80;
 extern u8 D_80197B03_ovl_040E80;
@@ -318,6 +318,9 @@ extern u8 D_80196A30_ovl_040E80[];
 void func_80171FE0_ovl_040E80(s32 a, s32 b);
 void DateAdvanceDay(void *d);
 void func_8016C70C_ovl_040E80(void *d);
+extern s16 D_80197B06_ovl_040E80;
+void func_80171B94_ovl_040E80(void);
+void func_80171ED8_ovl_040E80(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
@@ -332,7 +335,37 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80171FE0_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172124_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_8017223C_ovl_040E80);
+/* Sets the menu option mask and puts the cursor on the first enabled option */
+void func_8017223C_ovl_040E80(s16 mask) {
+    s32 m;
+
+    D_80197B10_ovl_040E80 = mask;
+    D_80197B0C_ovl_040E80 = mask;
+    D_80197B03_ovl_040E80 = 0;
+    if (D_80197B06_ovl_040E80 != 0) {
+        D_80197B02_ovl_040E80 = 0;
+        m = D_80197B0C_ovl_040E80;
+        if (m & 1) {
+            D_80197B00_ovl_040E80[0] = 0;
+        } else if (m & 2) {
+            D_80197B00_ovl_040E80[0] = 1;
+        } else if (m & 4) {
+            D_80197B00_ovl_040E80[0] = 2;
+        } else if (m & 8) {
+            D_80197B00_ovl_040E80[0] = 3;
+        } else if (m & 0x10) {
+            D_80197B00_ovl_040E80[0] = 4;
+        } else if (m & 0x20) {
+            D_80197B00_ovl_040E80[0] = 5;
+        }
+        D_80197B01_ovl_040E80 = 0;
+        D_80197B04_ovl_040E80 = 0;
+        func_80171B94_ovl_040E80();
+    } else {
+        D_80197B04_ovl_040E80 = 0;
+        func_80171ED8_ovl_040E80();
+    }
+}
 
 void func_8017230C_ovl_040E80(s16 a, u8 b, u8 c) {
     D_80197B10_ovl_040E80 = a;
