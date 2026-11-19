@@ -4,22 +4,29 @@
 
 typedef struct {
     /* 0x00 */ s32 id;
-    /* 0x04 */ u8 unk04[8];
+    /* 0x04 */ u8 unk04[4];
+    /* 0x08 */ void *p08;
     /* 0x0C */ s32 kind;
     /* 0x10 */ u32 n;
-    /* 0x14 */ u8 unk14[8];
+    /* 0x14 */ void *p14;
+    /* 0x18 */ u8 unk18[4];
     /* 0x1C */ void **list;
-    /* 0x20 */ u8 unk20[8];
+    /* 0x20 */ void *p20;
+    /* 0x24 */ u8 unk24[4];
     /* 0x28 */ s32 w28;
     /* 0x2C */ s32 w2C;
     /* 0x30 */ u8 *w30;
-    /* 0x34 */ u8 unk34[8];
+    /* 0x34 */ u8 unk34[4];
+    /* 0x38 */ void *p38;
 } Rec2A; /* size 0x3C */
 
 extern Rec2A *D_802395B0_ovl_29A4C0;
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+extern u8 *D_8022A974;
 
 void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
+void HFree(void *p);
 Rec2A *func_80232C28_ovl_29A4C0(void);
 void func_801BFBA0(void *p);
 /* --- end decls --- */
@@ -108,6 +115,47 @@ void func_80233398_ovl_29A4C0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233448_ovl_29A4C0);
+/* Frees the record of the active unit (matched by id and kind) and clears it */
+void func_80233448_ovl_29A4C0(void) {
+    s16 side = FIELD(FIELD(D_8022A974, u8 *, 0x1A48), s16, 4);
+    u8 *u;
+    Rec2A *r;
+    s32 id;
+    s32 kind;
+    u32 i;
+    u32 k;
+
+    if (side == -1) {
+        return;
+    }
+    u = FIELD(D_8022A974, u8 *, 0x18 + side * 4);
+    if (u == NULL) {
+        return;
+    }
+    id = FIELD(u, s32, 0xE8);
+    kind = u[0x146];
+    if (D_802395B0_ovl_29A4C0 == NULL) {
+        return;
+    }
+    r = D_802395B0_ovl_29A4C0;
+    for (i = 0; i < 40; r++, i++) {
+        if (r->id == id && r->kind == kind) {
+            for (k = 0; k < r->n; k++) {
+                if (r->list[k] != NULL) {
+                    HFree(r->list[k]);
+                    r->list[k] = NULL;
+                }
+            }
+            HFree(r->p20);
+            HFree(r->p08);
+            HFree((void *)r->w2C);
+            HFree((void *)r->w28);
+            HFree(r->p38);
+            HFree(r->p14);
+            bzero(r, 0x3C);
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233580_ovl_29A4C0);
