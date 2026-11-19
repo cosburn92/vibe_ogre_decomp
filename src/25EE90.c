@@ -3,7 +3,8 @@
 /* 25EE90 */
 
 f32 sqrtf(f32 x);
-void func_8020A5C8_ovl_25EE90(f32 *a, f32 *b, f32 *c, void *m);
+void func_8020A5C8_ovl_25EE90(f32 *a, f32 *b, f32 *c, f32 (*m)[4]);
+void guMtxIdentF(f32 (*m)[4]);
 /* --- end decls --- */
 
 /* out = v * s (safe when out overlaps v) */
@@ -36,7 +37,7 @@ f32 func_8020A3C8_ovl_25EE90(f32 *v) {
 }
 
 /* Normalises v in place */
-void func_8020A418_ovl_25EE90(f32 *v) {
+inline void func_8020A418_ovl_25EE90(f32 *v) {
     f32 inv = 1.0f / sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
     v[0] *= inv;
@@ -90,7 +91,22 @@ void func_8020A5A0_ovl_25EE90(f32 *m, f32 *t) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A5C8_ovl_25EE90);
+/* Rotation matrix from three axes (normalised in place): rows b, c, a */
+void func_8020A5C8_ovl_25EE90(f32 *a, f32 *b, f32 *c, f32 (*m)[4]) {
+    func_8020A418_ovl_25EE90(b);
+    func_8020A418_ovl_25EE90(c);
+    func_8020A418_ovl_25EE90(a);
+    guMtxIdentF(m);
+    m[0][0] = b[0];
+    m[0][1] = b[1];
+    m[0][2] = b[2];
+    m[1][0] = c[0];
+    m[1][1] = c[1];
+    m[1][2] = c[2];
+    m[2][0] = a[0];
+    m[2][1] = a[1];
+    m[2][2] = a[2];
+}
 
 /* Orthonormal-ish basis from forward a and up b: c = a x b, b = c x a, then builds m */
 void func_8020A7A0_ovl_25EE90(f32 *a, f32 *b, void *m) {
@@ -98,7 +114,7 @@ void func_8020A7A0_ovl_25EE90(f32 *a, f32 *b, void *m) {
 
     func_8020A348_ovl_25EE90(a, b, c);
     func_8020A348_ovl_25EE90(c, a, b);
-    func_8020A5C8_ovl_25EE90(a, b, c, m);
+    func_8020A5C8_ovl_25EE90(a, b, c, (f32 (*)[4])m);
 }
 
 INCLUDE_ASM("asm/nonmatchings/25EE90", func_8020A888_ovl_25EE90);
@@ -108,7 +124,7 @@ void func_8020A980_ovl_25EE90(f32 *a, f32 *b, void *m) {
 
     func_8020A348_ovl_25EE90(b, a, c);
     func_8020A348_ovl_25EE90(a, c, b);
-    func_8020A5C8_ovl_25EE90(a, c, b, m);
+    func_8020A5C8_ovl_25EE90(a, c, b, (f32 (*)[4])m);
 }
 
 /* out = v * m (row vector times 4x4 matrix) */
