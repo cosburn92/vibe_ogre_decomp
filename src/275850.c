@@ -2,30 +2,88 @@
 
 /* 275850 */
 
+typedef struct {
+    /* 0x00 */ u8 unk00[0x1C];
+    /* 0x1C */ void *w1C;
+    /* 0x20 */ u16 flags;
+    /* 0x22 */ s16 h22;
+    /* 0x24 */ s32 w24;
+    /* 0x28 */ s16 h28;
+} Obj27;
+
+typedef struct {
+    /* 0x0 */ u8 unk0[4];
+    /* 0x4 */ s32 x;
+    /* 0x8 */ s32 y;
+    /* 0xC */ s32 z;
+} IPos27;
+
+typedef struct {
+    f32 x, y, z;
+} Vec3f;
+
+void *func_8020C9B0(s32 a);
+void func_8020C074(void *p);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/275850", func_802210C0_ovl_275850);
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221368_ovl_275850);
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221508_ovl_275850);
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_802215FC_ovl_275850);
+void func_802215FC_ovl_275850(Obj27 *o, s32 v) {
+    if (o->w24 == 0) {
+        o->w24 = v;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221610_ovl_275850);
+void func_80221610_ovl_275850(Obj27 *o, f32 v) {
+    o->h28 = v;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_8022162C_ovl_275850);
+void func_8022162C_ovl_275850(Obj27 *o, s16 v) {
+    o->h22 = v;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221634_ovl_275850);
+/* Integer map position (x30 + 9000) of whichever point has the smaller x */
+void func_80221634_ovl_275850(IPos27 *out, Vec3f *a, Vec3f *b) {
+    if (a->x < b->x) {
+        b = a;
+    }
+    out->x = b->x * 30.0f + 9000.0f;
+    out->y = b->y * 30.0f + 9000.0f;
+    out->z = b->z * 30.0f + 9000.0f;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_802216AC_ovl_275850);
+void func_802216AC_ovl_275850(Obj27 *o) {
+    o->flags |= 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_802216BC_ovl_275850);
+void func_802216BC_ovl_275850(Obj27 *o) {
+    o->flags &= ~1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_802216CC_ovl_275850);
+s32 func_802216CC_ovl_275850(Obj27 *o) {
+    return o->flags & 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_802216D8_ovl_275850);
+void func_802216D8_ovl_275850(Obj27 *o) {
+    o->h28 = 0;
+    o->w1C = NULL;
+    o->w24 = 0;
+    o->h22 = 0;
+    o->flags ^= o->flags;
+    o->w1C = func_8020C9B0(4);
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221720_ovl_275850);
+void func_80221720_ovl_275850(Obj27 *o) {
+    if (o->w1C != NULL) {
+        func_8020C074(o->w1C);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221748_ovl_275850);
+void func_80221748_ovl_275850(void) {
+}
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221750_ovl_275850);
