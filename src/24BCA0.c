@@ -5,8 +5,8 @@
 void HFree(void *p);
 s32 func_801C8AC0(s32 a);
 s32 func_801C8AA4(s32 a);
-s32 func_801CA1C4(s32 a);
-u8 *func_801C8FE8(u8 i);
+s32 func_801CA1C4(s32 lane, s32 row);
+u8 *func_801C8FE8(s32 i);
 void func_801F7344_ovl_24BCA0(u8 a, u8 *out, u8 b);
 void func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
 void func_801F885C_ovl_24BCA0(u8 *a, u8 *b);
@@ -43,6 +43,9 @@ extern s32 D_8020A170_ovl_24BCA0[];
 u8 *func_80214CF0(u16 id, s32 a);
 extern s32 (*D_80209700_ovl_24BCA0[])(u8 c);
 void func_80218104(f32 x, f32 y, s32 z, s32 w);
+s32 func_801C8E30(u8 *u);
+extern u16 D_801CEF10[];
+void func_801C5938(void *a, u16 b);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -103,16 +106,24 @@ INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F751C_ovl_24BCA0);
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7644_ovl_24BCA0);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7738_ovl_24BCA0);
+/* Map unit index at world position pos (-1 if none or not targetable) */
+s16 func_801F7738_ovl_24BCA0(f32 *pos) {
+    s16 i = func_801CA1C4(pos[2] / 38.0f + 1.0f, pos[0] / 38.0f + 4.0f);
 
-#ifdef NON_MATCHING
-/* Register allocation differs in the modulo. */
-s16 func_801F77E0_ovl_24BCA0(u8 c) {
-    return func_801CA1C4((c - 20) % 3);
+    if (i != -1) {
+        if (func_801C8E30(func_801C8FE8(i))) {
+            i = -1;
+        }
+    }
+    return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F77E0_ovl_24BCA0);
-#endif
+
+/* Map unit index at the cell for character c (20 + row * 3 + lane) */
+s16 func_801F77E0_ovl_24BCA0(u8 c) {
+    s32 v = c - 20;
+
+    return func_801CA1C4(v % 3, v / 3);
+}
 
 s16 func_801F782C_ovl_24BCA0(u8 i) {
     u8 *u = func_801C8FE8(i);
@@ -287,6 +298,28 @@ void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9D1C_ovl_24BCA0);
 
+static inline s32 cls24(u8 c) {
+    s32 k;
+
+    if (c < 20) {
+        k = 0;
+    } else if ((u8)(c - 20) < 27) {
+        k = 1;
+    } else if ((u8)(c - 47) < 40) {
+        k = 2;
+    } else {
+        k = 0xFF;
+    }
+    return D_80209700_ovl_24BCA0[k](c) >= 0;
+}
+#ifdef NON_MATCHING
+/* same range-chain set-compare issue as func_801F7128 (inlined here) */
+void func_801F9DFC_ovl_24BCA0(void *a, u8 c, s32 s) {
+    s = s * 2 + cls24(c);
+    func_801C5938(a, D_801CEF10[s]);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9DFC_ovl_24BCA0);
+#endif
 
 INCLUDE_RODATA("asm/nonmatchings/24BCA0", D_8020A230_ovl_24BCA0);
