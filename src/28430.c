@@ -1,3 +1,7 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/nonmatchings/28430", osAfterPreNMI);
+s32 __osSpSetPc(u32 pc);
+
+s32 osAfterPreNMI(void) {
+    return __osSpSetPc(0);
+}

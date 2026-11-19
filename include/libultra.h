@@ -158,6 +158,45 @@ typedef struct {
 
 #define WAIT_ON_IOBUSY(stat)                                              stat = IO_READ(PI_STATUS_REG);                                        while (stat & (PI_STATUS_IO_BUSY | PI_STATUS_DMA_BUSY))                   stat = IO_READ(PI_STATUS_REG);
 
+#define EPI_SYNC(pihandle, stat, domain)                                           \
+    WAIT_ON_IOBUSY(stat);                                                          \
+    domain = pihandle->domain;                                                     \
+    if (__osCurrentHandle[domain]->type != pihandle->type) {                       \
+        OSPiHandle *cHandle = __osCurrentHandle[domain];                           \
+        if (domain == PI_DOMAIN1) {                                                \
+            if (cHandle->latency != pihandle->latency) {                           \
+                IO_WRITE(PI_BSD_DOM1_LAT_REG, pihandle->latency);                  \
+            }                                                                      \
+            if (cHandle->pageSize != pihandle->pageSize) {                         \
+                IO_WRITE(PI_BSD_DOM1_PGS_REG, pihandle->pageSize);                 \
+            }                                                                      \
+            if (cHandle->relDuration != pihandle->relDuration) {                   \
+                IO_WRITE(PI_BSD_DOM1_RLS_REG, pihandle->relDuration);              \
+            }                                                                      \
+            if (cHandle->pulse != pihandle->pulse) {                               \
+                IO_WRITE(PI_BSD_DOM1_PWD_REG, pihandle->pulse);                    \
+            }                                                                      \
+        } else {                                                                   \
+            if (cHandle->latency != pihandle->latency) {                           \
+                IO_WRITE(PI_BSD_DOM2_LAT_REG, pihandle->latency);                  \
+            }                                                                      \
+            if (cHandle->pageSize != pihandle->pageSize) {                         \
+                IO_WRITE(PI_BSD_DOM2_PGS_REG, pihandle->pageSize);                 \
+            }                                                                      \
+            if (cHandle->relDuration != pihandle->relDuration) {                   \
+                IO_WRITE(PI_BSD_DOM2_RLS_REG, pihandle->relDuration);              \
+            }                                                                      \
+            if (cHandle->pulse != pihandle->pulse) {                               \
+                IO_WRITE(PI_BSD_DOM2_PWD_REG, pihandle->pulse);                    \
+            }                                                                      \
+        }                                                                          \
+        cHandle->type = pihandle->type;                                            \
+        cHandle->latency = pihandle->latency;                                      \
+        cHandle->pageSize = pihandle->pageSize;                                    \
+        cHandle->relDuration = pihandle->relDuration;                              \
+        cHandle->pulse = pihandle->pulse;                                          \
+    }
+
 #define AI_BASE_REG 0x04500000
 #define AI_DRAM_ADDR_REG (AI_BASE_REG + 0x00)
 #define AI_LEN_REG (AI_BASE_REG + 0x04)

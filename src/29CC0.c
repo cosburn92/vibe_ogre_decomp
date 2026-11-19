@@ -1,3 +1,11 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/29CC0", osPiGetCmdQueue);
+extern OSDevMgr __osPiDevMgr;
+
+OSMesgQueue *osPiGetCmdQueue(void) {
+    if (!__osPiDevMgr.active) {
+        return NULL;
+    }
+    return __osPiDevMgr.cmdQueue;
+}
