@@ -33,6 +33,10 @@ ScriptObj *func_80222EEC_ovl_1BA050(s32 i) {
 }
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+void func_8017C4B4(s16 id);
+void func_80224E74_ovl_1BA050(s16 x0, s16 y0, s16 x1, s16 y1);
+void func_80179034(void *s, s32 x, s32 y);
+extern u8 D_8022A1D8_ovl_1BA050[];
 s32 func_8017B550(u8 c);
 extern u8 D_8022A0A8_ovl_1BA050;
 extern u8 D_8022A0A4_ovl_1BA050;
@@ -583,7 +587,33 @@ void func_8022845C_ovl_1BA050(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802284B4_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228BF0_ovl_1BA050);
+static inline Rec698 *Rec698Find(s32 id) {
+    Rec698 *r = NULL;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (D_8022A698_ovl_1BA050[i].used != 0 && D_8022A698_ovl_1BA050[i].used == id) {
+            r = &D_8022A698_ovl_1BA050[i];
+            break;
+        }
+    }
+    return r;
+}
+
+/* Redraws the frame and text of the window record for id (hangs if there is none) */
+void func_80228BF0_ovl_1BA050(s32 id) {
+    Rec698 *r = Rec698Find(id);
+    u16 x;
+
+    if (r == NULL) {
+        for (;;);
+    }
+    func_8017C4B4(FIELD(r, s16, 0x16));
+    x = FIELD(r, u16, 0xA) - FIELD(r, u16, 0x10) / 2;
+    func_80224E74_ovl_1BA050(x, FIELD(r, u16, 0xC) - 11, x + FIELD(r, u16, 0x10), FIELD(r, u16, 0xC) + 10);
+    func_80179034(D_8022A1D8_ovl_1BA050, 0, 0);
+    func_80179034(FIELD(r, void *, 4), FIELD(r, s16, 0xA) - FIELD(r, u16, 0xE) / 2 + 8, FIELD(r, s16, 0xC) - 8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228CE4_ovl_1BA050);
 
