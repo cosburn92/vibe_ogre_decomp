@@ -3,6 +3,26 @@
 /* ovl_101CE0 (12AE10): map/stage logic (chaos frame, inventory) */
 
 /* --- decls --- */
+typedef struct {
+    /* 0x00 */ u16 flags; /* 2: liberated, 4: enemy-held */
+    /* 0x02 */ u8 pref;
+    /* 0x03 */ u8 unk03[0x21];
+} LocationRec; /* size 0x24 */
+
+extern LocationRec D_801951CC[];
+extern u8 gChaosFrame;
+extern u8 D_8018F481; /* current stage id */
+extern u8 gStageTable[][12];
+extern u8 D_801939CC;
+extern u16 D_801F1060_ovl_101CE0[];
+extern s32 D_801F0DE0_ovl_101CE0;
+extern s32 D_801F3610_ovl_101CE0;
+extern u8 D_801F365D_ovl_101CE0;
+
+void bzero(void *p, s32 n);
+s32 func_80186210(s32 flag);
+s32 func_8016FEF4(s32 flag);
+void func_801B2B78_ovl_101CE0(u32 *unit);
 #include "tables.h"
 
 typedef struct {
@@ -284,41 +304,175 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DADF0_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB180_ovl_101CE0);
 
+typedef struct {
+    u8 unk00[0xA8];
+    s32 *ids;
+} DB424Arg;
+
+#ifdef NON_MATCHING
+/* The table address is hoisted above the search loop; the target computes it after. */
+s32 func_801DB424_ovl_101CE0(DB424Arg *a, s32 id) {
+    s32 *p;
+
+    if (a->ids == NULL) {
+        return 0;
+    }
+    for (p = a->ids; *p != -1; p++) {
+        if (*p == id) {
+            return (*D_801F0CB0_ovl_101CE0[id] & 0x31) == 0x31;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB424_ovl_101CE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", ChaosFrameOnLiberate);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", ChaosFrameOnCapture);
+void ChaosFrameOnCapture(s32 loc) {
+    s32 v;
+
+    if (D_801951CC[loc].pref != 0xFF) {
+        v = gChaosFrame - 2;
+        if (v > 100) {
+            v = 100;
+        } else if (v < 0) {
+            v = 0;
+        }
+        gChaosFrame = v;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB718_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DBE74_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC054_ovl_101CE0);
+s32 func_801DC054_ovl_101CE0(void) {
+    u8 v = D_8018F481;
+    s32 r = (v == 0x3F || v == 0x41);
+
+    if (v == 0x40 || v == 0x42) {
+        r = 1;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC094_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC4EC_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", LocationGetStageValue);
+void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
+    u16 fl = D_801951CC[loc].flags;
+
+    if (fl & 2) {
+        *value = gStageTable[D_8018F481][3];
+        if (func_80186210(0x11)) {
+            if (func_8016FEF4(0x6B)) {
+                *value = 1;
+            } else {
+                *value = 4;
+            }
+        }
+        *side = 1;
+    } else if (fl & 4) {
+        *value = gStageTable[D_8018F481][4];
+        *side = 2;
+    } else {
+        *value = -1;
+        *side = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", InventoryAdd);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC910_ovl_101CE0);
+void func_801DC910_ovl_101CE0(void) {
+    s32 i;
+
+    for (i = 0; i < 50; i++) {
+        func_801B2B78_ovl_101CE0(D_801F0CB0_ovl_101CE0[i]);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC95C_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCC48_ovl_101CE0);
+/* Packs the squad's items to the front */
+void func_801DCC48_ovl_101CE0(SquadRec *sq) {
+    u8 tmp[10];
+    u8 *d;
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCCC4_ovl_101CE0);
+    bzero(tmp, 10);
+    for (i = 0, d = tmp; i < 10; i++) {
+        if (sq->items[i] != 0) {
+            *d++ = sq->items[i];
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        sq->items[i] = tmp[i];
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCD40_ovl_101CE0);
+void func_801DCCC4_ovl_101CE0(void) {
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (D_801F1060_ovl_101CE0[i] == 0 || --D_801F1060_ovl_101CE0[i] == 0) {
+            D_801939CC |= 1 << i;
+        } else {
+            D_801939CC &= ~(1 << i);
+        }
+    }
+}
+
+/* Whether the unit's squad carries this item */
+s32 func_801DCD40_ovl_101CE0(MapUnit *u, u8 item) {
+    u8 *p = gSquads[u->squad].items;
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        if (p[i] == item) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCD90_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCEE4_ovl_101CE0);
+s32 func_801DCEE4_ovl_101CE0(void) {
+    s32 r = D_801F0DE0_ovl_101CE0 == 0;
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCF20_ovl_101CE0);
+    if (D_801F3610_ovl_101CE0 != 0) {
+        r = 0;
+    }
+    if (D_801F365D_ovl_101CE0 & 2) {
+        r = 0;
+    }
+    return r;
+}
+
+s32 func_801DCF20_ovl_101CE0(void) {
+    if (func_8016FEF4(5)) {
+        return 1;
+    }
+    if (func_8016FEF4(6)) {
+        return 1;
+    }
+    if (func_8016FEF4(7)) {
+        return 1;
+    }
+    if (func_8016FEF4(8)) {
+        return 1;
+    }
+    if (func_8016FEF4(9)) {
+        return 1;
+    }
+    if (func_8016FEF4(10)) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCF90_ovl_101CE0);
 
