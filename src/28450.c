@@ -21,8 +21,8 @@ u32 __osGetSR(void);
 void __osSetSR(u32 v);
 void __osSetFpcCsr(u32 v);
 void __osSetWatchLo(u32 v);
-s32 __osSpRawReadIo(u32 devAddr, u32 *data);
-s32 __osSpRawWriteIo(u32 devAddr, u32 data);
+s32 __osSiRawReadIo(u32 devAddr, u32 *data);
+s32 __osSiRawWriteIo(u32 devAddr, u32 data);
 void osWritebackDCache(void *vaddr, s32 nbytes);
 void osInvalICache(void *vaddr, s32 nbytes);
 void osUnmapTLBAll(void);
@@ -43,9 +43,9 @@ void osInitialize(void) {
     __osSetSR(__osGetSR() | 0x20000000); /* SR_CU1 */
     __osSetFpcCsr(0x01000000 | 0x00000800); /* FPCSR_FS | FPCSR_EV */
     __osSetWatchLo(0x04900000);
-    while (__osSpRawReadIo(0x1FC007FC, &pifdata)) { /* PIF_RAM_END - 3 */
+    while (__osSiRawReadIo(0x1FC007FC, &pifdata)) { /* PIF_RAM_END - 3 */
     }
-    while (__osSpRawWriteIo(0x1FC007FC, pifdata | 8)) {
+    while (__osSiRawWriteIo(0x1FC007FC, pifdata | 8)) {
     }
     *(__osExceptionVector *)UT_VEC = *__osException;
     *(__osExceptionVector *)XUT_VEC = *__osException;

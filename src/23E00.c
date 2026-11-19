@@ -51,7 +51,7 @@ void osWritebackDCache(void *vaddr, s32 nbytes);
 void __osSpSetStatus(u32 data);
 s32 __osSpSetPc(u32 pc);
 s32 __osSpRawStartDma(s32 direction, u32 devAddr, void *dramAddr, u32 size);
-s32 __osSpDeviceBusy_8009A740(void);
+s32 __osSpDeviceBusy(void);
 
 static inline OSTask *_VirtualToPhysicalTask(OSTask *intp) {
     OSTask *tp;
@@ -86,14 +86,14 @@ void osSpTaskLoad(OSTask *intp) {
     }
     while (__osSpRawStartDma(1, (SP_IMEM_START - sizeof(*tp)), tp, sizeof(OSTask)) == -1) {
     }
-    while (__osSpDeviceBusy_8009A740()) {
+    while (__osSpDeviceBusy()) {
     }
     while (__osSpRawStartDma(1, SP_IMEM_START, tp->t.ucode_boot, tp->t.ucode_boot_size) == -1) {
     }
 }
 
 void osSpTaskStartGo(OSTask *tp) {
-    while (__osSpDeviceBusy_8009A740()) {
+    while (__osSpDeviceBusy()) {
     }
     __osSpSetStatus(SP_SET_INTR_BREAK | SP_CLR_SSTEP | SP_CLR_BROKE | SP_CLR_HALT);
 }
