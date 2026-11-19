@@ -244,7 +244,46 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_80231238_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_802312E4_ovl_29A4C0);
 
+/* First unit of the other side (and not in the 0x88 table) within 20 of u on both x and z, or -1 */
+#ifdef NON_MATCHING
+/* The original copies u from a0 to a2 at entry (so the other unit lands in a0), and it takes abs(dx) before truncating dz. */
+s16 func_802315FC_ovl_29A4C0(BUnit *u) {
+    u16 i;
+    BUnit *o;
+    s32 dx;
+    s32 dz;
+
+    for (i = 0; i < 28; i++) {
+        o = D_8022A974->units[(s16)i];
+        if (o == NULL) {
+            continue;
+        }
+        if (o == u) {
+            continue;
+        }
+        if (FIELD(o, u8, 0x147) == FIELD(u, u8, 0x147)) {
+            continue;
+        }
+        if (D_8022A974->units[(s16)i + 28] != NULL) {
+            continue;
+        }
+        dx = FIELD(o, f32, 0x11C) - FIELD(u, f32, 0x11C);
+        dz = FIELD(o, f32, 0x124) - FIELD(u, f32, 0x124);
+        if (dx < 0) {
+            dx = -dx;
+        }
+        if (dz < 0) {
+            dz = -dz;
+        }
+        if ((dx < 20) & (dz < 20)) {
+            return (s16)i;
+        }
+    }
+    return -1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_802315FC_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_802316C0_ovl_29A4C0);
 
