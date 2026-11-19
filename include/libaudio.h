@@ -66,14 +66,127 @@ typedef struct ALFilter_s {
     /* 0x10 */ s32 type;
 } ALFilter;
 
+typedef struct ALParam_s {
+    /* 0x00 */ struct ALParam_s *next;
+    /* 0x04 */ s32 delta;
+    /* 0x08 */ s16 type;
+    /* 0x0A */ s16 unity;
+    /* 0x0C */ union {
+        f32 f;
+        s32 i;
+    } data;
+    /* 0x10 */ union {
+        f32 f;
+        s32 i;
+    } moredata;
+    /* 0x14 */ union {
+        f32 f;
+        s32 i;
+    } stillmoredata;
+    /* 0x18 */ union {
+        f32 f;
+        s32 i;
+    } yetstillmoredata;
+} ALParam;
+
+typedef short ENVMIX_STATE[40];
+typedef short RESAMPLE_STATE[16];
+typedef short POLEF_STATE[4];
+typedef short ADPCM_STATE[16];
+
+typedef struct {
+    /* 0x00 */ s16 fc;
+    /* 0x02 */ s16 fgain;
+    /* 0x08 */ union {
+        s16 fccoef[16];
+        s64 force_aligned;
+    } fcvec;
+    /* 0x28 */ POLEF_STATE *fstate;
+    /* 0x2C */ s32 first;
+} ALLowPass;
+
+typedef struct {
+    /* 0x00 */ ALFilter filter;
+    /* 0x14 */ RESAMPLE_STATE *state;
+    /* 0x18 */ f32 ratio;
+    /* 0x1C */ s32 upitch;
+    /* 0x20 */ f32 delta;
+    /* 0x24 */ s32 first;
+    /* 0x28 */ ALParam *ctrlList;
+    /* 0x2C */ ALParam *ctrlTail;
+    /* 0x30 */ s32 motion;
+} ALResampler;
+
+typedef struct {
+    /* 0x00 */ u32 input;
+    /* 0x04 */ u32 output;
+    /* 0x08 */ s16 ffcoef;
+    /* 0x0A */ s16 fbcoef;
+    /* 0x0C */ s16 gain;
+    /* 0x10 */ f32 rsinc;
+    /* 0x14 */ f32 rsval;
+    /* 0x18 */ s32 rsdelta;
+    /* 0x1C */ f32 rsgain;
+    /* 0x20 */ ALLowPass *lp;
+    /* 0x24 */ ALResampler *rs;
+} ALDelay;
+
+typedef struct {
+    /* 0x00 */ ALFilter filter;
+    /* 0x14 */ ENVMIX_STATE *state;
+    /* 0x18 */ s16 pan;
+    /* 0x1A */ s16 volume;
+    /* 0x1C */ s16 cvolL;
+    /* 0x1E */ s16 cvolR;
+    /* 0x20 */ s16 dryamt;
+    /* 0x22 */ s16 wetamt;
+    /* 0x24 */ u16 lratl;
+    /* 0x26 */ s16 lratm;
+    /* 0x28 */ s16 ltgt;
+    /* 0x2A */ u16 rratl;
+    /* 0x2C */ s16 rratm;
+    /* 0x2E */ s16 rtgt;
+    /* 0x30 */ s32 delta;
+    /* 0x34 */ s32 segEnd;
+    /* 0x38 */ s32 first;
+    /* 0x3C */ ALParam *ctrlList;
+    /* 0x40 */ ALParam *ctrlTail;
+    /* 0x44 */ ALFilter **sources;
+    /* 0x48 */ s32 motion;
+} ALEnvMixer;
+
+typedef struct {
+    /* 0x00 */ u32 start;
+    /* 0x04 */ u32 end;
+    /* 0x08 */ u32 count;
+} ALRawLoop;
+
+typedef s32 (*ALDMAproc)(s32 addr, s32 len, void *state);
+typedef ALDMAproc (*ALDMANew)(void *state);
+
+typedef struct {
+    /* 0x00 */ ALFilter filter;
+    /* 0x14 */ ADPCM_STATE *state;
+    /* 0x18 */ ADPCM_STATE *lstate;
+    /* 0x1C */ ALRawLoop loop;
+    /* 0x28 */ struct ALWaveTable_s *table;
+    /* 0x2C */ s32 bookSize;
+    /* 0x30 */ ALDMAproc dma;
+    /* 0x34 */ void *dmaState;
+    /* 0x38 */ s32 sample;
+    /* 0x3C */ s32 lastsam;
+    /* 0x40 */ s32 first;
+    /* 0x44 */ s32 memin;
+} ALLoadFilter;
+
 typedef struct {
     /* 0x00 */ ALFilter filter;
     /* 0x14 */ s16 *base;
     /* 0x18 */ s16 *input;
     /* 0x1C */ u32 length;
-    /* 0x20 */ void *delay;
+    /* 0x20 */ ALDelay *delay;
     /* 0x24 */ u8 section_count;
-    /* 0x28 */ void *paramHdl;
+    /* 0x28 */ ALSetParam paramHdl;
 } ALFx;
 
 typedef struct {
@@ -142,6 +255,27 @@ typedef struct {
 
 typedef void *ALFxRef;
 
+#define AL_ADPCM 0
+#define AL_RESAMPLE 1
+#define AL_BUFFER 2
+#define AL_SAVE 3
+#define AL_ENVMIX 4
+#define AL_FX 5
+#define AL_AUXBUS 6
+#define AL_MAINBUS 7
+
+#define AL_STOPPED 0
+#define AL_PLAYING 1
+#define AL_STOPPING 2
+
+#define AL_FX_NONE 0
+#define AL_FX_SMALLROOM 1
+#define AL_FX_BIGROOM 2
+#define AL_FX_CHORUS 3
+#define AL_FX_FLANGE 4
+#define AL_FX_ECHO 5
+#define AL_FX_CUSTOM 6
+
 #define AL_FILTER_FREE_VOICE 0
 #define AL_FILTER_SET_SOURCE 1
 #define AL_FILTER_ADD_SOURCE 2
@@ -160,6 +294,7 @@ typedef void *ALFxRef;
 #define AL_FILTER_STOP_VOICE 15
 #define AL_FILTER_SET_FXAMT 16
 
+void alFilterNew(ALFilter *f, ALCmdHandler h, ALSetParam s, s32 type);
 void alSynNew(ALSynth *drvr, ALSynConfig *c);
 void alSynDelete(ALSynth *drvr);
 void alFxNew(ALFx *r, ALSynConfig *c, ALHeap *hp);
