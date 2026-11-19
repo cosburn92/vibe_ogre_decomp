@@ -41,6 +41,9 @@ extern s16 D_801EF1BC_ovl_087200[];
 extern s16 D_801EF1BE_ovl_087200[]; /* = D_801EF1BC + 1 */
 
 void func_801C54EC_ovl_087200(s32 a, u8 b, u8 c);
+extern s16 D_801EE38C_ovl_087200[][2];
+void func_801C6DD0_ovl_087200(f32 *x, f32 *y, s32 i);
+void func_801C79C8_ovl_087200(f32 *x, f32 *y, s32 i);
 /* --- end decls --- */
 
 /* Pushes the cursor */
@@ -174,7 +177,20 @@ void func_801C6A40_ovl_087200(u8 a, u8 b, u8 c, u8 d, u8 e) {
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6A64_ovl_087200);
 
+/* Screen position of slot i in the 4-wide formation grid (isometric) */
+#ifdef NON_MATCHING
+/* float constants 10.0/0.5 are shared registers in the original */
+void func_801C6B28_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s32 r = i / 4;
+    f32 fr = r;
+    f32 fc = 3 - (i - r * 4);
+
+    *x = 10.0f - fr * 36.0f + fc * 15.0f + 0.5f;
+    *y = fc * 25.0f + -5.0f + fr * 10.0f + 0.5f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6B28_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6BCC_ovl_087200);
 
@@ -188,7 +204,14 @@ __asm__(".section .rodata\n"
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6DD0_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C701C_ovl_087200);
+void func_801C701C_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s16 *off;
+
+    func_801C6DD0_ovl_087200(x, y, i);
+    off = D_801EE38C_ovl_087200[*(u16 *)((u8 *)D_80196AF8 + 0x19A)];
+    *x -= off[0];
+    *y -= off[1];
+}
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C70A0_ovl_087200);
 
@@ -196,11 +219,30 @@ INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C74D8_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7624_ovl_087200);
 
+#ifdef NON_MATCHING
+/* float constants 10.0/0.5 are shared registers in the original */
+void func_801C779C_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s32 r = i / 4;
+    f32 fr = r;
+    f32 fc = 3 - (i - r * 4);
+
+    *x = 10.0f - fr * 36.0f + fc * 15.0f + 0.5f;
+    *y = fc * 25.0f + -5.0f + fr * 10.0f + 0.5f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C779C_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7840_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7944_ovl_087200);
+void func_801C7944_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s16 *off;
+
+    func_801C79C8_ovl_087200(x, y, i);
+    off = D_801EE38C_ovl_087200[*(u16 *)((u8 *)D_80196AF8 + 0x19A)];
+    *x -= off[0];
+    *y -= off[1];
+}
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C79C8_ovl_087200);
 
