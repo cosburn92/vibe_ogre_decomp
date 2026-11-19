@@ -45,6 +45,7 @@ f32 func_8009D3E0(f32 x);
 void func_80197FA4(s32 a, s32 b, u8 c);
 void guRotateF(f32 *mf, f32 a, f32 x, f32 y, f32 z);
 void guMtxCatF(f32 *m, f32 *n, f32 *r);
+#define FIELDX(p, T, off) (*(T *)((u8 *)(p) + (off)))
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A07D0_ovl_0EBBB0);
@@ -70,7 +71,20 @@ void func_801A363C_ovl_0EBBB0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3688_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A382C_ovl_0EBBB0);
+/* Inserts n into the draw-order tree: by key (+0x10) ascending, then depth (+0x8) descending */
+Tree0E *func_801A382C_ovl_0EBBB0(Tree0E *root, Tree0E *n) {
+    if (root != NULL) {
+        if (FIELDX(n, u16, 0x10) == FIELDX(root, u16, 0x10) ? FIELDX(n, f32, 8) > FIELDX(root, f32, 8)
+                                                           : FIELDX(n, u16, 0x10) < FIELDX(root, u16, 0x10)) {
+            root->left = func_801A382C_ovl_0EBBB0(root->left, n);
+        } else {
+            root->right = func_801A382C_ovl_0EBBB0(root->right, n);
+        }
+    } else {
+        root = n;
+    }
+    return root;
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A38B4_ovl_0EBBB0);
 
@@ -198,7 +212,21 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A906C_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A9304_ovl_0EBBB0);
 
+#ifdef NON_MATCHING
+/* display-list pointer updates are scheduled after the command stores */
+void func_801A93A4_ovl_0EBBB0(void) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xFA000000;
+    g->w1 = (u8)(u32)(FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x15C) * 255.0f);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A93A4_ovl_0EBBB0);
+#endif
 
 void func_801A9438_ovl_0EBBB0(void) {
     Gfx *g;
