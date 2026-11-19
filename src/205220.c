@@ -16,6 +16,15 @@ typedef struct {
 extern u8 D_801CEF00_ovl_1F0A30;
 extern CacheEntry *D_801D0728_ovl_1F0A30;
 extern s32 D_801D06B0_ovl_1F0A30[8];
+extern u8 D_800EB0B0[];
+extern u8 D_800EB100[];
+extern u8 D_800EB150[];
+extern u8 D_800EB1A0[];
+extern u8 D_800EB1F0[];
+extern u8 D_800EB240[];
+extern u8 D_800EB290[];
+void func_800EA6B0(void *ch, s32 a, s32 b);
+void func_800EA604(void *ch, s32 sound);
 void *HMalloc(s32 size);
 void HFree(void *p);
 void bzero(void *p, s32 size);
@@ -254,4 +263,27 @@ void func_801C58F0_ovl_1F0A30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/205220", SoundRequest);
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C5A20_ovl_1F0A30);
+/* Starts the saved sound (-1 = none) on each of the seven sound channels */
+void func_801C5A20_ovl_1F0A30(void) {
+    if (D_801D06B0_ovl_1F0A30[0] >= 0) {
+        func_800EA6B0(D_800EB0B0, D_801D06B0_ovl_1F0A30[0], 10);
+    }
+    if (D_801D06B0_ovl_1F0A30[1] >= 0) {
+        func_800EA6B0(D_800EB100, D_801D06B0_ovl_1F0A30[1], 10);
+    }
+    if (D_801D06B0_ovl_1F0A30[2] >= 0) {
+        func_800EA604(D_800EB150, D_801D06B0_ovl_1F0A30[2]);
+    }
+    if (D_801D06B0_ovl_1F0A30[3] >= 0) {
+        func_800EA604(D_800EB1A0, D_801D06B0_ovl_1F0A30[3]);
+    }
+    if (D_801D06B0_ovl_1F0A30[4] >= 0) {
+        func_800EA604(D_800EB1F0, D_801D06B0_ovl_1F0A30[4]);
+    }
+    if (D_801D06B0_ovl_1F0A30[5] >= 0) {
+        func_800EA604(D_800EB240, D_801D06B0_ovl_1F0A30[5]);
+    }
+    if (D_801D06B0_ovl_1F0A30[6] >= 0) {
+        func_800EA604(D_800EB290, D_801D06B0_ovl_1F0A30[6]);
+    }
+}
