@@ -105,7 +105,40 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022402C_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224268_ovl_1BA050);
+/* For each bit in mask: reuse the slot holding that bit, else the first empty one (hangs when full),
+ * and set it to (bit, 0, 0, v) */
+void func_80224268_ovl_1BA050(u8 *p, u16 mask, u8 v) {
+    u16 bit = 1;
+    u32 i;
+    u8 *q;
+
+    while (mask != 0) {
+        if (mask & bit) {
+            for (i = 0; i < 16; i++) {
+                if (FIELD(p, u16, 0x12 + i * 6) & bit) {
+                    break;
+                }
+            }
+            if (i >= 16) {
+                for (i = 0; i < 16; i++) {
+                    if (FIELD(p, u16, 0x12 + i * 6) == 0) {
+                        break;
+                    }
+                }
+                if (i >= 16) {
+                    for (;;);
+                }
+            }
+            mask ^= bit;
+            q = p + i * 6;
+            FIELD(q, u16, 0x12) = bit;
+            q[0x14] = 0;
+            q[0x15] = 0;
+            q[0x16] = v;
+        }
+        bit <<= 1;
+    }
+}
 
 #ifdef NON_MATCHING
 /* and/addu operand order (2 instructions) */
