@@ -43,6 +43,10 @@ void func_801EB594_ovl_23B220(void);
 void func_801EBDD8_ovl_23B220(void);
 void func_801EC00C_ovl_23B220(void);
 void func_801ECAB0_ovl_23B220(void);
+extern u8 *D_801969B0;
+extern Gfx D_801F0090_ovl_23B220[];
+void guMtxF2L(void *mf, void *m);
+void func_801E9DFC_ovl_23B220(s16 a, s32 b);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
@@ -84,7 +88,30 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9A50_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9DFC_ovl_23B220);
 
+/* Draws object o with its float matrix (o + 0x20) */
+#ifdef NON_MATCHING
+/* display-list pointer store sinks into the call delay slot in the original */
+s32 func_801EA158_ovl_23B220(u8 *o) {
+    Gfx *g;
+
+    g = D_800E9BA0++;
+    g->w0 = 0xDE000000;
+    g->w1 = (u32)D_801F0090_ovl_23B220;
+    guMtxF2L(o + 0x20, D_801969B0);
+    g = D_800E9BA0;
+    g->w0 = 0xDA380000;
+    g->w1 = (u32)D_801969B0;
+    D_800E9BA0 = g + 1;
+    func_801E9DFC_ovl_23B220(FIELD(o, s16, 0x66), FIELD(o, s32, 0x18));
+    g = D_800E9BA0++;
+    g->w0 = 0xD8380002;
+    g->w1 = 0x40;
+    D_801969B0 += 0x40;
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA158_ovl_23B220);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA224_ovl_23B220);
 
