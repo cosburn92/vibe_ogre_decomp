@@ -14,6 +14,7 @@ void func_8023BDF8_ovl_2A8D20();
 
 #define SLOT(i) FIELD(D_8022A974 + (i) * 4, u8 *, 0x18)
 extern u8 *D_801CE8BC;
+u8 func_8016FF5C(u8 a, u8 b);
 void *HMalloc(s32 size);
 s32 func_801C8B68(u8 *u);
 s32 func_801C8C90(u8 *u);
@@ -369,7 +370,56 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C9EC_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023CFA0_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D0EC_ovl_2A8D20);
+/* Finds the first battle unit record (20 x 0xF8 from 0x1C4) whose id passes func_8016FF5C(id, kind),
+ * then swaps the first unit slot of that side with slot `slot` */
+typedef struct {
+    u8 unk00[0x48];
+    s32 id;
+    u8 unk4C[0xAC];
+} Unit2A8; /* size 0xF8 */
+typedef struct {
+    u8 unk000[0x1C4];
+    Unit2A8 units[20];
+} Army2A8;
+
+void func_8023D0EC_ovl_2A8D20(u8 slot, u8 kind) {
+    s32 i;
+    s32 k;
+    s32 id;
+    s32 off;
+    u8 *d;
+    u8 *a;
+    u8 *b;
+
+    i = 0;
+    off = 0x1C4;
+    do {
+        id = FIELD(D_801CE8BC + off, s32, 0x48);
+        if (id != 0 && func_8016FF5C(id, kind)) {
+            break;
+        }
+        i++;
+        off += 0xF8;
+    } while (i < 20);
+    if (i < 20) {
+        d = D_8022A974;
+        for (k = 0; k < 28; k++) {
+            if (FIELD(d + k * 4, u8 *, 0x18) != NULL && FIELD(d + k * 4, u8 *, 0x18)[0x147] == i) {
+                b = FIELD(d + (u8)k * 4, u8 *, 0x18);
+                a = FIELD(d + slot * 4, u8 *, 0x18);
+                FIELD(d + (u8)k * 4, u8 *, 0x18) = a;
+                FIELD(d + slot * 4, u8 *, 0x18) = b;
+                if (b != NULL) {
+                    FIELD(b, s32, 0xE4) = slot;
+                }
+                if (a != NULL) {
+                    FIELD(a, s32, 0xE4) = (u8)k;
+                }
+                return;
+            }
+        }
+    }
+}
 
 /* Swaps display slot `slot` with the slot showing the unit at map cell `cell` (row * 3 + lane) */
 #ifdef NON_MATCHING
