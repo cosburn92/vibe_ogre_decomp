@@ -93,6 +93,7 @@ extern u16 D_800C4C26;
 Node *func_8017C074_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
 void func_801807F4_ovl_040E80(Node *n, s32 a);
 void func_8017C584_ovl_040E80();
+void func_8017EAE8_ovl_040E80();
 void func_80221354(void);
 extern u8 D_80196AEC_ovl_040E80;
 void func_8017F554_ovl_040E80(Node *n);
@@ -451,7 +452,29 @@ Node *func_8017F010_ovl_040E80(void *data, u16 kind, s16 x, s16 y, s16 w, s16 h,
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F010_ovl_040E80);
 #endif
 
+/* Marker widget next to o (same colour index), drawn by func_8017EAE8 */
+#ifdef NON_MATCHING
+/* Same scheduling issue as func_8017EF24 (sign-extensions before li v1,1). The original also computes x-0x3E, y-0x10 and y+0x10 before the call, reusing the x/y registers. An inline setter with s16 parameters did not help. */
+void func_8017F114_ovl_040E80(Node *o) {
+    s32 x = FIELD(o, s32, 0x44);
+    s32 y = FIELD(o, s32, 0x48);
+    Node *n = func_8017C074_ovl_040E80(4, 0, func_8017EAE8_ovl_040E80, x - 12, y - 8, x - 4, y + 8);
+
+    FIELD(n, s16, 0x28) = 1;
+    FIELD(n, s16, 0x18) = 0;
+    FIELD(n, s32, 0x3C) = (s16)(x - 0x3E);
+    FIELD(n, s32, 0x40) = (s16)(y - 0x10);
+    FIELD(n, s32, 0x44) = (s16)(x - 4);
+    FIELD(n, s32, 0x48) = (s16)(y + 0x10);
+    FIELD(n, u16, 0x26) = 0x8000;
+    FIELD(n, u8, 0x22) = FIELD(o, u8, 0x22);
+    FIELD(n, u8, 0x24) = 1;
+    FIELD(n, u8, 0x25) = 2;
+    FIELD(n, u8, 0x23) = FIELD(o, u8, 0x22);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F114_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F214_ovl_040E80);
 
