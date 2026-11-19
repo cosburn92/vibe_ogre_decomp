@@ -114,6 +114,10 @@ s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 void *func_80071C04(s32 size);
+u8 *func_801CBE18_ovl_1F0A30(s32 a, s32 x, s32 y, s32 z);
+void func_801B3CB8_ovl_1F0A30();
+void func_801B5524_ovl_1F0A30();
+extern s32 D_801CE8FC_ovl_1F0A30;
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
@@ -475,7 +479,42 @@ BattleUnit *func_801C940C_ovl_1F0A30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9478_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C95D8_ovl_1F0A30);
+typedef struct Fx20B {
+    /* 0x00 */ void (*fn)();
+    /* 0x04 */ u8 unk04[0x10];
+    /* 0x14 */ u8 b14;
+    /* 0x15 */ u8 unk15[0x1F];
+    /* 0x34 */ s16 h34;
+    /* 0x36 */ u8 unk36[0xA];
+    /* 0x40 */ u8 *owner;
+    /* 0x44 */ s32 w44;
+    /* 0x48 */ u8 unk48[0x48];
+    /* 0x90 */ struct Fx20B *head;
+} Fx20B;
+
+/* Creates the two linked effect nodes for slot k of o at its position plus (dx, dy, dz) */
+void func_801C95D8_ovl_1F0A30(u8 *o, s32 k, s32 dx, s32 dy, s32 dz) {
+    Fx20B *a;
+    Fx20B *b;
+
+    a = (Fx20B *)func_801CBE18_ovl_1F0A30(FIELD(o, s32, 0x50), FIELD(o, s32, 0x5C) + dx, FIELD(o, s32, 0x60) + dy,
+                                          FIELD(o, s32, 0x64) + dz);
+    a->b14 = 0;
+    ((Fx20B **)o)[k] = a;
+    b = (Fx20B *)func_801CBE18_ovl_1F0A30(FIELD(o, s32, 0x50), FIELD(o, s32, 0x5C) + dx, FIELD(o, s32, 0x60) + dy,
+                                          FIELD(o, s32, 0x64) + dz);
+    b->b14 = 0;
+    ((Fx20B **)o)[k + 3] = b;
+    b->owner = o;
+    a->fn = func_801B3CB8_ovl_1F0A30;
+    a->owner = o;
+    b->fn = func_801B5524_ovl_1F0A30;
+    a->h34 = 0xFF;
+    b->h34 = D_801CE8FC_ovl_1F0A30;
+    a->w44 = b->w44 = FIELD(o, s32, 0x50);
+    b->head = a;
+    a->head = a;
+}
 
 /* t (class 33) grants u an extra action */
 void func_801C96D4_ovl_1F0A30(BattleUnit *u, BattleUnit *t) {
