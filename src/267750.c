@@ -59,6 +59,12 @@ s32 func_8020E4C4_ovl_25EE90();
 void func_8020CDF4_ovl_25EE90(Cnt26 *c);
 void func_8020C074_ovl_25EE90(Cnt26 *c);
 void func_8020D024_ovl_25EE90(Cnt26 *c, u16 a, s32 b, u16 d, s32 e);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void _bcopy(const void *src, void *dst, s32 n);
+void func_80215654_ovl_25EE90();
+void func_802148C0_ovl_25EE90();
 /* --- end decls --- */
 
 void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
@@ -287,6 +293,36 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_802144EC_ovl_25EE90);
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_8021463C_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_80214774_ovl_25EE90);
+/* Converts object o to the func_80215654 layout (rebuilds its body from +0x1C) */
+void func_80214774_ovl_25EE90(u8 *o) {
+    u8 b[0x70];
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_80214814_ovl_25EE90);
+    FIELD(o, void *, 4) = func_80215654_ovl_25EE90;
+    _bcopy(o + 0x1C, b, 0x40);
+    _bcopy(o + 0x68, b + 0x48, 0x18);
+    FIELD(b, f32, 0x40) = FIELD(o, f32, 0x5C);
+    FIELD(b, u16, 0x44) = FIELD(o, u16, 0x66);
+    FIELD(b, u16, 0x60) = FIELD(o, u16, 0x80);
+    FIELD(b, u16, 0x62) = FIELD(o, u16, 0x82);
+    FIELD(b, s32, 0x64) = FIELD(o, s32, 0x84);
+    FIELD(b, s32, 0x68) = FIELD(o, s32, 0x88);
+    FIELD(b, s32, 0x6C) = FIELD(o, s32, 0x8C);
+    _bcopy(b, o + 0x1C, 0x70);
+}
+
+/* Converts object o to the func_802148C0 layout */
+void func_80214814_ovl_25EE90(u8 *o) {
+    u8 b[0x74];
+
+    FIELD(o, void *, 4) = func_802148C0_ovl_25EE90;
+    _bcopy(o + 0x1C, b, 0x40);
+    _bcopy(o + 0x64, b + 0x4C, 0x18);
+    FIELD(b, f32, 0x40) = FIELD(o, f32, 0x5C);
+    FIELD(b, u16, 0x4A) = FIELD(o, u16, 0x60);
+    FIELD(b, u16, 0x64) = FIELD(o, u16, 0x7C);
+    FIELD(b, u16, 0x66) = FIELD(o, u16, 0x7E);
+    FIELD(b, s32, 0x68) = FIELD(o, s32, 0x80);
+    FIELD(b, s32, 0x6C) = FIELD(o, s32, 0x84);
+    FIELD(b, s32, 0x70) = FIELD(o, s32, 0x88);
+    _bcopy(b, o + 0x1C, 0x74);
+}
