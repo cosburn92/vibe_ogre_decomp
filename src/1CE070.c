@@ -60,8 +60,10 @@ typedef struct {
     f32 m[4][4];
     s32 pad;
 } MtxCE; /* size 0x44 */
-extern u8 *D_801B8080_ovl_1CE070[2];
-extern u8 *D_801B8088_ovl_1CE070[2];
+extern u8 *D_801B8080_ovl_1CE070;
+extern u8 *D_801B8088_ovl_1CE070;
+extern u8 *D_801B808C_ovl_1CE070; /* = D_801B8088[1] */
+extern u8 *D_801B8084_ovl_1CE070; /* = D_801B8080[1] */
 extern u8 D_800E7A0C;
 void *HMalloc(s32 size);
 void guMtxCatF(void *a, void *b, void *c);
@@ -71,6 +73,9 @@ void func_80089BC0(void);
 void func_80089AB0(void *p, s32 n);
 void osViSetSpecialFeatures(u32 f);
 void func_8016CD50(s32 a);
+extern u8 *D_800A8204[];
+extern u8 *D_800C4BB8;
+void HFree(void *p);
 /* --- end decls --- */
 
 /* Texture line size in bytes for pixel size siz and width w */
@@ -137,18 +142,18 @@ void func_80198EE0_ovl_1CE070(void) {
 
 /* Allocates two 0x96000-byte frame buffers (64-byte aligned) and switches the display to them */
 void func_80198EEC_ovl_1CE070(void) {
-    u8 **raw = D_801B8088_ovl_1CE070;
+    u8 **raw = &D_801B8088_ovl_1CE070;
     u8 **fb;
     u8 *r0;
     u8 *r1;
     u32 mask;
 
     raw[0] = HMalloc(0x9603F);
-    r1 = D_801B8088_ovl_1CE070[1] = HMalloc(0x9603F);
+    r1 = (&D_801B8088_ovl_1CE070)[1] = HMalloc(0x9603F);
     r0 = raw[0];
     mask = ~0x3F;
-    fb = D_801B8080_ovl_1CE070;
-    D_801B8080_ovl_1CE070[1] = (u8 *)(((u32)r1 + 0x3F) & mask);
+    fb = &D_801B8080_ovl_1CE070;
+    (&D_801B8080_ovl_1CE070)[1] = (u8 *)(((u32)r1 + 0x3F) & mask);
     D_800C4B20 = 0;
     D_801B8094_ovl_1CE070 = 0;
     fb[0] = (u8 *)(((u32)r0 + 0x3F) & mask);
@@ -162,9 +167,57 @@ void func_80198EEC_ovl_1CE070(void) {
     D_801B8090_ovl_1CE070 = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80198FB4_ovl_1CE070);
+/* Same as func_80198EEC, plus a third (capture) buffer */
+void func_80198FB4_ovl_1CE070(void) {
+    u8 *r0;
+    u8 *r1;
+    u32 mask;
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199088_ovl_1CE070);
+    D_801B8088_ovl_1CE070 = HMalloc(0x9603F);
+    r1 = D_801B808C_ovl_1CE070 = HMalloc(0x9603F);
+    r0 = D_801B8088_ovl_1CE070;
+    mask = ~0x3F;
+    D_801B8084_ovl_1CE070 = (u8 *)(((u32)r1 + 0x3F) & mask);
+    D_800C4B20 = 0;
+    D_801B8094_ovl_1CE070 = 0;
+    D_801B8080_ovl_1CE070 = (u8 *)(((u32)r0 + 0x3F) & mask);
+    nuGfxTaskAllEndWait();
+    func_80072738(9);
+    func_80089BC0();
+    func_80089AB0(&D_801B8080_ovl_1CE070, 2);
+    osViSetSpecialFeatures(0x9A);
+    D_800E7A0C = 0;
+    func_8016CD50(1);
+    D_801B8090_ovl_1CE070 = 1;
+    D_801B8094_ovl_1CE070 = (s32)HMalloc(0x9603F);
+}
+
+/* Switches back to the normal frame buffers and frees the high-resolution ones */
+void func_80199088_ovl_1CE070(void) {
+    u8 **raw;
+
+    nuGfxTaskAllEndWait();
+    func_80072738(2);
+    func_80089BC0();
+    func_80089AB0(D_800A8204, 3);
+    D_800E7A0C = 1;
+    D_800C4BB8 = D_800A8204[0];
+    func_8016CD50(0);
+    raw = &D_801B8088_ovl_1CE070;
+    D_801B8090_ovl_1CE070 = 1;
+    HFree(raw[0]);
+    raw[0] = NULL;
+    HFree(D_801B808C_ovl_1CE070);
+    D_801B808C_ovl_1CE070 = NULL;
+    if (D_801B8094_ovl_1CE070 != 0) {
+        HFree((void *)D_801B8094_ovl_1CE070);
+        D_800C4B20 = 0;
+        D_801B8094_ovl_1CE070 = 0;
+        D_800A8212 = 0;
+        D_800A8211 = 0;
+        D_800A8210 = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019915C_ovl_1CE070);
 
