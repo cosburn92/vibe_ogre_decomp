@@ -1,3 +1,6 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/1C810", osAiGetLength);
+u32 osAiGetLength(void) {
+    return IO_READ(AI_LEN_REG);
+}

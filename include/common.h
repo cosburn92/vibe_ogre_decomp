@@ -14,6 +14,11 @@ typedef unsigned long long u64;
 typedef float f32;
 typedef double f64;
 
+typedef volatile u8 vu8;
+typedef volatile u16 vu16;
+typedef volatile u32 vu32;
+typedef volatile s32 vs32;
+
 #define NULL ((void *)0)
 
 #endif /* COMMON_H */

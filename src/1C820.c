@@ -1,3 +1,6 @@
 #include "common.h"
+#include "libultra.h"
 
-INCLUDE_ASM("asm/nonmatchings/1C820", osAiGetStatus);
+u32 osAiGetStatus(void) {
+    return IO_READ(AI_STATUS_REG);
+}

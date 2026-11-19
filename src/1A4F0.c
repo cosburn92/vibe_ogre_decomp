@@ -30,7 +30,7 @@ void osCreateMesgQueue(OSMesgQueue *mq, OSMesg *msg, s32 count);
 s32 osRecvMesg(OSMesgQueue *mq, OSMesg *msg, s32 flag);
 void osInvalDCache(void *addr, s32 size);
 void osWritebackDCache(void *addr, s32 size);
-s32 func_8008BC40(void *handle, OSIoMesg *mb, s32 direction); /* osEPiStartDma */
+s32 osEPiStartDma(void *handle, OSIoMesg *mb, s32 direction);
 
 /* nuPiReadWriteRom */
 void func_8008A0F0(u32 rom_addr, void *buf_ptr, u32 size, s32 direction) {
@@ -49,6 +49,6 @@ void func_8008A0F0(u32 rom_addr, void *buf_ptr, u32 size, s32 direction) {
     } else {
         osWritebackDCache(buf_ptr, size);
     }
-    func_8008BC40(D_800E79AC, &dmaIoMesgBuf, direction);
+    osEPiStartDma(D_800E79AC, &dmaIoMesgBuf, direction);
     osRecvMesg(&dmaMesgQ, &dmaMesgBuf, 1);
 }

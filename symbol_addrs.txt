@@ -627,3 +627,5 @@ nuScRetraceCounter = 0x800C4BCC;
 nuScPreNMIFunc = 0x800A9E60;
 rdpstateinit_dl = 0x800A9EF0;
 nuPiSramHandleBody = 0x800BE110; // size:0x74
+osEPiStartDma = 0x8008BC40; // type:func
+__osPiDevMgr = 0x800AA400;

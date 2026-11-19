@@ -54,7 +54,7 @@ void *osCartRomInit(void);
 void osCreateMesgQueue(OSMesgQueue *mq, OSMesg *msg, s32 count);
 s32 osRecvMesg(OSMesgQueue *mq, OSMesg *msg, s32 flag);
 u32 osVirtualToPhysical(void *addr);
-s32 func_8008BC40(void *handle, OSIoMesg *mb, s32 direction); /* osEPiStartDma */
+s32 osEPiStartDma(void *handle, OSIoMesg *mb, s32 direction);
 DmaBuffer *func_8008547C(u32 addr, s32 len);
 void *func_80085404(void *state);
 s32 func_80085410(u32 addr, s32 len, void *state);
@@ -194,6 +194,6 @@ DmaBuffer *func_8008547C(u32 addr, s32 len) {
     iomsg->dramAddr = newPtr->ptr;
     iomsg->devAddr = newPtr->startAddr;
     iomsg->size = D_800B1874;
-    func_8008BC40(handle, iomsg, 0);
+    osEPiStartDma(handle, iomsg, 0);
     return newPtr;
 }

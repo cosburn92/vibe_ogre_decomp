@@ -118,7 +118,7 @@ void osStopThread(OSThread *t);
 void osInvalDCache(void *vaddr, s32 nbytes);
 void osCreatePiManager(s32 pri, OSMesgQueue *cmdQ, OSMesg *cmdBuf, s32 cmdMsgCnt);
 OSPiHandle *osCartRomInit(void);
-s32 func_8008BC40(OSPiHandle *pihandle, OSIoMesg *mb, s32 direction); /* osEPiStartDma */
+s32 osEPiStartDma(OSPiHandle *pihandle, OSIoMesg *mb, s32 direction);
 s32 osEPiLinkHandle(OSPiHandle *eph);
 void bzero(void *p, s32 n);
 void func_80089054(NUScClient *c, OSMesgQueue *mq, NUScMsg msgType); /* nuScAddClient */
@@ -253,7 +253,7 @@ void PiDmaRead(u32 rom_addr, void *buf_ptr, u32 size) {
         dmaIoMesgBuf.dramAddr = buf_ptr;
         dmaIoMesgBuf.devAddr = rom_addr;
         dmaIoMesgBuf.size = readSize;
-        func_8008BC40(D_800E7A20, &dmaIoMesgBuf, 0);
+        osEPiStartDma(D_800E7A20, &dmaIoMesgBuf, 0);
         osRecvMesg(&dmaMesgQ, &dmaMesgBuf, 1);
         rom_addr += readSize;
         buf_ptr = (u8 *)buf_ptr + readSize;
