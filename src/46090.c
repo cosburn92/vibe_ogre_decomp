@@ -322,6 +322,11 @@ extern s16 D_80197B06_ovl_040E80;
 void func_80171B94_ovl_040E80(void);
 void func_80171ED8_ovl_040E80(void);
 void func_8016B774_ovl_040E80(void);
+s32 ChunkSize(s32 id);
+void *func_80071C04(s32 size);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
@@ -542,7 +547,31 @@ void func_801732E0_ovl_040E80(s16 n) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_801733A0_ovl_040E80);
+/* Low byte of the trailing marker word (0xFFxxxxxx) of compressed entry i in table chunk 0x19A8804, or 0 */
+s32 func_801733A0_ovl_040E80(s32 i) {
+    s32 *buf;
+    s32 *out;
+
+    buf = func_80071C04(ChunkSize(0x19A8804));
+    LoadChunkRaw(buf, 0x19A8804);
+    /* i = buf[i], computed in place */
+    i *= 4;
+    i += (s32)buf;
+    i = *(s32 *)i;
+    HFree(buf);
+    buf = func_80071C04(ChunkSize(i));
+    LoadChunkRaw(buf, i);
+    i = ReadU32BE(buf);
+    out = func_80071C04(i);
+    DecodeLZ(out, buf);
+    i = out[i / 4 - 1];
+    HFree(buf);
+    HFree(out);
+    if ((i & 0xFF000000) == 0xFF000000) {
+        return i & 0xFF;
+    }
+    return 0;
+}
 
 s32 func_80173490_ovl_040E80(u8 v) {
     u8 i;
