@@ -29,6 +29,20 @@ u8 func_801F70E0_ovl_24BCA0(u8 c) {
     return (u8)-((u8)(c - 47) >= 40) | 2;
 }
 
+typedef struct {
+    u16 id;
+    u8 kind;
+    u8 pad;
+    u16 flags;
+} AnimReq;
+extern u8 *(*D_80209718_ovl_24BCA0[])(u16 id);
+extern u8 *(*D_80209728_ovl_24BCA0[])(u16 id);
+extern u8 *(*D_80209734_ovl_24BCA0[])(u16 id);
+extern u8 *(*D_80209740_ovl_24BCA0[])(u16 id, u8 x);
+extern s32 D_8020A170_ovl_24BCA0[];
+u8 *func_80214CF0(u16 id, s32 a);
+/* --- end decls --- */
+
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7128_ovl_24BCA0);
 
 s32 func_801F71A0_ovl_24BCA0(u8 c) {
@@ -113,7 +127,7 @@ void func_801F8180_ovl_24BCA0(u8 *p) {
     FIELD(p, void *, 0x40) = NULL;
 }
 
-void func_801F81C4_ovl_24BCA0(u8 *p, u16 f) {
+inline void func_801F81C4_ovl_24BCA0(u8 *p, u16 f) {
     s16 v;
 
     FIELD(p, u16, 0xA) |= f & 0xD000;
@@ -127,15 +141,40 @@ void func_801F81C4_ovl_24BCA0(u8 *p, u16 f) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8218_ovl_24BCA0);
+u8 *func_801F8218_ovl_24BCA0(AnimReq *r) {
+    u8 *o = D_80209718_ovl_24BCA0[r->kind & 3](r->id);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F82B4_ovl_24BCA0);
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8350_ovl_24BCA0);
+u8 *func_801F82B4_ovl_24BCA0(AnimReq *r) {
+    u8 *o = D_80209728_ovl_24BCA0[r->kind & 3](r->id);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F83EC_ovl_24BCA0);
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F847C_ovl_24BCA0);
+u8 *func_801F8350_ovl_24BCA0(AnimReq *r) {
+    u8 *o = D_80209734_ovl_24BCA0[r->kind & 3](r->id);
+
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
+
+u8 *func_801F83EC_ovl_24BCA0(AnimReq *r, s32 i) {
+    u8 *o = func_80214CF0(r->id, D_8020A170_ovl_24BCA0[i]);
+
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
+
+u8 *func_801F847C_ovl_24BCA0(AnimReq *r, u8 x) {
+    u8 *o = D_80209740_ovl_24BCA0[r->kind & 3](r->id, x);
+
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    return o + 0x1C;
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8518_ovl_24BCA0);
 
