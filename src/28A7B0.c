@@ -1,4 +1,5 @@
 #include "common.h"
+#include "tables.h"
 
 /* ovl_286BD0 (28A7B0) */
 
@@ -120,6 +121,30 @@ void func_80230ADC_ovl_286BD0(u8 a);
 void func_8022FD78_ovl_286BD0(u8 a, u8 b);
 void func_80231098_ovl_286BD0(u8 a, u8 b);
 void func_80231D58_ovl_286BD0(u8 a, u8 b);
+typedef struct {
+    /* 0x00 */ u8 unk00[0x18];
+    /* 0x18 */ s16 alpha; /* low byte also read alone */
+    /* 0x1A */ u8 unk1A[0x16];
+    /* 0x30 */ s32 x;
+    /* 0x34 */ s32 y;
+    /* 0x38 */ s32 w;
+    /* 0x3C */ u8 unk3C[0x94];
+    /* 0xD0 */ u8 *text;
+} Win28;
+
+extern u8 D_8023E0DC_ovl_286BD0[]; /* digit characters */
+
+typedef struct {
+    /* 0x00 */ Character c;
+    /* 0x34 */ u8 unk34[4];
+} PlayerChar; /* size 0x38 */
+
+extern PlayerChar D_80193BC0[];
+
+u8 func_8016FF5C(u8 cls, u8 x);
+void func_8017D6D0(Win28 *w, u8 a, u8 b, u8 c, s32 d, s32 e, s32 f);
+s32 strlen(const char *s);
+u16 func_801794C8(char *s);
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -443,7 +468,19 @@ void func_802348D0_ovl_286BD0(u8 a) {
     D_8023DE30_ovl_286BD0[0x23C] = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802348E0_ovl_286BD0);
+s32 func_802348E0_ovl_286BD0(u8 x) {
+    u8 i;
+
+    for (i = 0; i < 100; i++) {
+        if (func_8016FF5C(D_80193BC0[i].c.cls, x)) {
+            if (D_80193BC0[i].c.status & 4) {
+                return 1;
+            }
+            return D_80193BC0[i].c.hp == 0;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023498C_ovl_286BD0);
 
@@ -463,7 +500,20 @@ void func_80234D10_ovl_286BD0(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
     ((Pair28Full *)D_8023DE38_ovl_286BD0)->hC = f;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234DB8_ovl_286BD0);
+void func_80234DB8_ovl_286BD0(void) {
+    Pair28Full *p = (Pair28Full *)D_8023DE38_ovl_286BD0;
+
+    if (p != NULL) {
+        if (p->h8 == p->hA) {
+            if (p->hC == 0) {
+                HFree(p);
+                D_8023DE38_ovl_286BD0 = NULL;
+            }
+        } else {
+            p->h8++;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234E10_ovl_286BD0);
 
@@ -491,7 +541,26 @@ u8 *func_802351F0_ovl_286BD0(u8 **out) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80235254_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* Argument setup order differs. */
+void func_80235914_ovl_286BD0(Win28 *w) {
+    u8 *t = w->text;
+    u8 last;
+
+    if (w->alpha != 0) {
+        last = t[0x5F5] - 1;
+        if (t[0x5F4] < last) {
+            Gfx *g = D_800E9BA0++;
+
+            g->w0 = 0xFA000000;
+            g->w1 = ((u8 *)w)[0x19] | 0xFFFFFF00;
+            func_8017D6D0(w, t[0x5F1], t[0x5F4], last, w->y - 4, w->x + 4, w->w - 12);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80235914_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802359B4_ovl_286BD0);
 
@@ -539,11 +608,56 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239B14_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239C5C_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* Digit loop shape differs. */
+void func_80239E30_ovl_286BD0(s32 n, char *out) {
+    char buf[20];
+    char *o = out;
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 20; i++) {
+        if (n == 0) {
+            *o = 0;
+            break;
+        }
+        o++;
+        buf[i] = D_8023E0DC_ovl_286BD0[n % 10];
+        n /= 10;
+    }
+    for (j = 0; j < i; j++) {
+        *out++ = (buf - 1)[i - j];
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239E30_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239EE0_ovl_286BD0);
 
+/* Whether str (cut at p) is wider than n * 11 */
+#ifdef NON_MATCHING
+/* Width register allocation differs. */
+s32 func_8023A398_ovl_286BD0(s32 n, char *str, char *p) {
+    u8 saved = *p;
+    s32 w;
+    s32 len;
+
+    *p = 0;
+    len = strlen(str);
+    w = 0;
+    if (len != 0) {
+        w = func_801794C8(str);
+    }
+    *p = saved;
+    if (len == 0) {
+        return 0;
+    }
+    return n * 11 < w;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A398_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A42C_ovl_286BD0);
 
@@ -555,4 +669,24 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AA70_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AB74_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* The a and b saved registers are swapped. */
+u8 *func_8023AD10_ovl_286BD0(Win28 *w, s32 a, u8 b) {
+    u8 *t;
+
+    w->text = t = HMalloc(0x604);
+    bzero(t, 0x604);
+    t = w->text;
+    t[0x5F3] = 0x3F;
+    t[0x5F6] = 0xF;
+    *(s32 *)(t + 0x600) = a;
+    t[0x5F0] = 0;
+    t[0x5FE] = 2;
+    bzero(t, 0x500);
+    t[0x5F4] = b;
+    t[0x5F5] = b;
+    return t;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AD10_ovl_286BD0);
+#endif
