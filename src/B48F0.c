@@ -46,6 +46,7 @@ u8 func_801D8B58_ovl_087200(void);
 u8 func_801D8AE0_ovl_087200(void);
 void func_801C18AC_ovl_087200(s32 a, s32 b, s32 c);
 extern void (*D_801EF1E0_ovl_087200[])(void);
+void func_801D8A60_ovl_087200(s32 a);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
@@ -135,7 +136,22 @@ void func_801C9F44_ovl_087200(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA030_ovl_087200);
+/* Cycles the tab cursor (0..2) left or right, skipping disabled tabs */
+void func_801CA030_ovl_087200(s32 dir) {
+    if (D_80196AF8[0x1DFF] >= 2) {
+        if (dir == -1) {
+            func_801D8A60_ovl_087200(2);
+            do {
+                D_80196AF8[0x9D] = (D_80196AF8[0x9D] == 0) ? 2 : D_80196AF8[0x9D] - 1;
+            } while ((D_80196AF8 + D_80196AF8[0x9D])[0x1E00] == 0);
+        } else if (dir == 1) {
+            func_801D8A60_ovl_087200(2);
+            do {
+                D_80196AF8[0x9D] = (D_80196AF8[0x9D] + 1) % 3;
+            } while ((D_80196AF8 + D_80196AF8[0x9D])[0x1E00] == 0);
+        }
+    }
+}
 
 void func_801CA110_ovl_087200(void) {
     func_801CC7D4_ovl_087200(0x400);
