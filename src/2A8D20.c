@@ -38,6 +38,20 @@ void func_801ADB00(void *p);
 void func_801ADBC0(void *p);
 void func_8023D2DC_ovl_2A8D20(s32 a);
 extern u8 D_8022A980;
+extern f32 D_801CE8CC;
+extern f32 D_801CE8D0;
+extern f32 D_801CE8D4;
+extern f32 D_801CE8D8;
+extern f32 D_801CE8DC;
+extern f32 D_801CE8E0;
+extern f32 D_801CE8E8;
+extern f32 D_8022A720;
+extern f32 D_8022A734;
+extern f32 D_8022A738;
+extern f32 D_8022A73C;
+extern f32 D_8022A740;
+extern f32 D_8022A744;
+extern f32 D_8022A748;
 /* --- end decls --- */
 
 /* Battle overlay init */
@@ -129,7 +143,30 @@ inline void func_8023977C_ovl_2A8D20(u8 a, u8 b) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_802397C4_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023998C_ovl_2A8D20);
+/* Copies the saved field camera into the battle camera and allocates the transform (cur/target: scale 1, offset (0,0,-50)) */
+void func_8023998C_ovl_2A8D20(void) {
+    f32 *t;
+
+    D_8022A720 = D_801CE8E8;
+    D_8022A734 = D_801CE8CC;
+    D_8022A738 = D_801CE8D0;
+    D_8022A73C = D_801CE8D4;
+    D_8022A740 = D_801CE8D8;
+    D_8022A744 = D_801CE8DC;
+    D_8022A748 = D_801CE8E0;
+    t = HMalloc(0x4C);
+    FIELD(D_8022A974, f32 *, 0x19F0) = t;
+    t[0] = t[9] = 1.0f;
+    t[1] = t[10] = 1.0f;
+    t[2] = t[11] = 1.0f;
+    t[6] = t[15] = 0.0f;
+    t[7] = t[16] = 0.0f;
+    t[8] = t[17] = 0.0f;
+    t[3] = t[12] = 0.0f;
+    t[4] = t[13] = 0.0f;
+    t[5] = t[14] = -50.0f;
+    *(s16 *)&t[18] = 0;
+}
 
 void func_80239A84_ovl_2A8D20(f32 x, f32 y, f32 z, f32 w, s32 n) {
     u8 *o = FIELD(D_8022A974, u8 *, 0x19F0);
