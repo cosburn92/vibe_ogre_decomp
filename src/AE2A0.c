@@ -175,7 +175,14 @@ void func_801C6A40_ovl_087200(u8 a, u8 b, u8 c, u8 d, u8 e) {
     m->b96 = e;
 }
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6A64_ovl_087200);
+/* Screen position of grid cell n (6 per column) */
+void func_801C6A64_ovl_087200(f32 *x, f32 *y, s32 n) {
+    f32 c = n / 6;
+    f32 r = 5 - n % 6;
+
+    *x = 10.0f - c * 36.0f + r * 15.0f + 0.5f;
+    *y = r * 25.0f + -5.0f + c * 10.0f + 0.5f - 72.0f;
+}
 
 /* Screen position of slot i in the 4-wide formation grid (isometric) */
 #ifdef NON_MATCHING
