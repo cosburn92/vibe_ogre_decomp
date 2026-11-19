@@ -22,6 +22,9 @@ extern u8 *D_801D06D8_ovl_1F0A30;
 s32 ChunkSize(s32 id);
 void *HMalloc(s32 size);
 void *LoadChunkRaw(void *dst, s32 id);
+extern u8 D_800E7A0C;
+extern void *D_800C4BB8;
+extern void *D_800A8204[3];
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CC930_ovl_1F0A30);
@@ -244,7 +247,24 @@ INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CDBE4_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CDDC8_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CDFC8_ovl_1F0A30);
+/* Reports which frame buffer pair is current (o[0], o[1]) */
+void func_801CDFC8_ovl_1F0A30(u8 *o) {
+    nuGfxTaskAllEndWait();
+    o[0] = 0;
+    o[1] = 1;
+    if (D_800E7A0C == 1) {
+        if (D_800C4BB8 == D_800A8204[0]) {
+            o[0] = 1;
+            o[1] = 2;
+        } else if (D_800C4BB8 == D_800A8204[1]) {
+            o[0] = 0;
+            o[1] = 2;
+        } else if (D_800C4BB8 == D_800A8204[2]) {
+            o[0] = 0;
+            o[1] = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CE064_ovl_1F0A30);
 
