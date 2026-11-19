@@ -1,6 +1,8 @@
 #include "common.h"
 #include "libultra.h"
 
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+
 typedef struct {
     /* 0x00 */ u32 flags;
     /* 0x04 */ u8 unk04[0x6C];
@@ -61,6 +63,7 @@ typedef struct {
 } MapMarker;
 u8 func_801F4ED8_ovl_145210(MapUnit *u);
 
+void func_801F95F8_ovl_145210(s32 a, u8 *o);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
@@ -247,7 +250,31 @@ s32 func_801F4FF4_ovl_145210(MapUnit *u) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F503C_ovl_145210);
+void func_801F503C_ovl_145210(u8 *a, u8 *b, u8 *t) {
+    s32 size;
+
+    if (t[0xC] != t[0x12]) {
+        for (;;) {
+        }
+    }
+    switch (t[0xC]) {
+        case 0:
+            size = 0x400;
+            break;
+        case 1:
+            size = 0x780;
+            break;
+        default:
+            for (;;) {
+            }
+    }
+    func_801F4A6C_ovl_145210(a, b, t[0xB], FIELD(t, u16 *, 0), size);
+    func_801F4A34_ovl_145210(a, FIELD(t, u8 *, 4), size);
+    FIELD(t, u16, 0xE) = FIELD(t, u16, 8);
+    t[0x10] = t[0xA];
+    t[0x11] = t[0xB];
+    t[0x12] = t[0xC];
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F50F0_ovl_145210);
 
@@ -385,7 +412,25 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F8510_ovl_145210);
 void func_801F85F0_ovl_145210(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F85F8_ovl_145210);
+void func_801F85F8_ovl_145210(u8 *o) {
+    switch (o[7]) {
+        case 0:
+            FIELD(o, u16, 4) = (FIELD(o, u16, 4) & 0xFFEB) | 0x4008;
+            func_801F95F8_ovl_145210(1, o);
+            o[7] = 1;
+            break;
+        case 1:
+            if (!(FIELD(o, u16, 4) & 4)) {
+                break;
+            }
+            *FIELD(o, u32 *, 0) &= ~1;
+            o[7] = 2;
+            /* fallthrough */
+        case 2:
+            o[0x31] &= 0xFE;
+            break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F86A8_ovl_145210);
 
