@@ -33,7 +33,10 @@ void *func_8020BF5C_ovl_25EE90(s32 kind, s32 id, s32 c);
 void func_8020BF94_ovl_25EE90(void *p);
 CacheEnt *func_8020BFE8_ovl_25EE90(void);
 void *func_8020C380_ovl_25EE90(s32 kind, s32 id);
-void func_8020C130_ovl_25EE90(s32 a, u16 b, s32 c);
+void func_8020C130_ovl_25EE90(u16 a, s32 b, s32 c);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
 /* --- end decls --- */
 
 void func_8020C1F0_ovl_25EE90(void) {
@@ -207,4 +210,27 @@ void func_8020CDF4_ovl_25EE90(RecSet *s) {
 
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CE94_ovl_25EE90);
 
+/* Issues the load requests for every entry of a sprite list (kinds 6/5, then `kind` for id + base) */
+#ifdef NON_MATCHING
+/* list ptr and count registers swapped (s1/s2) and prologue order differs */
+void func_8020D024_ovl_25EE90(u8 *spr, s32 kind, s32 base) {
+    u16 *e = FIELD(spr, u16 *, 0xC);
+    s32 n;
+
+    for (n = FIELD(spr, s32, 4); n > 0; n--, e += 5) {
+        if (e[3] == 0) {
+            continue;
+        }
+        func_8020C130_ovl_25EE90(6, e[3], 0);
+        if (e[0] != 0) {
+            func_8020C130_ovl_25EE90(5, e[0], 0);
+        }
+        if (e[1] & 0x8000) {
+            continue;
+        }
+        func_8020C130_ovl_25EE90(kind, e[1] + base, 0);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020D024_ovl_25EE90);
+#endif
