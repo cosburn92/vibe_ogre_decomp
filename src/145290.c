@@ -82,6 +82,14 @@ extern void *D_801FDA50_ovl_145210;
 extern s16 D_801FDA68_ovl_145210;
 extern s16 D_801FDA6A_ovl_145210;
 void func_801F988C_ovl_145210(void);
+typedef struct {
+    u8 b0;
+    u8 type;
+    u8 unk02[2];
+    u8 key[8];
+    u8 unk0C[4];
+    s32 value;
+} Ent145; /* size 0x14 */
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
@@ -111,7 +119,50 @@ void func_801F45D0_ovl_145210(s32 a, u8 b, u8 c) {
     func_801F4358_ovl_145210(3, p);
 }
 
+static inline s32 Cmp8_145(u8 *x, u8 *y) {
+    s32 n;
+
+    for (n = 8; n != 0; n--) {
+        if (*x++ != *y++) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Value of the type-3 table entry keyed (a, b, c); hangs if there is none */
+#ifdef NON_MATCHING
+/* Close. The original keeps the key pointer in s0 (parameters in s1-s3), tests count > 0 with blez, and loads the table base after that test; here the pointer lands in s3 and the base loads first. */
+s32 func_801F4638_ovl_145210(s32 a, u8 b, u8 c) {
+    struct {
+        s32 a;
+        u8 b;
+        u8 c;
+        u8 pad[2];
+    } key;
+    Ent145 *e;
+    Ent145 *found;
+    u8 *kp = (u8 *)&key;
+
+    bzero(kp, 8);
+    found = NULL;
+    key.a = a;
+    key.b = b;
+    key.c = c;
+    for (e = D_801FDA54_ovl_145210; e < D_801FDA54_ovl_145210 + D_801FDA00_ovl_145210; e++) {
+        if (e->type == 3 && !Cmp8_145(e->key, kp)) {
+            found = e;
+            break;
+        }
+    }
+    if (found == NULL) {
+        for (;;);
+    }
+    return found->value;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4638_ovl_145210);
+#endif
 
 void func_801F4734_ovl_145210(s16 a) {
     s16 msg[4];
