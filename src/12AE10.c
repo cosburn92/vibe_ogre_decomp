@@ -49,6 +49,23 @@ typedef struct {
     /* 0x08 */ f32 x;
     /* 0x0C */ f32 y;
     /* 0x10 */ f32 z;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ u8 unk18[0x34];
+    /* 0x4C */ f32 savedX;
+    /* 0x50 */ f32 savedY;
+    /* 0x54 */ f32 savedZ;
+    /* 0x58 */ u8 unk58[0xC];
+    /* 0x64 */ s32 unk64;
+    /* 0x68 */ u8 unk68[0x18];
+    /* 0x80 */ s32 unk80;
+    /* 0x84 */ s32 unk84;
+    /* 0x88 */ u8 unk88[9];
+    /* 0x91 */ u8 unk91;
+    /* 0x92 */ u8 unk92;
+    /* 0x93 */ u8 unk93[0x15];
+    /* 0xA8 */ s32 *ids;
+    /* 0xAC */ u8 unkAC[0xE];
+    /* 0xBA */ u8 unkBA;
 } MapUnit;
 
 typedef struct {
@@ -64,6 +81,19 @@ extern u32 *D_801F0CB0_ovl_101CE0[];
 f32 func_8009C780(f32 x, f32 z);
 s32 func_801DA228_ovl_101CE0(MapUnit *u);
 void func_801DA340_ovl_101CE0(s32 a, Vec3f *out);
+extern s32 D_801F3670_ovl_101CE0;
+extern u8 D_801EB2D4_ovl_101CE0;
+extern u8 D_801EB2D5_ovl_101CE0;
+extern s32 D_801EB280_ovl_101CE0;
+extern s32 D_801EB284_ovl_101CE0;
+extern s32 D_801EB288_ovl_101CE0;
+extern void *D_801EB28C_ovl_101CE0;
+
+void func_80079618();
+void func_8017C384(s32 h);
+void *HFree(void *p);
+void func_801B2D2C_ovl_101CE0(MapUnit *u);
+/* --- end decls --- */
 
 #ifdef NON_MATCHING
 /* Block order differs: the target puts the mode 1-8 copy right after the dispatch. */
@@ -123,7 +153,7 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D8A30_ovl_101CE0);
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D8FBC_ovl_101CE0);
 
 /* Whether the unit's squad leader is alive */
-s32 func_801D92D0_ovl_101CE0(MapUnit *u) {
+inline s32 func_801D92D0_ovl_101CE0(MapUnit *u) {
     u8 sq = u->squad;
     s32 leader = gSquads[sq].members[0];
     u16 hp;
@@ -139,7 +169,7 @@ s32 func_801D92D0_ovl_101CE0(MapUnit *u) {
     return hp != 0;
 }
 
-s32 func_801D935C_ovl_101CE0(MapUnit *u) {
+inline s32 func_801D935C_ovl_101CE0(MapUnit *u) {
     u8 sq = u->squad;
     s32 leader = gSquads[sq].members[0];
     u8 st;
@@ -188,7 +218,34 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D94CC_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D99EC_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA0A8_ovl_101CE0);
+/* First squad member without status bit 2 (else the first member) */
+Character *func_801DA0A8_ovl_101CE0(MapUnit *u) {
+    SquadRec *sq = &gSquads[u->squad];
+    Character *c;
+    s32 i;
+
+    for (i = 0; i < 5; i++) {
+        u8 m = sq->members[i];
+
+        if (m < 100) {
+            if (u->squad < 30) {
+                c = &D_80193BC0[m].c;
+            } else {
+                c = &D_80195560[m];
+            }
+            if (c->status & 2) {
+                break;
+            }
+        }
+    }
+    if (i >= 5) {
+        i = 0;
+    }
+    if (u->squad >= 30) {
+        return &D_80195560[sq->members[i]];
+    }
+    return &D_80193BC0[sq->members[i]].c;
+}
 
 /* Number of squads in the unit's legion */
 s32 func_801DA1AC_ovl_101CE0(MapUnit *u) {
@@ -346,7 +403,31 @@ void ChaosFrameOnCapture(s32 loc) {
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB718_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DBE74_ovl_101CE0);
+s32 func_801DBE74_ovl_101CE0(MapUnit *u) {
+    s32 r = 0;
+
+    if (u->flags & 0x40) {
+        return 0;
+    }
+    if (!func_801D92D0_ovl_101CE0(u) || func_801D935C_ovl_101CE0(u)) {
+        func_801B2D2C_ovl_101CE0(u);
+        r = 1;
+        u->flags = (u->flags & ~0x2000) | 0x800000;
+        u->unk92 = 0;
+        u->unk91 = 0;
+        u->unk84 = -1;
+        u->unk80 = -1;
+        u->unk92 = 2;
+        u->unkBA = 1;
+        u->savedX = u->x;
+        u->savedY = u->y;
+        u->savedZ = u->z;
+        u->unk64 = u->unk14;
+        u->flags &= ~0x08000000;
+        u->flags &= ~0x00800000;
+    }
+    return r;
+}
 
 s32 func_801DC054_ovl_101CE0(void) {
     u8 v = D_8018F481;
@@ -478,26 +559,110 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCF90_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD0E8_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD208_ovl_101CE0);
+s32 func_801DD208_ovl_101CE0(void) {
+    s32 r = 0;
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD244_ovl_101CE0);
+    switch (D_8018F481) {
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x2A:
+        case 0x2B:
+        case 0x2C:
+        case 0x39:
+        case 0x3A:
+            r = 1;
+            break;
+    }
+    return r;
+}
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD280_ovl_101CE0);
+s32 func_801DD244_ovl_101CE0(void) {
+    s32 r = 0;
 
+    switch (D_8018F481) {
+        case 0x27:
+        case 0x2F:
+        case 0x30:
+        case 0x33:
+        case 0x3C:
+        case 0x3D:
+            r = 1;
+            break;
+    }
+    return r;
+}
+
+s32 func_801DD280_ovl_101CE0(u32 a) {
+    s32 r = 0;
+
+    switch (a) {
+        case 0:
+        case 2:
+        case 8:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 23:
+            r = 1;
+            break;
+    }
+    return r;
+}
+
+#ifdef NON_MATCHING
+/* The flags temporary lands in v0 instead of v1. */
+s32 func_801DD2B0_ovl_101CE0(MapUnit *u) {
+    if (u->flags & 8) {
+        return u->squad >= 30;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2B0_ovl_101CE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2D4_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD410_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD530_ovl_101CE0);
+void func_801DD530_ovl_101CE0(void) {
+    if (D_801F3670_ovl_101CE0 != 0) {
+        func_80079618(0x218E9B4, D_801EB2D4_ovl_101CE0, -0x11);
+        D_801F3670_ovl_101CE0 = 0;
+        D_801EB2D4_ovl_101CE0 = 0xFF;
+        D_801EB2D5_ovl_101CE0 = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD584_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DDDA8_ovl_101CE0);
+void func_801DDDA8_ovl_101CE0(void) {
+    s32 *p = &D_801EB280_ovl_101CE0;
+
+    if (*p != 0) {
+        func_8017C384(*p);
+        *p = 0;
+    }
+    func_8017C384(D_801EB284_ovl_101CE0);
+    D_801EB284_ovl_101CE0 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DDDF8_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DE440_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DE57C_ovl_101CE0);
+void func_801DE57C_ovl_101CE0(void) {
+    s32 *p = &D_801EB288_ovl_101CE0;
+
+    if (*p != 0) {
+        func_80079618(0x218E9B4, 0x15, -0x14, 6);
+        *p = 0;
+    }
+    if (D_801EB28C_ovl_101CE0 != NULL) {
+        HFree(D_801EB28C_ovl_101CE0);
+        D_801EB28C_ovl_101CE0 = NULL;
+    }
+}
