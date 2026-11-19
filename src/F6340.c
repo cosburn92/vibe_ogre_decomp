@@ -11,11 +11,28 @@ extern u8 *D_801AD100_ovl_0EBBB0;
 extern void *D_800E9BA0;
 
 s32 func_8007705C(s32 a, void *b, s32 c, s32 d, s32 e, s32 f, s32 g);
-void func_801AB2A4_ovl_0EBBB0(void);
+void func_801AB2A4_ovl_0EBBB0(s16 id);
 void func_80078674(s16 a, s16 b, s16 c, s16 d);
 void func_8007FB60(void *gfx, void *p);
 void _bcopy(void *src, void *dst, s32 n);
 u32 func_801AB5B0_ovl_0EBBB0(u8 *src, u32 size, void *dst);
+typedef struct {
+    /* 0x00 */ u16 flags;
+    /* 0x02 */ u8 flags2;
+    /* 0x03 */ u8 flags3;
+    /* 0x04 */ u8 unk04[0x10];
+    /* 0x14 */ void (*update)(void);
+    /* 0x18 */ void (*draw)(void);
+    /* 0x1C */ void (*exit)(void);
+    /* 0x20 */ u16 size;
+    /* 0x22 */ u8 unk22[2];
+    /* 0x24 */ s32 w24;
+} CurScene;
+extern CurScene D_800E7A30;
+extern u8 D_800E91D0[];
+void bzero(void *p, s32 n);
+void func_801AB33C_ovl_0EBBB0(void);
+void func_801AB55C_ovl_0EBBB0(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801A95E0_ovl_0EBBB0);
@@ -93,7 +110,18 @@ void func_801AB214_ovl_0EBBB0(u8 i, u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 g, u8
     D_800E82C8[i].unk8F = h;
 }
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB2A4_ovl_0EBBB0);
+/* Scene init: installs the update/draw handlers with 0x28 bytes of state, stores the id */
+void func_801AB2A4_ovl_0EBBB0(s16 id) {
+    D_800E7A30.update = func_801AB33C_ovl_0EBBB0;
+    D_800E7A30.draw = func_801AB55C_ovl_0EBBB0;
+    D_800E7A30.size = 0x28;
+    D_800E7A30.w24 = 0;
+    D_800E7A30.flags |= 0x200;
+    D_800E7A30.flags2 |= 9;
+    D_800E7A30.flags3 |= 0xC;
+    bzero(D_800E91D0, 0x28);
+    *(s16 *)D_801AD100_ovl_0EBBB0 = id;
+}
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB33C_ovl_0EBBB0);
 
