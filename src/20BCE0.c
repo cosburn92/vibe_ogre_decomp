@@ -100,6 +100,7 @@ u8 func_801BC76C_ovl_1F0A30(void);
 u8 func_801BC838_ovl_1F0A30(void);
 u8 func_801BC914_ovl_1F0A30(void);
 u8 func_801C1C1C_ovl_1F0A30(u32 a, s32 w, s32 i, u8 *c, u8 *d1, u8 *d2);
+void func_801ADCBC_ovl_1F0A30(void *u);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
@@ -684,7 +685,79 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBD6C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBE18_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBF44_ovl_1F0A30);
+/* func_801C8FE8 as inlined here (base loaded after the range check) */
+static inline u8 *BattleGetUnit2(u32 i) {
+    u8 *base;
+    s32 off;
+
+    if (i < 20) {
+        base = D_801CE8BC_ovl_1F0A30;
+        off = i * 0xF8;
+        if (*(s32 *)(base + off + 0x20C) != 0) {
+            return base + (off + 0x1C4);
+        }
+    }
+    return NULL;
+}
+
+typedef struct {
+    s32 w[20];
+} Pose20B;
+
+static inline void bumpAnim20B(u8 *e) {
+    if (e != NULL && e[0x36] < e[0x37]) {
+        e[0x36]++;
+    }
+}
+
+/* Per-round unit refresh: steps animations, copies poses to shadows, expires timed states */
+void func_801CBF44_ovl_1F0A30(void) {
+    s32 i;
+
+    for (i = 0; i < 20; i++) {
+        u8 *u = BattleGetUnit2(i);
+        u8 **p;
+
+        if (u == NULL) {
+            continue;
+        }
+        func_801ADCBC_ovl_1F0A30(u);
+        p = (u8 **)u;
+        do {
+            if (p[0] != NULL) {
+                if (p[3] != NULL) {
+                    *(Pose20B *)(p[3] + 0x44) = *(Pose20B *)(p[0] + 0x44);
+                }
+                bumpAnim20B(p[0]);
+            }
+            p++;
+        } while (p < (u8 **)(u + 0xC));
+        bumpAnim20B(FIELD(u, u8 *, 0x18));
+        bumpAnim20B(FIELD(u, u8 *, 0x1C));
+        if (FIELD(u, s32, 0xA0) != 0 && --FIELD(u, s32, 0xA0) == 0) {
+            u32 k;
+
+            for (k = 0; k < 3; k++) {
+                u8 *e = ((u8 **)u)[k];
+
+                if (e != NULL) {
+                    FIELD(e, s16, 0x32) = 0;
+                    FIELD(e, s16, 0x30) = 0;
+                    FIELD(e, s16, 0x2E) = 0;
+                }
+            }
+        }
+        if (FIELD(u, u8 *, 0x18) != NULL && FIELD(FIELD(u, u8 *, 0x18), s16, 0x48) == 0) {
+            FIELD(FIELD(u, u8 *, 0x18), s32, 0x18) = 0;
+            FIELD(u, u8 *, 0x18) = NULL;
+        }
+        if (FIELD(u, u8 *, 0x1C) != NULL && FIELD(FIELD(u, u8 *, 0x1C), s16, 0x48) == 0) {
+            FIELD(FIELD(u, u8 *, 0x1C), s32, 0x18) = 0;
+            FIELD(u, u8 *, 0x1C) = NULL;
+        }
+    }
+    FIELD(D_801CE8BC_ovl_1F0A30, s32, 0x6080)++;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC124_ovl_1F0A30);
 
