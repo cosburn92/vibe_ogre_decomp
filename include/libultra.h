@@ -147,6 +147,67 @@ typedef struct {
 #define AI_DACRATE_REG (AI_BASE_REG + 0x10)
 #define AI_BITRATE_REG (AI_BASE_REG + 0x14)
 
+typedef u64 OSTime;
+
+typedef struct OSTimer_s {
+    /* 0x00 */ struct OSTimer_s *next;
+    /* 0x04 */ struct OSTimer_s *prev;
+    /* 0x08 */ OSTime interval;
+    /* 0x10 */ OSTime value;
+    /* 0x18 */ OSMesgQueue *mq;
+    /* 0x1C */ OSMesg msg;
+} OSTimer;
+
+typedef struct {
+    /* 0x00 */ u32 ramarray[15];
+    /* 0x3C */ u32 pifstatus;
+} OSPifRam;
+
+typedef struct {
+    /* 0x00 */ u8 dummy;
+    /* 0x01 */ u8 txsize;
+    /* 0x02 */ u8 rxsize;
+    /* 0x03 */ u8 cmd;
+    /* 0x04 */ u16 button;
+    /* 0x06 */ s8 stick_x;
+    /* 0x07 */ s8 stick_y;
+} __OSContReadFormat;
+
+typedef struct {
+    /* 0x00 */ u8 dummy;
+    /* 0x01 */ u8 txsize;
+    /* 0x02 */ u8 rxsize;
+    /* 0x03 */ u8 cmd;
+    /* 0x04 */ u8 typeh;
+    /* 0x05 */ u8 typel;
+    /* 0x06 */ u8 status;
+    /* 0x07 */ u8 dummy1;
+} __OSContRequesFormat;
+
+#define CHNL_ERR_MASK 0xC0
+#define CHNL_ERR(format) (((format).rxsize & CHNL_ERR_MASK) >> 4)
+#define CONT_CMD_REQUEST_STATUS 0
+#define CONT_CMD_READ_BUTTON 1
+#define CONT_CMD_REQUEST_STATUS_TX 1
+#define CONT_CMD_REQUEST_STATUS_RX 3
+#define CONT_CMD_READ_BUTTON_TX 1
+#define CONT_CMD_READ_BUTTON_RX 4
+#define CONT_CMD_EXE 1
+#define CONT_CMD_NOP 0xFF
+#define CONT_CMD_END 0xFE
+#define MAXCONTROLLERS 4
+
+extern OSPifRam __osContPifRam_800C4A20; /* __osContPifRam */
+extern u8 __osContLastCmd;
+extern u8 __osMaxControllers;
+
+s32 __osSiRawStartDma(s32 direction, void *dramAddr);
+void __osSiGetAccess(void);
+void __osSiRelAccess(void);
+void __osSiCreateAccessQueue(void);
+OSTime osGetTime(void);
+s32 osSetTimer(OSTimer *t, OSTime value, OSTime interval, OSMesgQueue *mq, OSMesg msg);
+
 u32 __osDisableInt(void);
 void __osRestoreInt(u32 mask);
 s32 osJamMesg(OSMesgQueue *mq, OSMesg msg, s32 flag);
