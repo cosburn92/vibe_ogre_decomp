@@ -745,9 +745,57 @@ s32 func_80222AA0_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222B34_ovl_1BA050);
+/* hitbox set from operands: symmetric extents (-x..x, -y..y) */
+s32 func_80222B34_ovl_1BA050(ScriptCtx *ctx) {
+    u8 *o = func_80222EEC_ovl_1BA050(ctx->pc[1]);
+    u8 *p;
+    s16 x0;
+    s16 x1;
+    s16 y0;
+    s16 y1;
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222BDC_ovl_1BA050);
+    if (o[0] != 2) {
+        for (;;) {
+        }
+    }
+    o[0x16] = *(u16 *)(ctx->pc + 2);
+    p = ctx->pc;
+    x0 = *(u16 *)(p + 4);
+    x1 = *(u16 *)(p + 6);
+    y0 = *(u16 *)(p + 8);
+    y1 = *(u16 *)(p + 0xA);
+    *(s16 *)(o + 6) = -x0;
+    *(s16 *)(o + 8) = -x1;
+    *(s16 *)(o + 0xE) = -y0;
+    *(s16 *)(o + 0xA) = x0;
+    *(s16 *)(o + 0xC) = x1;
+    *(s16 *)(o + 0x10) = -y1;
+    *(s16 *)(o + 0x12) = y0;
+    *(s16 *)(o + 0x14) = y1;
+    ctx->pc += 0xC;
+    return 0;
+}
+
+/* hitbox set from operands: explicit extents */
+s32 func_80222BDC_ovl_1BA050(ScriptCtx *ctx) {
+    u8 *o = func_80222EEC_ovl_1BA050(ctx->pc[1]);
+
+    if (o[0] != 2) {
+        for (;;) {
+        }
+    }
+    o[0x16] = *(u16 *)(ctx->pc + 2);
+    *(s16 *)(o + 6) = *(u16 *)(ctx->pc + 4);
+    *(s16 *)(o + 8) = *(u16 *)(ctx->pc + 6);
+    *(s16 *)(o + 0xA) = *(u16 *)(ctx->pc + 8);
+    *(s16 *)(o + 0xC) = *(u16 *)(ctx->pc + 0xA);
+    *(s16 *)(o + 0xE) = *(u16 *)(ctx->pc + 0xC);
+    *(s16 *)(o + 0x10) = *(u16 *)(ctx->pc + 0xE);
+    *(s16 *)(o + 0x12) = *(u16 *)(ctx->pc + 0x10);
+    *(s16 *)(o + 0x14) = *(u16 *)(ctx->pc + 0x12);
+    ctx->pc += 0x14;
+    return 0;
+}
 
 s32 func_80222CA0_ovl_1BA050(ScriptCtx *ctx) {
     *func_80222EA0_ovl_1BA050(*(u16 *)(ctx->pc + 2)) = 3;
