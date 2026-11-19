@@ -65,6 +65,7 @@ void func_8020D024_ovl_25EE90(Cnt26 *c, u16 a, s32 b, u16 d, s32 e);
 void _bcopy(const void *src, void *dst, s32 n);
 void func_80215654_ovl_25EE90();
 void func_802148C0_ovl_25EE90();
+void guMtxCatF(void *a, void *b, void *out);
 /* --- end decls --- */
 
 void func_80212BA0_ovl_25EE90(s32 n, Obj26 **arr) {
@@ -158,7 +159,25 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_802132D0_ovl_25EE90);
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_80213420_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_802136F4_ovl_25EE90);
+/* Composes the bone matrices of skeleton sk (parent links in sk+0x10) onto root */
+typedef struct {
+    u16 node;
+    u16 parent;
+} Link26;
+void func_802136F4_ovl_25EE90(void *root, u8 *sk, u8 *mtx) {
+    void *stk[32];
+    u32 i;
+
+    stk[0] = root;
+    for (i = 0; i < FIELD(sk, u32, 4); i++) {
+        u16 node = FIELD(sk, Link26 *, 0x10)[i].node;
+        u16 parent = FIELD(sk, Link26 *, 0x10)[i].parent;
+        u8 *m = mtx + node * 0x44;
+
+        guMtxCatF(m, stk[parent], m);
+        stk[parent + 1] = m;
+    }
+}
 
 void func_802137A8_ovl_25EE90(s32 n, void **arr) {
     s32 pad;
