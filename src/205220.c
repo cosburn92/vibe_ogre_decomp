@@ -30,9 +30,52 @@ void func_801C1D90_ovl_1F0A30(void) {
 void func_801C1D98_ovl_1F0A30(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C1DA0_ovl_1F0A30);
+s32 func_801C2178_ovl_1F0A30(void *a, void *b, s32 i, s32 *r);
+/* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C1E44_ovl_1F0A30);
+/* Width spanned by the glyph boxes of a text layout (0 if empty) */
+s32 func_801C1DA0_ovl_1F0A30(void *a, void *b) {
+    s32 r[10];
+    s32 i;
+    s32 lo = 1000;
+    s32 hi = -1000;
+
+    for (i = 0; func_801C2178_ovl_1F0A30(a, b, i, r); i++) {
+        if (r[2] < lo) {
+            lo = r[2];
+        }
+        if (hi < r[2] + r[4]) {
+            hi = r[2] + r[4];
+        }
+    }
+    {
+        s32 d = hi - lo;
+
+        return d < 0 ? 0 : d;
+    }
+}
+
+/* Height spanned by the glyph boxes of a text layout (0 if empty) */
+s32 func_801C1E44_ovl_1F0A30(void *a, void *b) {
+    s32 r[10];
+    s32 i;
+    s32 lo = 1000;
+    s32 hi = -1000;
+
+    for (i = 0; func_801C2178_ovl_1F0A30(a, b, i, r); i++) {
+        if (r[1] < lo) {
+            lo = r[1];
+        }
+        if (hi < r[1] + r[3]) {
+            hi = r[1] + r[3];
+        }
+    }
+    {
+        s32 d = hi - lo;
+
+        return d < 0 ? 0 : d;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C1EE8_ovl_1F0A30);
 
