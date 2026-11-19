@@ -60,6 +60,8 @@ extern Pair0E D_801ABA70_ovl_0EBBB0[];
 f32 *func_80080040(f32 *out, f32 *a, f32 *b);
 f32 *func_8007FEE0(f32 *out, f32 *a, f32 *b);
 void func_801A9AB0_ovl_0EBBB0(f32 a, f32 b, f32 *p, f32 *q, f32 *axis, f32 c, s32 d);
+extern u8 D_8018F56D;
+f32 func_801A7D9C_ovl_0EBBB0(void *curve, f32 t);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A07D0_ovl_0EBBB0);
@@ -182,7 +184,30 @@ __asm__(".section .rodata\n.global D_801AD220_ovl_0EBBB0\nD_801AD220_ovl_0EBBB0:
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3EA8_ovl_0EBBB0);
 
+/* Samples the ten curves of each of the n channels at time t/30 into the 0xEC value table */
+#ifdef NON_MATCHING
+/* The logic matches. The original eliminates the outer counter: i*40 and i*4 offsets plus an n*40 end value in five saved registers; here i stays as a counter. */
+void func_801A4100_ovl_0EBBB0(s32 t, s32 n) {
+    f32 time = t / 30.0f;
+    s32 i;
+    s32 k;
+    void **c;
+
+    if (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0xF9) == 0 || D_8018F56D == 0) {
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        c = FIELDX(D_801ABA58_ovl_0EBBB0, void ***, 0xE8)[i];
+        for (k = 0; k < 10; k++, c++) {
+            if (*c != NULL) {
+                ((f32 *)(FIELDX(D_801ABA58_ovl_0EBBB0, u8 *, 0xEC) + i * 40))[k] = func_801A7D9C_ovl_0EBBB0(*c, time);
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4100_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4204_ovl_0EBBB0);
 
