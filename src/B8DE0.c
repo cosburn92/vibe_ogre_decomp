@@ -213,10 +213,10 @@ INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CC974_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCA50_ovl_087200);
 
-/* Fills the 4 vertices at w+0x60 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
+/* Fills the 4 vertices at +0x60 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
 void func_801CCD08_ovl_087200(VtxB8 *v, s16 x0, s16 y0, s16 x1, s16 y1) {
-    s16 sw = ((s16)x1 - (s16)x0 > 0 ? x1 - x0 : x0 - x1) - 1;
-    s16 sh = ((s16)y1 - (s16)y0 > 0 ? y1 - y0 : y0 - y1) - 1;
+    s16 sw = (x1 - x0 > 0 ? x1 - x0 : x0 - x1) - 1;
+    s16 sh = (y1 - y0 > 0 ? y1 - y0 : y0 - y1) - 1;
 
     v[6].x = 160 - x1;
     v[6].y = 120 - y1;
