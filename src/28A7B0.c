@@ -158,6 +158,7 @@ typedef struct {
     u8 v[3];
 } Ofs3;
 extern Ofs3 D_8023E178_ovl_286BD0;
+u8 func_80239EE0_ovl_286BD0(s32 a, u8 *p, s32 b);
 /* --- end decls --- */
 
 void func_8022E870_ovl_286BD0(s32 unused, s32 n, u8 set) {
@@ -923,7 +924,34 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A5D8_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A814_ovl_286BD0);
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AA70_ovl_286BD0);
+/* Allocates o's 0x604-byte text window (0x500 bytes of text copied from src) for window kind */
+u8 *func_8023AA70_ovl_286BD0(u8 *o, s32 kind, u8 *src) {
+    u8 *p;
+
+    *(u8 **)(o + 0xD0) = HMalloc(0x604);
+    bzero(*(u8 **)(o + 0xD0), 0x604);
+    p = *(u8 **)(o + 0xD0);
+    p[0x5F3] = 0x3F;
+    p[0x5F6] = 0xF;
+    *(s32 *)(p + 0x600) = kind;
+    p[0x5F0] = 0;
+    p[0x5FE] = 2;
+    bzero(p, 0x500);
+    func_80080998(p, src, 0x500);
+    o[0x25] = 0;
+    switch ((u32)(kind & 0xFF)) {
+        case 13:
+            p[0x5F4] = 1;
+            break;
+        case 12:
+        case 18:
+            p[0x5F4] = 7;
+            break;
+    }
+    ((u8 *)D_8023DE34_ovl_286BD0)[0x64] = 0;
+    p[0x5F5] = func_80239EE0_ovl_286BD0(0, p, 0);
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AB74_ovl_286BD0);
 
