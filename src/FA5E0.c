@@ -96,6 +96,9 @@ void func_801AEC40_ovl_0FA5E0(Widget3390 *p);
 extern s32 D_801B4894_ovl_0FA5E0[]; /* bits per pixel by format */
 void _bcopy(const void *src, void *dst, s32 n);
 void *HMalloc(s32 size);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
 /* --- end decls --- */
 
 /* Scene init: full-screen (320x240) window scene with a 0x28-line child scene, loads asset 0x209A7B4 */
@@ -187,7 +190,29 @@ s32 func_801AEBA4_ovl_0FA5E0(u8 *s) {
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEBA4_ovl_0FA5E0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEC40_ovl_0FA5E0);
+/* Loads the 18 LZ images listed in chunk 0x1D61984 into o+0x19C and clears the rest of the state */
+void func_801AEC40_ovl_0FA5E0(Widget3390 *o) {
+    u32 i;
+    s32 *tbl;
+    u8 *raw;
+    void *img;
+
+    bzero((u8 *)o + 0x19C, 0x48);
+    for (i = 0; i < 18; i++) {
+        tbl = LoadChunkRaw(NULL, 0x1D61984);
+        raw = LoadChunkRaw(NULL, tbl[i]);
+        img = HMalloc(ReadU32BE(raw));
+        DecodeLZ(img, raw);
+        HFree(raw);
+        HFree(tbl);
+        ((void **)((u8 *)o + 0x19C))[i] = img;
+    }
+    bzero((u8 *)o + 0x258, 0x17C);
+    bzero((u8 *)o + 0x3D4, 0x70);
+    bzero((u8 *)o + 0x444, 0x70);
+    bzero((u8 *)o + 0x4B4, 0x70);
+    bzero((u8 *)o + 0x524, 0xC);
+}
 
 void func_801AED48_ovl_0FA5E0(void) {
     func_801AEE94_ovl_0FA5E0(0, D_801B436C_ovl_0FA5E0);
