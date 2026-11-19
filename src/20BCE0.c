@@ -33,6 +33,7 @@ extern void *D_801D0824_ovl_1F0A30;
 u8 func_8016DE1C(u8 a, u8 b);
 u16 func_8016FA34(u16 a, u16 b, u16 c, u16 d);
 s32 func_801C8B84_ovl_1F0A30(BattleUnit *u);
+BattleUnit *func_801C8FE8_ovl_1F0A30(u32 i);
 void HFree(void *p);
 
 extern u8 D_801CFC8C_ovl_1F0A30[];
@@ -116,14 +117,14 @@ s32 func_801C8B54_ovl_1F0A30(void) {
     return D_800E9C0A[8] == 1;
 }
 
-s32 func_801C8B68_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8B68_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
     return (u->flags >> 8) & 1;
 }
 
-s32 func_801C8B84_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8B84_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -137,7 +138,10 @@ s32 func_801C8BA4_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 10) & 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C8BC0_ovl_1F0A30);
+/* Whether units a and b are on opposite sides */
+s32 func_801C8BC0_ovl_1F0A30(u8 a, u8 b) {
+    return func_801C8B84_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(a)) ^ func_801C8B84_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(b));
+}
 
 s32 func_801C8C3C_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
@@ -146,7 +150,7 @@ s32 func_801C8C3C_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 12) & 1;
 }
 
-s32 func_801C8C58_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8C58_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -230,7 +234,7 @@ s32 func_801C8DF4_ovl_1F0A30(BattleUnit *u) {
     return func_8016DE1C(((u8 *)u)[0x4B], ((u8 *)u)[0x4F]) == 2;
 }
 
-s32 func_801C8E30_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8E30_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 1;
     }
@@ -298,15 +302,65 @@ BattleUnit *func_801C8FE8_ovl_1F0A30(u32 i) {
     return NULL;
 }
 
+/* Inlined form of func_801C8FE8 used by the unit-search loops (base loaded up front) */
+static inline BattleUnit *BattleGetUnit(u32 i) {
+    u8 *base = D_801CE8BC_ovl_1F0A30;
+    s32 off;
+
+    if (i < 20) {
+        off = i * 0xF8;
+        if (*(s32 *)(base + off + 0x20C) != 0) {
+            return (BattleUnit *)(base + (off + 0x1C4));
+        }
+    }
+    return NULL;
+}
+
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9028_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9234_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C92F8_ovl_1F0A30);
+/* The player side's leader */
+BattleUnit *func_801C92F8_ovl_1F0A30(void) {
+    s32 i;
+    BattleUnit *u;
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9380_ovl_1F0A30);
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (func_801C8B68_ovl_1F0A30(u) && func_801C8C58_ovl_1F0A30(u)) {
+            return u;
+        }
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C940C_ovl_1F0A30);
+/* The enemy side's leader */
+BattleUnit *func_801C9380_ovl_1F0A30(void) {
+    s32 i;
+    BattleUnit *u;
+
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (func_801C8B84_ovl_1F0A30(u) && func_801C8C58_ovl_1F0A30(u)) {
+            return u;
+        }
+    }
+    return NULL;
+}
+
+/* The first player-side unit */
+BattleUnit *func_801C940C_ovl_1F0A30(void) {
+    s32 i;
+    BattleUnit *u;
+
+    for (i = 0; i < 20; i++) {
+        u = BattleGetUnit(i);
+        if (func_801C8B68_ovl_1F0A30(u)) {
+            return u;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9478_ovl_1F0A30);
 
@@ -339,7 +393,14 @@ INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA100_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA1C4_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA268_ovl_1F0A30);
+s32 func_801CA268_ovl_1F0A30(BattleUnit *a, BattleUnit *b) {
+    s32 r = a->unk54 > b->unk54;
+
+    if (func_801C8B68_ovl_1F0A30(a)) {
+        r = !r;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA29C_ovl_1F0A30);
 
