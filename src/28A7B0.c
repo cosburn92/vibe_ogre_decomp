@@ -655,7 +655,40 @@ s16 func_80239570_ovl_286BD0(s32 n) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239634_ovl_286BD0);
+/* Whether list row n is a date-group header */
+s32 func_80239634_ovl_286BD0(s32 n) {
+    s32 k = 0;
+    u8 mid = 0;
+    u16 hi = 0;
+    s32 i;
+    TimeStamp *t;
+
+    for (i = 0; i < 121; i++) {
+        t = func_8022EC34_ovl_286BD0(i);
+        if (t == NULL) {
+            return 0;
+        }
+        if (hi != t->hi) {
+            mid = t->mid;
+            hi = t->hi;
+            if (n == k) {
+                return 1;
+            }
+            k++;
+        } else if (mid != t->mid) {
+            if (n == k) {
+                return 1;
+            }
+            k++;
+            mid = t->mid;
+        }
+        if (n == k) {
+            return 0;
+        }
+        k++;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802396F0_ovl_286BD0);
 
