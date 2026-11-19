@@ -110,6 +110,9 @@ void RomRead(void *rom, void *dst, s32 size);
 void func_80224C60_ovl_1BA050(void);
 void func_80224D60_ovl_1BA050(void);
 void func_8022995C_ovl_1BA050(void);
+void func_80228E88_ovl_1BA050(s32 i);
+void func_80228FE8_ovl_1BA050(s32 i);
+s32 func_80229040_ovl_1BA050(s32 i);
 /* --- end decls --- */
 
 inline void func_80220F64_ovl_1BA050(u16 id, u8 v) {
@@ -383,7 +386,32 @@ s32 func_802220B4_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022212C_ovl_1BA050);
+/* loop end: count up and jump back, or pop the loop */
+s32 func_8022212C_ovl_1BA050(ScriptCtx *ctx) {
+    s16 n;
+    u16 *p;
+    u8 *start;
+
+    if (ctx->loopDepth == 0) {
+        for (;;) {
+        }
+    }
+    p = &ctx->loopCount[ctx->loopDepth - 1];
+    start = ctx->stack[ctx->depth - 1];
+    n = ++*p;
+    if (*(s16 *)(start + 2) < 0 || n < *(s16 *)(start + 2)) {
+        ctx->pc = start + 4;
+    } else {
+        if (ctx->depth == 0) {
+            for (;;) {
+            }
+        }
+        ctx->depth--;
+        ctx->loopDepth--;
+        ctx->pc += 4;
+    }
+    return 0;
+}
 
 /* call: push the return address (at most 4 deep) and jump */
 s32 func_802221D0_ovl_1BA050(ScriptCtx *ctx) {
@@ -491,7 +519,32 @@ s32 func_80222468_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_802224BC_ovl_1BA050);
+/* run effect id (operand 3) if operand 2 is set, waiting for it to finish */
+s32 func_802224BC_ovl_1BA050(ScriptCtx *ctx) {
+    u8 *pc = ctx->pc;
+    u8 id = pc[3];
+    s32 r = 1;
+
+    switch (ctx->state) {
+        case 0:
+            if (pc[2] != 0) {
+                func_80228FE8_ovl_1BA050(id);
+                ctx->state++;
+            } else {
+                r = 0;
+            }
+            break;
+        case 1:
+            r = func_80229040_ovl_1BA050(id) == 0;
+            break;
+    }
+    if (!r) {
+        func_80228E88_ovl_1BA050(id);
+        ctx->state = 0;
+        ctx->pc += 4;
+    }
+    return r;
+}
 
 s32 func_80222564_ovl_1BA050(ScriptCtx *ctx) {
     s32 v = *(s32 *)(ctx->pc + 4);
@@ -673,7 +726,24 @@ s32 func_80222A38_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222AA0_ovl_1BA050);
+s32 func_80222AA0_ovl_1BA050(ScriptCtx *ctx) {
+    u8 *o = func_80222EA0_ovl_1BA050(*(u16 *)(ctx->pc + 2));
+
+    o[0] = 2;
+    *(u16 *)(o + 2) = *(u16 *)(ctx->pc + 4);
+    *(u16 *)(o + 4) = *(u16 *)(ctx->pc + 6);
+    *(s16 *)(o + 6) = -20;
+    *(s16 *)(o + 8) = -20;
+    *(s16 *)(o + 0xA) = 20;
+    *(s16 *)(o + 0xC) = 20;
+    *(s16 *)(o + 0xE) = -12;
+    *(s16 *)(o + 0x10) = -12;
+    *(s16 *)(o + 0x12) = 12;
+    *(s16 *)(o + 0x14) = 12;
+    o[0x16] = 16;
+    ctx->pc += 8;
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222B34_ovl_1BA050);
 
