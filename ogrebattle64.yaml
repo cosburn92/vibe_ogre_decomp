@@ -935,11 +935,11 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x17F9C0, c]
-      - [0x181520, asm]
+      - [0x181520, c]
       - [0x1822F0, data, 17F9C0]
       - [0x185600, data, 181520]
       - [0x188B10, .rodata, 17F9C0]
-      - [0x188B40, rodata, 181520]
+      - [0x188B40, .rodata, 181520]
       - { type: bss, vram: 0x8021E120, name: 17F9C0 }
 
   - name: ovl_188B60
