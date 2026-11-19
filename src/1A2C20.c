@@ -47,6 +47,7 @@ extern u8 D_80216BE4_ovl_1A2C20;
 extern s32 D_80216BE8_ovl_1A2C20; /* finished channels */
 extern s32 D_80216EF8_ovl_1A2C20;
 extern s32 D_80216EFC_ovl_1A2C20;
+extern s32 D_80216F00_ovl_1A2C20;
 extern u16 D_80216F70_ovl_1A2C20;
 extern s32 D_80216F74_ovl_1A2C20; /* target x */
 extern s32 D_80216F78_ovl_1A2C20; /* target y */
@@ -71,7 +72,7 @@ void func_80215B1C_ovl_1A2C20(void);
 void func_80215D30_ovl_1A2C20(void);
 void func_8021608C_ovl_1A2C20(void);
 
-void func_80214F80_ovl_1A2C20(void) {
+inline void func_80214F80_ovl_1A2C20(void) {
     D_80216F8C_ovl_1A2C20 = func_801AB0FC(*D_801AB850, 0x3C);
     D_800E82C8[D_80216F8C_ovl_1A2C20].unk89 = 9;
     D_80216F70_ovl_1A2C20 |= 0x20;
@@ -242,7 +243,7 @@ void func_8021562C_ovl_1A2C20(void) {
     D_80216BE4_ovl_1A2C20 = 0;
 }
 
-s32 func_802156B8_ovl_1A2C20(void) {
+inline s32 func_802156B8_ovl_1A2C20(void) {
     s32 t;
     f32 sx;
     f32 sy;
@@ -265,7 +266,7 @@ s32 func_802156B8_ovl_1A2C20(void) {
     return 0;
 }
 
-s32 func_80215764_ovl_1A2C20(void) {
+inline s32 func_80215764_ovl_1A2C20(void) {
     s32 t;
     f32 scale;
 
@@ -283,7 +284,41 @@ s32 func_80215764_ovl_1A2C20(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1A2C20", func_802157F0_ovl_1A2C20);
+void func_802157F0_ovl_1A2C20(void) {
+    s16 t = D_80216BE0_ovl_1A2C20->unk00;
+
+    func_80215298_ovl_1A2C20();
+    if (t < 45 || D_80216F00_ovl_1A2C20 >= 240) {
+        D_80216BE0_ovl_1A2C20->unk00++;
+    } else {
+        D_80216F00_ovl_1A2C20 = D_80216F00_ovl_1A2C20 + 1;
+        if (D_80216F00_ovl_1A2C20 >= 240) {
+            func_80214F80_ovl_1A2C20();
+        }
+    }
+    if (t == 0) {
+        D_80216F70_ovl_1A2C20 |= 3;
+    }
+    if (t < 0) {
+        D_80216BE4_ovl_1A2C20 = 2;
+    } else if (t < 45) {
+        D_80216BE4_ovl_1A2C20 = 3;
+    } else {
+        D_80216BE4_ovl_1A2C20 = 4;
+    }
+    if (D_80216F70_ovl_1A2C20 & 0x20) {
+        D_80216BE0_ovl_1A2C20->unk00++;
+        if (t < 115) {
+            D_80216BE4_ovl_1A2C20 = 5;
+        } else if (t < 160) {
+            D_80216BE4_ovl_1A2C20 = 6;
+        } else if (D_800E82C8[D_80216F8C_ovl_1A2C20].unk97 & 1) {
+            D_80216BE4_ovl_1A2C20 = 1;
+        }
+    }
+    func_802156B8_ovl_1A2C20();
+    func_80215764_ovl_1A2C20();
+}
 
 void func_80215AC8_ovl_1A2C20(void) {
     *D_80216BE0_ovl_1A2C20->cs.cam = *D_80216BE0_ovl_1A2C20->cs.saved;
