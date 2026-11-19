@@ -78,6 +78,8 @@ extern u8 D_801976DC;
 extern u8 D_801971F2[]; /* squad records (25 bytes), leader byte */
 extern u8 D_8022AC40_ovl_281860[];
 extern u8 D_8022A921_ovl_281860[];
+/* same address as D_8022A921: the original tests the first entry through a second symbol */
+extern u8 D_8022A921_head_ovl_281860;
 extern u8 *D_8022A8C8_ovl_281860[];
 void func_8009C550(u8 *dst, u8 *src);
 void func_8009C620(u8 *dst, u8 *src);
@@ -339,7 +341,43 @@ void func_80227B80_ovl_281860(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227B9C_ovl_281860);
+extern u8 D_8022AC00_ovl_281860[];
+extern void *D_801CE8BC;
+
+/* Name of battle unit i's character plus the titles matching its record's 0x48 value */
+u8 *func_80227B9C_ovl_281860(s32 i) {
+    u8 *u = FIELD(D_8022A974_ovl_281860, u8 *, 0x18 + i * 4);
+    u8 *m;
+    u8 *p;
+    u8 **s;
+    s32 end;
+
+    if (u == NULL) {
+        return NULL;
+    }
+    if (u[0x147] >= 20) {
+        return NULL;
+    }
+    m = (u8 *)D_801CE8BC + (u[0x147] * 0xF8 + 0x1C4);
+    if (FIELD(m, s32, 0x48) == 0) {
+        return NULL;
+    }
+    bzero(D_8022AC00_ovl_281860, 0x40);
+    func_8009C550(D_8022AC00_ovl_281860, D_80193BC0[m[0xF6]].b);
+    if (D_8022A921_head_ovl_281860 != 0xFF) {
+        end = 0xFF;
+        p = D_8022A921_ovl_281860;
+        s = D_8022A8C8_ovl_281860;
+        do {
+            if (*p == FIELD(m, s32, 0x48)) {
+                func_8009C620(D_8022AC00_ovl_281860, *s);
+            }
+            p += 2;
+            s++;
+        } while (*p != end);
+    }
+    return D_8022AC00_ovl_281860;
+}
 
 /* Name of the current squad's leader plus the title for its class (NULL when it has none) */
 #ifdef NON_MATCHING
