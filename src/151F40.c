@@ -58,6 +58,10 @@ u16 func_80201B68_ovl_14EBE0(u8 side, u8 idx, u8 slot);
 void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base);
 extern u16 *D_800C4C4C;
 extern u8 *D_80213778_ovl_14EBE0;
+extern s32 *D_80214E60_ovl_14EBE0;
+extern u8 D_80214EB8_ovl_14EBE0;
+extern u8 D_80214EB9_ovl_14EBE0;
+void func_80204210_ovl_14EBE0();
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
@@ -334,9 +338,55 @@ void func_80203FA4_ovl_14EBE0(s32 a, s32 b) {
     func_80200DD0_ovl_14EBE0((void *)a, b, 0x47);
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80204050_ovl_14EBE0);
+#ifdef NON_MATCHING
+/* display-list setup: constant loads and pointer updates are scheduled differently */
+void func_80204050_ovl_14EBE0(s32 a) {
+    Gfx *g;
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80204120_ovl_14EBE0);
+    g = D_800E9BA0++;
+    g->w0 = 0xFA000000;
+    g->w1 = a | 0xFFFFFF00;
+    g = D_800E9BA0++;
+    g->w0 = 0xE3000C00;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xE3001201;
+    g->w1 = 0;
+    g = D_800E9BA0++;
+    g->w0 = 0xE200001C;
+    if (a == 0xFF) {
+        g->w1 = 0x0F0A7008;
+    } else {
+        g->w1 = 0x00504240;
+    }
+    g = D_800E9BA0++;
+    g->w0 = 0xFC119623;
+    g->w1 = 0xFF2FFFFF;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/151F40", func_80204050_ovl_14EBE0);
+#endif
+
+void func_80204120_ovl_14EBE0(u8 mode, s32 *p, u8 b, u8 c) {
+    s32 i;
+
+    D_80214E60_ovl_14EBE0 = p;
+    if (mode) {
+        D_80214EB9_ovl_14EBE0 = *p | 0x80;
+    } else {
+        D_80214EB8_ovl_14EBE0 = b;
+        if (b < 8) {
+            D_80214EB8_ovl_14EBE0 = b | 0x80;
+        } else {
+            D_80214EB8_ovl_14EBE0 = 0x80;
+        }
+        D_80214EB9_ovl_14EBE0 = D_80214EB8_ovl_14EBE0;
+    }
+    i = func_80076F5C(0xC000, func_80204210_ovl_14EBE0, 0x58, 0x78, 0x62, 0x82, 0xC8);
+    D_800E82C8[i].unk88 = b;
+    D_800E82C8[i].unk89 = c;
+    D_800E82C8[i].unk8A = mode;
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80204210_ovl_14EBE0);
 
@@ -501,7 +551,31 @@ s32 func_80207380_ovl_14EBE0(u8 *out, s32 first, u8 n) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207380_ovl_14EBE0);
 #endif
 
+#ifdef NON_MATCHING
+/* same register pressure as func_80207380: one extra live value spills */
+s32 func_8020746C_ovl_14EBE0(u8 *out, s32 first, u8 n) {
+    s32 i;
+    s32 k = D_80213778_ovl_14EBE0[0x5F7] + first;
+
+    for (i = 0; (u8)i < n; i++, k++) {
+        u8 *e = ENT151(k);
+        u8 *o = out + (u8)i * 8;
+
+        FIELD(o, s32, 0) = FIELD(e, s32, 0x68);
+        o[4] = e[0x63] & 0x80;
+        o[5] = ENT151(k)[0x61];
+        o[6] = ENT151(k)[0x62];
+        o[7] = 0;
+        if (ENT151(k)[0x63] & 1) {
+            o[6] = 0xFF;
+            o[7] |= 1;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020746C_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020753C_ovl_14EBE0);
 
