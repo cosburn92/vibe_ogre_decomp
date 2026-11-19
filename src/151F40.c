@@ -65,6 +65,15 @@ void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base);
 extern u16 *D_800C4C4C;
 extern u8 *D_80213778_ovl_14EBE0;
 extern s32 *D_80214E60_ovl_14EBE0;
+extern s32 D_80214E70_ovl_14EBE0;
+typedef struct {
+    s32 id;
+    u8 b4;
+    u8 b5;
+    u8 b6;
+    u8 b7;
+} Row151;
+#define SLOT151(k) (D_80213778_ovl_14EBE0 + (u8)(k) * 8)
 extern u8 D_80214EB8_ovl_14EBE0;
 extern u8 D_80214EB9_ovl_14EBE0;
 void func_80204210_ovl_14EBE0();
@@ -673,7 +682,39 @@ s32 func_8020746C_ovl_14EBE0(u8 *out, s32 first, u8 n) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020746C_ovl_14EBE0);
 #endif
 
+/* Fills n list rows from the 8-byte slots at 0x3D8 starting at `first`;
+ * sets D_80214E70 when a row's id byte is 0x80-0xFD */
+#ifdef NON_MATCHING
+/* row filler: structure exact, registers differ (a0/a1/v1 roles) */
+s32 func_8020753C_ovl_14EBE0(Row151 *out, s32 first, u8 n) {
+    u8 i;
+    s32 k = first;
+
+    D_80214E70_ovl_14EBE0 = 0;
+    for (i = 0; (u8)i < n; i++, k++) {
+        out[(u8)i].id = FIELD(SLOT151(k), s32, 0x3D8);
+        out[(u8)i].b4 = SLOT151(k)[0x3DE] & 0x80;
+        out[(u8)i].b5 = SLOT151(k)[0x3DC];
+        out[(u8)i].b6 = SLOT151(k)[0x3DD];
+        out[(u8)i].b7 = SLOT151(k)[0x3DE] & 1;
+        if ((out[(u8)i].b5 & 0x80) && out[(u8)i].b5 < 0xFE) {
+            D_80214E70_ovl_14EBE0 = 1;
+        }
+        if (out[(u8)i].b7) {
+            out[(u8)i].b6 = 0xFF;
+        }
+        if (SLOT151(k)[0x3DF]) {
+            out[(u8)i].b5 = 0xFF;
+        }
+        if (SLOT151(k)[0x3DE] & 2) {
+            out[(u8)i].b4 |= 1;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020753C_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020766C_ovl_14EBE0);
 
