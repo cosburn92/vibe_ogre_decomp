@@ -320,7 +320,7 @@ void DateAdvanceDay(void *d);
 void func_8016C70C_ovl_040E80(void *d);
 extern s16 D_80197B06_ovl_040E80;
 void func_80171B94_ovl_040E80(void);
-void func_80171ED8_ovl_040E80(void);
+s32 func_80171ED8_ovl_040E80(void);
 void func_8016B774_ovl_040E80(void);
 s32 ChunkSize(s32 id);
 void *func_80071C04(s32 size);
@@ -332,6 +332,9 @@ extern u8 D_8018F321_ovl_040E80;
 extern s16 D_8018F322_ovl_040E80;
 u8 func_8016FF5C_ovl_040E80(u8 a, u8 b);
 void func_80172610_ovl_040E80(u8 i);
+extern u8 D_80196A9A_ovl_040E80;
+s32 func_80170954_ovl_040E80(u8 *msg);
+void func_80172394_ovl_040E80(void);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
@@ -340,7 +343,36 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80170954_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80171B94_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80171ED8_ovl_040E80);
+/* Runs the menu message for the current option; on completion frees the message tables and resets the menu */
+s32 func_80171ED8_ovl_040E80(void) {
+    s32 m = D_80197B0C_ovl_040E80;
+    u8 *p;
+    s32 r;
+
+    D_80197B04_ovl_040E80 = 0;
+    if (m == 1) {
+        p = (u8 *)D_80197B18_ovl_040E80 + ((u16 *)D_80197B18_ovl_040E80)[D_80196A9A_ovl_040E80 & 0x7F];
+    } else if (m == 0x40) {
+        p = (u8 *)D_80197B1C_ovl_040E80 + ((u16 *)D_80197B1C_ovl_040E80)[D_80196A9A_ovl_040E80 & 0x7F];
+    } else if (m == 0x80) {
+        r = func_80170954_ovl_040E80((u8 *)D_80197B1C_ovl_040E80 + ((u16 *)D_80197B1C_ovl_040E80)[D_80196A9A_ovl_040E80 & 0x7F]);
+        D_801936A8_ovl_040E80 = 0;
+        return r;
+    } else {
+        return 0;
+    }
+    r = func_80170954_ovl_040E80(p);
+    if (r == 0) {
+        return 0;
+    }
+    HFree(D_80197B18_ovl_040E80);
+    HFree(D_80197B1C_ovl_040E80);
+    D_80197B18_ovl_040E80 = NULL;
+    D_80197B1C_ovl_040E80 = NULL;
+    func_80172394_ovl_040E80();
+    func_8017223C_ovl_040E80(1);
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80171FE0_ovl_040E80);
 
