@@ -93,6 +93,12 @@ void *LoadChunkRaw(void *dst, s32 id);
 void *func_8017BFB0(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 void func_80229B98_ovl_1BA050();
 void func_802261D0_ovl_1BA050();
+extern u8 D_8022A821_ovl_1BA050;
+extern u8 D_8022A824_ovl_1BA050;
+extern s16 D_8022A826_ovl_1BA050;
+extern u8 D_8022A833_ovl_1BA050;
+extern u8 D_8022A0D0_ovl_1BA050[];
+void func_802296B0_ovl_1BA050();
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
@@ -473,7 +479,7 @@ s32 func_80229040_ovl_1BA050(s32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022905C_ovl_1BA050);
 
-void func_802291BC_ovl_1BA050(s16 a, s16 b, s16 c, s16 d) {
+inline void func_802291BC_ovl_1BA050(s16 a, s16 b, s16 c, s16 d) {
     D_8022A718_ovl_1BA050 = a;
     D_8022A71A_ovl_1BA050 = b;
     D_8022A71C_ovl_1BA050 = c;
@@ -484,7 +490,7 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802291E0_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802292DC_ovl_1BA050);
 
-void func_80229604_ovl_1BA050(s16 *list) {
+inline void func_80229604_ovl_1BA050(s16 *list) {
     if (list == NULL) {
         s32 *p = &D_8022A720_ovl_1BA050;
 
@@ -516,7 +522,30 @@ void func_80229930_ovl_1BA050(void) {
     }
 }
 
+/* func_80229604(NULL) as inlined here */
+static inline void func_8022995C_reset(void) {
+    bzero(&D_8022A720_ovl_1BA050, 0xF4);
+    D_8022A720_ovl_1BA050 = 1;
+    D_8022A72A_ovl_1BA050 = 0xF0;
+    D_8022A726_ovl_1BA050 = 0;
+    D_8022A724_ovl_1BA050 = 0;
+    D_8022A728_ovl_1BA050 = 0x140;
+}
+
+#ifdef NON_MATCHING
+/* store scheduling: original loads call args after the global stores */
+void func_8022995C_ovl_1BA050(void) {
+    D_8022A821_ovl_1BA050 = 0;
+    func_8022995C_reset();
+    D_8022A71E_ovl_1BA050 = 0;
+    func_802291BC_ovl_1BA050(0, 0, 0, 0xA0);
+    D_8022A826_ovl_1BA050 = 0;
+    D_8022A824_ovl_1BA050 = 4;
+    func_8017C074(0x5500, 0x13, func_802296B0_ovl_1BA050, 0, 0, 0, 0);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022995C_ovl_1BA050);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80229A20_ovl_1BA050);
 
@@ -540,7 +569,34 @@ void func_80229B98_ovl_1BA050(s32 a, s32 b) {
     func_802261D0_ovl_1BA050(a, b);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80229BD4_ovl_1BA050);
+/* Fullscreen fade rectangle with alpha D_8022A833 */
+void func_80229BD4_ovl_1BA050(void) {
+    GfxBB *g;
+
+    if (D_8022A820_ovl_1BA050) {
+        g = D_800E9BA0++;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_8022A0D0_ovl_1BA050;
+        g = D_800E9BA0++;
+        g->w0 = 0xFA000000;
+        g->w1 = D_8022A833_ovl_1BA050;
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+        g = D_800E9BA0++;
+        g->w0 = 0xE45003C0;
+        g->w1 = 0;
+        g = D_800E9BA0++;
+        g->w0 = 0xE1000000;
+        g->w1 = 0;
+        g = D_800E9BA0++;
+        g->w0 = 0xF1000000;
+        g->w1 = 0x04000400;
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/1BBFB0", D_8022A1D8_ovl_1BA050);
 
