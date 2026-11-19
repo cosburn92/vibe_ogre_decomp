@@ -635,3 +635,4 @@ piEventQueue = 0x800C3530; // size:0x18
 piEventBuf = 0x800C3548; // size:0x8
 piAccessBuf = 0x800C3550;
 alHeapInit = 0x8008F850; // type:func
+guRandom = 0x80092A60; // type:func
