@@ -182,21 +182,6 @@ void func_801CBB54_ovl_087200(void) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBB54_ovl_087200);
 #endif
 
-#ifdef NON_MATCHING
-/* Constant/load order differs at the start. */
-u8 func_801CBBA0_ovl_087200(void) {
-    s32 i = 0;
-    u8 *st;
-
-    for (st = D_80196AF8; i < 30; i++) {
-        if (st[0x117F] == 0xFF) {
-            break;
-        }
-        st += 0x36;
-    }
-    return i;
-}
-#else
 /* First free squad slot (0..30) */
 u8 func_801CBBA0_ovl_087200(void) {
     u8 *st = D_80196AF8;
@@ -209,7 +194,6 @@ u8 func_801CBBA0_ovl_087200(void) {
     }
     return i;
 }
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBBD4_ovl_087200);
 
