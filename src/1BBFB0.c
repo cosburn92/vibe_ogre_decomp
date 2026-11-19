@@ -58,6 +58,7 @@ extern void *D_8022A4C0_ovl_1BA050[];
 extern u8 *D_8022A650_ovl_1BA050;
 extern s32 D_8022A838_ovl_1BA050;
 extern u8 D_8022A820_ovl_1BA050;
+extern u8 D_80229F9C_ovl_1BA050[];
 extern u8 D_8022A834_ovl_1BA050;
 extern s16 D_8022A832_ovl_1BA050;
 void HFree(void *p);
@@ -103,7 +104,71 @@ void func_802296B0_ovl_1BA050();
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80222F10_ovl_1BA050);
 
+/* Per-frame update: cycles the blink phase (0x72-0x74), advances each bit slot's fade counter,
+ * and moves the position (2, 4) from (6, 8) toward (0xA, 0xC) over 0xE frames */
+#ifdef NON_MATCHING
+static inline s16 Lerp1BB(s16 from, s16 to, u16 t, u16 dur) {
+    s32 d = to - from;
+
+    if ((u32)(d + 1) < 3) {
+        return to;
+    }
+    return from + d * t / dur;
+}
+
+/* Close: the slot loop pointer starts at o+0x12 instead of o, and the two lerps differ in register allocation and branch layout (the original copies to/from into separate registers, which suggests an inlined helper). */
+void func_8022402C_ovl_1BA050(u8 *o) {
+    u8 lim = D_80229F9C_ovl_1BA050[o[0x72]];
+    u8 c = ++o[0x73];
+    u8 *e;
+
+    if (c <= lim) {
+        o[0x74] = 0;
+    } else if (c >= lim + 0x11) {
+        o[0x73] = 0;
+        o[0x74] = 0;
+        if (++o[0x72] >= 3) {
+            o[0x72] = 0;
+        }
+    } else {
+        o[0x74] = c - lim;
+    }
+    e = o;
+    do {
+        if (FIELD(e, u16, 0x12) == 0) {
+            goto next;
+        }
+        if (e[0x15] < 8) {
+            e[0x14] = 0;
+        } else if (e[0x15] < 12) {
+            e[0x14] = 2;
+        } else if (e[0x15] < 14) {
+            e[0x14] = 1;
+        }
+        if (++e[0x15] >= 16) {
+            if (e[0x16] != 0) {
+                e[0x15] = 0;
+            } else {
+                FIELD(e, u16, 0x12) = 0;
+            }
+        }
+    next:
+        e += 6;
+    } while (e < o + 0x60);
+    if (FIELD(o, u16, 0x10) < FIELD(o, u16, 0xE)) {
+        FIELD(o, s16, 2) = Lerp1BB(FIELD(o, s16, 6), FIELD(o, s16, 0xA), FIELD(o, u16, 0x10), FIELD(o, u16, 0xE));
+        FIELD(o, s16, 4) = Lerp1BB(FIELD(o, s16, 8), FIELD(o, s16, 0xC), FIELD(o, u16, 0x10), FIELD(o, u16, 0xE));
+        FIELD(o, u16, 0x10)++;
+        FIELD(o, s16, 6) = FIELD(o, s16, 2);
+        FIELD(o, s16, 8) = FIELD(o, s16, 4);
+    } else {
+        FIELD(o, s16, 2) = FIELD(o, s16, 0xA);
+        FIELD(o, s16, 4) = FIELD(o, s16, 0xC);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022402C_ovl_1BA050);
+#endif
 
 /* For each bit in mask: reuse the slot holding that bit, else the first empty one (hangs when full),
  * and set it to (bit, 0, 0, v) */
