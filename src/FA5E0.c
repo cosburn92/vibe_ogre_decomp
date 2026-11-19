@@ -382,7 +382,52 @@ void func_801B05D0_ovl_0FA5E0(u8 *p, s16 a, u16 *x, u16 *y) {
     FIELD(p, s16, 0x1A) = a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B060C_ovl_0FA5E0);
+/* Rectangle tween owned by a widget: state, step t of n, current/from/to (x, y, w, h) */
+typedef struct {
+    /* 0x00 */ u16 state;
+    /* 0x02 */ u8 unk02[0x16];
+    /* 0x18 */ s16 t;
+    /* 0x1A */ s16 n;
+    /* 0x1C */ s16 cur[4];
+    /* 0x24 */ s16 from[4];
+    /* 0x2C */ s16 to[4];
+    /* 0x34 */ u8 unk34[4];
+    /* 0x38 */ void *bufA;
+    /* 0x3C */ void *bufB;
+} TweenFA5;
+
+/* Advances the tween one step; 0xFFFF/0xFFFE/0xFFFD count down to freeing its buffers */
+void func_801B060C_ovl_0FA5E0(TweenFA5 *tw) {
+    s32 i;
+
+    switch (tw->state) {
+        case 0xFFFF:
+            tw->state = 0xFFFE;
+            return;
+        case 0xFFFE:
+            tw->state = 0xFFFD;
+            return;
+        case 0xFFFD:
+            HFree(tw->bufA);
+            HFree(tw->bufB);
+            tw->state = 0;
+            return;
+        case 0:
+            return;
+        default:
+            if (tw->t < tw->n) {
+                for (i = 0; i < 4; i++) {
+                    tw->cur[i] = tw->from[i] + (tw->to[i] - tw->from[i]) * tw->t / tw->n;
+                }
+                tw->t++;
+            } else {
+                for (i = 0; i < 4; i++) {
+                    tw->cur[i] = tw->to[i];
+                }
+            }
+            break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B073C_ovl_0FA5E0);
 
