@@ -471,7 +471,7 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x3F1B0, c]
-      - [0x3FE70, asm]
+      - [0x3FE70, c]
       - [0x40640, data, 3F1B0]
       - [0x40C90, data, 3FE70]
       - [0x40E10, .rodata, 3F1B0]
