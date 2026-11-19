@@ -25,9 +25,30 @@ extern u16 D_80220D64_ovl_25EE90;
 extern Node26 *D_80220D6C_ovl_25EE90;
 
 void *HFree(void *p);
+extern s32 D_80220D68_ovl_25EE90;
+extern Node26 *D_80220D70_ovl_25EE90;
+void *HMalloc(s32 size);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/261E90", func_8020D2E0_ovl_25EE90);
+/* Node pool: 32 entries of 0x94 bytes chained through `next` */
+void func_8020D2E0_ovl_25EE90(void) {
+    Node26 *p;
+    s32 i;
+
+    D_80220D68_ovl_25EE90 = 0x20;
+    D_80220D6C_ovl_25EE90 = D_80220D60_ovl_25EE90 = HMalloc(0x1300);
+    D_80220D70_ovl_25EE90 = D_80220D6C_ovl_25EE90 + D_80220D68_ovl_25EE90;
+    for (i = 0; i < D_80220D68_ovl_25EE90; i++) {
+        D_80220D6C_ovl_25EE90[i].w4 = 0;
+    }
+    p = D_80220D6C_ovl_25EE90;
+    D_80220D64_ovl_25EE90 = 0;
+    for (i = 0; i < D_80220D68_ovl_25EE90 - 1; i++) {
+        p->next = i + 1;
+        p++;
+    }
+    p->next = 0xFFFF;
+}
 
 void func_8020D3B0_ovl_25EE90(void) {
     HFree(D_80220D60_ovl_25EE90);
