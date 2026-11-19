@@ -19,13 +19,23 @@ extern u8 *D_800C4BB8;
 extern u16 D_800C4C26;
 void func_80089BC0(void);
 void _bcopy(const void *src, void *dst, s32 n);
+void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+s32 func_80076F5C(s32 a, void *b, s32 c, s32 d, s32 e, s32 f, s32 g);
+void *HMallocBack(s32 size);
+extern s32 D_801951A4_ovl_040E80;
 /* --- end decls --- */
 
 u8 *func_80173920_ovl_040E80(void) {
     return D_8018F380_ovl_040E80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/49820", func_8017392C_ovl_040E80);
+void func_8017392C_ovl_040E80(void) {
+    func_80073164(0, 1, 1, 0x80, 1, 0x80, 0x2000);
+    D_801977CC_ovl_040E80 = HMallocBack(0x25800);
+    D_80190F20_ovl_040E80 = func_80076F5C(0xC000, D_801A07D0, 0, 0, 0x13F, 0xEF, 0xF000);
+    D_800E82C8[D_80190F20_ovl_040E80].unk88 = D_801951A4_ovl_040E80;
+    D_800E82C8[D_80190F20_ovl_040E80].unk8B |= 1;
+}
 
 /* Copies the current frame buffer into the capture buffer if the scene asked for it */
 void func_80173A18_ovl_040E80(void) {
