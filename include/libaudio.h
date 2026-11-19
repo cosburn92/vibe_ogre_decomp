@@ -280,12 +280,12 @@ typedef struct {
     /* 0x14 */ ALLink pLameList;
     /* 0x1C */ s32 paramSamples;
     /* 0x20 */ s32 curSamples;
-    /* 0x24 */ void *dma;
+    /* 0x24 */ ALDMANew dma;
     /* 0x28 */ ALHeap *heap;
-    /* 0x2C */ void *paramList;
+    /* 0x2C */ ALParam *paramList;
     /* 0x30 */ ALMainBus *mainBus;
     /* 0x34 */ ALAuxBus *auxBus;
-    /* 0x38 */ void *outputFilter;
+    /* 0x38 */ ALFilter *outputFilter;
     /* 0x3C */ s32 numPVoices;
     /* 0x40 */ s32 maxAuxBusses;
     /* 0x44 */ s32 outputRate;
@@ -301,7 +301,7 @@ typedef struct {
     /* 0x04 */ s32 maxPVoices;
     /* 0x08 */ s32 maxUpdates;
     /* 0x0C */ s32 maxFXbusses;
-    /* 0x10 */ void *dmaproc;
+    /* 0x10 */ ALDMANew dmaproc;
     /* 0x14 */ ALHeap *heap;
     /* 0x18 */ s32 outputRate;
     /* 0x1C */ u8 fxType;

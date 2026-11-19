@@ -413,6 +413,7 @@ segments:
       - [0x3EBF0, .rodata, 1EC80]
       - [0x3EC20, .rodata, 1EF30]
       - [0x3EC70, .rodata, 1FD20]
+      - [0x3EC90, rodata]
       - [0x3EC98, rodata, 20BF0]
       - [0x3ECF0, rodata, 20D40]
       - [0x3ED10, rodata, 21450]
