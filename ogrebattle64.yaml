@@ -1228,11 +1228,11 @@ segments:
     symbol_name_format_no_rom: $VRAM_$SEG
     subsegments:
       - [0x22A280, asm]
-      - [0x233210, asm]
+      - [0x233210, c]
       - [0x239BA0, data, 22A280]
       - [0x239BE0, data, 233210]
       - [0x239EC0, rodata, 22A280]
-      - [0x239FA0, rodata, 233210]
+      - [0x239FA0, .rodata, 233210]
 
   - name: ovl_23A3A0
     type: code
