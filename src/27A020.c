@@ -623,7 +623,51 @@ __asm__(".section .rodata\n"
         ".global D_8022D0A0_ovl_27A020\nD_8022D0A0_ovl_27A020:\n.half 0x1E, 0xF0, 0, 0xF0, 0, 0, 0, 0\n"
         ".section .text\n");
 
+extern s32 gGoth;
+extern u8 D_8022C9D8_ovl_27A020[];
+void func_80228EFC_ovl_27A020(s32 x, s32 y, s32 value, s32 digits);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Draws the Goth (money) panel of window o: backdrop, the amount, the coin icon, and the
+ * extra arrows when the window's value is above 64 */
+#ifdef NON_MATCHING
+/* Goth panel: gGoth load scheduled before the display-list pointer in the original */
+void func_8022A488_ovl_27A020(Obj27 *o) {
+    s32 goth = gGoth;
+    u8 *w;
+    s32 x;
+    s32 y;
+
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    w = o->w20;
+    x = FIELD(w, s32, 0x2C);
+    y = FIELD(w, s32, 0x30);
+    if (FIELD(w, s16, 0x18) == 0) {
+        return;
+    }
+    func_802288C0_ovl_27A020(D_8022C9D8_ovl_27A020, D_8022D120_ovl_27A020, 0x50, 0x11, 2);
+    func_80228EFC_ovl_27A020(x + 8, y + 8, goth, 7);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)D_8022D104_ovl_27A020 + 0x320);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, (u8 *)D_8022D100_ovl_27A020 + 0x2828, G_IM_FMT_CI, 48, 32, 0, 0, 0, 0, 0, 0, 0);
+    func_80228B7C_ovl_27A020(x + 0x3C, y + 0xA, 0xC);
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xED000000;
+        _g->w1 = 0x004FC3BC;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    if (FIELD(o->w20, s16, 0x18) > 0x40) {
+        func_80228B7C_ovl_27A020(x + 8, y - 6, 0xD);
+        func_80228B7C_ovl_27A020(x + 0x20, y - 6, 0xE);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A488_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A750_ovl_27A020);
 
