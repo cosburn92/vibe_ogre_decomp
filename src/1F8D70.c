@@ -47,7 +47,11 @@ void func_801BDC78_ovl_1F0A30(void);
 void func_801C62E4_ovl_1F0A30(s32 a, u8 *b, u8 c);
 extern u8 D_80197178[];
 extern void *D_800E9BA0;
-extern u8 D_801969B0[];
+/* 0x40-byte fixed-point matrix */
+typedef struct {
+    u8 m[0x40];
+} Mtx1F8;
+extern Mtx1F8 *D_801969B0; /* matrix pool pointer */
 void func_801B5D58_ovl_1F0A30(void *a, void *b, u8 *img);
 void func_801B619C_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
@@ -140,7 +144,7 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7284_ovl_1F0A30);
 /* Draws image img: '64' bitmaps, or 'B5' banks by format (1, 3, other) */
 void func_801B77CC_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
     if (*(u16 *)img == 0x3634) {
-        func_801B7284_ovl_1F0A30(img, -160, -120, 2, b, D_801969B0, a);
+        func_801B7284_ovl_1F0A30(img, -160, -120, 2, b, &D_801969B0, a);
     } else if (img[2] == 1) {
         func_801B6DB0_ovl_1F0A30(a, b, img);
     } else if (img[2] == 3) {
@@ -270,7 +274,53 @@ D_801D0178_ovl_1F0A30:
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7E9C_ovl_1F0A30);
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void func_80098C20(void *m, f32 x, f32 y, f32 z); /* guTranslate */
+void func_80098AA0(void *m, f32 x, f32 y, f32 z); /* guScale */
+void guRotateRPY(void *m, f32 r, f32 p, f32 y);
+
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx1F8;
+
+/* Loads the projection (ortho 320x240) and o's translate/scale/rotate model matrices */
+#ifdef NON_MATCHING
+/* 95/95 instructions, 38 words differ: the four matrix commands' stores are scheduled from separate list pointers */
+void func_801B8F2C_ovl_1F0A30(u8 *o) {
+    Gfx1F8 *g;
+
+    g = D_800E9BA0;
+    D_800E9BA0 = g + 1;
+    g->w0 = 0xE7000000;
+    g->w1 = 0;
+    guOrtho(D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+    func_80098C20(D_801969B0 + 1, FIELD(o, f32, 4), FIELD(o, f32, 8), FIELD(o, f32, 0xC));
+    func_80098AA0(D_801969B0 + 2, FIELD(o, f32, 0x1C), FIELD(o, f32, 0x20), FIELD(o, f32, 0x24));
+    guRotateRPY(D_801969B0 + 3, FIELD(o, f32, 0x10), FIELD(o, f32, 0x14), FIELD(o, f32, 0x18));
+    g = D_800E9BA0;
+    D_800E9BA0 = g + 1;
+    g->w0 = 0xDA380007;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0;
+    D_800E9BA0 = g + 1;
+    g->w0 = 0xDA380003;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0;
+    D_800E9BA0 = g + 1;
+    g->w0 = 0xDA380001;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0;
+    D_800E9BA0 = g + 1;
+    g->w0 = 0xDA380001;
+    g->w1 = (u32)D_801969B0++;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B8F2C_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B90A8_ovl_1F0A30);
 
