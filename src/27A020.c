@@ -594,7 +594,68 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A488_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A750_ovl_27A020);
 
+extern u8 D_8022CAB8_ovl_27A020[];
+void func_80179034(s32 a, s32 x, s32 y);
+void func_8016DE1C(u8 a, u8 b);
+
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+/* Entry list inside Obj27 (+0x18) */
+typedef struct {
+    /* 0x0 */ s32 *items;
+    /* 0x4 */ s16 unk4;
+    /* 0x6 */ s16 flags;
+} List27;
+
+static inline s16 List27_EntryMark(List27 *l, u8 *e) {
+    s16 mark = 0;
+
+    if (e == NULL) {
+        return 0;
+    }
+    if ((l->flags & 2) && (FIELD(e, s32, 0x40) & 2)) {
+        mark = 2;
+    }
+    if ((l->flags & 1) && FIELD(e, u16, 0x20) == 0) {
+        mark = 1;
+    }
+    return mark;
+}
+
+
+/* Draws the marks beside the (up to five) list entries that need one: 2 when the list
+ * flags bit 1 and the entry has flag 2, 1 when the list flags bit 0 and the entry is idle */
+#ifdef NON_MATCHING
+/* entry marks: register allocation differs */
+void func_8022A95C_ovl_27A020(Obj27 *o) {
+    u8 *win = FIELD(o, u8 *, 0);
+    List27 *l = (List27 *)&o->w18;
+    s16 i;
+    s16 y;
+    s16 x;
+    u8 *e;
+
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDE000000;
+        _g->w1 = (u32)&D_8022CAB8_ovl_27A020;
+    }
+    y = FIELD(win, s32, 0x30) + 3;
+    x = FIELD(win, s32, 0x2C) + 5;
+    for (i = 0; i < 5; i++) {
+        e = (u8 *)l->items[i];
+        if (List27_EntryMark(l, e)) {
+            func_80179034(func_802258DC_ovl_27A020(i), x + 30, y + 2);
+            y += 36;
+            func_8016DE1C(e[0x4B], e[0x4F]);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A95C_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AAA4_ovl_27A020);
 
