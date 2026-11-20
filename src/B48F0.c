@@ -555,27 +555,27 @@ void func_801CBABC_ovl_087200(u8 sq) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBABC_ovl_087200);
 #endif
 
-#ifdef NON_MATCHING
 /* Constant/load order differs at the start. */
-void func_801CBB54_ovl_087200(void) {
-    u8 *st = D_80196AF8;
-    u8 *p = st + 0x1164;
-    s32 i;
+void func_801CBB54_ovl_087200(void)
+{
+  u8 *st = D_80196AF8;
+  long new_var;
+  u8 *p = st + 0x1164;
+  s32 i;
+  st[0x1167] = 1;
+  st[0x1169] = 0;
+  st[0x1168] = 0;
+  st[0x116D] = 0xFF;
+  st[0x116B] = 0;
+  new_var = 0xFF;
+  st[0x116C] = 0;
+  for (i = 4; i >= 0; i--)
+  {
+    p[2] = new_var;
+    p--;
+  }
 
-    st[0x1167] = 1;
-    st[0x1169] = 0;
-    st[0x1168] = 0;
-    st[0x116D] = 0xFF;
-    st[0x116B] = 0;
-    st[0x116C] = 0;
-    for (i = 4; i >= 0; i--) {
-        p[2] = 0xFF;
-        p--;
-    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBB54_ovl_087200);
-#endif
 
 /* First free squad slot (0..30) */
 u8 func_801CBBA0_ovl_087200(void) {
