@@ -1047,7 +1047,29 @@ void func_8023498C_ovl_286BD0(u8 *img) {
     func_8022B980_ovl_286BD0(img, 0, 0);
 }
 
+/* Image header: size code at +3, width/height, pixels from +8 (palette after them) */
+typedef struct {
+    /* 0x0 */ u8 unk0[3];
+    /* 0x3 */ u8 siz;
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+} ImgHdr28;
+
+/* Loads icon i (CI4 32x32 at slot 0x214 of the menu state, palette after the pixels) */
+#ifdef NON_MATCHING
+/* icon load: register naming only */
+void func_80234B38_ovl_286BD0(u8 i) {
+    ImgHdr28 *img = FIELD(D_8023DE30_ovl_286BD0, ImgHdr28 *, 0x214 + i * 4);
+    u8 *pal = (u8 *)img + (((u32)(img->w + 15) >> 4) * 8 * img->h + 8);
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, pal);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, (u8 *)img + 8, G_IM_FMT_CI, 32, 32, 0, 0, 0, 5, 5, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234B38_ovl_286BD0);
+#endif
 
 void func_80234D10_ovl_286BD0(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
     D_8022A980 = 0x80;
