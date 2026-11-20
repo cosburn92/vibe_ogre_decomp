@@ -217,4 +217,50 @@ INCLUDE_ASM("asm/nonmatchings/C2330", func_801D6D8C_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D6EA0_ovl_087200);
 
+extern u8 D_80193BF8[][0x38]; /* player characters from index 1 */
+extern u8 D_80196A76[];       /* class unlock bits */
+extern u16 D_801EF2CC_ovl_087200[]; /* class list, 0xFFFF-terminated */
+extern u8 D_801EF3B0_ovl_087200[];  /* bit masks 1 << n */
+extern u8 D_801EF3B8_ovl_087200[];  /* class -> unlock class (0: use base class) */
+u8 func_801D6EA0_ovl_087200(u8 who, u8 cls);
+
+/* Rebuilds the class unlock bits from the characters' classes, then from func_801D6EA0 for every
+ * listed class still locked */
+#ifdef NON_MATCHING
+/* 102/102 instructions, 53 words differ: the character table is walked by pointer and k / 8 is a signed division in the original */
+void func_801D734C_ovl_087200(void) {
+    s32 i;
+    s32 c;
+    u8 k;
+    u8 cls;
+    u16 *l;
+
+    for (i = 1; i < 100; i++) {
+        cls = D_80193BF8[i - 1][0x11];
+        k = D_801EF3B8_ovl_087200[cls];
+        if (k == 0) {
+            k = D_80193BF8[i - 1][0x12];
+        }
+        if ((cls != 0) & (k <= 80)) {
+            if (!(D_801EF3B0_ovl_087200[k % 8] & D_80196A76[k / 8])) {
+                D_80196A76[k / 8] |= D_801EF3B0_ovl_087200[k % 8];
+            }
+        }
+    }
+    l = D_801EF2CC_ovl_087200;
+    c = 0;
+    do {
+        if (!(D_801EF3B0_ovl_087200[c % 8] & D_80196A76[c / 8])) {
+            for (i = 1; i < 99; i++) {
+                if (func_801D6EA0_ovl_087200(i, c)) {
+                    D_80196A76[c / 8] |= D_801EF3B0_ovl_087200[c % 8];
+                }
+            }
+        }
+        c++;
+        l++;
+    } while (*l != 0xFFFF);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D734C_ovl_087200);
+#endif
