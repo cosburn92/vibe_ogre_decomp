@@ -540,29 +540,31 @@ void func_80231E60_ovl_29A4C0(s32 i, s32 pct) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231E60_ovl_29A4C0);
 #endif
 
-#ifdef NON_MATCHING
 /* s16 range-loop register flow differs */
-void func_80231F2C_ovl_29A4C0(s32 i, u8 v) {
-    s16 k;
-    s16 end;
-    s32 start;
+void func_80231F2C_ovl_29A4C0(s32 i, u8 v)
+{
+  s16 k;
+  s16 end;
+  unsigned short start;
+  if (i == (-1))
+  {
+    start = 0;
+    end = 28;
+  }
+  else
+  {
+    start = i;
+    end = i - -1;
+  }
+  for (k = start; k < end; k++)
+  {
+    if (D_8022A974->units[k] != ((void *) 0))
+    {
+      *((u8 *) (((u8 *) D_8022A974->units[k]) + 0x13C)) = v;
+    }
+  }
 
-    if (i == -1) {
-        start = 0;
-        end = 28;
-    } else {
-        start = i;
-        end = i + 1;
-    }
-    for (k = start; k < end; k++) {
-        if (D_8022A974->units[k] != NULL) {
-            FIELD(D_8022A974->units[k], u8, 0x13C) = v;
-        }
-    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231F2C_ovl_29A4C0);
-#endif
 
 /* qsort order: key1 ascending, then key2 descending, then original order */
 #ifdef NON_MATCHING

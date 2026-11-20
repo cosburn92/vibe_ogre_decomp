@@ -928,28 +928,31 @@ void func_80081F20(s32 type) {
     }
 }
 
-#ifdef NON_MATCHING
 /* Same code; bank and the index swap registers. */
-void func_80081F7C(MusFxBank *bank) {
-    u32 base = (u32)bank;
-    s32 i;
+void func_80081F7C(MusFxBank *bank)
+{
+  u32 base = (u32) bank;
+  s32 i;
+  u32 new_var;
+  if (bank->flags & 1)
+  {
+    return;
+  }
+  if (D_800B1838 == ((void *) 0))
+  {
+    D_800B1838 = bank;
+  }
+  bank->flags = 1;
+  new_var = bank->unk14;
+  bank->ptrbank = (void *) 0;
+  i = new_var;
+  bank->unk14 = base + i;
+  for (i = 0; i < bank->unk00; i++)
+  {
+    bank->entries[i].ptr = base + bank->entries[i].ptr;
+  }
 
-    if (bank->flags & 1) {
-        return;
-    }
-    if (D_800B1838 == NULL) {
-        D_800B1838 = bank;
-    }
-    bank->flags = 1;
-    bank->ptrbank = NULL;
-    bank->unk14 = base + bank->unk14;
-    for (i = 0; i < bank->unk00; i++) {
-        bank->entries[i].ptr = base + bank->entries[i].ptr;
-    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081F7C);
-#endif
 
 s32 MusFxBankNumberOfEffects(MusFxBank *bank) {
     return bank->count;
