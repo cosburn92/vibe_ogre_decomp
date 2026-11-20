@@ -270,14 +270,15 @@ u8 *func_80197FB4_ovl_06E660(u8 *desc, u32 index) {
 INCLUDE_ASM("asm/nonmatchings/6E660", func_801980AC_ovl_06E660);
 
 /* Tints an RGBA colour towards blue-grey by its brightest channel, keeping alpha */
-#ifdef NON_MATCHING
 /* The red and green results use swapped registers (a3/t0). */
+/* Tints an RGBA colour towards blue-grey by its brightest channel, keeping alpha.
+ * Form adapted from OB64-Decomp func_00202198 (MIT, (c) 2026 rempred). */
 u32 func_8019898C_ovl_06E660(u32 rgba) {
     s32 g = (rgba >> 16) & 0xFF;
-    s32 b = (rgba >> 8) & 0xFF;
-    s32 max = rgba >> 24;
-    s32 a = rgba & 0xFF;
     s32 r;
+    s32 b = (rgba >> 8) & 0xFF;
+    u32 a = rgba & 0xFF;
+    s32 max = rgba >> 24;
 
     if (max < g) {
         max = g;
@@ -294,11 +295,9 @@ u32 func_8019898C_ovl_06E660(u32 rgba) {
         g = max * 80 / 128 + 60;
         b = max * 80 / 128 + 40;
     }
-    return (r << 24) + (g << 16) + (b << 8) | a;
+    r <<= 8;
+    return (((u32)r << 16) + ((u32)g << 16) + ((u32)b << 8)) | a;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/6E660", func_8019898C_ovl_06E660);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/6E660", func_80198A4C_ovl_06E660);
 

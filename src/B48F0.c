@@ -652,18 +652,18 @@ void func_801CBD0C_ovl_087200(s16 a, s16 b, u8 f) {
     }
 }
 
-#ifdef NON_MATCHING
 /* argument evaluation order of the window rect differs */
-void func_801CBD34_ovl_087200(u8 *w) {
-    s16 i = func_801CC974_ovl_087200(4, 0x12, func_801AA114_ovl_087200, (s16)(FIELD(w, s32, 0x24) - 0xC), (s16)(FIELD(w, s32, 0x28) - 8),
-                                     (s16)(FIELD(w, s32, 0x24) - 4), (s16)(FIELD(w, s32, 0x28) + 8), (s16)(FIELD(w, s32, 0x24) - 0x54),
-                                     (s16)(FIELD(w, s32, 0x28) - 0x24), (s16)(FIELD(w, s32, 0x24) - 4), (s16)(FIELD(w, s32, 0x28) + 0x10));
+/* Opens the side window for o. Form adapted from OB64-Decomp func_000b8868 (MIT, (c) 2026 rempred). */
+void func_801CBD34_ovl_087200(u8 *o) {
+    s32 x = FIELD(o, s32, 0x24);
+    s32 y = FIELD(o, s32, 0x28);
+    s16 r = func_801CC974_ovl_087200(4, 0x12, func_801AA114_ovl_087200, x - 12, y - 8, x - 4, y + 8, x - 0x54, y - 0x24,
+                                     x - 4, y + 0x10);
+    u8 *st = D_80196AF8;
 
-    D_80196AF8[0x737 + i * 0x108] = w[0xE7];
+    st += r * 0x108;
+    st[0x737] = o[0xE7];
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CBD34_ovl_087200);
-#endif
 
 void func_801CBE08_ovl_087200(u8 *o) {
     s32 x = FIELD(o, s32, 0x24);
