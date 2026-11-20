@@ -345,7 +345,50 @@ s32 func_8022C96C_ovl_29A4C0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C988_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022CBD4_ovl_29A4C0);
+/* Colour fade slot (D_8022A974->p1BB4[i]) */
+typedef struct {
+    /* 0x0 */ s16 total;
+    /* 0x2 */ s16 t;
+    /* 0x4 */ u8 cur[3];
+    /* 0x7 */ u8 from[3];
+    /* 0xA */ u8 to[3];
+} Fade29;
+extern u8 D_801D0828;
+extern u8 D_801D0829;
+extern u8 D_801D082A;
+
+/* Steps the 20 colour fades; slot 0 also drives the global tint D_801D0828..A */
+void func_8022CBD4_ovl_29A4C0(void) {
+    u32 i;
+    s32 k;
+    Fade29 *f;
+    void *p;
+
+    for (i = 0; i < 20; i++) {
+        p = D_8022A974->p1BB4[i];
+        if (p == NULL) {
+            continue;
+        }
+        f = p;
+        if (f->t == f->total) {
+            for (k = 0; k < 3; k++) {
+                f->cur[k] = f->to[k];
+            }
+        } else if (f->t < f->total) {
+            f->t++;
+            for (k = 0; k < 3; k++) {
+                f->cur[k] = f->from[k] - (f->from[k] - f->to[k]) * f->t / f->total;
+            }
+        }
+    }
+    p = D_8022A974->p1BB4[0];
+    if (p != NULL) {
+        f = p;
+        D_801D0828 = f->cur[0];
+        D_801D0829 = f->cur[1];
+        D_801D082A = f->cur[2];
+    }
+}
 
 void func_8022CD00_ovl_29A4C0(void) {
     u32 i;
