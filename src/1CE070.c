@@ -752,7 +752,55 @@ void func_8019CE8C_ovl_1CE070(void) {
                              (D_800E82C4 & 1) ? s->h / 3 : s->h * 2 / 3, 0x5D, 0x90);
 }
 
+extern s32 D_800E9C0A;
+
+/* Draws the four rows of menu image slot 14 (one fifth of its height each), bright when the
+ * row's bit is set in the slot's flags and dimmed otherwise; mode 2 (slot 15) hides row 1 */
+#ifdef NON_MATCHING
+/* menu rows: constant 3 kept in s7, scheduling */
+void func_8019D09C_ovl_1CE070(void) {
+    s32 bit = 0;
+    s32 i = 0;
+    SizeCE *s = D_801B80C0_ovl_1CE070[14].data;
+    s32 y = 0x8E;
+    u8 *flags;
+    s16 *mode;
+    s32 r;
+    s32 g;
+    s32 bl;
+    s32 h;
+
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    flags = (u8 *)&D_801B80C0_ovl_1CE070[14].x;
+    mode = (s16 *)((u8 *)D_801B80C0_ovl_1CE070 + 0x220);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)s + (func_80197C14_ovl_1CE070(0, s->w, s->h) + 8));
+    do {
+        if ((mode[2] == 2) & (i == 1)) {
+        } else {
+            if (i == 3 && ((u8 *)&D_800E9C0A)[7] != 0) {
+                i = 4;
+            }
+            bl = 0xFF;
+            if ((*flags >> bit) & 1) {
+                g = 0xFF;
+                r = 0xFF;
+            } else {
+                bl = 0x80;
+                g = 0x80;
+                r = 0x80;
+            }
+            gDPSetPrimColor(D_800E9BA0++, 0, 0, r, g, bl, 0xFF);
+            bit++;
+            h = s->h / 5;
+            y += 14;
+            func_8019898C_ovl_1CE070(s, 0, i * h, s->w, h, 0x82, y);
+        }
+        i++;
+    } while (i < 4);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D09C_ovl_1CE070);
+#endif
 
 #include "gbi_ultra.h"
 
