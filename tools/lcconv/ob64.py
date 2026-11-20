@@ -31,10 +31,18 @@ for f in glob.glob(UP + 'asm/**/*.s', recursive=True):
     w = re.search(r'/\* 0x([0-9A-F]{8}) 0x([0-9A-F]{8}) 0x[0-9A-F]{8} \*/', t)
     if not m or not w or int(w.group(1), 16) != int(m.group(1), 16):
         continue
+    # the function's entry label must be the section's first instruction (OB64 rejects interior
+    # entry labels, e.g. func_000FE2E8 sits on a delay slot 12 bytes into its section)
+    full = open(f, errors='ignore').read()
+    label = re.search(r'^%s:[ \t]*$' % re.escape(os.path.basename(f)[:-2]), full, re.M | re.I)
+    first = label and re.compile(r'^/\* 0x([0-9A-F]{8}) 0x[0-9A-F]{8} 0x[0-9A-F]{8} \*/', re.M).search(full, label.end())
+    if first and int(first.group(1), 16) != int(m.group(1), 16):
+        continue
     owners[int(m.group(1), 16)] = (os.path.basename(f)[:-2], int(m.group(2), 16), int(w.group(2), 16),
                                    os.path.relpath(f, UP).replace(os.sep, '/'))
 targets_cfg = json.load(open(UP + 'config/matching-c-targets.json'))['targets']
 taken = {t['symbol'].lower() for t in targets_cfg}
+target_spelling = {t['symbol'].lower(): t['symbol'] for t in targets_cfg}
 _here = os.path.dirname(os.path.abspath(__file__))
 # Functions OB64-Decomp asked to keep in assembly (entry-label / fixed-symbol conflicts, tail-admit)
 EXCLUDE = {l.split('#')[0].strip().lower() for l in open(os.path.join(_here, 'ob64_exclude.txt'))} - {''}
@@ -78,6 +86,10 @@ def their_name(name, addr):
     overlay = '_ovl_' in name
     if name in our_func_rom:
         rom = our_func_rom[name]
+        # a C target named by this ROM offset is what the linker exports there (the registry may
+        # still carry an older descriptive alias that no longer links, e.g. memset_0002cd70)
+        if ('func_%08x' % rom) in target_spelling:
+            return target_spelling['func_%08x' % rom]
         own = owners.get(rom)
         names = by_addr.get(addr, [])
         if not overlay:
@@ -314,8 +326,23 @@ def main():
     k = s.rindex('}', 0, s.rindex(']', 0, ti))
     sadd = ''.join(',\n    {\n      "name": "%s",\n      "address": "0x%08X"\n    }' % na for na in added)
     s = s[:k + 1] + sadd + s[k + 1:]
+    s = drop_fixed(s, [o['symbol'] for o in ok])
     open(p, 'wb').write(s.encode('utf-8'))
     print('wrote', len(ok), 'targets')
+
+
+def drop_fixed(s, exported):
+    """Remove top-level fixed-address definitions of names that newly active C targets export
+    (the linker then defines them twice; OB64 PR #1 review 2)."""
+    for n in exported:
+        if n not in registry:
+            continue
+        pat = re.compile(r',\r?\n    \{\r?\n      "name": "%s",\r?\n      "address": "0x[0-9A-Fa-f]+"\r?\n    \}'
+                         % re.escape(n))
+        s, k = pat.subn('', s, count=1)
+        assert k == 1, n
+        print('  dropped fixed definition', n)
+    return s
 
 
 if __name__ == '__main__':

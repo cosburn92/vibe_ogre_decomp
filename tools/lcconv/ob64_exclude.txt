@@ -4,3 +4,4 @@ func_000FDF18  # entry label 12 bytes into the original section
 func_0000BF90  # fixed symbol definition conflict
 func_0000BFC0  # fixed symbol definition conflict
 func_000493d4  # needs their tail-admit procedure (they verified the layout)
+func_000FE2E8  # entry label 12 bytes into the original section (review 2; now also detected automatically)

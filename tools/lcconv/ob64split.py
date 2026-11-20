@@ -184,8 +184,12 @@ def main():
             n = names[i]
             outside = len(re.findall(r'\b%s\b' % re.escape(f['name']), our_src)) > len(re.findall(r'\b%s\b' % re.escape(f['name']), ''.join(open(LC + g['source']).read() for g in fns)))
             nb = code(f)['size']
-            if i == len(fns) - 1:  # the last function's size excludes trailing alignment zeros
-                while nb > 4 and not any(ROM[code(f)['start'] + nb - 4:code(f)['start'] + nb]):
+            if i == len(fns) - 1:
+                # The last function's size excludes trailing alignment zeros, but a zero word in
+                # the delay slot of the final `jr ra` (a nop) is code and stays.
+                st = code(f)['start']
+                while (nb > 8 and not any(ROM[st + nb - 4:st + nb])
+                       and ROM[st + nb - 8:st + nb - 4] != b'\x03\xe0\x00\x08'):
                     nb -= 4
             ctf.append(dict(symbol=n, offset='0x%08X' % offs[i], bytes=nb,
                             binding='GLOBAL' if i == 0 else 'LOCAL',
@@ -232,6 +236,8 @@ if __name__ == '__main__':
                     '        {\n          "symbol": "%(symbol)s",\n          "offset": "%(offset)s",\n          "bytes": %(bytes)d,\n          "binding": "%(binding)s",\n          "entryEvidence": "%(entryEvidence)s"\n        }' % c for c in o['ctf']) + '\n      ]'
             return t + '\n    }'
         s = insert_array_tail(s, 'targets', ''.join(',\n' + ent(o) for o in out))
+        # group-local functions are static, so only the GLOBAL owner symbol is exported
+        s = ob64.drop_fixed(s, [o['symbol'] for o in out])
         open(p, 'wb').write(s.encode())
         mo = [o for o in out if o['kind'] == 'multi']
         if mo:
