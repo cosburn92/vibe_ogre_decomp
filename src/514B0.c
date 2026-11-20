@@ -461,18 +461,91 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C4B4_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C584_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017CBE8_ovl_040E80);
-
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017D6D0_ovl_040E80);
-
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017E264_ovl_040E80);
-
 /* Sprite sheet pair used by the cursor (D_8018FDC0) */
 typedef struct {
     u8 unk00[0xC8];
     /* 0xC8 */ u8 *img;
     /* 0xCC */ u8 *pal;
 } SheetPair514;
+
+/* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
+ * texel steps double in high resolution */
+#ifdef NON_MATCHING
+/* unit status label draw: logic complete, 693 vs 698 instructions; per-case pipe-sync constant is hoisted differently */
+void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
+    s32 step = 10;
+    s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
+    s32 x;
+    s32 y;
+    u32 scis;
+
+    if (D_80187020_ovl_040E80) {
+        step = 9;
+    }
+    y = FIELD(w, s32, 0x30);
+    x = FIELD(w, s32, 0x2C) + 6;
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    if (D_80187020_ovl_040E80) {
+        scis = 0xA00780;
+    } else {
+        scis = 0x4FC3BC;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xED000000;
+        _g->w1 = scis;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
+    switch (FIELD(o, u32, 0x600) & 0xFFFF0000) {
+        case 0x30000:
+            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0xE0);
+            func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xDA0, 48, 16, 0, 0, 0, 0);
+            y -= 9;
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << shift, y << shift, (x + 47) << shift, (y + 16) << shift, 0, 0, 0,
+                                    1 << step, 1 << step);
+            gDPPipeSync(D_800E9BA0++);
+            break;
+        case 0x40000:
+            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x100);
+            func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xF20, 64, 16, 0, 0, 0, 0);
+            y -= 9;
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << shift, y << shift, (x + 63) << shift, (y + 16) << shift, 0, 0, 0,
+                                    1 << step, 1 << step);
+            gDPPipeSync(D_800E9BA0++);
+            break;
+        case 0x10000:
+            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x120);
+            func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x1120, 48, 16, 0, 0, 0, 0);
+            y -= 9;
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << shift, y << shift, (x + 47) << shift, (y + 16) << shift, 0, 0, 0,
+                                    1 << step, 1 << step);
+            gDPPipeSync(D_800E9BA0++);
+            break;
+        case 0x20000:
+            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x140);
+            func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x12A0, 48, 8, 0, 0, 0, 0);
+            y -= 5;
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << shift, y << shift, (x + 47) << shift, (y + 8) << shift, 0, 0, 0,
+                                    1 << step, 1 << step);
+            gDPPipeSync(D_800E9BA0++);
+            break;
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/514B0", func_8017CBE8_ovl_040E80);
+#endif
+
+INCLUDE_ASM("asm/nonmatchings/514B0", func_8017D6D0_ovl_040E80);
+
+INCLUDE_ASM("asm/nonmatchings/514B0", func_8017E264_ovl_040E80);
+
 
 /* Draws the 16x32 cursor arrow (sprite sheet +0x1500, palette +0x200) as a 10-px-tall bar
  * from x0 to x1 at y */
