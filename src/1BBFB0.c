@@ -251,7 +251,27 @@ void func_80224320_ovl_1BA050(u8 *p, u16 mask) {
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802243A0_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802245EC_ovl_1BA050);
+typedef GfxBB Gfx;
+#include "gbi_ultra.h"
+extern u8 D_80229FA0_ovl_1BA050[];
+void func_802243A0_ovl_1BA050(s32 piece, s32 x, s32 y);
+
+/* Draws window o's four 16x16 corner pieces with its palette and alpha (o+0x1D) */
+void func_802245EC_ovl_1BA050(u8 *o) {
+    {
+        GfxBB *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFCFF97FF;
+        _g->w1 = 0xFF2CFE7F;
+    }
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_8022A260_ovl_1BA050[D_80229FA0_ovl_1BA050[o[0x19]]]);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 255, 255, 255, o[0x1D]);
+    func_802243A0_ovl_1BA050(0x1C, FIELD(o, s16, 0x1E), FIELD(o, s16, 0x20));
+    func_802243A0_ovl_1BA050(0x1D, FIELD(o, s16, 0x22) - 16, FIELD(o, s16, 0x20));
+    func_802243A0_ovl_1BA050(0x1E, FIELD(o, s16, 0x1E), FIELD(o, s16, 0x24) - 16);
+    func_802243A0_ovl_1BA050(0x1F, FIELD(o, s16, 0x22) - 16, FIELD(o, s16, 0x24) - 16);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022478C_ovl_1BA050);
 
