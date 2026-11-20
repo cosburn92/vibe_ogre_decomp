@@ -412,6 +412,32 @@ void **func_8021B93C_ovl_1B2670(void) {
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B93C_ovl_1B2670);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021BA30_ovl_1B2670);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Frees a table: each of its 0x2C-byte entries owns a list of buffers */
+static inline void FreeTable1B7(u8 *t) {
+    u32 i;
+    u32 j;
+
+    if (t != NULL) {
+        for (i = 0; i < FIELD(t, u32, 0x108); i++) {
+            for (j = 0; j < FIELD(t + i * 0x2C, u32, 0x110); j++) {
+                HFree(FIELD(t + i * 0x2C + j * 4, void *, 0x134));
+            }
+        }
+        HFree(t);
+    }
+}
+
+/* Frees both tables of set s, the set itself and the shared buffer */
+void func_8021BA30_ovl_1B2670(u8 **s) {
+    FreeTable1B7(s[0]);
+    FreeTable1B7(s[1]);
+    HFree(s);
+    HFree(D_8021C9E8_ovl_1B2670);
+    D_8021C9E8_ovl_1B2670 = NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021BB5C_ovl_1B2670);
