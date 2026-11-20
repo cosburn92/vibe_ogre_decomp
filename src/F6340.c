@@ -296,8 +296,6 @@ void func_801AB55C_ovl_0EBBB0(void) {
 
 /* RLE decoder: c < 0x80 copies c + 1 bytes; 0xE0 | n sets a new fill byte and writes n + 3 of it;
  * 0xC0 | n writes n + 2 of the last fill byte; 0x80 | n writes n + 2 zeros. Returns the size. */
-#ifdef NON_MATCHING
-/* 92/92 instructions, 56 words differ: register choice (counters and the source pointer) */
 u32 func_801AB5B0_ovl_0EBBB0(u8 *src, u32 size, void *dst) {
     u32 in = 0;
     u8 fill = 0xFF;
@@ -307,7 +305,8 @@ u32 func_801AB5B0_ovl_0EBBB0(u8 *src, u32 size, void *dst) {
     u8 i;
 
     while (in < size) {
-        c = src[in++];
+        n = src[in++];
+        c = n;
         if (c < 0x80) {
             n = c + 1;
             for (i = 0; i < n; i++) {
@@ -333,9 +332,6 @@ u32 func_801AB5B0_ovl_0EBBB0(u8 *src, u32 size, void *dst) {
     }
     return out;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB5B0_ovl_0EBBB0);
-#endif
 
 /* Reads a big-endian u32 from an unaligned pointer */
 inline u32 func_801AB720_ovl_0EBBB0(u8 *p) {

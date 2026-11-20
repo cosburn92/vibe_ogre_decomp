@@ -316,8 +316,6 @@ void func_80080998(s32 dst, void *src, s32 n);
 
 /* Draws the battle grid overlay: copies its 0x3A0 bytes of vertices into the frame's vertex
  * pool (D_80197178) and emits four quad strips plus the border */
-#ifdef NON_MATCHING
-/* grid overlay: vertex cursor / display-list pointer registers swapped */
 void func_8022BE30_ovl_29A4C0(void) {
     Grid29 *g = D_8022A974->grid;
     s32 v;
@@ -349,11 +347,12 @@ void func_8022BE30_ovl_29A4C0(void) {
             _g->w1 = 0x604;
         }
     }
+    v = D_80197178;
     {
         Gfx29 *_g = D_800E9BA0++;
 
         _g->w0 = 0x01008010;
-        _g->w1 = D_80197178;
+        _g->w1 = v;
     }
     {
         Gfx29 *_g = D_800E9BA0++;
@@ -369,9 +368,6 @@ void func_8022BE30_ovl_29A4C0(void) {
     }
     D_80197178 += 0x3A0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022BE30_ovl_29A4C0);
-#endif
 
 void func_8022BF5C_ovl_29A4C0(s32 *a) {
     s16 i = FLD(a, s16, 2);
@@ -422,8 +418,6 @@ u32 func_8022C228_ovl_29A4C0(u32 c) {
 
 /* (Re)creates the tint record of unit i (all present units when i is -1): colour, alpha range,
  * duration and timer */
-#ifdef NON_MATCHING
-/* 86/86 instructions, 4 words differ: order of the last record stores */
 void func_8022C250_ovl_29A4C0(s32 i, s32 r, s32 g, s32 b, s32 a0, s32 a1, s32 a2, s32 dur, s32 time) {
     s16 j;
     s16 end;
@@ -448,15 +442,12 @@ void func_8022C250_ovl_29A4C0(s32 i, s32 r, s32 g, s32 b, s32 a0, s32 a1, s32 a2
             rec[3] = a0;
             rec[4] = a1;
             rec[5] = a2;
+            FLD(rec, u16, 8) = dur;
             FLD(rec, s16, 0xA) = 0;
             FLD(rec, s16, 6) = time;
-            FLD(rec, u16, 8) = dur;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C250_ovl_29A4C0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C3A8_ovl_29A4C0);
 
