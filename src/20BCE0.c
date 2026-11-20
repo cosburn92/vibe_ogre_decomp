@@ -751,7 +751,40 @@ u8 *func_801CBD6C_ovl_1F0A30(u8 *o, s32 a, s32 x, s32 y, s32 z) {
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBD6C_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBE18_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Takes the first free 0xC0-byte effect record (of 80) and starts it at (x, y, z) */
+u8 *func_801CBE18_ovl_1F0A30(s32 a, s32 x, s32 y, s32 z) {
+    u32 i;
+    u8 *p;
+
+    for (i = 0; i < 80; i++) {
+        if (FIELD(D_801CE8BC_ovl_1F0A30 + i * 0xC0, s32, 0x153C) == 0) {
+            break;
+        }
+    }
+    while (i >= 80) {
+    }
+    p = D_801CE8BC_ovl_1F0A30 + ((i * 0xC0) + 0x1524);
+    bzero(p, 0xC0);
+    FIELD(p, s16, 0x1C) = FIELD(p, s16, 0x28) = x;
+    FIELD(p, s16, 0x20) = FIELD(p, s16, 0x2C) = z;
+    FIELD(p, s16, 0x1E) = FIELD(p, s16, 0x2A) = y;
+    FIELD(p, s32, 4) = x * 0x1E;
+    FIELD(p, s32, 0xC) = z * 0x1E;
+    FIELD(p, s32, 0x18) = a;
+    FIELD(p, s32, 8) = y * 0x1E;
+    FIELD(p, u8, 0x38) = func_801BC76C_ovl_1F0A30();
+    FIELD(p, u8, 0x39) = func_801BC838_ovl_1F0A30();
+    FIELD(p, u8, 0x3A) = func_801BC914_ovl_1F0A30();
+    FIELD(p, u8, 0x3D) = 0xFF;
+    FIELD(p, u8, 0x3C) = 0xFF;
+    FIELD(p, u8, 0x3B) = 0xFF;
+    FIELD(p, u8, 0x37) = 0;
+    return p;
+}
 
 /* func_801C8FE8 as inlined here (base loaded after the range check) */
 static inline u8 *BattleGetUnit2(u32 i) {
