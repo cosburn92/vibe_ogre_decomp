@@ -325,7 +325,7 @@ inline Opt1F *func_801AED14_ovl_1F0A30(s32 i) {
 }
 
 /* Number of tactic options currently available */
-s32 func_801AED84_ovl_1F0A30(void) {
+inline s32 func_801AED84_ovl_1F0A30(void) {
     s32 n = 0;
     u32 i;
 
@@ -339,7 +339,25 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEE18_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEF3C_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF0B8_ovl_1F0A30);
+extern u16 D_800E8700;
+
+/* Moves the tactic cursor (o+0x22) up/down within the available options */
+void func_801AF0B8_ovl_1F0A30(u8 *o) {
+    s32 n = func_801AED84_ovl_1F0A30();
+
+    if (D_800E8700 & 0x800) {
+        if ((s8)o[0x22] > 0) {
+            o[0x22]--;
+            SoundRequest(D_800EB1F0, 2);
+        }
+    }
+    if (D_800E8700 & 0x400) {
+        if ((s8)o[0x22] + 1 < n) {
+            o[0x22]++;
+            SoundRequest(D_800EB1F0, 2);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF1CC_ovl_1F0A30);
 
