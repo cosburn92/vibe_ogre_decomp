@@ -720,7 +720,50 @@ INCLUDE_RODATA("asm/nonmatchings/145290", D_801FD9A0_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F7C40_ovl_145210);
 
+void func_801F9860_ovl_145210(void);
+
+/* Frees the map's buffers and every entry with its two sub-records' images */
+#ifdef NON_MATCHING
+/* 71/71 instructions, 15 words differ: the sub-record pointer is kept as base + offset and 0x10 added before the loads */
+void func_801F83F4_ovl_145210(void) {
+    s32 i;
+    MapEntry *e;
+    u8 *subs;
+    u8 *p;
+    u32 j;
+    s32 off;
+
+    HFree(D_801FDA3C_ovl_145210);
+    i = 0;
+    func_801F4B14_ovl_145210();
+    HFree(D_801FDA50_ovl_145210);
+    D_801FDA50_ovl_145210 = NULL;
+    HFree(D_801FDA5C_ovl_145210);
+    D_801FDA5C_ovl_145210 = NULL;
+    func_801F9860_ovl_145210();
+    func_801F480C_ovl_145210();
+    for (; i < D_801FDA32_ovl_145210; i++) {
+        e = D_801FDA34_ovl_145210[i];
+        if (e != NULL) {
+            subs = (u8 *)e + 0x30;
+            j = 0;
+            off = 0;
+            p = subs;
+            do {
+                off += 0x14;
+                HFree(FIELD(p, void *, 0x10));
+                j++;
+                HFree(FIELD(p, void *, 0x14));
+                p = subs + off;
+            } while (j < 2);
+            HFree(e);
+        }
+    }
+    HFree(D_801FDA34_ovl_145210);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F83F4_ovl_145210);
+#endif
 
 void func_801F8510_ovl_145210(void) {
     s32 n;
