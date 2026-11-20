@@ -726,7 +726,31 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019C5B4_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019CBB8_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019CE8C_ovl_1CE070);
+extern u8 D_800E82C4;
+#include "gbi_ultra.h"
+
+/* Draws resource slot 13 (a CI4 strip, palette after the pixels) when shown: the lower third on
+ * even frames of D_800E82C4, the upper third on odd ones */
+void func_8019CE8C_ovl_1CE070(void) {
+    Slot1CE *t = D_801B80C0_ovl_1CE070;
+    SizeCE *s;
+
+    if (*(u8 *)&t[13].x == 0) {
+        return;
+    }
+    s = t[13].data;
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFCFFFFFF;
+        _g->w1 = 0xFFFCF279;
+    }
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)s + (func_80197C14_ovl_1CE070(0, s->w, s->h) + 8));
+    func_8019898C_ovl_1CE070(s, 0, (D_800E82C4 & 1) ? 0 : s->h / 3, s->w,
+                             (D_800E82C4 & 1) ? s->h / 3 : s->h * 2 / 3, 0x5D, 0x90);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D09C_ovl_1CE070);
 
