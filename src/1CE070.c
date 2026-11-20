@@ -581,7 +581,83 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", UnitAnimGetCommand);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B2E0_ovl_1CE070);
 
+/* Resource slot (0x24 bytes) in the table at D_801B80C0 */
+typedef struct {
+    /* 0x00 */ void *data;
+    /* 0x04 */ u8 unk04[0x20];
+} Slot1CE;
+extern Slot1CE *D_801B80C0_ovl_1CE070;
+#define FREE_SLOT1CE(k)                                        if (D_801B80C0_ovl_1CE070[k].data != NULL) {                   HFree(D_801B80C0_ovl_1CE070[k].data);                      D_801B80C0_ovl_1CE070[k].data = NULL;                  }
+
+/* Frees every loaded resource slot (four, three and three in loops, then the singles) and the table */
+#ifdef NON_MATCHING
+/* resource table free: loop counter/pointer registers swapped */
+void func_8019B6D8_ovl_1CE070(void) {
+    s32 i;
+    Slot1CE *s;
+
+    for (i = 0; i < 4; i++) {
+        Slot1CE *p = &D_801B80C0_ovl_1CE070[i];
+
+        if (p->data != NULL) {
+            HFree(p->data);
+            p->data = NULL;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        Slot1CE *p = &D_801B80C0_ovl_1CE070[4 + i];
+
+        if (p->data != NULL) {
+            HFree(p->data);
+            p->data = NULL;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        Slot1CE *p = &D_801B80C0_ovl_1CE070[7 + i];
+
+        if (p->data != NULL) {
+            HFree(p->data);
+            p->data = NULL;
+        }
+    }
+    s = D_801B80C0_ovl_1CE070;
+    if (s[10].data != NULL) {
+        HFree(s[10].data);
+        s[10].data = NULL;
+        s = D_801B80C0_ovl_1CE070;
+    }
+    if (s[11].data != NULL) {
+        HFree(s[11].data);
+        s[11].data = NULL;
+    }
+    s = D_801B80C0_ovl_1CE070;
+    if (s[12].data != NULL) {
+        HFree(s[12].data);
+        s[12].data = NULL;
+        s = D_801B80C0_ovl_1CE070;
+    }
+    if (s[16].data != NULL) {
+        HFree(s[16].data);
+        s[16].data = NULL;
+    }
+    s = D_801B80C0_ovl_1CE070;
+    if (s[13].data != NULL) {
+        HFree(s[13].data);
+        s[13].data = NULL;
+        s = D_801B80C0_ovl_1CE070;
+    }
+    if (s[14].data != NULL) {
+        HFree(s[14].data);
+        s[14].data = NULL;
+    }
+    FREE_SLOT1CE(15);
+    HFree(D_801B80C0_ovl_1CE070);
+    D_801B80C0_ovl_1CE070 = NULL;
+    func_801994C0_ovl_1CE070();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B6D8_ovl_1CE070);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B8AC_ovl_1CE070);
 
