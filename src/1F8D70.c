@@ -195,7 +195,70 @@ void func_801B7CBC_ovl_1F0A30(u8 *p) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7D54_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Sprite part: offset, size, link to the next part */
+typedef struct SprPart1F8 {
+    s16 x;
+    s16 y;
+    u16 w;
+    u16 h;
+    u8 unk8[4];
+    struct SprPart1F8 *next;
+} SprPart1F8;
+
+/* Current sprite header: "64" sprites are one centred w x h image (u16 at +4/+6), the others a
+ * list of [3] parts starting at +8 */
+#define CUR_SPR ((u8 *)D_801D0770_ovl_1F0A30[0])
+
+/* Bounding box of the current sprite's parts */
+static inline void Spr1F8_PartsBox(s32 *r) {
+    u8 *s = CUR_SPR;
+    SprPart1F8 *p;
+    s32 i;
+
+    r[0] = 9999;
+    r[1] = 9999;
+    r[2] = -9999;
+    r[3] = -9999;
+    p = (SprPart1F8 *)(s + 8);
+    for (i = 0; i < s[3]; i++) {
+        if (p->x < r[0]) {
+            r[0] = p->x;
+        }
+        if (r[2] < p->x + p->w) {
+            r[2] = p->x + p->w;
+        }
+        if (p->y < r[1]) {
+            r[1] = p->y;
+        }
+        if (r[3] < p->y + p->h) {
+            r[3] = p->y + p->h;
+        }
+        p = p->next;
+    }
+}
+
+/* Bounding box (x0, y0, x1, y1) of the current sprite, all zero when there is none */
+void func_801B7D54_ovl_1F0A30(s32 *r) {
+    u8 *s = CUR_SPR;
+
+    if (s == NULL) {
+        r[0] = 0;
+        r[1] = 0;
+        r[2] = 0;
+        r[3] = 0;
+    } else if (CUR_SPR[0] == '6' && CUR_SPR[1] == '4') {
+        r[0] = -FIELD(s, u16, 4) / 2;
+        r[2] = FIELD(s, u16, 4) >> 1;
+        r[1] = -FIELD(s, u16, 6) / 2;
+        r[3] = FIELD(s, u16, 6) >> 1;
+    } else {
+        Spr1F8_PartsBox(r);
+    }
+}
 
 /* 16 zero bytes in rodata (emitted from asm: gcc loses track of the section after INCLUDE_ASM) */
 __asm__(".section .rodata
