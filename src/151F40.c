@@ -537,7 +537,20 @@ void func_8020296C_ovl_14EBE0(s32 arg0, s32 arg1, s32 arg2) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020296C_ovl_14EBE0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202B70_ovl_14EBE0);
+/* Draws status icon k (1 uses the first palette, others the second) at (a, b) */
+void func_80202B70_ovl_14EBE0(void *a, s32 b, u8 k) {
+    if (k == 0) {
+        return;
+    }
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    if (k == 1) {
+        gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_801F36C0 + 0x40);
+    } else {
+        gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_801F36C0 + 0x60);
+    }
+    gDPLoadTextureBlock_4b(D_800E9BA0++, D_801F0B90 + ((k << 7) + 0x450), G_IM_FMT_CI, 16, 16, 0, 0, 0, 0, 0, 0, 0);
+    func_80200DD0_ovl_14EBE0(a, b, 0xD);
+}
 
 #ifdef NON_MATCHING
 /* m2c draft, 23 words from the target; queued for the permuter */
