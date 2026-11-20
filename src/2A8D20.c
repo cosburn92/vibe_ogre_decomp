@@ -261,7 +261,110 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A370_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023AA8C_ovl_2A8D20);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_80098B60(s32 *, f32, f32, f32);    /* extern */
+s32 guRotateRPYF(s32 *, s32, s32, s32);     /* extern */
+extern s32 D_801CE8EC;
+extern s32 D_801CE8F0;
+extern s32 D_801CE8F4;
+extern f32 D_801D06FC;
+
+void func_8023AC50_ovl_2A8D20(void) {
+    s32 sp10;
+    s32 sp50;
+    f32 var_fv0;
+    s16 temp_v0;
+    s16 temp_v0_2;
+    s16 var_s2;
+    s16 var_s4;
+    s32 var_v0;
+    s32 var_v1;
+    u8 *temp_a0;
+    u8 *temp_a0_2;
+    u8 temp_v1;
+    u8 temp_v1_2;
+    void *temp_s0;
+    void *temp_s1;
+
+    var_s4 = 0;
+    func_8023AA8C_ovl_2A8D20(&D_8022A720);
+    guRotateRPYF(&sp10, D_801CE8EC, D_801CE8F0, D_801CE8F4);
+    func_80098B60(&sp50, D_801D06FC, D_801D06FC, D_801D06FC);
+    do {
+        temp_s1 = FIELD(&D_8022A974[(s32) (var_s4 << 0x10) >> 0xE], void *, 0x18);
+        if (temp_s1 != NULL) {
+            temp_v1 = FIELD(temp_s1, u8, 0x147);
+            if (temp_v1 != 0xFF) {
+                temp_a0 = D_801CE8BC + ((temp_v1 * 0xF8) + 0x1C4);
+                var_v1 = 0;
+                if (FIELD(temp_a0, s32, 0x48) != 0) {
+                    var_v1 = 0;
+                    if (func_801C8C90(temp_a0) == 1) {
+                        var_v1 = 1;
+                        if (FIELD(temp_s1, u8, 0x149) == 1) {
+                            var_v1 = 2;
+                        }
+                    }
+                }
+            } else {
+                var_v1 = 0;
+            }
+            if ((var_v1 & 0xFF) == 2) {
+                var_s2 = 0;
+loop_10:
+                temp_s0 = FIELD(&D_8022A974[(s32) (var_s2 << 0x10) >> 0xE], void *, 0x18);
+                var_v0 = 0;
+                if (temp_s0 != NULL) {
+                    temp_v1_2 = FIELD(temp_s0, u8, 0x147);
+                    if (temp_v1_2 != 0xFF) {
+                        var_v0 = 0;
+                        if (temp_v1_2 == FIELD(temp_s1, u8, 0x147)) {
+                            temp_a0_2 = D_801CE8BC + ((temp_v1_2 * 0xF8) + 0x1C4);
+                            var_v0 = 0;
+                            if (FIELD(temp_a0_2, s32, 0x48) != 0) {
+                                var_v0 = 0;
+                                if (func_801C8C90(temp_a0_2) == 1) {
+                                    var_v0 = 1;
+                                    if (FIELD(temp_s0, u8, 0x149) == 1) {
+                                        var_v0 = 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                temp_v0_2 = var_s2 + 1;
+                if (var_v0 != 1) {
+                    var_s2 = temp_v0_2;
+                    if (temp_v0_2 < 0x1C) {
+                        goto loop_10;
+                    }
+                }
+                if (var_s2 < 0x1C) {
+                    if (FIELD(temp_s1, s16, 0x13A) == 1) {
+                        FIELD(temp_s1, f32, 0x11C) = (f32) (FIELD(temp_s0, f32, 0x11C) + 8.0f);
+                        var_fv0 = FIELD(temp_s0, f32, 0x124) - 8.0f;
+                    } else {
+                        FIELD(temp_s1, f32, 0x11C) = (f32) (FIELD(temp_s0, f32, 0x11C) - 8.0f);
+                        var_fv0 = FIELD(temp_s0, f32, 0x124) + 8.0f;
+                    }
+                    FIELD(temp_s1, f32, 0x124) = var_fv0;
+                    FIELD(temp_s1, f32, 0x120) = (f32) FIELD(temp_s0, f32, 0x120);
+                }
+            }
+            func_8023A370_ovl_2A8D20(&sp10, &sp50, temp_s1);
+        }
+        temp_v0 = var_s4 + 1;
+        var_s4 = temp_v0;
+    } while (temp_v0 < 0x1C);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023AC50_ovl_2A8D20);
+#endif
 
 s32 func_8023AEA8_ovl_2A8D20(u8 *p) {
     s32 c = FIELD(p, s32, 0xE8);

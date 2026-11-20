@@ -295,7 +295,64 @@ s32 func_801A63F4_ovl_0EBBB0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern s32 D_800E8328;
+extern s32 D_8018F818;
+
+f32 func_801A66C8_ovl_0EBBB0(s32 arg0, f32 arg1, f32 arg2) {
+    f32 temp_fs0;
+    f32 temp_fs1;
+    f32 temp_fs2;
+    f32 temp_fs3;
+    f32 temp_ft0;
+    f32 temp_fv1;
+    f32 temp_fv1_2;
+    f32 var_fv1;
+    s32 temp_fv1_3;
+    s32 temp_s0;
+    s32 temp_s3;
+    s32 temp_s4;
+    s32 temp_s5;
+    s32 temp_s6;
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v1;
+    void *temp_s1;
+
+    temp_v1 = arg0 * 0xA8;
+    temp_s1 = *((*(&D_800E8328 + 0x2D + temp_v1) * 4) + (temp_v1 + &D_800E8328));
+    if (!(*(&D_8018F818 + (*(&D_800E8328 + 0x28 + temp_v1) * 0xC)) & 0x10)) {
+        return func_801A63FC_ovl_0EBBB0(arg0, arg1, arg0);
+    }
+    temp_fv1 = FIELD(temp_s1, f32, 4);
+    temp_fv1_2 = FIELD(temp_s1, f32, 0x14);
+    temp_fs0 = ((arg1 - temp_fv1) / (FIELD(temp_s1, f32, 8) - temp_fv1)) * (f32) (FIELD(temp_s1, u16, 0) - 1);
+    temp_fs1 = ((arg2 - temp_fv1_2) / (FIELD(temp_s1, f32, 0x18) - temp_fv1_2)) * (f32) (FIELD(temp_s1, u16, 2) - 1);
+    temp_s0 = (s32) func_8009D3E0(temp_fs0);
+    temp_fv1_3 = (s32) func_8009D3E0(temp_fs1);
+    temp_s4 = temp_s0 + 1;
+    temp_s3 = temp_fv1_3 + 1;
+    temp_s6 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s0, temp_fv1_3);
+    temp_fs3 = temp_fs1 - (f32) temp_fv1_3;
+    temp_fs2 = temp_fs0 - (f32) temp_s0;
+    temp_s5 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s4, temp_s3);
+    if ((temp_fs3 - temp_fs2) >= 0.0f) {
+        temp_v0 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s0, temp_s3);
+        var_fv1 = ((temp_fs2 * (f32) (temp_s5 - temp_v0)) - ((temp_fs1 - (f32) temp_s3) * (f32) (temp_s6 - temp_v0))) + (f32) temp_v0;
+    } else {
+        temp_v0_2 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s4, temp_fv1_3);
+        var_fv1 = (-(temp_fs0 - (f32) temp_s4) * (f32) (temp_s6 - temp_v0_2)) + (temp_fs3 * (f32) (temp_s5 - temp_v0_2)) + (f32) temp_v0_2;
+    }
+    temp_ft0 = FIELD(temp_s1, f32, 0xC);
+    return ((var_fv1 / 65279.0f) * (FIELD(temp_s1, f32, 0x10) - temp_ft0)) + temp_ft0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A66C8_ovl_0EBBB0);
+#endif
 
 /* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
  * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */

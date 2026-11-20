@@ -96,7 +96,55 @@ void func_80215298_ovl_18F100(void) {
     D_80210219 = 0x11;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 bzero(u8 *, s32);                       /* extern */
+extern u8 D_8021B330_ovl_18F100;
+
+void func_802152F4_ovl_18F100(void) {
+    s32 var_s1;
+    s32 var_s1_2;
+    u8 *temp_v0;
+    u8 *var_s0;
+    u8 *var_s0_2;
+
+    var_s0 = &D_8021B330_ovl_18F100;
+    bzero(&D_8021B330_ovl_18F100, 9);
+    var_s1 = 0;
+    do {
+        var_s1 += 1;
+        if (func_80216FF4_ovl_18F100(var_s1, 2) & 0xFF) {
+            *var_s0 |= 4;
+        }
+        var_s0 += 1;
+    } while (var_s1 < 9);
+    var_s1_2 = 0;
+    if (D_8021B299_ovl_18F100[D_801F0B9C] == 2) {
+        var_s0_2 = &D_8021B330_ovl_18F100;
+        do {
+            var_s1_2 += 1;
+            if (func_80216FF4_ovl_18F100(var_s1_2, 1) & 0xFF) {
+                *var_s0_2 |= 4;
+            }
+            var_s0_2 += 1;
+        } while (var_s1_2 < 9);
+        var_s1_2 = 0;
+    }
+    do {
+        if ((D_8021B299_ovl_18F100[var_s1_2] == 2) && (func_80216FF4_ovl_18F100(D_801F0B9C, 1) & 0xFF)) {
+            (&D_8021B330_ovl_18F100)[var_s1_2] = 4;
+        }
+        var_s1_2 += 1;
+    } while (var_s1_2 < 9);
+    temp_v0 = &(&D_8021B330_ovl_18F100)[D_801F0B9C];
+    *temp_v0 |= 0x10;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/18F100", func_802152F4_ovl_18F100);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_80215438_ovl_18F100);
 

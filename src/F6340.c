@@ -190,7 +190,65 @@ void func_801AB2A4_ovl_0EBBB0(s16 id) {
     *(s16 *)D_801AD100_ovl_0EBBB0 = id;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8007FA38(u8 *, u8, u8, u8, s32, s32, s32); /* extern */
+u8 func_8007FB10(u8 *);                             /* extern */
+extern u8 D_800E7A32;
+extern s16 D_800E7A3E;
+extern s32 D_800E7A90;
+extern s32 D_800E82CA;
+extern s32 D_800E82CE;
+extern s32 D_800E82D0;
+extern s32 D_800E82D2;
+extern s32 D_800E82D4;
+
+void func_801AB33C_ovl_0EBBB0(void) {
+    s32 temp_v0;
+    s32 temp_v1;
+    void *temp_s0;
+
+    if (FIELD(D_801AD100_ovl_0EBBB0, u8, 0x25) == 0) {
+        temp_s0 = &D_800E7A90 + 0x29;
+        if (FIELD(&D_800E7A90, u8, 0x29) & 1) {
+            if (!(D_800E82C8[FIELD(temp_s0, u8, -1)].flags & 0x8000)) {
+                goto block_3;
+            }
+            if (FIELD(&D_800E7A90, u8, 0x29) & 8) {
+                func_8007FA38(D_801AD100_ovl_0EBBB0 + 4, FIELD(&D_800E7A90, u8, 0x2A), FIELD(&D_800E7A90, u8, 0x2B), FIELD(&D_800E7A90, u8, 0x2C), (s32) FIELD(&D_800E7A90, u8, 0x2D), (s32) FIELD(&D_800E7A90, u8, 0x2E), (s32) FIELD(&D_800E7A90, u8, 0x2F));
+                D_800E7A3E = 0xF100;
+                FIELD(&D_800E7A90, u8, 0x29) = (u8) (FIELD(&D_800E7A90, u8, 0x29) & 0xF7);
+                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) & 0xFE);
+            } else if (FIELD(D_801AD100_ovl_0EBBB0, u8, 0x24) == 0xFF) {
+                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) | 1);
+                if (FIELD(&D_800E7A90, u8, 0x29) & 2) {
+                    FIELD(D_801AD100_ovl_0EBBB0, u8, 0x25) = 1U;
+                }
+                if (FIELD(&D_800E7A90, u8, 0x29) & 4) {
+                    temp_v1 = FIELD(temp_s0, u8, -1) * 0xA8;
+                    *(&D_800E82CA + temp_v1) = *(&D_800E82CA + temp_v1) | 2;
+                }
+            } else {
+                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) & 0xFE);
+            }
+            temp_v0 = FIELD(&D_800E7A90, u8, 0x28) * 0xA8;
+            D_800E7A36 = (s16) *(&D_800E82CE + temp_v0);
+            D_800E7A38 = (s16) *(&D_800E82D0 + temp_v0);
+            D_800E7A3A = (s16) *(&D_800E82D2 + temp_v0);
+            D_800E7A3C = (s16) *(&D_800E82D4 + temp_v0);
+            FIELD(D_801AD100_ovl_0EBBB0, u8, 0x24) = func_8007FB10(D_801AD100_ovl_0EBBB0 + 4);
+        }
+    } else {
+block_3:
+        D_800E7A32 |= 2;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB33C_ovl_0EBBB0);
+#endif
 
 void func_801AB55C_ovl_0EBBB0(void) {
     func_80078674(D_800E7A36, D_800E7A38, D_800E7A3A, D_800E7A3C);

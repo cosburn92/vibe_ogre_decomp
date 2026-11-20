@@ -96,7 +96,56 @@ void func_80173D84_ovl_040E80(void *list) {
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80173DBC_ovl_040E80);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 _bcopy(s32 *, void *, s32);         /* extern */
+extern s32 D_8018F3A0_ovl_040E80;
+
+void func_80174138_ovl_040E80(void *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+    s16 temp_a0;
+    s16 temp_a1;
+    s16 temp_a2;
+    s16 temp_v0;
+    s16 temp_v0_2;
+    s16 temp_v1;
+    s32 var_v0;
+    s32 var_v0_2;
+
+    _bcopy(&D_8018F3A0_ovl_040E80, arg0, 0x40);
+    if ((arg3 - arg1) > 0) {
+        var_v0 = arg3 - arg1;
+    } else {
+        var_v0 = arg1 - arg3;
+    }
+    var_v0_2 = arg4 - arg2;
+    if (((s16) arg4 - arg2) <= 0) {
+        var_v0_2 = arg2 - arg4;
+    }
+    temp_a0 = 0xA0 - arg3;
+    temp_a1 = 0x78 - arg4;
+    temp_a2 = (var_v0_2 - 1) << 6;
+    temp_v0 = 0x78 - arg2;
+    temp_v1 = 0xA0 - arg1;
+    FIELD(arg0, s16, 0x12) = temp_v0;
+    FIELD(arg0, s16, 0x22) = temp_v0;
+    temp_v0_2 = (var_v0 - 1) << 6;
+    FIELD(arg0, s16, 0) = temp_a0;
+    FIELD(arg0, s16, 2) = temp_a1;
+    FIELD(arg0, s16, 0xA) = temp_a2;
+    FIELD(arg0, s16, 0x10) = temp_a0;
+    FIELD(arg0, s16, 0x20) = temp_v1;
+    FIELD(arg0, s16, 0x28) = temp_v0_2;
+    FIELD(arg0, s16, 0x30) = temp_v1;
+    FIELD(arg0, s16, 0x32) = temp_a1;
+    FIELD(arg0, s16, 0x38) = temp_v0_2;
+    FIELD(arg0, s16, 0x3A) = temp_a2;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80174138_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80174250_ovl_040E80);
 

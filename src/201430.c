@@ -493,7 +493,93 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BEF14_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF59C_ovl_1F0A30);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_801BF858_ovl_1F0A30(u16 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, u32 arg6, u32 arg7) {
+    u32 sp38;
+    s16 *var_s2;
+    s16 var_a0;
+    s32 temp_a0;
+    s32 temp_v0_2;
+    s32 temp_v1;
+    s32 var_v0;
+    u16 *var_a1;
+    u32 temp_v0;
+    u32 var_s0;
+    u32 var_s1;
+    u32 var_s3;
+    u32 var_s6;
+    u32 var_t0;
+    u32 var_v1;
+
+    var_t0 = arg7;
+    var_s6 = 0x10;
+    if (arg1 != 0) {
+        var_s6 = 0x100;
+    }
+    var_s0 = 0;
+    var_s3 = 0;
+    if (var_t0 != 0) {
+loop_3:
+        var_s1 = 0;
+        if (arg6 != 0) {
+            var_s2 = (var_s0 * 2) + arg0;
+loop_5:
+            sp38 = var_t0;
+            temp_v0 = func_801BF59C_ovl_1F0A30(arg2, arg3, arg4, arg5, arg6, var_t0, var_s1, var_s3);
+            temp_a0 = ((temp_v0 >> 0x10) & 0xF800) | ((temp_v0 >> 0xD) & 0x7C0);
+            temp_v1 = (temp_v0 >> 0xA) & 0x3E;
+            temp_v0_2 = temp_v0 & 0xFF;
+            var_a0 = temp_a0 | temp_v1;
+            if (temp_v0_2 != 0) {
+                var_a0 |= 1;
+            }
+            var_v1 = 0;
+            if (var_s0 != 0) {
+                var_a1 = arg0;
+loop_9:
+                var_v0 = var_v1 < var_s0;
+                if (*var_a1 != (var_a0 & 0xFFFF)) {
+                    var_v1 += 1;
+                    var_a1 += 2;
+                    if (var_v1 >= var_s0) {
+                        var_v0 = var_v1 < var_s0;
+                    } else {
+                        goto loop_9;
+                    }
+                }
+                if (var_v0 == 0) {
+                    goto block_13;
+                }
+                goto block_14;
+            }
+block_13:
+            *var_s2 = var_a0;
+            var_s0 += 1;
+            var_s2 += 2;
+            if (var_s0 < var_s6) {
+block_14:
+                var_s1 += 1;
+                if (var_s1 >= arg6) {
+                    goto block_15;
+                }
+                goto loop_5;
+            }
+        } else {
+block_15:
+            var_s3 += 1;
+            if (var_s3 < var_t0) {
+                goto loop_3;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF858_ovl_1F0A30);
+#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, 99 words from the target; queued for the permuter */

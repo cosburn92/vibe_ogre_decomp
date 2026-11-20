@@ -640,7 +640,72 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F554_ovl_040E80);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void *LoadChunk(s32);                           /* extern */
+
+void *func_8017FAF8_ovl_040E80(void *arg0, s32 arg1, s32 arg2) {
+    s32 temp_v1_2;
+    s32 var_s1;
+    u32 temp_a2;
+    u32 temp_a2_2;
+    u8 temp_a3;
+    u8 temp_v0_2;
+    u8 temp_v1;
+    void *temp_v0;
+    void *var_a1;
+    void *var_s0;
+
+    var_s0 = arg0;
+    var_s1 = arg2;
+    temp_v0 = LoadChunk(arg1);
+    var_a1 = temp_v0;
+    if (var_s1 != 0) {
+        do {
+            temp_v1 = FIELD(var_a1, u8, 0);
+            temp_a2 = temp_v1 & 0xFFFF;
+            if ((temp_a2 < 0x81U) || ((((u32) (temp_v1 - 0xA0) < 0x40U) | (temp_a2 >= 0xFDU)) != 0)) {
+                if (!((temp_a2 == 0xD) & (FIELD(var_a1, u8, 1) == 0xA))) {
+                    var_a1 += 1;
+                } else {
+                    var_s1 -= 1;
+                    goto block_7;
+                }
+            } else {
+block_7:
+                var_a1 += 2;
+            }
+        } while (var_s1 != 0);
+    }
+loop_9:
+    temp_a3 = FIELD(var_a1, u8, 0);
+    temp_v1_2 = temp_a3 & 0xFF;
+    temp_a2_2 = temp_v1_2 & 0xFFFF;
+    if ((temp_a2_2 >= 0x81U) && ((((u32) (temp_v1_2 - 0xA0) < 0x40U) | (temp_a2_2 >= 0xFDU)) == 0)) {
+        FIELD(var_s0, u8, 0) = temp_a3;
+        temp_v0_2 = FIELD(var_a1, u8, 1);
+        var_a1 = var_a1 + 1 + 1;
+        FIELD(var_s0, u8, 1) = temp_v0_2;
+        var_s0 = var_s0 + 1 + 1;
+        goto loop_9;
+    }
+    var_a1 += 1;
+    if (!((temp_a2_2 == 0xD) & (FIELD(var_a1, u8, 1) == 0xA))) {
+        FIELD(var_s0, u8, 0) = temp_a3;
+        var_s0 += 1;
+        goto loop_9;
+    }
+    FIELD(var_s0, u8, 0) = 0xDU;
+    FIELD(var_s0, u8, 1) = 0xAU;
+    HFree(temp_v0);
+    return var_s0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017FAF8_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017FC28_ovl_040E80);
 

@@ -191,7 +191,55 @@ void func_8022E978_ovl_286BD0(u8 a) {
     D_8023DF0C_ovl_286BD0 = a;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern u8 D_80196A32;
+extern u8 D_80196A33;
+extern s32 D_80196A72;
+extern s32 D_8023DC9C_ovl_286BD0;
+extern s32 D_8023DCF8_ovl_286BD0;
+extern s32 D_8023DE84_ovl_286BD0;
+extern s32 D_8023DEAC_ovl_286BD0;
+extern s32 D_8023DEF4_ovl_286BD0;
+extern s32 D_8023DF00_ovl_286BD0;
+extern s32 D_8023DF08_ovl_286BD0;
+extern u16 gDate;
+
+s16 func_8022E984_ovl_286BD0(s16 arg0) {
+    s32 *var_a1;
+    s16 temp_a3;
+    s16 var_a2;
+
+    if (arg0 == 0xDC) {
+        var_a1 = &D_8023DEAC_ovl_286BD0;
+    } else if (arg0 == 0xDD) {
+        var_a1 = &D_8023DE84_ovl_286BD0;
+    } else if (arg0 < 0x54) {
+        var_a1 = &D_80196A72;
+    } else if (arg0 == 0xB7) {
+        var_a1 = &D_8023DEF4_ovl_286BD0;
+    } else if ((u32) ((arg0 - 0x99) & 0xFFFF) < 3U) {
+        var_a1 = (arg0 * 4) + &D_8023DC9C_ovl_286BD0;
+    } else if (arg0 == 0x96) {
+        var_a1 = &D_8023DF08_ovl_286BD0;
+    } else if (arg0 < 0xC8) {
+        var_a1 = (arg0 * 4) + &D_8023DCF8_ovl_286BD0;
+    } else {
+        var_a1 = &D_8023DF00_ovl_286BD0;
+    }
+    temp_a3 = gDate - FIELD(var_a1, u16, 0);
+    var_a2 = temp_a3;
+    if (((D_80196A32 * 0x1E) + D_80196A33) >= ((FIELD(var_a1, u8, 2) * 0x1E) + FIELD(var_a1, u8, 3))) {
+        var_a2 = temp_a3 + 1;
+    }
+    return var_a2;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022E984_ovl_286BD0);
+#endif
 
 /* Whether b is earlier than a */
 s32 func_8022EA9C_ovl_286BD0(TimeStamp *a, TimeStamp *b) {
@@ -499,7 +547,54 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80230360_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80230ADC_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+u8 func_8016FEF4(s32, u8);                      /* extern */
+extern u8 D_80193C09;
+
+void func_80231098_ovl_286BD0(u8 a, u8 b) {
+    s32 var_s0;
+    s32 var_s2;
+    u16 temp_v0;
+    u8 var_a0;
+    u8 var_a1;
+    void *temp_s1;
+
+    var_s2 = 0;
+    do {
+        temp_s1 = *((var_s2 * 4) + D_8023DE30_ovl_286BD0);
+        if ((temp_s1 != NULL) && (FIELD(temp_s1, void *, 0x30) == NULL)) {
+            temp_v0 = FIELD(temp_s1, u16, 0x2C);
+            var_s0 = temp_v0 & 0xFFFF;
+            if (var_s0 == 0xDC) {
+                var_s0 = 0x6D;
+            }
+            if (var_s0 == 0xDD) {
+                var_s0 = 0x63;
+            }
+            if ((temp_v0 == 0x51) && (D_80193C09 == 0x53)) {
+                var_s0 = 0x53;
+            }
+            var_a1 = FIELD(temp_s1, u8, 6);
+            if (var_s0 == 0x86) {
+                var_a1 = func_8016FEF4(0xD, var_a1);
+            }
+            var_a0 = var_s0 & 0xFF;
+            if (var_s0 == 0x71) {
+                var_a1 = func_8016FEF4(0xE, var_a1);
+                var_a0 = var_s0 & 0xFF;
+            }
+            FIELD(temp_s1, void *, 0x30) = func_8016FBE0(var_a0, var_a1 & 0xFF, temp_s1 + 0x34);
+        }
+        var_s2 += 1;
+    } while (var_s2 < 0x32);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231098_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802311B0_ovl_286BD0);
 
@@ -525,9 +620,204 @@ void func_80231EAC_ovl_286BD0(u8 k, u8 *a, u8 *b) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231F04_ovl_286BD0);
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_80231F04_ovl_286BD0(s32 arg0, s32 arg1, s8 *arg2, s8 *arg3, s8 *arg4, s8 *arg5) {
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    s32 temp_v0_4;
+    s32 temp_v1;
+    s32 var_v0;
+    s32 var_v1;
 
+    temp_v0 = arg1 & 0xFF;
+    var_v1 = 0xF;
+    switch (temp_v0) {                              /* switch 1 */
+    case 3:                                         /* switch 1 */
+block_6:
+        *arg5 = 1;
+        break;
+    case 6:                                         /* switch 1 */
+        goto block_6;
+    case 2:                                         /* switch 1 */
+    case 7:                                         /* switch 1 */
+        *arg4 = 1;
+        break;
+    case 1:                                         /* switch 1 */
+    case 8:                                         /* switch 1 */
+        *arg4 = 1;
+        goto block_6;
+    }
+    temp_v0_2 = arg0 & 0xFF;
+    switch (temp_v0_2) {                            /* switch 2 */
+    case 3:                                         /* switch 2 */
+block_13:
+        *arg3 = 1;
+        break;
+    case 6:                                         /* switch 2 */
+        goto block_13;
+    case 2:                                         /* switch 2 */
+    case 7:                                         /* switch 2 */
+        *arg2 = 1;
+        break;
+    case 1:                                         /* switch 2 */
+    case 8:                                         /* switch 2 */
+        *arg2 = 1;
+        goto block_13;
+    }
+    temp_v0_3 = arg0 & 0xFF;
+    switch (temp_v0_3) {                            /* switch 3 */
+    case 1:                                         /* switch 3 */
+        var_v1 = 0xF & 0xF5;
+        break;
+    case 2:                                         /* switch 3 */
+        var_v1 = 0xF & 0xF9;
+        break;
+    case 3:                                         /* switch 3 */
+        var_v1 = 0xF & 0xF6;
+        break;
+    case 4:                                         /* switch 3 */
+        var_v1 = 0xF & 0xFA;
+        break;
+    case 5:                                         /* switch 3 */
+        var_v1 = 0xF & 8;
+        break;
+    case 6:                                         /* switch 3 */
+        var_v1 = 0xF & 2;
+        break;
+    case 7:                                         /* switch 3 */
+        var_v1 = 0xF & 1;
+        break;
+    case 8:                                         /* switch 3 */
+        var_v1 = 0xF & 4;
+        break;
+    }
+    temp_v0_4 = arg1 & 0xFF;
+    switch (temp_v0_4) {                            /* switch 4 */
+    case 1:                                         /* switch 4 */
+        var_v1 &= 0xF5;
+        break;
+    case 2:                                         /* switch 4 */
+        var_v1 &= 0xF9;
+        break;
+    case 3:                                         /* switch 4 */
+        var_v1 &= 0xF6;
+        break;
+    case 4:                                         /* switch 4 */
+        var_v1 &= 0xFA;
+        break;
+    case 5:                                         /* switch 4 */
+        var_v1 &= 2;
+        break;
+    case 6:                                         /* switch 4 */
+        var_v1 &= 4;
+        break;
+    case 7:                                         /* switch 4 */
+        var_v1 &= 8;
+        break;
+    case 8:                                         /* switch 4 */
+        var_v1 &= 1;
+        break;
+    }
+    temp_v1 = var_v1 & 0xFF;
+    if (temp_v1 != 2) {
+        var_v0 = 0;
+        if (temp_v1 >= 3) {
+            if (temp_v1 != 4) {
+                var_v0 = 3;
+                if (temp_v1 != 8) {
+                    return 0;
+                }
+                /* Duplicate return node #41. Try simplifying control flow for better match */
+                return var_v0;
+            }
+            var_v0 = 2;
+            /* Duplicate return node #41. Try simplifying control flow for better match */
+            return var_v0;
+        }
+        return var_v0;
+    }
+    return 1;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231F04_ovl_286BD0);
+#endif
+
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_802320C0_ovl_286BD0(s16 arg0, s8 *arg1, s8 *arg2, s32 *arg3, s32 *arg4) {
+    s16 temp_v0_2;
+    s32 temp_v0;
+
+    temp_v0 = arg0 & 0xFF;
+    switch (temp_v0) {                              /* switch 1 */
+    case 3:                                         /* switch 1 */
+block_6:
+        *arg2 = 1;
+        break;
+    case 6:                                         /* switch 1 */
+        goto block_6;
+    case 2:                                         /* switch 1 */
+    case 7:                                         /* switch 1 */
+        *arg1 = 1;
+        break;
+    case 1:                                         /* switch 1 */
+    case 8:                                         /* switch 1 */
+        *arg1 = 1;
+        goto block_6;
+    }
+    temp_v0_2 = arg0 - 1;
+    switch (temp_v0_2) {                            /* switch 2 */
+    case 0:                                         /* switch 2 */
+        *arg1 = 1;
+block_15:
+        *arg2 = 1;
+        *arg3 = 0;
+        *arg4 = 0;
+        break;
+    case 1:                                         /* switch 2 */
+        *arg1 = 1;
+    case 4:                                         /* switch 2 */
+        *arg3 = 8;
+        *arg4 = 0;
+        break;
+    case 2:                                         /* switch 2 */
+        *arg2 = 1;
+        *arg3 = 0;
+        *arg4 = 8;
+        break;
+    case 3:                                         /* switch 2 */
+        *arg3 = 8;
+        *arg4 = 8;
+        break;
+    case 5:                                         /* switch 2 */
+        goto block_15;
+    case 6:                                         /* switch 2 */
+        *arg3 = 8;
+        *arg4 = 8;
+        *arg1 = 1;
+        break;
+    case 7:                                         /* switch 2 */
+        *arg3 = 0;
+        *arg4 = 8;
+        *arg1 = 1;
+        *arg2 = 1;
+        break;
+    }
+    if (arg0 >= 5) {
+        *arg4 += 0x10;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802320C0_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802321FC_ovl_286BD0);
 
@@ -866,7 +1156,80 @@ void func_80238C4C_ovl_286BD0(u8 *o, u16 idx, PtrTbl28 *t) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238C4C_ovl_286BD0);
 #endif
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void *func_80238D14_ovl_286BD0(s32 arg0, s32 arg1, s16 *arg2, void *arg3) {
+    s16 var_s3;
+    s32 temp_v1;
+    s32 var_a2;
+    s32 var_s0;
+    s32 var_s1;
+    u8 *temp_s5;
+    u8 *var_a0;
+    void *temp_v0;
+
+    var_s3 = 1;
+    var_s1 = 0;
+    var_s0 = 0;
+    temp_s5 = func_80227A18(0x018855FE, arg0);
+    FIELD(arg3, void **, 4) = HMalloc(0x1F40);
+    temp_v0 = HMalloc(0x500);
+    bzero(temp_v0, 0x500);
+    var_a2 = 0;
+    var_a0 = temp_s5;
+    *FIELD(arg3, void **, 4) = temp_v0;
+loop_1:
+    if (FIELD(var_a0, u8, 0) == 0xD) {
+        if ((FIELD(var_a0, u8, 1) == 0xA) && (FIELD(var_a0, u8, 2) == 0xD) && (FIELD(var_a0, u8, 3) == 0xA)) {
+            var_s0 += 1;
+            if (arg1 != var_s0) {
+                var_a0 += 3;
+                if ((arg1 + 1) == var_s0) {
+                    func_80080998(temp_v0, &temp_s5[var_s1], var_a2 - var_s1);
+                    *arg2 = var_s3;
+                } else {
+                    goto block_9;
+                }
+            } else {
+                var_s1 = var_a2 + 4;
+                var_a0 += 3;
+block_9:
+                var_a2 += 3;
+                goto block_15;
+            }
+        } else {
+            if ((FIELD(var_a0, u8, 0) == 0xD) && (FIELD(var_a0, u8, 1) == 0xA)) {
+                if (arg1 == var_s0) {
+                    FIELD(var_a0, u8, 0) = 0x81;
+                    temp_v1 = var_s3 << 0x10;
+                    FIELD(var_a0, u8, 1) = 0x97U;
+                    var_s3 += 1;
+                    *((temp_v1 >> 0xE) + FIELD(arg3, void **, 4)) = temp_v0 + (var_a2 - (var_s1 - 2));
+                }
+                var_a0 += 1;
+                var_a2 += 1;
+            }
+            goto block_15;
+        }
+    } else {
+block_15:
+        var_a2 += 1;
+        var_a0 += 1;
+        if (var_a2 > 0x0FFFFFFE) {
+            *arg2 = var_s3;
+        } else {
+            goto loop_1;
+        }
+    }
+    HFree(temp_s5);
+    return temp_v0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238D14_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238EC4_ovl_286BD0);
 
@@ -908,7 +1271,70 @@ s16 func_802390AC_ovl_286BD0(s32 n) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8009C550(void *, s32 *);           /* extern */
+s32 sprintf(s32 *, s32 *, s32 *, u16); /* extern */
+extern s32 D_8023E0A0_ovl_286BD0;
+extern s32 D_8023E338_ovl_286BD0;
+
+void *func_80239394_ovl_286BD0(void *arg0, s32 arg1) {
+    s32 sp10;
+    TimeStamp *temp_s0;
+    TimeStamp *temp_v0;
+    s32 var_s0;
+    s32 var_s1;
+    s32 var_v0;
+    u16 temp_v1;
+    u16 var_s3;
+    u8 temp_v0_2;
+    u8 var_s2;
+
+    bzero(arg0, 0x500);
+    var_s1 = 0;
+    var_s2 = 0;
+    var_s3 = 0;
+    var_s0 = 0;
+loop_1:
+    temp_v0 = func_8022EC34_ovl_286BD0(var_s0 & 0xFF);
+    if (temp_v0 != NULL) {
+        temp_v1 = temp_v0->hi;
+        if (var_s3 != temp_v1) {
+            var_s3 = temp_v1;
+            var_s2 = temp_v0->mid;
+            var_s1 += 1;
+        } else {
+            temp_v0_2 = temp_v0->mid;
+            if (var_s2 != temp_v0_2) {
+                var_s1 += 1;
+                var_s2 = temp_v0_2;
+            }
+        }
+        if (arg1 != (var_s1 - 1)) {
+            var_s0 += 1;
+            if (var_s0 >= 0x79) {
+                goto block_11;
+            }
+            goto loop_1;
+        }
+        var_v0 = var_s0;
+    } else {
+block_11:
+        var_v0 = var_s1;
+    }
+    temp_s0 = func_8022EC34_ovl_286BD0(var_v0 & 0xFF);
+    bzero(&sp10, 0x64);
+    sprintf(&sp10, &D_8023E338_ovl_286BD0, &D_8023E0A0_ovl_286BD0, temp_s0->hi);
+    FIELD(arg0, void *, 0x530) = arg0;
+    func_8009C550(arg0, &sp10);
+    return arg0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239394_ovl_286BD0);
+#endif
 
 /* Item index shown on display line `line` (a new group or subgroup adds an extra line);
  * past the end returns the line count */
@@ -1063,7 +1489,85 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802396F0_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802397B8_ovl_286BD0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8009C550(void *, s32 *);           /* extern */
+s32 sprintf(s32 *, s32 *, s32 *, u16, s32, s32); /* extern */
+extern s32 D_8023E060_ovl_286BD0;
+extern s32 D_8023E0A0_ovl_286BD0;
+extern s32 D_8023E378_ovl_286BD0;
+
+void *func_80239B14_ovl_286BD0(void *arg0, s32 arg1) {
+    s32 sp18;
+    TimeStamp *temp_s0;
+    TimeStamp *temp_v0;
+    s32 var_s2;
+    u16 temp_v1;
+    u16 var_s5;
+    u32 var_a0;
+    u32 var_s0;
+    u32 var_s1;
+    u8 temp_v0_2;
+    u8 var_s3;
+
+    bzero(arg0, 0x500);
+    var_s0 = 0;
+    var_s3 = 0;
+    var_s5 = 0;
+    var_s2 = 0;
+    var_s1 = 0;
+loop_1:
+    temp_v0 = func_8022EC34_ovl_286BD0(var_s2 & 0xFF);
+    if (temp_v0 != NULL) {
+        temp_v1 = temp_v0->hi;
+        if (var_s5 != temp_v1) {
+            var_s3 = temp_v0->mid;
+            var_s5 = temp_v1;
+            if (arg1 != var_s0) {
+                var_s0 += 1;
+                goto block_8;
+            }
+            goto block_9;
+        }
+        temp_v0_2 = temp_v0->mid;
+        if (var_s3 != temp_v0_2) {
+            var_s0 += 1;
+            if (arg1 != var_s0) {
+                var_s3 = temp_v0_2;
+                goto block_8;
+            }
+            goto block_9;
+        }
+block_8:
+        if (arg1 == var_s0) {
+block_9:
+            var_a0 = var_s1 >> 0x10;
+        } else {
+            var_s1 += 0x10000;
+            var_s2 += 1;
+            var_s0 += 1;
+            if (var_s2 >= 0x79) {
+                goto block_11;
+            }
+            goto loop_1;
+        }
+    } else {
+block_11:
+        var_a0 = var_s0;
+    }
+    temp_s0 = func_8022EC34_ovl_286BD0(var_a0 & 0xFF);
+    bzero(&sp18, 0x64);
+    sprintf(&sp18, &D_8023E378_ovl_286BD0, &D_8023E0A0_ovl_286BD0, temp_s0->hi, *(&D_8023E060_ovl_286BD0 + (temp_s0->mid * 4)), (s32) temp_s0->lo);
+    FIELD(arg0, void *, 0x530) = arg0;
+    func_8009C550(arg0, &sp18);
+    return arg0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239B14_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239C5C_ovl_286BD0);
 
@@ -1118,7 +1622,74 @@ s32 func_8023A398_ovl_286BD0(s32 n, char *str, char *p) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A398_ovl_286BD0);
 #endif
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 _bcopy(s32 *, u8 *, s32);           /* extern */
+
+u8 *func_8023A42C_ovl_286BD0(void *arg0, s32 arg1) {
+    s32 sp10;
+    s32 temp_s0;
+    s32 temp_s0_2;
+    s32 var_a2;
+    s32 var_a3;
+    s32 var_s2;
+    u8 *temp_s1;
+    u8 *temp_v0;
+    u8 *temp_v0_2;
+    u8 *var_v1;
+    u8 temp_a0;
+    u8 temp_a1;
+    void *temp_s6;
+
+    temp_v0 = HMalloc(0x604);
+    FIELD(arg0, u8 *, 0xD0) = temp_v0;
+    bzero(temp_v0, 0x604);
+    bzero(&sp10, 0x500);
+    temp_s1 = FIELD(arg0, u8 *, 0xD0);
+    FIELD(temp_s1, s8, 0x5F3) = 0x3F;
+    FIELD(temp_s1, s8, 0x5F6) = 0x11;
+    FIELD(temp_s1, s8, 0x5F0) = 0;
+    FIELD(temp_s1, s8, 0x5FE) = 2;
+    FIELD(temp_s1, s32, 0x600) = arg1;
+    temp_s6 = *((FIELD(D_8023DE30_ovl_286BD0, u8, 0x23D) * 4) + D_8023DE30_ovl_286BD0);
+    var_s2 = 0;
+    temp_s0 = func_8022ECBC_ovl_286BD0(FIELD(temp_s6, u8, 0x2D)) & 0xFF;
+    temp_v0_2 = func_80227A18(0x018855FE, 2);
+    var_a3 = 0;
+    var_a2 = 0;
+    var_v1 = temp_v0_2;
+loop_1:
+    temp_a0 = FIELD(var_v1, u8, 0);
+    if ((temp_a0 == 0xD) && (temp_a1 = FIELD(var_v1, u8, 1), (temp_a1 == 0xA)) && (FIELD(var_v1, u8, 2) == temp_a0) && (FIELD(var_v1, u8, 3) == temp_a1)) {
+        var_a3 += 1;
+        if ((temp_s0 & 0xFFFF) != var_a3) {
+            var_s2 = var_a2 + 4;
+            goto block_9;
+        }
+        temp_s0_2 = var_a2 - var_s2;
+        bzero(&sp10, temp_s0_2 + 2);
+        func_80080998(&sp10, &temp_v0_2[var_s2], temp_s0_2);
+    } else {
+block_9:
+        var_a2 += 1;
+        var_v1 += 1;
+        if (var_a2 <= 0x0FFFFFFE) {
+            goto loop_1;
+        }
+    }
+    HFree(temp_v0_2);
+    _bcopy(&sp10, temp_s1, 0x500);
+    FIELD(arg0, s8, 0x25) = 1;
+    FIELD(temp_s1, s8, 0x5F4) = 1;
+    FIELD(temp_s1, u8, 0x5F5) = func_80239EE0_ovl_286BD0(1, temp_s1, (s32) FIELD(temp_s6, s16, 0x2C));
+    return temp_s1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A42C_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A5D8_ovl_286BD0);
 

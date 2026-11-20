@@ -288,7 +288,96 @@ void func_801AEE94_ovl_0FA5E0(s32 i, void *v) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEEC0_ovl_0FA5E0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern s32 D_801B40F4_ovl_0FA5E0;
+extern s32 D_801B4144_ovl_0FA5E0;
+
+s32 func_801AFB94_ovl_0FA5E0(void) {
+    s32 *var_v1;
+    s32 *var_v1_2;
+    f32 temp_ft0;
+    f32 temp_ft0_2;
+    f32 var_fv0;
+    f32 var_fv0_2;
+    s32 temp_a0;
+    s32 temp_a0_2;
+    s32 temp_a1;
+    s32 temp_a1_2;
+    s32 temp_v1_3;
+    s32 var_a0;
+    s32 var_a0_2;
+    s32 var_t0;
+    s32 var_v0;
+    s32 var_v0_2;
+    u8 *temp_a3;
+    void *temp_v0;
+    void *temp_v0_2;
+    void *temp_v1;
+    void *temp_v1_2;
+
+    var_t0 = 0;
+    var_a0 = 0;
+    var_v1 = &D_801B40F4_ovl_0FA5E0;
+    temp_a3 = D_801B3E20_ovl_0FA5E0 + 0x1E4;
+    temp_a1 = FIELD(D_801B3E20_ovl_0FA5E0, s32, 0x1E8);
+loop_1:
+    if ((temp_a1 < FIELD(var_v1, s32, 0)) || (var_v0 = var_a0 < 9, ((temp_a1 < FIELD(var_v1, s32, 8)) == 0))) {
+        var_a0 += 1;
+        var_v1 += 8;
+        if (var_a0 >= 9) {
+            var_v0 = var_a0 < 9;
+        } else {
+            goto loop_1;
+        }
+    }
+    if (var_v0 != 0) {
+        temp_v0 = (var_a0 * 8) + &D_801B40F4_ovl_0FA5E0;
+        temp_v1 = ((var_a0 + 1) * 8) + &D_801B40F4_ovl_0FA5E0;
+        temp_ft0 = FIELD(temp_v0, f32, 4);
+        temp_a0 = FIELD(temp_v0, s32, 0);
+        var_fv0 = (((FIELD(temp_v1, f32, 4) - temp_ft0) * (f32) (temp_a1 - temp_a0)) / (f32) (FIELD(temp_v1, s32, 0) - temp_a0)) + temp_ft0;
+    } else {
+        var_fv0 = FIELD(((var_a0 * 8) + &D_801B40F4_ovl_0FA5E0), f32, 4);
+    }
+    temp_a1_2 = FIELD(temp_a3, s32, 4);
+    var_a0_2 = 0;
+    var_v1_2 = &D_801B4144_ovl_0FA5E0;
+    FIELD(temp_a3, f32, 0xC) = var_fv0;
+loop_9:
+    if ((temp_a1_2 < FIELD(var_v1_2, s32, 0)) || (var_v0_2 = var_a0_2 < 0xF, ((temp_a1_2 < FIELD(var_v1_2, s32, 8)) == 0))) {
+        var_a0_2 += 1;
+        var_v1_2 += 8;
+        if (var_a0_2 >= 0xF) {
+            var_v0_2 = var_a0_2 < 0xF;
+        } else {
+            goto loop_9;
+        }
+    }
+    if (var_v0_2 != 0) {
+        temp_v0_2 = (var_a0_2 * 8) + &D_801B4144_ovl_0FA5E0;
+        temp_v1_2 = ((var_a0_2 + 1) * 8) + &D_801B4144_ovl_0FA5E0;
+        temp_ft0_2 = FIELD(temp_v0_2, f32, 4);
+        temp_a0_2 = FIELD(temp_v0_2, s32, 0);
+        var_fv0_2 = (((FIELD(temp_v1_2, f32, 4) - temp_ft0_2) * (f32) (temp_a1_2 - temp_a0_2)) / (f32) (FIELD(temp_v1_2, s32, 0) - temp_a0_2)) + temp_ft0_2;
+    } else {
+        var_fv0_2 = FIELD(((var_a0_2 * 8) + &D_801B4144_ovl_0FA5E0), f32, 4);
+    }
+    temp_v1_3 = FIELD(temp_a3, s32, 4);
+    FIELD(temp_a3, f32, 0x14) = var_fv0_2;
+    if (temp_v1_3 < 0x1E) {
+        FIELD(temp_a3, s32, 4) = (s32) (temp_v1_3 + 1);
+    } else {
+        var_t0 = 1;
+    }
+    return var_t0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AFB94_ovl_0FA5E0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AFD30_ovl_0FA5E0);
 

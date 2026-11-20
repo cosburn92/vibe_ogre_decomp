@@ -242,7 +242,154 @@ void func_80221484_ovl_1BA050(u16 bits) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_802263CC_ovl_1BA050(u16 *, u32);       /* extern */
+extern void *D_800C47F0;
+extern u16 *D_80229D10_ovl_1BA050;
+extern u16 *D_80229D28_ovl_1BA050;
+
+void func_802214D0_ovl_1BA050(void) {
+    s32 temp_a3;
+    s32 var_a0_2;
+    s32 var_a2;
+    s32 var_a2_2;
+    s32 var_a2_3;
+    s32 var_a2_4;
+    s32 var_v1_2;
+    s32 var_v1_3;
+    s32 var_v1_4;
+    s32 var_v1_5;
+    u16 **var_a1_2;
+    u16 **var_a1_3;
+    u16 **var_a1_4;
+    u16 **var_a1_5;
+    u16 **var_a1_6;
+    u16 **var_a1_7;
+    u16 **var_v1;
+    u16 *temp_a0;
+    u16 *temp_a0_2;
+    u16 *temp_a0_3;
+    u16 *temp_a0_4;
+    u16 *temp_a0_5;
+    u16 *temp_a0_6;
+    u16 *var_a0;
+    u16 temp_v0;
+    u32 var_a1;
+    u32 var_a2_5;
+    u32 var_a2_6;
+    void **var_v1_6;
+
+    if (!(D_8022A254_ovl_1BA050 & 0x8000)) {
+        D_8022A254_ovl_1BA050 |= 0x8000;
+        var_a1 = 0;
+        var_a0 = D_8022A218_ovl_1BA050;
+        var_v1 = D_80229CB0_ovl_1BA050;
+        do {
+            temp_v0 = **var_v1;
+            var_v1 += 4;
+            var_a1 += 1;
+            *var_a0 = temp_v0;
+            var_a0 += 2;
+        } while (var_a1 < 0xCU);
+        func_802263CC_ovl_1BA050(var_a0, var_a1);
+        var_a2 = 0;
+        var_a1_2 = D_80229CE0_ovl_1BA050;
+        do {
+            temp_a0 = *var_a1_2;
+            var_v1_2 = 0;
+loop_5:
+            var_v1_2 += 1;
+            *temp_a0 &= ~D_8022A830_ovl_1BA050;
+            if (var_v1_2 < 4) {
+                goto loop_5;
+            }
+            var_a2 += 1;
+            var_a1_2 += 4;
+        } while (var_a2 < 3);
+        var_a2_2 = 0;
+        var_a1_3 = D_80229CEC_ovl_1BA050;
+        do {
+            temp_a0_2 = *var_a1_3;
+            var_v1_3 = 0;
+loop_9:
+            var_v1_3 += 1;
+            *temp_a0_2 &= ~D_8022A830_ovl_1BA050;
+            if (var_v1_3 < 4) {
+                goto loop_9;
+            }
+            var_a2_2 += 1;
+            var_a1_3 += 4;
+        } while (var_a2_2 < 3);
+        var_a2_3 = 0;
+        var_a1_4 = D_80229CF8_ovl_1BA050;
+        do {
+            temp_a0_3 = *var_a1_4;
+            var_v1_4 = 0;
+loop_13:
+            var_v1_4 += 1;
+            *temp_a0_3 &= ~D_8022A830_ovl_1BA050;
+            if (var_v1_4 < 4) {
+                goto loop_13;
+            }
+            var_a2_3 += 1;
+            var_a1_4 += 4;
+        } while (var_a2_3 < 3);
+        var_a2_4 = 0;
+        var_a1_5 = D_80229D04_ovl_1BA050;
+        temp_a3 = ~D_8022A830_ovl_1BA050;
+        do {
+            temp_a0_4 = *var_a1_5;
+            var_v1_5 = 0;
+loop_17:
+            var_v1_5 += 1;
+            *temp_a0_4 &= temp_a3;
+            if (var_v1_5 < 4) {
+                goto loop_17;
+            }
+            var_a2_4 += 1;
+            var_a1_5 += 4;
+        } while (var_a2_4 < 3);
+        if (D_8022A254_ovl_1BA050 & 1) {
+            var_a0_2 = 0;
+            var_v1_6 = &D_800C47F0;
+            do {
+                FIELD(*var_v1_6, s8, 2) = 0;
+                var_a0_2 += 1;
+                FIELD(*var_v1_6, s8, 3) = 0;
+                var_v1_6 += 4;
+            } while (var_a0_2 < 4);
+        }
+        var_a2_5 = 0;
+        if (D_8022A254_ovl_1BA050 & 2) {
+            var_a1_6 = &D_80229D10_ovl_1BA050;
+            do {
+                temp_a0_5 = *var_a1_6;
+                var_a2_5 += 1;
+                *temp_a0_5 |= D_8022A828_ovl_1BA050;
+                var_a1_6 += 4;
+            } while (var_a2_5 < 6U);
+            D_8022A254_ovl_1BA050 &= 0xFFFD;
+        }
+        var_a2_6 = 0;
+        var_a1_7 = &D_80229D28_ovl_1BA050;
+        do {
+            temp_a0_6 = *var_a1_7;
+            var_a2_6 += 1;
+            *temp_a0_6 |= D_8022A256_ovl_1BA050;
+            var_a1_7 += 4;
+        } while (var_a2_6 < 3U);
+        if (D_8022A250_ovl_1BA050 != 0) {
+            ((s32 (*)(u16 *, u16 **, u32, s32)) D_8022A250_ovl_1BA050)(temp_a0_6, var_a1_7, var_a2_6, temp_a3);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_802214D0_ovl_1BA050);
+#endif
 
 void func_80221750_ovl_1BA050(ScriptCtx *ctx) {
     bzero(ctx, 0x38);

@@ -661,7 +661,60 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B6D8_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B8AC_ovl_1CE070);
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8016C900();                            /* extern */
+s32 func_80184D70();                            /* extern */
+extern s32 D_800ABD80;
+extern s32 D_800E9C08;
+extern s32 D_800E9C0A;
+extern s32 D_80186FF0;
+extern s32 D_80190F80;
+extern s32 D_80193AB0;
+extern s32 D_80193AC0;
+extern s32 D_80193BC0;
+extern s32 D_801953F0;
+extern s32 D_80195560;
+extern s32 D_80196B00;
+extern s32 D_80197710;
+extern s32 D_801977D8;
+extern s32 gFlags;
+extern s32 gLegions;
+extern s32 gLocations;
+extern s32 gSquads;
+extern s32 gTreasureFound;
+
+void func_8019BB7C_ovl_1CE070(void) {
+    bzero(&D_80193BC0, 0x15E0);
+    bzero(&D_80195560, 0x1450);
+    bzero(&gSquads, 0x4E2);
+    bzero(&gLegions, 0x6E);
+    bzero(&D_80190F80, 0x16C);
+    bzero(&D_801953F0, 0x16C);
+    bzero(&D_80193AC0, 0xA0);
+    bzero(&D_80196B00, 0x458);
+    bzero(&D_80197710, 0x64);
+    bzero(&D_801977D8, 0x32);
+    bzero(&D_80193AB0, 0xA);
+    bzero(&gTreasureFound, 0x20);
+    bzero(&gFlags, 0x10);
+    bzero(&gLocations, 0x240);
+    D_80186FF0 = 0;
+    func_80184D70();
+    func_8016C900();
+    FIELD(&D_800E9C08, s32, 0) = M2C_UNALIGNED32(FIELD(&D_800ABD80, s32, 0));
+    FIELD(&D_800E9C08, s32, 4) = M2C_UNALIGNED32(FIELD(&D_800ABD80, s32, 4));
+    FIELD(&D_800E9C08, s32, 8) = M2C_UNALIGNED32(FIELD(&D_800ABD80, s32, 8));
+    FIELD(&D_800E9C08, s32, 0xC) = M2C_UNALIGNED32(FIELD(&D_800ABD80, s32, 0xC));
+    FIELD(&D_800E9C08, s16, 0x10) = (s16) FIELD(&D_800ABD80, s16, 0x10);
+    FIELD(&D_800E9C0A, u8, 7) = (u8) FIELD(&D_800E9C0A, u8, 7);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019BB7C_ovl_1CE070);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019BCEC_ovl_1CE070);
 

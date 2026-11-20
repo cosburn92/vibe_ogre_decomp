@@ -344,7 +344,65 @@ s32 func_801F4EB4_ovl_145210(MapUnit *u) {
     return u->unk70 == 1 && !(u->flags & 0x40);
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_801F4030_ovl_145210(s32);                  /* extern */
+extern s32 D_80187C59;
+extern s32 D_80193BD1;
+extern s32 D_80193BD2;
+extern s32 D_80195571;
+extern s32 D_80195572;
+extern s32 D_801971F2;
+
+u8 func_801F4ED8_ovl_145210(MapUnit *u) {
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    s32 var_a0;
+    s32 var_s0;
+    u8 temp_a0;
+    u8 temp_a2;
+    u8 temp_v1;
+    u8 var_s1;
+
+    temp_a2 = u->unk04[0];
+    temp_a0 = *(&D_801971F2 + (temp_a2 * 0x19));
+    if ((u->flags & 8) && (temp_a2 < 0x1EU)) {
+        temp_v0 = temp_a0 * 0x38;
+        var_s1 = *(&D_80193BD2 + temp_v0);
+        var_a0 = *(&D_80193BD1 + temp_v0) & 0xFF;
+    } else {
+        temp_v0_2 = (temp_a0 & 0xFF) * 0x34;
+        var_s1 = *(&D_80195572 + temp_v0_2);
+        var_a0 = *(&D_80195571 + temp_v0_2) & 0xFF;
+    }
+    temp_v1 = *(&D_80187C59 + (var_a0 * 0x48));
+    temp_v0_3 = var_s1 & 0xFF;
+    if (temp_v1 == 0) {
+        var_s0 = var_a0;
+        if (var_s0 != temp_v0_3) {
+            var_s0 = temp_v0_3;
+        }
+    } else {
+        var_s0 = var_a0;
+        if (temp_v1 != temp_v0_3) {
+            var_s0 = temp_v0_3;
+        }
+    }
+    if (var_s0 >= 0xAA) {
+        var_s0 = var_s1 & 0xFF;
+    }
+    if (func_801F4030_ovl_145210(var_s0) == -1) {
+        var_s0 = var_s1 & 0xFF;
+    }
+    return (u8) var_s0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4ED8_ovl_145210);
+#endif
 
 /* Slot of a unit; hangs if it is not on the map. */
 s32 func_801F4FF4_ovl_145210(MapUnit *u) {
@@ -507,7 +565,78 @@ inline MapEntry *func_801F69A0_ovl_145210(s32 id) {
     return r;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 500 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_801F69FC_ovl_145210(s32 arg0) {
+    MapEntry **var_v1;
+    MapEntry *temp_s4;
+    MapEntry *temp_s6;
+    MapEntry *temp_v0;
+    MapUnit **var_v1_2;
+    s32 var_a0;
+    s32 var_s1;
+    s32 var_s3;
+    u32 var_s2;
+    u8 *temp_v1;
+    void *temp_a0;
+    void *temp_s0;
+    void *temp_s0_2;
+
+    var_s3 = 0;
+    if ((s32) D_801FDA32_ovl_145210 > 0) {
+        var_v1 = D_801FDA34_ovl_145210;
+loop_2:
+        temp_v0 = *var_v1;
+        if ((temp_v0 == NULL) || (temp_v0->id != arg0)) {
+            var_s3 += 1;
+            var_v1 += 4;
+            if (var_s3 < (s32) D_801FDA32_ovl_145210) {
+                goto loop_2;
+            }
+        }
+        if (var_s3 < (s32) D_801FDA32_ovl_145210) {
+            temp_s6 = D_801FDA34_ovl_145210[var_s3];
+            var_s2 = 0;
+            var_s1 = 0;
+            temp_s4 = temp_s6 + 0x30;
+            do {
+                temp_s0 = var_s1 + temp_s4;
+                temp_s0_2 = temp_s0 + 0x10;
+                temp_a0 = FIELD(temp_s0, void *, 0x10);
+                var_s1 += 0x14;
+                HFree(temp_a0);
+                var_s2 += 1;
+                HFree(FIELD(temp_s0_2, void *, 4));
+            } while (var_s2 < 2U);
+            HFree(temp_s6);
+            var_a0 = 0;
+            D_801FDA34_ovl_145210[var_s3] = NULL;
+            if (D_801F367C > 0) {
+                var_v1_2 = D_801F0CB0;
+loop_10:
+                if (*var_v1_2 != arg0) {
+                    var_a0 += 1;
+                    var_v1_2 += 4;
+                    if (var_a0 >= D_801F367C) {
+                        goto loop_15;
+                    }
+                    goto loop_10;
+                }
+                temp_v1 = (var_a0 * 4) + D_801FDA3C_ovl_145210;
+                *temp_v1 &= 0xFE;
+            } else {
+loop_15:
+                goto loop_15;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F69FC_ovl_145210);
+#endif
 
 u8 func_801F6B64_ovl_145210(s32 id) {
     MapEntry *e = func_801F69A0_ovl_145210(id);
