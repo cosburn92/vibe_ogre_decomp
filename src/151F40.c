@@ -283,25 +283,25 @@ s16 func_80201A44_ovl_14EBE0(s32 side, s32 idx, s32 k) {
     return sum;
 }
 
-#ifdef NON_MATCHING
 /* Index clamp and table select laid out differently. */
-void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base) {
-    Character *c;
-
-    if (idx >= 100) {
-        idx = 0;
-    }
-    if (enemy) {
-        c = &D_80195560[idx];
-    } else {
-        c = &D_80193BC0[idx].c;
-    }
-    *cls = c->cls;
-    *base = c->baseCls;
+void func_80201AFC_ovl_14EBE0(u8 enemy, u8 idx, u8 *cls, u8 *base)
+{
+  Character *c;
+  if (idx >= 100)
+  {
+    idx = 0;
+  }
+  if (!enemy)
+  {
+    c = &D_80193BC0[idx].c;
+  }
+  else
+  {
+    c = &D_80195560[idx];
+  }
+  *cls = c->cls;
+  *base = c->baseCls;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201AFC_ovl_14EBE0);
-#endif
 
 /* Item in equipment slot 1-4, or the class default (D_80213068) when the slot is empty */
 u16 func_80201B68_ovl_14EBE0(u8 side, u8 idx, u8 slot) {

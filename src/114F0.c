@@ -1868,19 +1868,16 @@ u8 *func_8008424C(MusChannel *cp, u8 *ptr) {
     return ptr;
 }
 
-#ifdef NON_MATCHING
 /* The original reloads vib_speed right after storing it; GCC here forwards the stored value. */
 /* Fvibdown */
-u8 *func_800842BC(MusChannel *cp, u8 *ptr) {
-    cp->vib_delay = *ptr++;
-    cp->vib_speed = *ptr++;
-    cp->vib_precalc = 6.2831852 / (f32)cp->vib_speed;
-    cp->vib_amount = -(f32)*ptr++ / 50.0;
-    return ptr;
+u8 *func_800842BC(MusChannel *cp, u8 *ptr)
+{
+  cp->vib_delay = *(ptr++);
+  cp->vib_speed = *(ptr++);
+  cp->vib_amount = (-((f32) (*(ptr++)))) / 50.0;
+  cp->vib_precalc = 6.2831852 / ((f32) cp->vib_speed);
+  return ptr;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_800842BC);
-#endif
 
 u8 *Fviboff(MusChannel *cp, u8 *ptr) {
     cp->vib_speed = 0;
@@ -2046,27 +2043,24 @@ u8 *Fprint(MusChannel *cp, u8 *ptr) {
     return ptr + 1;
 }
 
-#ifdef NON_MATCHING
 /* Same operations; the original interleaves the byte reads with the stores differently. */
 /* Fgoto */
-u8 *func_80084614(MusChannel *cp, u8 *ptr) {
-    u32 off1, off2, off3;
-
-    off1 = *ptr++ << 8;
-    off1 += *ptr++;
-    off2 = *ptr++ << 8;
-    off2 += *ptr++;
-    cp->unkA2 = 1;
-    cp->pvolume = cp->pvolumebase + off2;
-    off3 = *ptr++ << 8;
-    off3 += *ptr++;
-    cp->unkA4 = 1;
-    cp->ppitchbend = cp->ppitchbendbase + off3;
-    return cp->pbase + off1;
+u8 *func_80084614(MusChannel *cp, u8 *ptr)
+{
+  u32 off1;
+  u32 off3;
+  off1 = (*(ptr++)) << 8;
+  off1 += *(ptr++);
+  off3 = (*(ptr++)) << 8;
+  off3 += *(ptr++);
+  cp->unkA2 = 1;
+  cp->pvolume = cp->pvolumebase + off3;
+  off3 = (*(ptr++)) << 8;
+  off3 += *(ptr++);
+  cp->unkA4 = 1;
+  cp->ppitchbend = cp->ppitchbendbase + off3;
+  return cp->pbase + off1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80084614);
-#endif
 
 u8 *func_80084684(MusChannel *cp, u8 *ptr) {
     cp->unkCA = *ptr;
