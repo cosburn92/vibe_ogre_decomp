@@ -724,7 +724,30 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019C168_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019C5B4_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019CBB8_ovl_1CE070);
+s32 func_80170794(s32 flag);
+#include "gbi_ultra.h"
+
+/* Draws the header bar (slot 12; one half or both depending on story flag 1) and, while the
+ * flag is clear, the badge in slot 16 */
+void func_8019CBB8_ovl_1CE070(void) {
+    SizeCE *s = D_801B80C0_ovl_1CE070[12].data;
+    SizeCE *t;
+
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)s + (func_80197C14_ovl_1CE070(0, s->w, s->h) + 8));
+    if (func_80170794(1)) {
+        func_8019898C_ovl_1CE070(s, 0, 11, s->w, 11, 0x80, 200);
+    } else {
+        func_8019898C_ovl_1CE070(s, 0, 0, s->w, 11, 0x50, 200);
+        func_8019898C_ovl_1CE070(s, 0, 11, s->w, 11, 0xB0, 200);
+    }
+    t = D_801B80C0_ovl_1CE070[16].data;
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)t + (func_80197C14_ovl_1CE070(0, t->w, t->h) + 8));
+    if (!func_80170794(1)) {
+        func_8019898C_ovl_1CE070(t, 0, 0, t->w, 11, 0x40, 0xD4);
+    }
+}
 
 extern u8 D_800E82C4;
 #include "gbi_ultra.h"
