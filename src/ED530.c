@@ -17,7 +17,9 @@ typedef struct {
     /* 0x104 */ s32 w104;
     /* 0x108 */ u8 unk108[4];
     /* 0x10C */ f32 f10C;
-    /* 0x110 */ u8 unk110[0x3E];
+    /* 0x110 */ u8 unk110[0xC];
+    /* 0x11C */ void *sky; /* 32x64 RGBA16 sky texture */
+    /* 0x120 */ u8 unk120[0x2E];
     /* 0x14E */ u8 r;
     /* 0x14F */ u8 g;
     /* 0x150 */ u8 b;
@@ -227,7 +229,33 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4A38_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4CE0_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4FF4_ovl_0EBBB0);
+#include "gbi_ultra.h"
+typedef struct {
+    s32 m[16];
+} MtxE;
+typedef struct {
+    u8 unk0[8];
+    MtxE *mtx;
+} DynE;
+extern u16 D_800C4BE4;
+extern u8 D_801ABAD8_ovl_0EBBB0[];
+void func_800987E0(MtxE *m);
+
+/* Identity matrix from the frame's pool, then the 32x64 RGBA16 sky texture (scene +0x11C)
+ * and display list D_801ABAD8 */
+void func_801A4FF4_ovl_0EBBB0(DynE *d) {
+    func_800987E0(&d->mtx[D_800C4BE4]);
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380003;
+        _g->w1 = (u32)&d->mtx[D_800C4BE4++] - 0x80000000;
+    }
+    gDPLoadTextureBlock(D_800E9BA0++, D_801ABA58_ovl_0EBBB0->sky, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 64,
+                        0, 0, 0, 5, 6, 14, 15);
+    gSPDisplayList(D_800E9BA0++, D_801ABAD8_ovl_0EBBB0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5184_ovl_0EBBB0);
 
