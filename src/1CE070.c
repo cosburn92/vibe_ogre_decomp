@@ -584,7 +584,9 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B2E0_ovl_1CE070);
 /* Resource slot (0x24 bytes) in the table at D_801B80C0 */
 typedef struct {
     /* 0x00 */ void *data;
-    /* 0x04 */ u8 unk04[0x20];
+    /* 0x04 */ s16 x;
+    /* 0x06 */ s16 y;
+    /* 0x08 */ u8 unk08[0x1C];
 } Slot1CE;
 extern Slot1CE *D_801B80C0_ovl_1CE070;
 #define FREE_SLOT1CE(k)                                        if (D_801B80C0_ovl_1CE070[k].data != NULL) {                   HFree(D_801B80C0_ovl_1CE070[k].data);                      D_801B80C0_ovl_1CE070[k].data = NULL;                  }
@@ -728,7 +730,18 @@ INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019CE8C_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D09C_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D2EC_ovl_1CE070);
+#include "gbi_ultra.h"
+
+/* Draws resource slot 15 (a CI4 image with its 16-colour palette) at its stored position */
+void func_8019D2EC_ovl_1CE070(void) {
+    Slot1CE *t = D_801B80C0_ovl_1CE070;
+    SizeCE *s = t[15].data;
+
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 255, 255, 255, 255);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)s + (func_80197C14_ovl_1CE070(0, s->w, s->h) + 8));
+    func_80198EAC_ovl_1CE070(s, t[15].x, t[15].y);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D438_ovl_1CE070);
 

@@ -165,4 +165,27 @@
                        ((height) - 1) << G_TEXTURE_IMAGE_FRAC)                                \
     }
 
+#define G_SETOTHERMODE_H 0xE3
+#define G_SETOTHERMODE_L 0xE2
+#define G_SETPRIMCOLOR 0xFA
+#define G_SETENVCOLOR 0xFB
+#define G_SETFILLCOLOR 0xF7
+#define G_SETCOMBINE 0xFC
+#define G_MDSFT_TEXTLUT 14
+#define G_TT_NONE (0 << G_MDSFT_TEXTLUT)
+#define G_TT_RGBA16 (2 << G_MDSFT_TEXTLUT)
+#define G_TT_IA16 (3 << G_MDSFT_TEXTLUT)
+
+#define gSPSetOtherMode(pkt, cmd, sft, len, data)                                                 {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(cmd, 24, 8) | _SHIFTL(32 - (sft) - (len), 8, 8) |                                    _SHIFTL((len) - 1, 0, 8));                                                          _g->w1 = (unsigned int)(data);                                                            }
+#define gDPSetTextureLUT(pkt, type) gSPSetOtherMode(pkt, G_SETOTHERMODE_H, G_MDSFT_TEXTLUT, 2, type)
+
+#define gDPSetColor(pkt, c, d)                                                                    {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = _SHIFTL(c, 24, 8);                                                                   _g->w1 = (unsigned int)(d);                                                               }
+#define DPRGBColor(pkt, cmd, r, g, b, a)                                                          gDPSetColor(pkt, cmd, (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8)))
+#define gDPSetEnvColor(pkt, r, g, b, a) DPRGBColor(pkt, G_SETENVCOLOR, r, g, b, a)
+#define gDPSetFillColor(pkt, d) gDPSetColor(pkt, G_SETFILLCOLOR, d)
+#define gDPSetPrimColor(pkt, m, l, r, g, b, a)                                                    {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(G_SETPRIMCOLOR, 24, 8) | _SHIFTL(m, 8, 8) | _SHIFTL(l, 0, 8));              _g->w1 = (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) |                                    _SHIFTL(a, 0, 8));                                                              }
+
+#define gDPLoadTLUT_pal16(pkt, pal, dram)                                                         {                                                                                                 gDPSetTextureImage(pkt, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, dram);                                gDPTileSync(pkt);                                                                             gDPSetTile(pkt, 0, 0, 0, (256 + (((pal) & 0xf) * 16)), G_TX_LOADTILE, 0, 0, 0, 0, 0,                     0, 0);                                                                             gDPLoadSync(pkt);                                                                             gDPLoadTLUTCmd(pkt, G_TX_LOADTILE, 15);                                                       gDPPipeSync(pkt)                                                                          }
+#define gDPLoadTLUT_pal256(pkt, dram)                                                             {                                                                                                 gDPSetTextureImage(pkt, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, dram);                                gDPTileSync(pkt);                                                                             gDPSetTile(pkt, 0, 0, 0, 256, G_TX_LOADTILE, 0, 0, 0, 0, 0, 0, 0);                            gDPLoadSync(pkt);                                                                             gDPLoadTLUTCmd(pkt, G_TX_LOADTILE, 255);                                                      gDPPipeSync(pkt)                                                                          }
+
 #endif /* GBI_ULTRA_H */
