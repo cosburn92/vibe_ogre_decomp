@@ -142,7 +142,47 @@ void func_8022AE84_ovl_29A4C0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AF94_ovl_29A4C0);
+void func_8022EFB0_ovl_29A4C0(u8 *e);
+s16 func_80231BBC_ovl_29A4C0(s32 a, s16 b, s32 c, s32 d);
+void *memset(void *p, s32 c, s32 n);
+void func_8022FDB8_ovl_29A4C0();
+
+/* Creates the 0x50-byte effect object of unit i (replacing any old one) and registers it */
+s32 func_8022AF94_ovl_29A4C0(u8 i, s32 kind, s32 sub, s32 mode, s32 x, s32 y, s32 layer, s32 time, s32 flags) {
+    u8 *e;
+
+    if (FLD(D_8022A974, u8 *, 0x1AC0 + i * 4) != NULL) {
+        HFree(FLD(D_8022A974, u8 *, 0x1AC0 + i * 4));
+    }
+    e = HMalloc(0x50);
+    FLD(D_8022A974, u8 *, 0x1AC0 + i * 4) = e;
+    e[0x4A] = layer;
+    FLD(e, s32, 0x2C) = i;
+    if (kind != -1) {
+        FLD(e, s32, 0x30) = kind;
+    }
+    if (sub != -1) {
+        FLD(e, s16, 0x44) = sub;
+    }
+    FLD(e, s16, 0x42) = func_80231BBC_ovl_29A4C0(FLD(e, s32, 0x30), FLD(e, s16, 0x44), mode, 0);
+    FLD(e, s32, 0x34) = -1;
+    FLD(e, s32, 0x38) = 0;
+    FLD(e, s32, 0x3C) = 0;
+    if ((x != -1) | (y != -1)) {
+        FLD(e, s32, 0x24) = x;
+        FLD(e, s32, 0x28) = -y;
+    }
+    FLD(e, void *, 0x20) = func_8022FDB8_ovl_29A4C0;
+    e[0x4B] = mode;
+    FLD(e, s16, 0x46) = 0;
+    FLD(e, s16, 0x40) = 180;
+    FLD(e, u16, 0x48) = time;
+    e[0x4C] = flags;
+    memset(e, 0xFF, 0x10);
+    bzero(e + 0x10, 0x10);
+    func_8022EFB0_ovl_29A4C0(e);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B100_ovl_29A4C0);
 
