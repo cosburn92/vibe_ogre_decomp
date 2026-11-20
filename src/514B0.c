@@ -196,7 +196,12 @@ void func_8017BB34_ovl_040E80(u8 *p) {
     func_8019C488(FIELD(p, s32, 0x10));
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BB50_ovl_040E80);
+#include "gbi_ultra.h"
+
+/* Loads a 4-bit colour-indexed texture block (gDPLoadTextureBlock_4b, palette 0, no shift) */
+void func_8017BB50_ovl_040E80(void *timg, u16 width, u16 height, s32 cms, s32 cmt, s32 masks, s32 maskt) {
+    gDPLoadTextureBlock_4b(D_800E9BA0++, timg, G_IM_FMT_CI, width, height, 0, cms, cmt, masks, maskt, 0, 0);
+}
 
 /* Pipe sync, scissor (full screen or letterboxed), pipe sync */
 #ifdef NON_MATCHING
