@@ -1003,7 +1003,30 @@ inline void func_80229604_ovl_1BA050(s16 *list) {
     }
 }
 
+extern u8 D_8022A827_ovl_1BA050;
+
+#define RECTS1BB ((s16 (*)[4])&D_8022A724_ovl_1BA050)
+/* Draws the D_8022A720 solid rectangles (x0, y0, x1, y1 at D_8022A724) with alpha D_8022A827 */
+#ifdef NON_MATCHING
+/* rect list draw: original indexes the rect table by byte offset, no pointer strength reduction */
+void func_802296B0_ovl_1BA050(void) {
+    s32 i;
+    s32 *n = &D_8022A720_ovl_1BA050;
+
+    if (D_8022A821_ovl_1BA050 == 0) {
+        return;
+    }
+    gSPDisplayList(D_800E9BA0++, D_8022A0D0_ovl_1BA050);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, D_8022A827_ovl_1BA050);
+    for (i = 0; i < *n; i++) {
+        gDPPipeSync(D_800E9BA0++);
+        gSPTextureRectangle(D_800E9BA0++, RECTS1BB[i][0] * 4, RECTS1BB[i][1] * 4, RECTS1BB[i][2] * 4, RECTS1BB[i][3] * 4, 0, 0, 0, 1 << 10, 1 << 10);
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802296B0_ovl_1BA050);
+#endif
 
 /* Second fade: mode 1 raises the level to D_8022A71E, mode 2 lowers it to 0 and stops, over
  * D_8022A824 frames */
