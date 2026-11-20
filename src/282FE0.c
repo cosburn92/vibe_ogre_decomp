@@ -107,7 +107,52 @@ void func_80227010_ovl_281860(void) {
     func_802282B8_ovl_281860();
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_802270BC_ovl_281860);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_80081B08(s32);                             /* extern */
+void func_800EA604(s32 a, s32 b);
+void func_800EA6B0(s32 a, s32 b, s32 c);
+void func_800EA6C8(s32 a);
+void func_800EA714(void);
+void func_801C5938(s32 a, s32 b);
+extern s32 D_8022A8BC_ovl_281860;
+extern s16 D_8022A994_ovl_281860;
+
+/* Channel command: arg1 0 starts/updates channel arg0 with value arg2 (channels below 3 that are
+ * already playing only take the new value), 1 stops it; channel 7 is the stop-all channel */
+void func_802270BC_ovl_281860(s32 arg0, s32 arg1, s32 arg2) {
+    if (arg0 == 7) {
+        if (arg1 == 1) {
+            func_800EA714();
+        }
+    } else {
+        if (arg1 == 0) {
+            if (arg0 < 3) {
+                if (func_80081B08(FIELD(D_8022A8A8_ovl_281860[arg0], s32, 0x24)) != 0) {
+                    FIELD(&D_8022A974_ovl_281860[arg0], s8, 0x1CB2) = arg2;
+                    func_800EA6C8(D_8022A8A8_ovl_281860[arg0]);
+                    return;
+                }
+            }
+            if (D_8022A994_ovl_281860 == 0) {
+                func_800EA6B0(D_8022A8A8_ovl_281860[arg0], arg2, 5);
+                return;
+            }
+            func_801C5938(D_8022A8A8_ovl_281860[arg0], arg2);
+            return;
+        }
+        if (arg1 == 1) {
+            func_800EA6C8(D_8022A8A8_ovl_281860[arg0]);
+            return;
+        }
+        if (arg0 != 5) {
+            func_800EA6B0(D_8022A8A8_ovl_281860[arg0], arg2, 0xA);
+            return;
+        }
+        func_800EA604(D_8022A8BC_ovl_281860, arg2);
+    }
+}
 
 void func_80227210_ovl_281860(s32 i) {
     if (i == 7) {
