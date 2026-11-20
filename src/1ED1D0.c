@@ -198,7 +198,57 @@ void func_801B73D4_ovl_1CE070(u8 last) {
     osSendMesg(&D_800E8B4C, D_801BA6D0_ovl_1CE070, 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B75B8_ovl_1CE070);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_80080998(void *dst, void *src, s32 n);
+
+/* Steps the background JPEG job: 0 starts the decode task and closes its display list once the
+ * decoder reaches step 2; 3 sends it and, at step 5, copies the decoded rows into the image (a
+ * "64" bitmap header unless raw) */
+void func_801B75B8_ovl_1CE070(void) {
+    u8 *src;
+    s32 row;
+    s16 y;
+
+    nuGfxTaskAllEndWait();
+    if (((u8 *)D_801BA6D0_ovl_1CE070)[0x7E] == 0) {
+        if (((u8 *)D_801BA6D0_ovl_1CE070)[0x80] == 0) {
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x70) = FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74) + 8;
+        } else {
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x70) = FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74);
+        }
+        BgJpegTask(FIELD(D_801BA6D0_ovl_1CE070, s8, 0x7D), FIELD(D_801BA6D0_ovl_1CE070, void *, 0x68),
+                                 FIELD(D_801BA6D0_ovl_1CE070, s16, 0x78), FIELD(D_801BA6D0_ovl_1CE070, s16, 0x7A));
+        while (((u8 *)D_801BA6D0_ovl_1CE070)[0x7E] != 2) {
+            nuGfxTaskAllEndWait();
+        }
+        nuGfxTaskAllEndWait();
+        func_801B73D4_ovl_1CE070(0);
+    } else if (((u8 *)D_801BA6D0_ovl_1CE070)[0x7E] == 3) {
+        func_801B73D4_ovl_1CE070(1);
+        while (((u8 *)D_801BA6D0_ovl_1CE070)[0x7E] != 5) {
+            nuGfxTaskAllEndWait();
+        }
+        src = FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x64);
+        row = FIELD(D_801BA6D0_ovl_1CE070, s16, 0x78) * 2;
+        for (y = 0; y < FIELD(D_801BA6D0_ovl_1CE070, s16, 0x7A); y++) {
+            func_80080998(FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x70), src,
+                          FIELD(D_801BA6D0_ovl_1CE070, s16, 0x78) * 2);
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x70) += row;
+            src += 0x280;
+        }
+        if (((u8 *)D_801BA6D0_ovl_1CE070)[0x80] == 0) {
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74)[0] = '6';
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74)[1] = '4';
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74)[2] = 0;
+            FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74)[3] = 2;
+            FIELD(FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74), u16, 4) = FIELD(D_801BA6D0_ovl_1CE070, s16, 0x78);
+            FIELD(FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x74), u16, 6) = FIELD(D_801BA6D0_ovl_1CE070, s16, 0x7A);
+        }
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x7E]++;
+    }
+}
 
 /* Reports which frame buffer pair is current (o[0], o[1]) */
 /* Reports which frame buffer pair is current (o[0], o[1]) */
