@@ -23,3 +23,6 @@ extracted/
 
 # Local Claude Code state (settings.local.json, locks)
 .claude/
+
+# assembler temp files from parallel permuter / ptry builds
+astemp_*.s
