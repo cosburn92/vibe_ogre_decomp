@@ -1,0 +1,45 @@
+# Provenance of the matching-C targets in rempred/OB64-Decomp PR #2 (same format as docs/ob64-pr1-provenance.tsv).
+# origin = game: derived from the ROM (splat disassembly, m2c drafts, manual edits, decomp-permuter),
+# verified byte for byte with KMC GCC 2.7.2. origin = libmus: written with the public libmus source as a
+# reference, as for the PR #1 library targets.
+ob64_symbol	rom_start	rom_end	runtime_address	ob64_kind	origin	vibe_source	vibe_function
+emit_rdp_setup_displaylist	0x0000FF60	0x00010110	0x8007FB60	text-only	game	src/FF10.c	func_8007FB60
+func_0001237c	0x0001237C	0x00012400	0x80081F7C	text-only	libmus	src/114F0.c	func_80081F7C
+func_00014a14	0x00014A14	0x00014A84	0x80084614	text-only	libmus	src/114F0.c	func_80084614
+func_00048a68	0x00048A68	0x00048ABC	0x80172B68	text-only	game	src/46090.c	func_80172B68_ovl_040E80
+func_00048af0	0x00048AF0	0x00048B44	0x80172BF0	text-only	game	src/46090.c	func_80172BF0_ovl_040E80
+func_00051400	0x00051400	0x00051450	0x8017B500	text-only	game	src/4EF10.c	func_8017B500_ovl_040E80
+func_00051a50	0x00051A50	0x00051C48	0x8017BB50	text-only	game	src/514B0.c	func_8017BB50_ovl_040E80
+func_00052ae8	0x00052AE8	0x000535D0	0x8017CBE8	text-only	game	src/514B0.c	func_8017CBE8_ovl_040E80
+func_0005c1d0	0x0005C1D0	0x0005C208	0x801862D0	text-only	game	src/5C1D0.c	func_801862D0_ovl_040E80
+func_0006f47c	0x0006F47C	0x0006F53C	0x8019898C	text-only	game	src/6E660.c	func_8019898C_ovl_06E660
+func_000b85b4	0x000B85B4	0x000B8600	0x801CBB54	text-only	game	src/B48F0.c	func_801CBB54_ovl_087200
+func_000F1D54	0x000F1D54	0x000F1EE4	0x801A4FF4	text-only	game	src/ED530.c	func_801A4FF4_ovl_0EBBB0
+func_000f5450	0x000F5450	0x000F55CC	0x801A86F0	text-only	game	src/ED530.c	func_801A86F0_ovl_0EBBB0
+func_000f6104	0x000F6104	0x000F6198	0x801A93A4	text-only	game	src/ED530.c	func_801A93A4_ovl_0EBBB0
+func_000f6340	0x000F6340	0x000F6474	0x801A95E0	text-only	game	src/F6340.c	func_801A95E0_ovl_0EBBB0
+func_000f6474	0x000F6474	0x000F65A8	0x801A9714	text-only	game	src/F6340.c	func_801A9714_ovl_0EBBB0
+func_000f65a8	0x000F65A8	0x000F66DC	0x801A9848	text-only	game	src/F6340.c	func_801A9848_ovl_0EBBB0
+func_000f66dc	0x000F66DC	0x000F6810	0x801A997C	text-only	game	src/F6340.c	func_801A997C_ovl_0EBBB0
+func_001520E0	0x001520E0	0x0015239C	0x80200F70	text-only	game	src/151F40.c	func_80200F70_ovl_14EBE0
+func_00152C6C	0x00152C6C	0x00152CD8	0x80201AFC	text-only	game	src/151F40.c	func_80201AFC_ovl_14EBE0
+func_00153CE0	0x00153CE0	0x00153F80	0x80202B70	text-only	game	src/151F40.c	func_80202B70_ovl_14EBE0
+func_00157EE8	0x00157EE8	0x00157F2C	0x80206D78	text-only	game	src/151F40.c	func_80206D78_ovl_14EBE0
+func_0017841C	0x0017841C	0x00178444	0x802154CC	text-only	game	src/1782C0.c	func_802154CC_ovl_177ED0
+func_0018D164	0x0018D164	0x0018DB64	0x80219584	text-only	game	src/18C2E0.c	func_80219584_ovl_188B60
+func_001A4058	0x001A4058	0x001A4264	0x802163B8	text-only	game	src/1A2C20.c	func_802163B8_ovl_1A2C20
+func_001BB720	0x001BB720	0x001BB774	0x80222610	text-only	game	src/1BA050.c	func_80222610_ovl_1BA050
+func_001BB7C4	0x001BB7C4	0x001BB808	0x802226B4	text-only	game	src/1BA050.c	func_802226B4_ovl_1BA050
+func_001BD4B0	0x001BD4B0	0x001BD6FC	0x802243A0	text-only	game	src/1BBFB0.c	func_802243A0_ovl_1BA050
+func_001BD6FC	0x001BD6FC	0x001BD89C	0x802245EC	text-only	game	src/1BBFB0.c	func_802245EC_ovl_1BA050
+func_002104AC	0x002104AC	0x002104E8	0x801CD01C	text-only	game	src/20FDC0.c	func_801CD01C_ovl_1F0A30
+func_00240048	0x00240048	0x002401C8	0x801EBDD8	text-only	game	src/23D090.c	func_801EBDD8_ovl_23B220
+func_00240D20	0x00240D20	0x00240EB0	0x801ECAB0	text-only	game	src/23D090.c	func_801ECAB0_ovl_23B220
+func_0027D050	0x0027D050	0x0027D30C	0x802288C0	text-only	game	src/27A020.c	func_802288C0_ovl_27A020
+func_0027D930	0x0027D930	0x0027DB44	0x802291A0	text-only	game	src/27A020.c	func_802291A0_ovl_27A020
+func_00280460	0x00280460	0x002804D4	0x8022BCD0	text-only	game	src/27A020.c	func_8022BCD0_ovl_27A020
+func_002908CC	0x002908CC	0x00290A78	0x8023498C	text-only	game	src/28A7B0.c	func_8023498C_ovl_286BD0
+func_0029C404	0x0029C404	0x0029C530	0x8022CBD4	text-only	game	src/29A4C0.c	func_8022CBD4_ovl_29A4C0
+func_002A175C	0x002A175C	0x002A17E0	0x80231F2C	text-only	game	src/29C950.c	func_80231F2C_ovl_29A4C0
+func_002A7010	0x002A7010	0x002A7060	0x802377E0	text-only	game	src/2A7010.c	func_802377E0_ovl_29A4C0
+func_002A8E44	0x002A8E44	0x002A8EDC	0x802396E4	text-only	game	src/2A8D20.c	func_802396E4_ovl_2A8D20
