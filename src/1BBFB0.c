@@ -249,10 +249,17 @@ void func_80224320_ovl_1BA050(u8 *p, u16 mask) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802243A0_ovl_1BA050);
-
 typedef GfxBB Gfx;
 #include "gbi_ultra.h"
+
+/* Draws 16x16 window piece `piece` (CI4 image D_8022A260[piece]) at (x, y), clipped at 0 */
+void func_802243A0_ovl_1BA050(s32 piece, s32 x, s32 y) {
+    gDPLoadTextureBlock_4b(D_800E9BA0++, D_8022A260_ovl_1BA050[piece], G_IM_FMT_CI, 16, 16, 0, 2, 2, 4, 4, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, x * 4, y * 4, (x + 16) * 4, (y + 16) * 4, 0, 0, 0, 1 << 10, 1 << 10);
+    gDPPipeSync(D_800E9BA0++);
+}
+
 extern u8 D_80229FA0_ovl_1BA050[];
 void func_802243A0_ovl_1BA050(s32 piece, s32 x, s32 y);
 
