@@ -8,7 +8,11 @@ extern s16 D_800E7A38;
 extern s16 D_800E7A3A;
 extern s16 D_800E7A3C;
 extern u8 *D_801AD100_ovl_0EBBB0;
-extern void *D_800E9BA0;
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+extern Gfx *D_800E9BA0;
 
 s32 func_8007705C(s32 a, void *b, s32 c, s32 d, s32 e, s32 f, s32 g);
 void func_801AB2A4_ovl_0EBBB0(s16 id);
@@ -35,15 +39,50 @@ void func_801AB33C_ovl_0EBBB0(void);
 void func_801AB55C_ovl_0EBBB0(void);
 void func_801A9DB0_ovl_0EBBB0(s32 a, s32 b, f32 *x, f32 *y);
 void func_801AA248_ovl_0EBBB0(s32 a, s32 b, s32 c, f32 *x, f32 *y);
+extern u8 D_801ACA00_ovl_0EBBB0[];
+extern u8 D_801ACD10_ovl_0EBBB0[];
+extern u8 D_801AD030_ovl_0EBBB0[];
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801A95E0_ovl_0EBBB0);
+#include "gbi_ultra.h"
+extern u8 D_801AC940_ovl_0EBBB0[];
+void *LoadAsset(u32 id, s32 a, s32 b, s32 c);
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9714_ovl_0EBBB0);
+/* Draws background panel 0x02093576: 32x64 RGBA16 texture, then display list D_801AC940 */
+void func_801A95E0_ovl_0EBBB0(void) {
+    void *img = LoadAsset(0x02093576, 4, -3, 0);
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9848_ovl_0EBBB0);
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, img, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 64, 0, 0, 0, 5, 6, 13, 14);
+    gSPDisplayList(D_800E9BA0++, D_801AC940_ovl_0EBBB0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801A997C_ovl_0EBBB0);
+/* Background panel 0x02093576 frame 0 again: 32x64 RGBA16, then display list D_801ACA00 */
+void func_801A9714_ovl_0EBBB0(void) {
+    void *img = LoadAsset(0x02093576, 4, -3, 0);
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, img, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 64, 0, 0, 0, 5, 6, 13, 14);
+    gSPDisplayList(D_800E9BA0++, D_801ACA00_ovl_0EBBB0);
+}
+
+/* Panel 0x02093576 frame 4: 64x32 RGBA16 clamped, then display list D_801ACD10 */
+void func_801A9848_ovl_0EBBB0(void) {
+    void *img = LoadAsset(0x02093576, 4, -3, 4);
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, img, G_IM_FMT_RGBA, G_IM_SIZ_16b, 64, 32, 0, 2, 2, 6, 5, 0, 0);
+    gSPDisplayList(D_800E9BA0++, D_801ACD10_ovl_0EBBB0);
+}
+
+/* Panel 0x02093576 frame 3: 32x64 RGBA16 clamped, then display list D_801AD030 */
+void func_801A997C_ovl_0EBBB0(void) {
+    void *img = LoadAsset(0x02093576, 4, -3, 3);
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, img, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 64, 0, 2, 2, 5, 6, 0, 0);
+    gSPDisplayList(D_800E9BA0++, D_801AD030_ovl_0EBBB0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9AB0_ovl_0EBBB0);
 
