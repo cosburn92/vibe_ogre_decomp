@@ -950,7 +950,6 @@ void func_801CC190_ovl_087200(void) {
     }
 }
 
-#ifdef NON_MATCHING
 /* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -962,22 +961,23 @@ void func_801B18FC_ovl_087200();                    /* extern */
 s32 func_801CF070_ovl_087200();                     /* extern */
 extern u8 D_801936E0;
 
-void func_801CC1EC_ovl_087200(void) {
-    s32 var_v1;
-
-    var_v1 = 0xE8;
-    if (func_801CF070_ovl_087200() & 0xFF) {
-        var_v1 = 0x128;
-    }
-    func_801CC974_ovl_087200(0x15U, 0xAU, func_801B10FC_ovl_087200, 0x60, -8, 0xE0, 0, 0x18, 0x18, (s16) var_v1, 0x34);
-    func_801CC974_ovl_087200(6U, 0xAU, func_801B1624_ovl_087200, 0x18, 0xD8, 0x20, 0xE0, 0x18, 0xC8, 0x6E, 0xE0);
-    if ((D_801936E0 != 0) || (func_8016FEF4(0xB) != 0)) {
-        func_801CC974_ovl_087200(0x10U, 8U, func_801B18FC_ovl_087200, 0x128, 0xF0, 0x124, 0xF4, 0x114, 0xC8, 0x128, 0xE0);
-    }
+void func_801CC1EC_ovl_087200(void)
+{
+  short new_var;
+  s32 var_v1;
+  new_var = func_801CF070_ovl_087200() & 0xFF;
+  var_v1 = 0xE8;
+  if (new_var)
+  {
+    var_v1 = 0x128;
+  }
+  func_801CC974_ovl_087200(0x15U, 0xAU, func_801B10FC_ovl_087200, 0x60, -8, 0xE0, 0, 0x18, 0x18, (s16) var_v1, 0x34);
+  func_801CC974_ovl_087200(6U, 0xAU, func_801B1624_ovl_087200, 0x18, 0xD8, 0x20, 0xE0, 0x18, 0xC8, 0x6E, 0xE0);
+  if ((D_801936E0 != 0) || (func_8016FEF4(0xB) != 0))
+  {
+    func_801CC974_ovl_087200(0x10U, 8U, func_801B18FC_ovl_087200, 0x128, 0xF0, 0x124, 0xF4, 0x114, 0xC8, 0x128, 0xE0);
+  }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CC1EC_ovl_087200);
-#endif
 
 void func_801CC310_ovl_087200(void) {
     if (func_801CC410_ovl_087200(0x11) == NULL) {

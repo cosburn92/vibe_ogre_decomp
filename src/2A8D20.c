@@ -94,37 +94,39 @@ s32 func_8023965C_ovl_2A8D20(u8 *o) {
     return 0;
 }
 
-#ifdef NON_MATCHING
 /* result register/branch shape at the end differs */
-s32 func_802396E4_ovl_2A8D20(u8 *o, u8 *b) {
-    u8 *u;
-    s32 r;
-
-    if (o == NULL) {
-        return 0;
-    }
-    if (o[0x147] == 0xFF) {
-        return 0;
-    }
-    if (o[0x147] != b[0x147]) {
-        return 0;
-    }
-    u = D_801CE8BC + 0x1C4 + o[0x147] * 0xF8;
-    if (FIELD(u, s32, 0x48) == 0) {
-        return 0;
-    }
-    r = func_801C8C90(u);
-    if (r == 1) {
-        if (o[0x149] != r) {
-            return 1;
-        }
-        return 2;
-    }
+s32 func_802396E4_ovl_2A8D20(u8 *o, u8 *b)
+{
+  u8 *u;
+  s32 r;
+  if (o == ((void *) 0))
+  {
     return 0;
+  }
+  if (o[0x147] == 0xFF)
+  {
+    return 0;
+  }
+  if (o[0x147] != b[0x147])
+  {
+    return 0;
+  }
+  u = (D_801CE8BC + 0x1C4) + (o[0x147] * 0xF8);
+  if ((*((s32 *) (((u8 *) u) + 0x48))) == 0)
+  {
+    return 0;
+  }
+  r = func_801C8C90(u);
+  if (r == 1)
+  {
+    if (o[0x149] != r)
+    {
+      return 1;
+    }
+    return r = 2;
+  }
+  return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_802396E4_ovl_2A8D20);
-#endif
 
 /* Swaps the objects in slots a and b, updating their back-references (+0xE4). */
 inline void func_8023977C_ovl_2A8D20(u8 a, u8 b) {

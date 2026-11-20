@@ -499,21 +499,19 @@ void func_801A9304_ovl_0EBBB0(void) {
             (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x159) << 8) | FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x15A);
 }
 
-#ifdef NON_MATCHING
 /* With f15C as a struct member the pointer updates land correctly. What remains is register allocation (g in v1, the scene pointer in a0) and the float-to-u32 branch layout (bc1t with g copied in the delay slot). */
-void func_801A93A4_ovl_0EBBB0(void) {
-    Gfx *g;
-
-    g = D_800E9BA0++;
-    g->w0 = 0xE7000000;
-    g->w1 = 0;
-    g = D_800E9BA0++;
-    g->w0 = 0xFA000000;
-    g->w1 = (u8)(u32)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f);
+void func_801A93A4_ovl_0EBBB0(void)
+{
+  Gfx *new_var;
+  Gfx *g;
+  g = D_800E9BA0++;
+  g->w0 = 0xE7000000;
+  g->w1 = 0;
+  g = D_800E9BA0++;
+  g->w0 = 0xFA000000;
+  new_var = g;
+  new_var->w1 = (u8) ((u32) (D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A93A4_ovl_0EBBB0);
-#endif
 
 void func_801A9438_ovl_0EBBB0(void) {
     Gfx *g;
