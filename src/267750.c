@@ -179,7 +179,71 @@ void func_802131E8_ovl_25EE90(f32 *srt, f32 m[4][4]) {
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_802132D0_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_80213420_ovl_25EE90);
+/* Effect transform tracks (same code as 1CE070 func_80199968; shapes from OB64-Decomp's
+ * E06TransformInput/Output, MIT, (c) 2026 rempred) */
+typedef struct {
+    f32 m[4][4];
+    f32 alpha;
+} TrackOut267;
+
+typedef struct {
+    u32 unk00;
+    u32 count;
+    void ***curves;
+    u8 unk0C[0xC];
+    f32 **values;
+} TrackIn267;
+
+f32 func_80212DE0_ovl_25EE90(void *curve, f32 t);
+
+static inline void Track267_ApplyValues(f32 *v, f32 m[4][4]) {
+    guRotateRPYF(m, v[3], v[4], v[5]);
+    m[0][0] *= v[0];
+    m[0][1] *= v[0];
+    m[0][2] *= v[0];
+    m[1][0] *= v[1];
+    m[1][1] *= v[1];
+    m[1][2] *= v[1];
+    m[2][0] *= v[2];
+    m[2][1] *= v[2];
+    m[2][2] *= v[2];
+    m[3][0] = v[6];
+    m[3][1] = v[7];
+    m[3][2] = v[8];
+}
+
+static inline void Track267_ApplyCurves(f32 t, void **curves, TrackOut267 *out, f32 *v) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        if (curves[i] != NULL) {
+            v[i] = func_80212DE0_ovl_25EE90(curves[i], t);
+        }
+    }
+    Track267_ApplyValues(v, out->m);
+    out->alpha = v[9];
+}
+
+/* Evaluates frame `frame` (30 fps) of an effect's transform tracks into matrices */
+void func_80213420_ovl_25EE90(s32 frame, TrackIn267 *in, TrackOut267 *out) {
+    f32 values[10];
+    f32 t = (f32)frame / 30.0f;
+    u32 item;
+    u32 k;
+
+    for (item = 0; item < in->count; item++) {
+        for (k = 0; k < 9; k++) {
+            values[k] = in->values[item][k];
+        }
+        values[9] = 1.0f;
+        if (in->curves[item] != NULL) {
+            Track267_ApplyCurves(t, in->curves[item], &out[item], values);
+        } else {
+            Track267_ApplyValues(values, out[item].m);
+            out[item].alpha = 1.0f;
+        }
+    }
+}
 
 /* Composes the bone matrices of skeleton sk (parent links in sk+0x10) onto root */
 typedef struct {
