@@ -302,7 +302,74 @@ void func_80199518_ovl_1CE070(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199560_ovl_1CE070);
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_80199968_ovl_1CE070);
+/* Effect transform tracks (shapes from OB64-Decomp's E06TransformInput/Output, MIT, (c) 2026 rempred) */
+typedef struct {
+    f32 m[4][4];
+    f32 alpha;
+} TrackOut1CE;
+
+typedef struct {
+    u32 unk00;
+    u32 count;
+    void ***curves;
+    u8 unk0C[0xC];
+    f32 **values;
+} TrackIn1CE;
+
+f32 func_80199560_ovl_1CE070(void *curve, f32 t);
+void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
+
+static inline void Track1CE_ApplyValues(f32 *v, f32 m[4][4]) {
+    guRotateRPYF(m, v[3], v[4], v[5]);
+    m[0][0] *= v[0];
+    m[0][1] *= v[0];
+    m[0][2] *= v[0];
+    m[1][0] *= v[1];
+    m[1][1] *= v[1];
+    m[1][2] *= v[1];
+    m[2][0] *= v[2];
+    m[2][1] *= v[2];
+    m[2][2] *= v[2];
+    m[3][0] = v[6];
+    m[3][1] = v[7];
+    m[3][2] = v[8];
+}
+
+static inline void Track1CE_ApplyCurves(f32 t, void **curves, TrackOut1CE *out, f32 *v) {
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        if (curves[i] != NULL) {
+            v[i] = func_80199560_ovl_1CE070(curves[i], t);
+        }
+    }
+    Track1CE_ApplyValues(v, out->m);
+    out->alpha = v[9];
+}
+
+/* Evaluates frame `frame` (30 fps) of an effect's transform tracks into 4x4 matrices:
+ * each item has 9 base values (scale xyz, rotation xyz, translation xyz) plus an alpha,
+ * and any value with a curve is replaced by the curve's value.
+ * Structure from OB64-Decomp func_00267FD0 (MIT, (c) 2026 rempred). */
+void func_80199968_ovl_1CE070(s32 frame, TrackIn1CE *in, TrackOut1CE *out) {
+    f32 values[10];
+    f32 t = (f32)frame / 30.0f;
+    u32 item;
+    u32 k;
+
+    for (item = 0; item < in->count; item++) {
+        for (k = 0; k < 9; k++) {
+            values[k] = in->values[item][k];
+        }
+        values[9] = 1.0f;
+        if (in->curves[item] != NULL) {
+            Track1CE_ApplyCurves(t, in->curves[item], &out[item], values);
+        } else {
+            Track1CE_ApplyValues(values, out[item].m);
+            out[item].alpha = 1.0f;
+        }
+    }
+}
 
 /* Builds each joint's world matrix: out[joint] = out[joint] * parent's */
 void func_80199C3C_ovl_1CE070(void *root, SkelCE *s, MtxCE *out) {
