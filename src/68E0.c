@@ -309,7 +309,66 @@ s32 func_8007745C(void) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80077494);
+extern Pad0A0 *D_800C47F0;
+extern u16 *D_800C4804;
+extern u16 D_800C480A;
+extern u16 D_800C49D2;
+extern u16 *D_800C4AD4;
+extern u16 *D_800C4B24;
+extern u16 D_800C4B28;
+extern u16 *D_800C4BAC;
+extern u16 D_800C4BB0;
+extern u16 D_800C4BD0;
+extern u16 *D_800C4BDC;
+extern Pad0A0 **D_800C4BE0;
+extern u16 *D_800C4BE8;
+extern u16 *D_800C4C0C;
+extern u16 *D_800C4C4C;
+extern u16 D_800E797C;
+extern u16 D_800E79B0;
+extern u16 D_800E79BC;
+extern u16 *D_800E7A08;
+extern u16 D_800E7A24;
+extern u16 *D_800E7D6C;
+extern u16 D_800E8100;
+extern u16 *D_800E8108;
+extern u16 D_800E8700;
+extern u16 *D_800E9BC0;
+extern u16 D_800E9BE4;
+
+/* Points the shared state pointers at the live copies when arg0 is the current id
+ * (D_800C4C10), otherwise at the default buffers */
+void func_80077494(s32 arg0) {
+    if (arg0 == *(u16 *)D_800C4C10) {
+        D_800C4BE0 = &D_800C47F0;
+        D_800E8108 = &D_800E79B0;
+        D_800C4BDC = &D_800E8100;
+        D_800C4804 = &D_800C4BD0;
+        D_800C4C0C = &D_800E79BC;
+        D_800C4BE8 = &D_800C49D2;
+        D_800C4AD4 = &D_800E7A24;
+        D_800E9BC0 = &D_800E797C;
+        D_800E7A08 = &D_800C480A;
+        D_800C4BAC = &D_800E9BE4;
+        D_800C4B24 = &D_800C4B28;
+        D_800E7D6C = &D_800C4BB0;
+        D_800C4C4C = &D_800E8700;
+    } else {
+        D_800C4BE0 = D_800AF090;
+        D_800E8108 = D_800AF0A6;
+        D_800C4BDC = D_800AF0A6;
+        D_800C4804 = D_800AF0A6;
+        D_800C4C0C = D_800AF0A6;
+        D_800C4BE8 = D_800AF0A6;
+        D_800C4AD4 = D_800AF0A6;
+        D_800E9BC0 = D_800AF0A6;
+        D_800E7A08 = D_800AF0A6;
+        D_800C4BAC = D_800AF0A6;
+        D_800C4B24 = D_800AF0A6;
+        D_800E7D6C = D_800AF0A6;
+        D_800C4C4C = D_800AF0A6;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800775EC);
 
