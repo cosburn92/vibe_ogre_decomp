@@ -157,10 +157,10 @@ void func_801707F4(void);
  * D_80197B60): reads its 35-byte record from the formation archive, scales levels to the
  * strongest member of the player's squad D_801976DC (capped at 99), and creates the units */
 #ifdef NON_MATCHING
-/* encounter squad builder: logic complete, 650 of 663 instructions; group position checks are jump-threaded differently */
+/* encounter squad builder: logic complete, 664 vs 663 instructions; the group position checks need the original jump-threaded shape (explicit goto chain below gets the layout nearly right) */
 /* Adds one unit of class cls to the enemy roster and returns its roster index: class 1 takes a
  * pooled slot (index 100 + slot), any other class the first free enemy Character record */
-static inline s32 Squad23A_AddUnit(u8 cls, s32 level, s32 item1, s32 item2) {
+static inline s32 Squad23A_AddUnit(s32 cls, s32 level, s32 item1, s32 item2) {
     u32 i;
     Character *c;
 
@@ -185,19 +185,28 @@ static inline s32 Squad23A_AddUnit(u8 cls, s32 level, s32 item1, s32 item2) {
 /* Adds the group's units at each occupied position; returns the next free member slot */
 static inline s32 Squad23A_AddGroup(SquadRec *sq, Formation23AGroup *grp, s32 level, s32 n) {
     if (grp->cls != 0) {
-        if (grp->pos[0] != 0) {
+        if (grp->pos[0] == 0) {
+            if (grp->pos[1] == 0) {
+                if (grp->pos[2] != 0) {
+                    goto pos2;
+                }
+                return n;
+            }
+            goto pos1;
+        }
             sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
                                               (grp->item2[0] << 8) + grp->item2[1]);
             sq->pos[n] = grp->pos[0] - 1;
             n++;
-        }
         if (grp->pos[1] != 0) {
+        pos1:
             sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
                                               (grp->item2[0] << 8) + grp->item2[1]);
             sq->pos[n] = grp->pos[1] - 1;
             n++;
         }
         if (grp->pos[2] != 0) {
+        pos2:
             sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
                                               (grp->item2[0] << 8) + grp->item2[1]);
             sq->pos[n] = grp->pos[2] - 1;
@@ -269,15 +278,17 @@ void func_801D0A8C_ovl_23A3A0(void) {
     D_801953F2.cur = D_80195560[0].maxHp;
 
     bzero(sq, sizeof(SquadRec));
+    n = 0;
     idx = Squad23A_AddUnit(rec.cls, rec.level + level, (rec.item1[0] << 8) + rec.item1[1],
                            (rec.item2[0] << 8) + rec.item2[1]);
-    sq->members[0] = idx;
+    sq->members[n] = idx;
     D_80195560[idx & 0xFF].status = 2;
     sq->flags = 0x81;
     sq->harmony = harmony;
-    sq->pos[0] = ((Formation23A *)bp)->pos - 1;
+    sq->pos[n] = ((Formation23A *)bp)->pos - 1;
+    n++;
     bp += 7;
-    n = Squad23A_AddGroup(sq, (Formation23AGroup *)bp, level, 1);
+    n = Squad23A_AddGroup(sq, (Formation23AGroup *)bp, level, n);
     bp += 9;
     Squad23A_AddGroup(sq, (Formation23AGroup *)bp, level, n);
     if (D_801976D8 & 8) {
