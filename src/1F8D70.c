@@ -288,8 +288,16 @@ typedef struct {
 } Gfx1F8;
 
 /* Loads the projection (ortho 320x240) and o's translate/scale/rotate model matrices */
-#ifdef NON_MATCHING
-/* 95/95 instructions, 38 words differ: the four matrix commands' stores are scheduled from separate list pointers */
+/* Appends a matrix command for the next matrix of the pool */
+static inline void Mtx1F8_Push(u32 w0) {
+    Gfx1F8 *g = D_800E9BA0;
+
+    D_800E9BA0 = g + 1;
+    g->w0 = w0;
+    g->w1 = (u32)D_801969B0++;
+}
+
+/* Loads the projection (ortho 320x240) and o's translate/scale/rotate model matrices */
 void func_801B8F2C_ovl_1F0A30(u8 *o) {
     Gfx1F8 *g;
 
@@ -301,26 +309,11 @@ void func_801B8F2C_ovl_1F0A30(u8 *o) {
     func_80098C20(D_801969B0 + 1, FIELD(o, f32, 4), FIELD(o, f32, 8), FIELD(o, f32, 0xC));
     func_80098AA0(D_801969B0 + 2, FIELD(o, f32, 0x1C), FIELD(o, f32, 0x20), FIELD(o, f32, 0x24));
     guRotateRPY(D_801969B0 + 3, FIELD(o, f32, 0x10), FIELD(o, f32, 0x14), FIELD(o, f32, 0x18));
-    g = D_800E9BA0;
-    D_800E9BA0 = g + 1;
-    g->w0 = 0xDA380007;
-    g->w1 = (u32)D_801969B0++;
-    g = D_800E9BA0;
-    D_800E9BA0 = g + 1;
-    g->w0 = 0xDA380003;
-    g->w1 = (u32)D_801969B0++;
-    g = D_800E9BA0;
-    D_800E9BA0 = g + 1;
-    g->w0 = 0xDA380001;
-    g->w1 = (u32)D_801969B0++;
-    g = D_800E9BA0;
-    D_800E9BA0 = g + 1;
-    g->w0 = 0xDA380001;
-    g->w1 = (u32)D_801969B0++;
+    Mtx1F8_Push(0xDA380007);
+    Mtx1F8_Push(0xDA380003);
+    Mtx1F8_Push(0xDA380001);
+    Mtx1F8_Push(0xDA380001);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B8F2C_ovl_1F0A30);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B90A8_ovl_1F0A30);
 
