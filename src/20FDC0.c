@@ -56,7 +56,28 @@ extern u64 D_800AC140[];
 f64 func_8007FD90(void);
 /* --- end decls --- */
 
+void *memcpy(void *dst, const void *src, s32 n);
+
+/* Insertion sort of n elements of the given size, ordered by cmp */
+#ifdef NON_MATCHING
+/* 75/75 instructions, 14 words differ: base and tmp swap registers; the element offset is kept apart from base */
+void func_801CC930_ovl_1F0A30(u8 *base, s32 size, s32 n, s32 (*cmp)(void *, void *)) {
+    void *tmp = HMalloc(size);
+    s32 i;
+    s32 j;
+
+    for (i = 1; i < n; i++) {
+        memcpy(tmp, base + i * size, size);
+        for (j = i - 1; j >= 0 && cmp(tmp, base + j * size) < 0; j--) {
+            memcpy(base + (j + 1) * size, base + j * size, size);
+        }
+        memcpy(base + (j + 1) * size, tmp, size);
+    }
+    HFree(tmp);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CC930_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CCA5C_ovl_1F0A30);
 
