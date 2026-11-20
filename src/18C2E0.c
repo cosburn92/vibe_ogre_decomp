@@ -230,8 +230,9 @@ INCLUDE_ASM("asm/nonmatchings/18C2E0", func_80219F84_ovl_188B60);
  * and the bouncing cursor over the selected slot */
 void func_80219584_ovl_188B60(Win18C *w, s32 page);
 void func_80219584_ovl_188B60(Win18C *w, s32 page);
+void func_80219584_ovl_188B60(Win18C *w, s32 page);
 #ifdef NON_MATCHING
-/* formation editor draw: length matches (614), 153 words differ in register allocation */
+/* formation editor draw: length matches (614), 139 words differ; loop 1 hoists the 0xE6000000 constant that the original keeps in s6 */
 void func_8021A0A4_ovl_188B60(void)
 {
   s32 i;
@@ -597,6 +598,9 @@ void func_8021A0A4_ovl_188B60(void)
     }
   }
 
+  x = (bx + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].x) + 0xB;
+  y = (by + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].y) - 0x1E;
+  bob = D_8021B5C0_ovl_188B60 & 0xF;
   {
     Gfx *_g = (Gfx *) (D_800E9BA0++);
     _g->w0 = (unsigned int) ((((unsigned int) 0xDE) & ((0x01 << 8) - 1)) << 24);
@@ -609,9 +613,6 @@ void func_8021A0A4_ovl_188B60(void)
     _g->w1 = (unsigned int) 0;
   }
   ;
-  bob = D_8021B5C0_ovl_188B60 & 0xF;
-  x = (bx + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].x) + 0xB;
-  y = (by + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].y) - 0x1E;
   func_80200F70(D_80212518, D_80212410, 16, 32, 2);
   func_80200DD0(x, y + bob, 0x3F);
   {
