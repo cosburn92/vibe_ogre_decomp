@@ -335,7 +335,39 @@ inline s32 func_801AED84_ovl_1F0A30(void) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEE18_ovl_1F0A30);
+s32 func_8016E440(u8 id);
+void func_8017CBE8(u8 *w, void *unit);
+void func_801818A0(s32 x, s32 y);
+
+/* A unit record as the status-label drawer reads it (status in the high half of +0x600) */
+typedef struct {
+    u8 unk000[0x600];
+    /* 0x600 */ u32 status;
+} LabelUnit1F;
+
+/* Draws the available tactic options of window o (and its cursor and label) */
+void func_801AEE18_ovl_1F0A30(u8 *o, s32 sel) {
+    LabelUnit1F unit;
+    u32 i;
+    s32 x;
+    s32 y;
+    Opt1F *opt;
+
+    func_8017C4B4(((s16 *)(o + 0x18))[sel]);
+    x = FIELD(o, s32, 0x2C) + 0x16;
+    y = FIELD(o, s32, 0x30) + 5;
+    for (i = 0; i < 6; i++) {
+        opt = func_801AED14_ovl_1F0A30(i);
+        if (opt != NULL) {
+            func_80179034(func_8016E440(D_801CE900_ovl_1F0A30[i].unk0[2]), x, y);
+            y += 0xE;
+        }
+    }
+    func_801818A0(FIELD(o, s32, 0x2C), (s8)o[0x22] * 0xE + FIELD(o, s32, 0x30) + 8);
+    bzero(&unit, sizeof(unit));
+    unit.status = 0x20000;
+    func_8017CBE8(o, &unit);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEF3C_ovl_1F0A30);
 
