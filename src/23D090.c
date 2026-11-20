@@ -531,7 +531,36 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC4B0_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC6F4_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECAB0_ovl_23B220);
+extern Gfx D_801F0380_ovl_23B220[];
+s32 func_801C8C74(u8 *u);
+s32 func_801C8C90(u8 *u);
+void func_801EC6F4_ovl_23B220(s32 spr, s16 x, s16 y);
+
+/* Draws the unit sprites of the battle preview: the attacker (doubled with an offset echo when
+ * func_801C8C74 says so) and, if present, the target */
+void func_801ECAB0_ovl_23B220(void) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    u8 **target;
+
+    gSPDisplayList(D_800E9BA0++, D_801F0380_ovl_23B220);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, FIELD(c, u8, 0x653));
+    target = &FIELD(c, u8 *, 0x5D4);
+    if (func_801C8C74(FIELD(c, u8 *, 0x5D4))) {
+        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) - 10, FIELD(c, s16, 0x5EE) - 5);
+        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) + 10, FIELD(c, s16, 0x5EE));
+        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) - 3, FIELD(c, s16, 0x5EE) + 5);
+    } else {
+        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC), FIELD(c, s16, 0x5EE));
+    }
+    if (func_801C8C90(*target)) {
+        func_801EC6F4_ovl_23B220(FIELD(D_801EFE48_ovl_23B220, s32, 0x5F4), FIELD(D_801EFE48_ovl_23B220, s16, 0x608),
+                                 FIELD(D_801EFE48_ovl_23B220, s16, 0x60A));
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+    gSPSetOtherMode(D_800E9BA0++, G_SETOTHERMODE_H, 20, 2, 0);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 void func_801ECC40_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 2;
