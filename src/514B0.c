@@ -348,7 +348,76 @@ void func_8017C2FC_ovl_040E80(Node *n) {
     }
 }
 
+/* Opening window rectangles (x0, y0, x1, y1) */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x26];
+    /* 0x26 */ s16 h26;
+    /* 0x28 */ s16 step;
+    /* 0x2A */ u8 unk2A[2];
+    /* 0x2C */ s32 from[4];
+    /* 0x3C */ s32 cur[4];
+    /* 0x4C */ s32 to[4];
+} Win514;
+
+/* Starts a window open: when the window has no size change, begin from an 8-px strip on the
+ * edge nearer the screen centre (160x120, or 320x240 in high resolution) */
+#ifdef NON_MATCHING
+/* window open strip: centre selection compiles as one branch, original uses two conditional assignments */
+void func_8017C384_ovl_040E80(Win514 *w) {
+    s32 cx = 160;
+    s32 cy = 120;
+    s32 d0;
+    s32 d1;
+
+    if (D_80187020_ovl_040E80 != 0) {
+        cx = 320;
+    }
+    if (D_80187020_ovl_040E80 != 0) {
+        cy = 240;
+    }
+    if (w->from[0] == w->to[0] && w->from[1] == w->to[1] && w->from[2] == w->to[2] && w->from[3] == w->to[3]) {
+        d0 = w->from[0] - cx;
+        if (d0 < 0) {
+            d0 = -d0;
+        }
+        d1 = w->from[2] - cx;
+        if (d1 < 0) {
+            d1 = -d1;
+        }
+        if (d1 < d0) {
+            w->cur[0] = w->from[0];
+            w->cur[2] = w->from[0] + 8;
+        } else {
+            w->cur[0] = w->from[2] - 8;
+            w->cur[2] = w->from[2];
+        }
+        d0 = w->from[1] - cy;
+        if (d0 < 0) {
+            d0 = -d0;
+        }
+        d1 = w->from[3] - cy;
+        if (d1 < 0) {
+            d1 = -d1;
+        }
+        if (d1 < d0) {
+            w->cur[1] = w->from[1];
+            w->cur[3] = w->from[1] + 8;
+        } else {
+            w->cur[1] = w->from[3] - 8;
+            w->cur[3] = w->from[3];
+        }
+    } else {
+        w->cur[0] = w->to[0];
+        w->cur[1] = w->to[1];
+        w->cur[2] = w->to[2];
+        w->cur[3] = w->to[3];
+    }
+    w->step = 2;
+    w->h26 = 0x8000;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C384_ovl_040E80);
+#endif
 
 /* Window fill render state with alpha a (opaque when 0xFF) */
 #ifdef NON_MATCHING
