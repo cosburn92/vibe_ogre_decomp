@@ -470,14 +470,42 @@ typedef struct {
 
 /* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
  * texel steps double in high resolution */
+/* Pipe sync, scissor (full screen or letterboxed), pipe sync (as func_8017BD48) */
+static inline void Scissor514(void) {
+    Gfx *g;
+
+    if (D_80187020_ovl_040E80) {
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+        g = D_800E9BA0++;
+        g->w0 = 0xED000000;
+        g->w1 = 0xA00780;
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    } else {
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+        g = D_800E9BA0++;
+        g->w0 = 0xED000000;
+        g->w1 = 0x4FC3BC;
+        g = D_800E9BA0++;
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+}
+
+/* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
+ * texel steps double in high resolution */
 #ifdef NON_MATCHING
-/* unit status label draw: logic complete, 693 vs 698 instructions; per-case pipe-sync constant is hoisted differently */
+/* unit status label draw: 698 vs 698, 28 words differ (per-case load scheduling); the scissor block is the inlined body of func_8017BD48 */
 void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
     s32 step = 10;
     s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
     s32 x;
     s32 y;
-    u32 scis;
 
     if (D_80187020_ovl_040E80) {
         step = 9;
@@ -485,20 +513,10 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
     y = FIELD(w, s32, 0x30);
     x = FIELD(w, s32, 0x2C) + 6;
     gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
-    if (D_80187020_ovl_040E80) {
-        scis = 0xA00780;
-    } else {
-        scis = 0x4FC3BC;
-    }
-    gDPPipeSync(D_800E9BA0++);
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xED000000;
-        _g->w1 = scis;
-    }
-    gDPPipeSync(D_800E9BA0++);
-    gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
+    Scissor514();
+    D_800E9BA0->w0 = 0xD7000002;
+    D_800E9BA0->w1 = 0x80008000;
+    D_800E9BA0++;
     switch (FIELD(o, u32, 0x600) & 0xFFFF0000) {
         case 0x30000:
             gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0xE0);
