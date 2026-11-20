@@ -81,9 +81,6 @@ void func_8022AC90_ovl_29A4C0(s32 *in) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022AD6C_ovl_29A4C0);
-
-/* Periodic drift: every `period` ticks (or each tick when -1) add delta to x/z, `total` ticks */
 typedef struct {
     s16 period;
     s16 count;
@@ -91,6 +88,34 @@ typedef struct {
     s16 pad;
     f32 delta;
 } Drift29;
+
+/* Starts unit i drifting toward target over total frames (period -1: every frame); a drift that
+ * would move less than 0.01 is dropped */
+void func_8022AD6C_ovl_29A4C0(s32 i, s32 period, s32 target, s32 total) {
+    Drift29 *d;
+    f32 diff;
+
+    d = FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4);
+    if (d == NULL) {
+        FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4) = HMalloc(0xC);
+    }
+    d = FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4);
+    d->period = period;
+    d->count = 0;
+    d->total = total;
+    d->delta = target;
+    if (d->period == -1) {
+        diff = d->delta - FLD(FLD(D_8022A974, u8 *, 0x18 + i * 4), f32, 0x120);
+        if (diff >= 0.01 || diff <= -0.01) {
+            d->delta = diff / total;
+        } else {
+            HFree(d);
+            FLD(D_8022A974, Drift29 *, 0x1A50 + i * 4) = NULL;
+        }
+    }
+}
+
+/* Periodic drift: every `period` ticks (or each tick when -1) add delta to x/z, `total` ticks */
 
 void func_8022AE84_ovl_29A4C0(void) {
     s32 i;
