@@ -140,7 +140,60 @@ void func_80216C08_ovl_17F9C0(s32 *arg0, s16 arg1) {
 INCLUDE_ASM("asm/nonmatchings/181520", func_80216C08_ovl_17F9C0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/181520", func_80216F3C_ovl_17F9C0);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx181;
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p1;
+    /* 0x08 */ u8 (*mtx)[0x40];
+} FbSet181;
+extern Gfx181 *D_800E9BA0;
+extern FbSet181 *D_800E9BE0;
+extern u16 D_800C4BE4;
+extern u16 D_800C4C24;
+extern u16 D_800E7A0E;
+extern u8 D_8021ABC0_ovl_17F9C0[];
+void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+#define CAMF(i) (((f32 *)D_8018F58C->data)[i])
+
+/* Sets up a 320x240 orthographic camera looking at the screen centre (same as 1A2C20's) */
+void func_80216F3C_ovl_17F9C0(void) {
+    CAMF(5) = 160.0f;
+    CAMF(6) = 120.0f;
+    CAMF(7) = 60.0f;
+    CAMF(8) = 160.0f;
+    CAMF(9) = 120.0f;
+    CAMF(10) = 0.0f;
+    CAMF(11) = 0.0f;
+    CAMF(12) = 1.0f;
+    CAMF(13) = 0.0f;
+    D_800E7A0E = D_800C4BE4;
+    guOrtho(D_800E9BE0->mtx[D_800C4BE4], -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+    {
+        Gfx181 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380007;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4] - 0x80000000;
+    }
+    D_800C4C24 = ++D_800C4BE4;
+    guLookAt(D_800E9BE0->mtx[D_800C4C24], CAMF(5), CAMF(6), CAMF(7), CAMF(8), CAMF(9), CAMF(10), CAMF(11), CAMF(12),
+             CAMF(13));
+    {
+        Gfx181 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380005;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000;
+    }
+    {
+        Gfx181 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDE000000;
+        _g->w1 = (u32)D_8021ABC0_ovl_17F9C0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/181520", func_80217114_ovl_17F9C0);
 
