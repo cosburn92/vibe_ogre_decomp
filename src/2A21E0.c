@@ -161,39 +161,39 @@ Rec2A *func_80232C28_ovl_29A4C0(s32 id, s32 kind) {
     return r;
 }
 
-#ifdef NON_MATCHING
 /* The record pointer and derived field pointer use swapped registers. */
-s32 func_80232DE0_ovl_29A4C0(s32 id, s32 kind) {
-    Rec2A *r = D_802395B0_ovl_29A4C0;
-    s32 i;
-
-    for (i = 40; i-- != 0; r++) {
-        if (r->id == id && r->kind == kind) {
-            return r->w2C;
-        }
+s32 func_80232DE0_ovl_29A4C0(s32 id, s32 kind)
+{
+  Rec2A *r = D_802395B0_ovl_29A4C0;
+  s32 i;
+  for (i = 40; (i--) != 0; r++)
+  {
+    if ((r->id == id) && (r->kind == kind))
+    {
+      return r->w2C;
     }
-    return func_80232C28_ovl_29A4C0(id, kind)->w2C;
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232DE0_ovl_29A4C0);
-#endif
+  }
 
-#ifdef NON_MATCHING
+  r = func_80232C28_ovl_29A4C0(id, kind);
+  return r->w2C;
+}
+
 /* The record pointer and derived field pointer use swapped registers. */
-s32 func_80232E44_ovl_29A4C0(s32 id, s32 kind) {
-    Rec2A *r = D_802395B0_ovl_29A4C0;
-    s32 i;
-
-    for (i = 40; i-- != 0; r++) {
-        if (r->id == id && r->kind == kind) {
-            return r->w28;
-        }
+s32 func_80232E44_ovl_29A4C0(s32 id, s32 kind)
+{
+  Rec2A *r = D_802395B0_ovl_29A4C0;
+  s32 i;
+  for (i = 40; (i--) != 0; r++)
+  {
+    if ((r->id == id) && (r->kind == kind))
+    {
+      return r->w28;
     }
-    return func_80232C28_ovl_29A4C0(id, kind)->w28;
+  }
+
+  r = func_80232C28_ovl_29A4C0(id, kind);
+  return r->w28;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80232E44_ovl_29A4C0);
-#endif
 
 u8 func_80232EA8_ovl_29A4C0(s32 id, s32 k) {
     Rec2A *r = D_802395B0_ovl_29A4C0;
