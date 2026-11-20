@@ -267,7 +267,221 @@ u8 *func_80197FB4_ovl_06E660(u8 *desc, u32 index) {
     return NULL;
 }
 
+#define TEXSET_TEXELS(p, t, index)                                                                      {                                                                                                       u8 *_e = func_80197DE4_ovl_06E660(t, index);                                                        if (_e == NULL) {                                                                                       p = NULL;                                                                                       } else {                                                                                                p = NULL;                                                                                           if (_e[3] & 1) {                                                                                        p = _e + 8;                                                                                     }                                                                                               }                                                                                               }
+/* Decodes image index of texture set t into a new one-image set. An image that names itself as
+ * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
+ * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
+ * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
+#ifdef NON_MATCHING
+/* delta-frame texture decoder: length matches (568), 134 words differ only in saved-register assignment */
+u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
+    u8 f = t[3];
+    u32 w = *(u16 *)(t + 4);
+    u32 h = *(u16 *)(t + 6);
+    s32 pitch;
+    s32 subPitch;
+    s32 texBytes;
+    s32 subBytes;
+    s32 size;
+    s32 dsize;
+    u8 *e;
+    u8 *out;
+    u8 *base;
+    u8 *hdr;
+    u8 g;
+    u32 x;
+    u32 y;
+    u8 *src;
+    u8 *prev;
+    u8 *dst;
+    u8 *ssrc;
+    u8 *sprev;
+    u8 *sdst;
+    u16 half;
+
+    if (f & 2) {
+        pitch = ((u32)(w + 3) >> 2) * 16;
+        subPitch = 0;
+    } else if (f & 4) {
+        pitch = ((u32)(w + 7) >> 3) * 8;
+        if (f & 1) {
+            subPitch = ((u32)(w + 15) >> 4) * 8;
+        } else {
+            subPitch = pitch;
+        }
+    } else {
+        pitch = ((u32)(w + 3) >> 2) * 8;
+        if (f & 1) {
+            subPitch = ((u32)(w + 15) >> 4) * 8;
+        } else {
+            subPitch = ((u32)(w + 7) >> 3) * 8;
+        }
+    }
+    texBytes = pitch * h;
+    e = func_80197DE4_ovl_06E660(t, index);
+    subBytes = subPitch * h;
+    if (index == e[2]) {
+        g = e[3];
+        size = 0x10;
+        if (g & 1) {
+            size = texBytes + 0x10;
+        }
+        if (g & 2) {
+            size += subBytes;
+        }
+        if (g & 4) {
+            size += 0x200;
+        }
+        out = HMalloc(size);
+        _bcopy(t, out, 8);
+        out[2] = 1;
+        _bcopy(e, out + 8, size - 8);
+        out[10] = 0;
+        return out;
+    }
+    base = func_801980AC_ovl_06E660(t, e[2]);
+    g = e[3];
+    dsize = 0x10;
+    if (g & 1) {
+        dsize = texBytes + 0x10;
+    }
+    if (g & 2) {
+        dsize += subBytes;
+    }
+    if (g & 4) {
+        dsize += 0x200;
+    }
+    out = HMalloc(dsize);
+    _bcopy(t, out, 8);
+    hdr = out + 8;
+    out[2] = 1;
+    _bcopy(e, hdr, 8);
+    out[10] = 0;
+    f = t[3];
+    if (f & 2) {
+        TEXSET_TEXELS(src, t, index);
+        TEXSET_TEXELS(prev, base, 0);
+        TEXSET_TEXELS(dst, out, 0);
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
+                ((u32 *)dst)[x] = ((u32 *)prev)[x] ^ ((u32 *)src)[x];
+            }
+            dst += pitch;
+            prev += pitch;
+            src += pitch;
+        }
+    } else if (f & 4) {
+        TEXSET_TEXELS(src, t, index);
+        ssrc = func_80197F08_ovl_06E660(t, index);
+        TEXSET_TEXELS(prev, base, 0);
+        sprev = func_80197F08_ovl_06E660(base, 0);
+        TEXSET_TEXELS(dst, out, 0);
+        sdst = func_80197F08_ovl_06E660(out, 0);
+        g = hdr[3];
+        if (g & 1) {
+            if (g & 8) {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        dst[x] = src[x];
+                    }
+                    dst += pitch;
+                    src += pitch;
+                }
+            } else {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        dst[x] = prev[x] - src[x];
+                    }
+                    dst += pitch;
+                    prev += pitch;
+                    src += pitch;
+                }
+            }
+        }
+        if (hdr[3] & 2) {
+            if (t[3] & 1) {
+                half = (w + 1) >> 1;
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < half; x++) {
+                        sdst[x] = (((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF) |
+                                  (((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF);
+                    }
+                    sdst += subPitch;
+                    sprev += subPitch;
+                    ssrc += subPitch;
+                }
+            } else {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        sdst[x] = sprev[x] - ssrc[x];
+                    }
+                    sdst += subPitch;
+                    sprev += subPitch;
+                    ssrc += subPitch;
+                }
+            }
+        }
+        if (hdr[3] & 4) {
+            _bcopy(func_80197FB4_ovl_06E660(t, index), func_80197FB4_ovl_06E660(out, 0), 0x200);
+        }
+    } else if (!(f & 6)) {
+        TEXSET_TEXELS(src, t, index);
+        ssrc = func_80197F08_ovl_06E660(t, index);
+        TEXSET_TEXELS(prev, base, 0);
+        sprev = func_80197F08_ovl_06E660(base, 0);
+        TEXSET_TEXELS(dst, out, 0);
+        sdst = func_80197F08_ovl_06E660(out, 0);
+        g = hdr[3];
+        if (g & 1) {
+            if (g & 8) {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        ((u16 *)dst)[x] = ((u16 *)src)[x];
+                    }
+                    dst += pitch;
+                    src += pitch;
+                }
+            } else {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        ((u16 *)dst)[x] = ((u16 *)prev)[x] - ((u16 *)src)[x];
+                    }
+                    dst += pitch;
+                    src += pitch;
+                    prev += pitch;
+                }
+            }
+        }
+        if (hdr[3] & 2) {
+            if (t[3] & 1) {
+                half = (w + 1) >> 1;
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < half; x++) {
+                        sdst[x] = (((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF) |
+                                  (((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF);
+                    }
+                    sdst += subPitch;
+                    sprev += subPitch;
+                    ssrc += subPitch;
+                }
+            } else {
+                for (y = 0; y < h; y++) {
+                    for (x = 0; x < w; x++) {
+                        sdst[x] = sprev[x] - ssrc[x];
+                    }
+                    sdst += subPitch;
+                    sprev += subPitch;
+                    ssrc += subPitch;
+                }
+            }
+        }
+    }
+    HFree(base);
+    return out;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/6E660", func_801980AC_ovl_06E660);
+#endif
 
 /* Tints an RGBA colour towards blue-grey by its brightest channel, keeping alpha */
 /* The red and green results use swapped registers (a3/t0). */
