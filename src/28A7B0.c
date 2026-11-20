@@ -1016,7 +1016,36 @@ s32 func_802348E0_ovl_286BD0(u8 x) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023498C_ovl_286BD0);
+#include "gbi_ultra.h"
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_8022B980_ovl_286BD0(u8 *img, s32 x, s32 y);
+
+/* Draws image img (header: size code at +3, w/h at +4/+6, pixels at +8, 256-colour palette
+ * after the pixels) with the CI8 draw state */
+void func_8023498C_ovl_286BD0(u8 *img) {
+    u16 w = FIELD(img, u16, 4);
+    s32 row;
+    s32 h;
+
+    if (img[3] == 3) {
+        row = ((u32)(w + 3) >> 2) << 4;
+    } else if (img[3] == 2) {
+        row = ((u32)(w + 3) >> 2) << 3;
+    } else if (img[3] == 1) {
+        row = ((u32)(w + 7) >> 3) << 3;
+    } else {
+        row = ((u32)(w + 15) >> 4) << 3;
+    }
+    h = FIELD(img, u16, 6);
+    gSPDisplayList(D_800E9BA0++, D_8023DF48_ovl_286BD0);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 255, 255, 255, 255);
+    gDPLoadTLUT_pal256(D_800E9BA0++, img + (row * h + 8));
+    gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
+    gDPPipeSync(D_800E9BA0++);
+    func_8022B980_ovl_286BD0(img, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234B38_ovl_286BD0);
 

@@ -190,4 +190,10 @@
 
 #define gDPLoadMultiBlock(pkt, timg, tmem, rtile, fmt, siz, width, height, pal, cms, cmt, masks, maskt, shifts, shiftt)     {                                                                                                 gDPSetTextureImage(pkt, fmt, siz##_LOAD_BLOCK, 1, timg);                                      gDPSetTile(pkt, fmt, siz##_LOAD_BLOCK, 0, tmem, G_TX_LOADTILE, 0, cmt, maskt, shiftt,                    cms, masks, shifts);                                                               gDPLoadSync(pkt);                                                                             gDPLoadBlock(pkt, G_TX_LOADTILE, 0, 0,                                                                     (((width) * (height) + siz##_INCR) >> siz##_SHIFT) - 1,                                       CALC_DXT(width, siz##_BYTES));                                                   gDPPipeSync(pkt);                                                                             gDPSetTile(pkt, fmt, siz, (((width) * siz##_LINE_BYTES) + 7) >> 3, tmem, rtile, pal,                     cmt, maskt, shiftt, cms, masks, shifts);                                           gDPSetTileSize(pkt, rtile, 0, 0, ((width) - 1) << G_TEXTURE_IMAGE_FRAC,                                      ((height) - 1) << G_TEXTURE_IMAGE_FRAC)                                    }
 
+/* F3DEX2 */
+#define G_TEXTURE 0xD7
+#define G_ON 1
+#define G_OFF 0
+#define gSPTexture(pkt, s, t, level, tile, on)                                                    {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(G_TEXTURE, 24, 8) | _SHIFTL((level), 11, 3) | _SHIFTL((tile), 8, 3) |                   _SHIFTL((on), 1, 7));                                                               _g->w1 = (_SHIFTL((s), 16, 16) | _SHIFTL((t), 0, 16));                                    }
+
 #endif /* GBI_ULTRA_H */
