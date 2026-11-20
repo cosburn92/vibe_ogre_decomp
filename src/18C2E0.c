@@ -45,7 +45,17 @@ extern u8 *D_801F36C0;
 extern Gfx D_801EB1D0[];
 extern u8 D_80210217[][5];   /* formation slot -> map cell (row << 4 | column) */
 extern u8 D_80193BC0[][0x38]; /* player characters */
-extern u8 gLegions[][11];
+/* Legion records (11 bytes): squad ids (0xFF = empty) at 2, formation at 8 */
+typedef struct {
+    u8 unk0[2];
+    /* 0x2 */ u8 squads[5];
+    u8 unk7;
+    /* 0x8 */ u8 formation;
+    /* 0x9 */ u8 unk9;
+    u8 unkA;
+} Legion18C;
+
+extern Legion18C gLegions[];
 extern SquadRec18C gSquads[];
 extern u8 D_8021B59E_ovl_188B60;
 extern s32 D_8021B5A8_ovl_188B60;
@@ -60,7 +70,7 @@ void func_802001A8(s32 x, s32 y, u16 n, s32 digits);
 void func_80200A38(s32 x, s32 y);
 void func_8020078C(u8 n, s32 x, s32 y);
 void func_80200F70(void *pal, void *img, u16 w, u16 h, u16 mode);
-void func_801D66D0(u8 *dst, u8 *legion, u8 formation);
+void func_801D66D0(u8 *dst, Legion18C *legion, u8 formation);
 void *func_8016B070(u8 strategy);
 void func_80179034(void *s, s32 x, s32 y);
 void func_802012D8(void *pal);
@@ -161,17 +171,17 @@ void func_80219584_ovl_188B60(Win18C *w, s32 page) {
             gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
         }
         if (w == D_8021B588_ovl_188B60[0]) {
-            func_8020078C(gLegions[D_8021B5B4_ovl_188B60][9] - 1, x + 0x58, y + 4);
-            func_80200F70(D_801F36C0 + 0x360, D_801F0B90 + ((gLegions[D_8021B5B4_ovl_188B60][8] << 7) + 0x11C8), 16, 16, 2);
+            func_8020078C(gLegions[D_8021B5B4_ovl_188B60].unk9 - 1, x + 0x58, y + 4);
+            func_80200F70(D_801F36C0 + 0x360, D_801F0B90 + ((gLegions[D_8021B5B4_ovl_188B60].formation << 7) + 0x11C8), 16, 16, 2);
             func_80200DD0(x + 0x44, y + 2, 0x21);
             func_80200F70(D_801F36C0 + 0x1A0, D_801F0B90 + 0x1648, 16, 4, 2);
-            func_801D66D0(slots, gLegions[D_8021B5B4_ovl_188B60], gLegions[D_8021B5B4_ovl_188B60][8]);
+            func_801D66D0(slots, &gLegions[D_8021B5B4_ovl_188B60], gLegions[D_8021B5B4_ovl_188B60].formation);
             for (i = 0; i < 5; i++) {
                 if (slots[i] == sq) {
                     break;
                 }
             }
-            p = D_80210217[gLegions[D_8021B5B4_ovl_188B60][8]][i];
+            p = D_80210217[gLegions[D_8021B5B4_ovl_188B60].formation][i];
             col = (p >> 4) * 3 + 0x44;
             row = (p & 0xF) + 2;
             func_80200DD0(x + col, y + row, 0x36);
@@ -420,7 +430,7 @@ void func_8021A0A4_ovl_188B60(void) {
   ss = D_801ED5C0;
   for (i = 0; i < 5; i++)
   {
-    sq = gLegions[D_8021B5B4_ovl_188B60][2 + i];
+    sq = gLegions[D_8021B5B4_ovl_188B60].squads[i];
     new_var = gSquads[sq].members;
     if (sq == 0xFF)
     {
