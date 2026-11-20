@@ -470,6 +470,25 @@ typedef struct {
 
 /* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
  * texel steps double in high resolution */
+/* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
+ * texel steps double in high resolution */
+/* Loads a 16-colour palette into TMEM (gDPLoadTLUT_pal16, palette 0) */
+static inline void LoadTlut514(void *pal) {
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, pal);
+}
+
+typedef struct {
+    u8 unk00[0x2C];
+    /* 0x2C */ s32 x;
+    /* 0x30 */ s32 y;
+} WinLabel514;
+
+/* Unit fields used by the status label (o+0x600: status in the high half) */
+typedef struct {
+    u8 unk000[0x600];
+    /* 0x600 */ u32 status;
+} UnitLabel514;
+
 /* Pipe sync, scissor (full screen or letterboxed), pipe sync (as func_8017BD48) */
 static inline void Scissor514(void) {
     Gfx *g;
@@ -499,9 +518,7 @@ static inline void Scissor514(void) {
 
 /* Draws the status label of unit o (o+0x600 high half: 1..4) in window w; coordinates and
  * texel steps double in high resolution */
-#ifdef NON_MATCHING
-/* unit status label draw: 698 vs 698, 28 words differ (per-case load scheduling); the scissor block is the inlined body of func_8017BD48 */
-void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
+void func_8017CBE8_ovl_040E80(WinLabel514 *w, UnitLabel514 *o) {
     s32 step = 10;
     s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
     s32 x;
@@ -510,16 +527,16 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
     if (D_80187020_ovl_040E80) {
         step = 9;
     }
-    y = FIELD(w, s32, 0x30);
-    x = FIELD(w, s32, 0x2C) + 6;
+    y = w->y;
+    x = w->x + 6;
     gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
     Scissor514();
     D_800E9BA0->w0 = 0xD7000002;
     D_800E9BA0->w1 = 0x80008000;
     D_800E9BA0++;
-    switch (FIELD(o, u32, 0x600) & 0xFFFF0000) {
+    switch (o->status & 0xFFFF0000) {
         case 0x30000:
-            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0xE0);
+            LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0xE0);
             func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xDA0, 48, 16, 0, 0, 0, 0);
             y -= 9;
             gDPPipeSync(D_800E9BA0++);
@@ -528,7 +545,7 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
             gDPPipeSync(D_800E9BA0++);
             break;
         case 0x40000:
-            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x100);
+            LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x100);
             func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xF20, 64, 16, 0, 0, 0, 0);
             y -= 9;
             gDPPipeSync(D_800E9BA0++);
@@ -537,7 +554,7 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
             gDPPipeSync(D_800E9BA0++);
             break;
         case 0x10000:
-            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x120);
+            LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x120);
             func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x1120, 48, 16, 0, 0, 0, 0);
             y -= 9;
             gDPPipeSync(D_800E9BA0++);
@@ -546,7 +563,7 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
             gDPPipeSync(D_800E9BA0++);
             break;
         case 0x20000:
-            gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x140);
+            LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x140);
             func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x12A0, 48, 8, 0, 0, 0, 0);
             y -= 5;
             gDPPipeSync(D_800E9BA0++);
@@ -556,9 +573,6 @@ void func_8017CBE8_ovl_040E80(u8 *w, u8 *o) {
             break;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017CBE8_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017D6D0_ovl_040E80);
 
