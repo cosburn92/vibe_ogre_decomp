@@ -61,7 +61,7 @@ typedef struct {
     /* 0x32 */ u8 b32;
     /* 0x33 */ u8 b33;
 } MapMarker;
-u8 func_801F4ED8_ovl_145210(MapUnit *u);
+s32 func_801F4ED8_ovl_145210(MapUnit *u);
 
 void func_801F95F8_ovl_145210(s32 a, u8 *o);
 void func_801F6DC8_ovl_145210(void);
@@ -357,7 +357,7 @@ extern s32 D_80195571;
 extern s32 D_80195572;
 extern s32 D_801971F2;
 
-u8 func_801F4ED8_ovl_145210(MapUnit *u) {
+s32 func_801F4ED8_ovl_145210(MapUnit *u) {
     s32 temp_v0;
     s32 temp_v0_2;
     s32 temp_v0_3;
@@ -405,7 +405,7 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F4ED8_ovl_145210);
 #endif
 
 /* Slot of a unit; hangs if it is not on the map. */
-s32 func_801F4FF4_ovl_145210(MapUnit *u) {
+inline s32 func_801F4FF4_ovl_145210(MapUnit *u) {
     s32 n = D_801F367C;
     s32 i;
 
@@ -549,7 +549,50 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F632C_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F6540_ovl_145210);
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_801FB3BC_ovl_145210();
+void func_801F5550_ovl_145210(void *a, void *b, s32 c, s32 d, s32 e, s32 f);
+
+/* Creates the map entry of unit u in the first free slot and links it to the unit's battle index */
+#ifdef NON_MATCHING
+/* 108/108 instructions, 21 words differ: register choice and one delay slot */
+void func_801F67F0_ovl_145210(MapUnit *u) {
+    MapEntry *e = HMalloc(0xDC);
+    s32 slot;
+    s32 ally;
+    s32 kind;
+    s32 lead;
+
+    bzero(e, 0xDC);
+    for (slot = 0; slot < D_801FDA32_ovl_145210; slot++) {
+        if (D_801FDA34_ovl_145210[slot] == NULL) {
+            break;
+        }
+    }
+    ally = (u->flags & 8) == 0;
+    kind = func_801F4CD0_ovl_145210(FIELD(u, f32, 0x18));
+    lead = u->unk70 == 1 && !(u->flags & 0x40);
+    func_801F5550_ovl_145210((u8 *)e + 0x30, (u8 *)e + 0x10, ally, func_801F4ED8_ovl_145210(u), kind, lead);
+    if (u->flags & 0x20000) {
+        e->unk06[0] = 1;
+        e->unk06[1] = 3;
+    }
+    e->bB = 0xFF;
+    e->unk06[4] = 0xFF;
+    e->unk06[3] = 0xFF;
+    e->unk06[2] = 0xFF;
+    e->bB = 0;
+    e->id = (s32)u;
+    FIELD(e, s16, 0x28) = D_801F367C - func_801F4FF4_ovl_145210(u);
+    func_801F4BE8_ovl_145210((s32 *)((u8 *)e + 0xCC), (s32)func_801FB3BC_ovl_145210);
+    func_801F4BF0_ovl_145210((s32 *)((u8 *)e + 0xCC), (s32)((u8 *)e + 0x10));
+    D_801FDA34_ovl_145210[slot] = e;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F67F0_ovl_145210);
+#endif
 
 inline MapEntry *func_801F69A0_ovl_145210(s32 id) {
     s32 pad;
