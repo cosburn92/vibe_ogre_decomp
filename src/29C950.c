@@ -173,7 +173,48 @@ f32 func_8022D988_ovl_29A4C0(BUnit *u, f32 *p) {
     return r;
 }
 
+/* Turns every unit to face the battle's focus point (x 4, z 0xC) and sets its approach
+ * speed from the distance and height difference to the focus (0x8), capped at 5 */
+#ifdef NON_MATCHING
+/* unit facing/speed: only float registers in the distance differ */
+void func_8022DA84_ovl_29A4C0(void) {
+    u32 i;
+    BUnit *u;
+    Battle *b;
+    f32 spd;
+    f32 dx;
+    f32 dz;
+
+    if (FIELD(D_8022A974, f32, 8) == 0.0f) {
+        return;
+    }
+    for (i = 0; i < 0x1C; i++) {
+        u = D_8022A974->units[i];
+        if (u == NULL) {
+            continue;
+        }
+        FIELD(u, f32, 0x12C) = func_8022F280_ovl_29A4C0(
+            (f32)(func_8009CFE0(FIELD(u, f32, 0x11C) - FIELD(D_8022A974, f32, 4),
+                                FIELD(D_8022A974, f32, 0xC) - FIELD(u, f32, 0x124)) * 180.0 / 3.14159265358979312) + 180.0f);
+        b = D_8022A974;
+        spd = 6.0f;
+        if (FIELD(b, f32, 8) <= 0.0f) {
+            spd = 0.0f;
+        } else if (func_80080D70(FIELD(u, f32, 0x120)) != func_80080D70(FIELD(b, f32, 8))) {
+            dx = FIELD(u, f32, 0x11C) - FIELD(b, f32, 4);
+            dz = FIELD(u, f32, 0x124) - FIELD(b, f32, 0xC);
+            spd = sqrtf(dx * dx + dz * dz) / (FIELD(b, f32, 8) - FIELD(u, f32, 0x120));
+        }
+        spd = fabsf(spd);
+        if (spd > 5.0f) {
+            spd = 5.0f;
+        }
+        FIELD(u, f32, 0x130) = spd;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DA84_ovl_29A4C0);
+#endif
 
 void func_8022DC38_ovl_29A4C0(u16 *p, s16 a, s16 b, s32 c) {
     bzero(p, 0x10);
