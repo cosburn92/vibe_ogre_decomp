@@ -385,7 +385,6 @@ INCLUDE_ASM("asm/nonmatchings/8700", func_80079950);
 #endif
 
 /* Decompresses node's chunk (LZ) into sub 0 */
-#ifdef NON_MATCHING
 /* Only the final `D_800C4BC0 = D_800AF0C4->size` uses v0 where the original uses v1. */
 void func_80079AFC(AssetNode *node) {
     node->subs = func_80079CB4(node->subs, 0);
@@ -398,13 +397,21 @@ void func_80079AFC(AssetNode *node) {
             D_800AF0C4->type = 2;
         }
     }
-    D_800C4BC0 = D_800AF0C4->size;
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/8700", func_80079AFC);
-#endif
+    {
+        /* Identical stores in both arms keep the context pointer live so the size lands in v1
+         * (technique from OB64-Decomp boot_resource_node_overlay_context_materialize,
+         * MIT, (c) 2026 rempred). */
+        AssetSub *ctx = D_800AF0C4;
+        u32 size = ctx->size;
 
-#ifdef NON_MATCHING
+        if (ctx) {
+            D_800C4BC0 = size;
+        } else {
+            D_800C4BC0 = size;
+        }
+    }
+}
+
 /* Only the final `D_800C4BC0 = D_800AF0C4->size` uses v0 where the original uses v1. */
 void func_80079BD8(AssetNode *node) {
     node->subs = func_80079CB4(node->subs, 0);
@@ -417,11 +424,20 @@ void func_80079BD8(AssetNode *node) {
             D_800AF0C4->type = 3;
         }
     }
-    D_800C4BC0 = D_800AF0C4->size;
+    {
+        /* Identical stores in both arms keep the context pointer live so the size lands in v1
+         * (technique from OB64-Decomp boot_resource_node_overlay_context_materialize,
+         * MIT, (c) 2026 rempred). */
+        AssetSub *ctx = D_800AF0C4;
+        u32 size = ctx->size;
+
+        if (ctx) {
+            D_800C4BC0 = size;
+        } else {
+            D_800C4BC0 = size;
+        }
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/8700", func_80079BD8);
-#endif
 
 /* Find-or-insert in a sub tree; D_800AF0C4 = the sub for index */
 AssetSub *func_80079CB4(AssetSub *sub, u32 index) {
