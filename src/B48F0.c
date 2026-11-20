@@ -426,8 +426,6 @@ void func_801CA44C_ovl_087200(u8 *sq) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA588_ovl_087200);
 
 /* Clears grid row r: frees its units (members lose their 0x20 flag) and resets the row */
-#ifdef NON_MATCHING
-/* Only one register pair differs: in the member loop the original loads the member id into v0 (the address register) and the state pointer into v1. */
 void func_801CA704_ovl_087200(u16 r) {
     u8 *row = D_80196AF8 + (r * 14 + 0x10D4);
     s32 c;
@@ -435,6 +433,7 @@ void func_801CA704_ovl_087200(u16 r) {
     u8 u;
     u8 m;
     u8 *rec;
+    s32 o;
 
     for (c = 0; c < 5; c++) {
         u = (row + c)[2];
@@ -449,7 +448,8 @@ void func_801CA704_ovl_087200(u16 r) {
         for (k = 0; k < 9; k++) {
             m = (rec + k)[4];
             if (m != 0xFF) {
-                (D_80196AF8 + m * 2)[0x1872] &= ~0x20;
+                o = m * 2;
+                (D_80196AF8 + o)[0x1872] &= ~0x20;
             }
         }
     }
@@ -460,9 +460,6 @@ void func_801CA704_ovl_087200(u16 r) {
     func_801CE66C_ovl_087200();
     func_801CE374_ovl_087200();
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA704_ovl_087200);
-#endif
 
 /* Removes the unit in grid cell (r, c) of the organize screen: clears its slot record, shifts the
  * cell behind it forward for columns 1-2, and drops its members' 0x20 flag */

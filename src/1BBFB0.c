@@ -875,16 +875,9 @@ s32 func_80229040_ovl_1BA050(s32 i) {
     return D_8022A6A1_ovl_1BA050[i].b == 3;
 }
 
-/* Opens window record i for text at (x, y); flag 1 = vertical layout, 2 = framed (redraws via
- * func_80228BF0) instead of animated (func_802284B4) */
-#ifdef NON_MATCHING
-/* Only the registers for i and text are swapped (the original has i in s2 and text in s3). */
-Rec698 *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags) {
+/* Text record i, cleared; hangs if i is out of range or the record is in use */
+static inline Rec698 *Rec698_Take(s32 i) {
     Rec698 *r;
-    u8 *n;
-    u16 w;
-    u8 prio;
-    void (*fn)();
 
     if (i >= 4) {
         for (;;);
@@ -894,6 +887,19 @@ Rec698 *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags) {
         for (;;);
     }
     bzero(r, 0x20);
+    return r;
+}
+
+/* Opens window record i for text at (x, y); flag 1 = vertical layout, 2 = framed (redraws via
+ * func_80228BF0) instead of animated (func_802284B4) */
+Rec698 *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags) {
+    Rec698 *r;
+    u8 *n;
+    u16 w;
+    u8 prio;
+    void (*fn)();
+
+    r = Rec698_Take(i);
     r->text = text;
     r->hA = x;
     r->hC = y;
@@ -928,9 +934,6 @@ Rec698 *func_8022905C_ovl_1BA050(s32 i, void *text, s32 x, s32 y, u8 flags) {
     FIELD(n, s16, 0x26) = 0;
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022905C_ovl_1BA050);
-#endif
 
 inline void func_802291BC_ovl_1BA050(s16 a, s16 b, s16 c, s16 d) {
     D_8022A718_ovl_1BA050 = a;
