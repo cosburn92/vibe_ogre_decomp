@@ -838,6 +838,24 @@ void func_8019D2EC_ovl_1CE070(void) {
     func_80198EAC_ovl_1CE070(s, t[15].x, t[15].y);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D438_ovl_1CE070);
+/* Darkens the whole screen with alpha a (no-op at 0) */
+void func_8019D438_ovl_1CE070(u8 a) {
+    if (a == 0) {
+        return;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_NONE);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFCFFFFFF;
+        _g->w1 = 0xFFFDF6FB;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, a);
+    gDPPipeSync(D_800E9BA0++);
+    gSPTextureRectangle(D_800E9BA0++, 0, 0, 319 << 2, 239 << 2, 0, 0, 0, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019D548_ovl_1CE070);
