@@ -504,7 +504,23 @@ s16 func_80228844_ovl_27A020(Find27 *f) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802288C0_ovl_27A020);
+#include "gbi_ultra.h"
+typedef struct {
+    s32 cms;
+    s32 cmt;
+    s32 masks;
+    s32 maskt;
+} TexMode27;
+extern TexMode27 D_8022C918_ovl_27A020[];
+
+/* Loads a CI4 texture (w x h pixels at img) with its 16-colour palette pal; wrap/mask settings
+ * come from preset `mode` in D_8022C918 (same loader as 151F40 func_80200F70) */
+void func_802288C0_ovl_27A020(void *pal, void *img, u16 w, u16 h, u16 mode) {
+    TexMode27 *m = &D_8022C918_ovl_27A020[mode];
+
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, pal);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, img, G_IM_FMT_CI, w, h, 0, m->cms, m->cmt, m->masks, m->maskt, 0, 0);
+}
 
 #ifdef NON_MATCHING
 /* m2c draft, 75 words from the target; queued for the permuter */
