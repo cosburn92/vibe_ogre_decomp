@@ -139,7 +139,38 @@ void func_801AD5A0_ovl_0FA5E0(s32 id) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AD748_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801ADF6C_ovl_0FA5E0);
+void func_80078674(s32 x, s32 y, s32 x2, s32 y2);
+void func_80078C6C(s32 mode, s32 x, s32 y, s32 x2, s32 y2);
+void func_801768D4(s32 w, s32 h, s32 x, s32 y, s32 x2, s32 y2);
+void func_80197B70(void);
+void func_801AE0C4_ovl_0FA5E0(f32 a, f32 b, s32 c, s32 d, s32 e);
+void func_801B15BC_ovl_0FA5E0(Widget3390 *w);
+void func_801AE5BC_ovl_0FA5E0(void);
+void func_801AEB2C_ovl_0FA5E0(void);
+
+/* Scene draw: frames the scene rectangle, then (unless the widget is closed) draws the background
+ * and up to four placed items (entries of 0x1C bytes from widget+0x1C) */
+void func_801ADF6C_ovl_0FA5E0(void) {
+    s32 i;
+    u8 *e;
+
+    func_80078674(D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+    if (D_801B3390_ovl_0FA5E0->unk10[0] != 0) {
+        func_80078C6C(1, D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+        return;
+    }
+    func_801768D4(0x140, 0xF0, D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+    func_80197B70();
+    for (i = 0; i < 4; i++) {
+        e = (u8 *)D_801B3390_ovl_0FA5E0 + i * 0x1C;
+        if (FIELD(e, f32, 0x1C) != 0.0f) {
+            func_801AE0C4_ovl_0FA5E0(FIELD(e, f32, 0x1C), FIELD(e, f32, 0x20), FIELD(e, s32, 0x24), FIELD(e, s32, 0x28), FIELD(e, s32, 0x2C));
+        }
+    }
+    func_801B15BC_ovl_0FA5E0(D_801B3390_ovl_0FA5E0);
+    func_801AE5BC_ovl_0FA5E0();
+    func_801AEB2C_ovl_0FA5E0();
+}
 
 void func_801AE090_ovl_0FA5E0(void) {
     nuGfxTaskAllEndWait();
