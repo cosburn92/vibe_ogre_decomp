@@ -585,14 +585,39 @@ void func_80228B7C_ovl_27A020(s32 arg0, s32 arg1, s32 arg2) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228B7C_ovl_27A020);
 #endif
 
+/* Sprite atlas entry: screen rect relative to the draw position and texel origin */
+typedef struct {
+    u16 x0;
+    u16 y0;
+    u16 x1;
+    u16 y1;
+    u16 s;
+    u16 t;
+} Atlas27;
+extern Atlas27 D_8022CA38_ovl_27A020[];
+
+/* Draws atlas sprite `id` (rect + texture origin in D_8022CA38) at (x, y) */
+/* Draws atlas sprite `id` (rect + texture origin in D_8022CA38) at (x, y) */
+#ifdef NON_MATCHING
+/* atlas sprite: 4 instructions short; original has an 8-byte frame and mixes lh/lhu loads of y0 */
+void func_80228D1C_ovl_27A020(s32 x, s32 y, u16 id) {
+    Atlas27 *a = &D_8022CA38_ovl_27A020[id];
+
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, (a->x0 + x) * 4, (a->y0 + y) * 4, (a->x1 + x) * 4, (a->y1 + y) * 4, 0,
+                            a->s << 5, a->t << 5, 1 << 10, 1 << 10);
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228D1C_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228EFC_ovl_27A020);
 
 #include "gbi_ultra.h"
 extern u8 D_8022CA98_ovl_27A020[];
 extern u8 D_8022CAB8_ovl_27A020[];
-void func_80228D1C_ovl_27A020(s32 x, s32 y, s32 z);
+void func_80228D1C_ovl_27A020(s32 x, s32 y, s32 id);
 
 /* Draws the 32x128 gauge frame (CI4, palette D_8022CA98) at (x, y); mode 2 sits one pixel in */
 void func_802291A0_ovl_27A020(s32 x, s32 y, s32 mode) {
