@@ -129,7 +129,74 @@ void func_801B7388_ovl_1CE070(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B73D4_ovl_1CE070);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx1ED;
+
+void func_801B6F90_ovl_1CE070(Gfx1ED **gp);
+
+/* Closes the display list (last == 0: full sync + end, records its end) or sends it to the
+ * scheduler as a graphics task, like nuGfxTaskStart */
+void func_801B73D4_ovl_1CE070(u8 last) {
+    NUScTask *t;
+    Gfx1ED *gp;
+    Gfx1ED *start;
+    Gfx1ED *end;
+    u32 mask;
+
+    if (!last) {
+        gp = FIELD(D_801BA6D0_ovl_1CE070, Gfx1ED *, 0x5C);
+        func_801B6F90_ovl_1CE070(&gp);
+        {
+            Gfx1ED *_g = gp++;
+            _g->w0 = 0xE9000000;
+            _g->w1 = 0;
+        }
+        {
+            Gfx1ED *_g = gp++;
+            _g->w0 = 0xDF000000;
+            _g->w1 = 0;
+        }
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x7E]++;
+        FIELD(D_801BA6D0_ovl_1CE070, Gfx1ED *, 0x58) = gp;
+        return;
+    }
+    ((u8 *)D_801BA6D0_ovl_1CE070)[0x7E]++;
+    t = (NUScTask *)D_801BA6D0_ovl_1CE070;
+    end = FIELD(t, Gfx1ED *, 0x58);
+    start = FIELD(t, Gfx1ED *, 0x5C);
+    t->framebuffer = FIELD(t, void *, 0x64);
+    t->state = 1;
+    t->next = D_800E7D90;
+    t->msgQ = &D_800E9BA8;
+    t->msg = D_801B9998_ovl_1CE070;
+    t->flags = 0;
+    t->list.t.type = 1;
+    t->list.t.ucode_boot = D_8009ECB0;
+    t->list.t.ucode_boot_size = (s32)D_8009ED80 - (s32)D_8009ECB0;
+    t->list.t.ucode = D_800A5110;
+    t->list.t.ucode_size = (s32)D_800A69D0 - (s32)D_800A5110;
+    t->list.t.flags = 0;
+    t->list.t.ucode_data = D_800AD590;
+    t->list.t.ucode_data_size = (s32)D_800AD920 - (s32)D_800AD590;
+    t->list.t.dram_stack = D_800E8710;
+    t->list.t.dram_stack_size = 0x400;
+    t->list.t.output_buff = D_800C7970;
+    t->list.t.output_buff_size = (u64 *)(D_800A9E70 + (u32)D_800C7970);
+    t->list.t.data_ptr = (u64 *)start;
+    t->list.t.data_size = (end - start) * sizeof(Gfx1ED);
+    t->list.t.yield_data_ptr = D_800C6D70;
+    t->list.t.yield_data_size = 0xC00;
+    mask = osSetIntMask(1);
+    D_800E79A4++;
+    osSetIntMask(mask);
+    osWritebackDCacheAll();
+    osSendMesg(&D_800E8B4C, D_801BA6D0_ovl_1CE070, 1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B75B8_ovl_1CE070);
 
