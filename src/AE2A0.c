@@ -348,7 +348,30 @@ void func_801C701C_ovl_087200(f32 *x, f32 *y, s32 i) {
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C70A0_ovl_087200);
 
+/* Screen position of slot i in the six-row grid; negative i counts columns to the left */
+#ifdef NON_MATCHING
+/* six-row grid position: float register use differs */
+void func_801C74D8_ovl_087200(f32 *x, f32 *y, s32 i) {
+    s32 r;
+    s32 c;
+    f32 fc;
+    f32 fr;
+
+    if (i < 0) {
+        r = i % 6;
+        r = (r != 0) ? 6 - ((r < 0) ? -r : r) : 0;
+    } else {
+        r = i % 6;
+    }
+    c = (i < 0) ? ((i + 1) / 6 - 1) * 6 : i;
+    fc = c / 6;
+    fr = 5 - r;
+    *x = 10.0f - fc * 36.0f + fr * 15.0f + 0.5f;
+    *y = fr * 25.0f + -5.0f + fc * 10.0f + 0.5f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C74D8_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7624_ovl_087200);
 
