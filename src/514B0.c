@@ -604,21 +604,16 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017E264_ovl_040E80);
 
 /* Draws the 16x32 cursor arrow (sprite sheet +0x1500, palette +0x200) as a 10-px-tall bar
  * from x0 to x1 at y */
-#ifdef NON_MATCHING
-/* cursor bar: command stores scheduled differently */
 void func_8017E80C_ovl_040E80(s32 x0, s32 y, s32 x1) {
     gDPPipeSync(D_800E9BA0++);
     gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
     gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
-    gDPLoadTLUT_pal16(D_800E9BA0++, 0, ((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x200);
+    LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x200);
     func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x1500, 16, 32, 2, 0, 2, 0);
     gDPPipeSync(D_800E9BA0++);
     gSPScisTextureRectangle(D_800E9BA0++, x0 * 4, y * 4, x1 * 4, (y + 10) * 4, 0, 0, 0, 1 << 10, 1 << 10);
     gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017E80C_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EAE8_ovl_040E80);
 
