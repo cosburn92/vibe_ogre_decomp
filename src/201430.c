@@ -402,35 +402,32 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BEB28_ovl_1F0A30);
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEBE4_ovl_1F0A30);
 
 /* Blue-tinted shade of an RGBA8888 colour by its brightest channel */
-#ifdef NON_MATCHING
 /* new r/g registers (a3/t0) swapped */
-u32 func_801BED08_ovl_1F0A30(u32 c) {
+u32 func_801BED08_ovl_1F0A30(u32 rgba) {
+    s32 g = (rgba >> 16) & 0xFF;
     s32 r;
-    s32 g = (c >> 16) & 0xFF;
-    s32 b = (c >> 8) & 0xFF;
-    s32 m = c >> 24;
-    s32 a = c & 0xFF;
+    s32 b = (rgba >> 8) & 0xFF;
+    u32 a = rgba & 0xFF;
+    s32 max = rgba >> 24;
 
-    if (m < g) {
-        m = g;
+    if (max < g) {
+        max = g;
     }
-    if (m < b) {
-        m = b;
+    if (max < b) {
+        max = b;
     }
-    if (m < 0x80) {
-        r = m * 112 / 128 + 24;
-        g = m * 112 / 128 + 28;
-        b = m * 96 / 128 + 8;
+    if (max < 128) {
+        r = max * 112 / 128 + 24;
+        g = max * 112 / 128 + 28;
+        b = max * 96 / 128 + 8;
     } else {
-        r = m * 80 / 128 + 56;
-        g = m * 80 / 128 + 60;
-        b = m * 80 / 128 + 40;
+        r = max * 80 / 128 + 56;
+        g = max * 80 / 128 + 60;
+        b = max * 80 / 128 + 40;
     }
-    return (r << 24) + (g << 16) + (b << 8) | a;
+    r <<= 8;
+    return (((u32)r << 16) + ((u32)g << 16) + ((u32)b << 8)) | a;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BED08_ovl_1F0A30);
-#endif
 
 /* RGBA5551 version of the tint above */
 #ifdef NON_MATCHING
