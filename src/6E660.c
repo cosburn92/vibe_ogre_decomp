@@ -267,21 +267,24 @@ u8 *func_80197FB4_ovl_06E660(u8 *desc, u32 index) {
     return NULL;
 }
 
+/* Texels of image index in texture set t, or NULL when the image has none */
+#define TEXSET_TEXELS(p, t, index)                   \
+    {                                                \
+        u8 *_e = func_80197DE4_ovl_06E660(t, index); \
+        if (_e == NULL) {                            \
+            p = NULL;                                \
+        } else {                                     \
+            p = NULL;                                \
+            if (_e[3] & 1) {                         \
+                p = _e + 8;                          \
+            }                                        \
+        }                                            \
+    }
+
 /* Decodes image index of texture set t into a new one-image set. An image that names itself as
  * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
  * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
  * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
-/* Decodes image index of texture set t into a new one-image set. An image that names itself as
- * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
- * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
- * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
-#define TEXSET_TEXELS(p, t, index)                                                                      {                                                                                                       u8 *_e = func_80197DE4_ovl_06E660(t, index);                                                        if (_e == NULL) {                                                                                       p = NULL;                                                                                       } else {                                                                                                p = NULL;                                                                                           if (_e[3] & 1) {                                                                                        p = _e + 8;                                                                                     }                                                                                               }                                                                                               }
-/* Decodes image index of texture set t into a new one-image set. An image that names itself as
- * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
- * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
- * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
-#ifdef NON_MATCHING
-/* 568/568 instructions, 20 words differ: register choice for the two bytes in the 4-bit plane's subtraction */
 u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
     u8 f = t[3];
     u32 w = *(u16 *)(t + 4);
@@ -416,8 +419,10 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
                 half = (w + 1) >> 1;
                 for (y = 0; y < h; y++) {
                     for (x = 0; x < half; x++) {
-                        sdst[x] = (((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF) |
-                                  (((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF);
+                        u8 hi = ((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF;
+                        u8 lo = ((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF;
+
+                        sdst[x] = lo | hi;
                     }
                     sdst += subPitch;
                     sprev += subPitch;
@@ -477,8 +482,10 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
                 half = (w + 1) >> 1;
                 for (y = 0; y < h; y++) {
                     for (x = 0; x < half; x++) {
-                        sdst[x] = (((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF) |
-                                  (((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF);
+                        u8 hi = ((sprev[x] & 0xF0) - (ssrc[x] & 0xF0)) & ~0xF;
+                        u8 lo = ((sprev[x] & 0xF) - (ssrc[x] & 0xF)) & 0xF;
+
+                        sdst[x] = lo | hi;
                     }
                     sdst += subPitch;
                     sprev += subPitch;
@@ -499,9 +506,6 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
     HFree(base);
     return out;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/6E660", func_801980AC_ovl_06E660);
-#endif
 
 /* Tints an RGBA colour towards blue-grey by its brightest channel, keeping alpha */
 /* The red and green results use swapped registers (a3/t0). */
