@@ -25,7 +25,106 @@ void *LoadChunkRaw(void *dst, u32 handle);
 u8 *func_80197DE4_ovl_06E660(u8 *desc, u32 index);
 void func_801997D0_ovl_06E660(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 mode);
 
+/* Sprite animation player state */
+typedef struct {
+    /* 0x00 */ u8 *script;
+    /* 0x04 */ s16 pc;
+    /* 0x06 */ s16 x;
+    /* 0x08 */ s16 y;
+    /* 0x0A */ u8 loops;
+    /* 0x0B */ u8 alpha;
+    /* 0x0C */ u8 unk0C;
+    /* 0x0D */ u8 frame;
+    /* 0x0E */ u8 wait;
+    /* 0x0F */ u8 state; /* 0 stopped, bit 7 restart */
+} SpriteAnim;
+
+/* Steps a sprite animation script. Pairs (op, arg): op < 0xF0 shows frame op for arg ticks;
+ * F0 stop, F1 set loop count, F2/F3 set x/y, F4/F5 subtract from x/y, F6 set alpha,
+ * F7 add to alpha (clamped), F8 jump, F9 loop back while the count lasts. */
+#ifdef NON_MATCHING
+/* anim script step: op/arg registers (a1/a2) swapped */
+s32 func_80197B70_ovl_06E660(SpriteAnim *a) {
+    u8 done;
+    u8 op;
+    u8 arg;
+    u8 v;
+
+    if (a->state == 0) {
+        return 0;
+    }
+    if (a->state & 0x80) {
+        a->state = 1;
+        a->y = 0;
+        a->x = 0;
+        a->pc = -1;
+        a->wait = 0;
+    }
+    if (a->wait == 0 || --a->wait == 0) {
+        done = 0;
+        a->pc++;
+        do {
+            op = a->script[a->pc * 2];
+            arg = a->script[a->pc * 2 + 1];
+            if (op < 0xF0) {
+                done++;
+                a->frame = op;
+                a->wait = arg;
+                continue;
+            }
+            a->pc++;
+            switch (op) {
+                case 0xF0:
+                    a->state = 0;
+                    done++;
+                    break;
+                case 0xF1:
+                    a->loops = arg;
+                    break;
+                case 0xF2:
+                    a->x = (s8)arg;
+                    break;
+                case 0xF3:
+                    a->y = (s8)arg;
+                    break;
+                case 0xF4:
+                    a->x -= (s8)arg;
+                    break;
+                case 0xF5:
+                    a->y -= (s8)arg;
+                    break;
+                case 0xF6:
+                    a->alpha = arg;
+                    break;
+                case 0xF7:
+                    if ((s8)arg < 0) {
+                        v = a->alpha + arg;
+                        if (a->alpha + (s8)arg < 0) {
+                            v = 0;
+                        }
+                    } else {
+                        v = a->alpha + arg;
+                        if (a->alpha + (s8)arg >= 0x100) {
+                            v = 0xFF;
+                        }
+                    }
+                    a->alpha = v;
+                    break;
+                case 0xF9:
+                    if (--a->loops == 0) {
+                        break;
+                    }
+                case 0xF8:
+                    a->pc = arg;
+                    break;
+            }
+        } while (done == 0);
+    }
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/6E660", func_80197B70_ovl_06E660);
+#endif
 
 #ifdef NON_MATCHING
 /* Only register choice when computing the two section pointers differs. */
