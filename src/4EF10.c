@@ -376,32 +376,35 @@ INCLUDE_RODATA("asm/nonmatchings/4EF10", D_80190D00_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017B098_ovl_040E80);
 
-#ifdef NON_MATCHING
 /* GCC shares (c - '0') between the test and the sum; the original computes n * 10 - '0' + c. */
 /* Parses the decimal number after the current character, advancing *pp past it. */
-s32 func_8017B500_ovl_040E80(u8 **pp) {
-    u8 *s = *pp;
-    s32 n = 0;
-    u8 c;
-
-    if (*s != 0) {
-        do {
-            u8 *t = s + 1;
-
-            *pp = t;
-            c = s[1];
-            if ((u32)(c - '0') >= 10) {
-                break;
-            }
-            n = n * 10 - '0' + c;
-            s = t;
-        } while (c != 0);
+s32 func_8017B500_ovl_040E80(u8 **pp)
+{
+  short new_var;
+  int new_var2;
+  u8 *s = *pp;
+  s32 n = 0;
+  u8 c;
+  if ((*s) != 0)
+  {
+    do
+    {
+      u8 *t = s + 1;
+      *pp = t;
+      new_var2 = '0';
+      c = s[1];
+      new_var = c - new_var2;
+      if (((u32) new_var) >= 10)
+      {
+        break;
+      }
+      n = ((n * 10) - new_var2) + c;
+      s = t;
     }
-    return n;
+    while (c != 0);
+  }
+  return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017B500_ovl_040E80);
-#endif
 
 /* Shift-JIS lead byte: 0x81-0x9F or 0xE0-0xFC. */
 s32 func_8017B550_ovl_040E80(u8 c) {

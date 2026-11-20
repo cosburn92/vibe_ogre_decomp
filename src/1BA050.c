@@ -638,20 +638,16 @@ s32 func_802225C4_ovl_1BA050(ScriptCtx *ctx) {
     return 0;
 }
 
-#ifdef NON_MATCHING
 /* Same operations; the order of the loads and stores around the volatile pc differs. */
-s32 func_80222610_ovl_1BA050(ScriptCtx *ctx) {
-    u16 a = ~*(u16 *)(ctx->pc + 2);
-    u16 b = ~*(u16 *)(ctx->pc + 2);
-
-    ctx->pc += 4;
-    D_8022A822_ovl_1BA050 &= b;
-    D_8022A830_ovl_1BA050 &= a;
-    return 0;
+s32 func_80222610_ovl_1BA050(ScriptCtx *ctx)
+{
+  u16 a = ~(*((u16 *) (ctx->pc + 2)));
+  u16 b = ~(*((u16 *) (ctx->pc + 2)));
+  ctx->pc += 4;
+  D_8022A830_ovl_1BA050 &= a;
+  D_8022A822_ovl_1BA050 &= b;
+  return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80222610_ovl_1BA050);
-#endif
 
 s32 func_80222664_ovl_1BA050(ScriptCtx *ctx) {
     D_8022A254_ovl_1BA050 |= 1;
