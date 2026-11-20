@@ -271,13 +271,17 @@ u8 *func_80197FB4_ovl_06E660(u8 *desc, u32 index) {
  * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
  * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
  * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
+/* Decodes image index of texture set t into a new one-image set. An image that names itself as
+ * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
+ * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
+ * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
 #define TEXSET_TEXELS(p, t, index)                                                                      {                                                                                                       u8 *_e = func_80197DE4_ovl_06E660(t, index);                                                        if (_e == NULL) {                                                                                       p = NULL;                                                                                       } else {                                                                                                p = NULL;                                                                                           if (_e[3] & 1) {                                                                                        p = _e + 8;                                                                                     }                                                                                               }                                                                                               }
 /* Decodes image index of texture set t into a new one-image set. An image that names itself as
  * its reference is copied as is; otherwise its reference is decoded first (recursively) and this
  * image's data are applied as deltas: XOR for 32-bit sets, subtraction for 8- and 16-bit texels
  * and for the second (4-bit or 8-bit) plane. Image flag 8 marks texels stored whole. */
 #ifdef NON_MATCHING
-/* delta-frame texture decoder: 568 vs 568, identical opcodes; 115 words differ only in saved-register assignment */
+/* 568/568 instructions, 20 words differ: register choice for the two bytes in the 4-bit plane's subtraction */
 u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
     u8 f = t[3];
     u32 w = *(u16 *)(t + 4);
@@ -287,19 +291,14 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
     s32 texBytes;
     s32 subBytes;
     s32 size;
+    u8 *e;
     s32 dsize;
-    u8 *prev;
     u8 *out;
     u8 *base;
     u8 *hdr;
     u8 g;
     u32 x;
     u32 y;
-    u8 *src;
-    u8 *dst;
-    u8 *ssrc;
-    u8 *sprev;
-    u8 *sdst;
     u16 half;
 
     if (f & 2) {
@@ -321,10 +320,10 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
         }
     }
     texBytes = pitch * h;
-    prev = func_80197DE4_ovl_06E660(t, index);
+    e = func_80197DE4_ovl_06E660(t, index);
     subBytes = subPitch * h;
-    if (index == prev[2]) {
-        g = prev[3];
+    if (index == e[2]) {
+        g = e[3];
         size = 0x10;
         if (g & 1) {
             size = texBytes + 0x10;
@@ -338,12 +337,12 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
         out = HMalloc(size);
         _bcopy(t, out, 8);
         out[2] = 1;
-        _bcopy(prev, out + 8, size - 8);
+        _bcopy(e, out + 8, size - 8);
         out[10] = 0;
         return out;
     }
-    base = func_801980AC_ovl_06E660(t, prev[2]);
-    g = prev[3];
+    base = func_801980AC_ovl_06E660(t, e[2]);
+    g = e[3];
     dsize = 0x10;
     if (g & 1) {
         dsize = texBytes + 0x10;
@@ -358,10 +357,14 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
     _bcopy(t, out, 8);
     hdr = out + 8;
     out[2] = 1;
-    _bcopy(prev, hdr, 8);
+    _bcopy(e, hdr, 8);
     out[10] = 0;
     f = t[3];
     if (f & 2) {
+        u8 *src;
+        u8 *prev;
+        u8 *dst;
+
         TEXSET_TEXELS(src, t, index);
         TEXSET_TEXELS(prev, base, 0);
         TEXSET_TEXELS(dst, out, 0);
@@ -374,6 +377,13 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
             src += pitch;
         }
     } else if (f & 4) {
+        u8 *src;
+        u8 *ssrc;
+        u8 *prev;
+        u8 *sprev;
+        u8 *dst;
+        u8 *sdst;
+
         TEXSET_TEXELS(src, t, index);
         ssrc = func_80197F08_ovl_06E660(t, index);
         TEXSET_TEXELS(prev, base, 0);
@@ -428,6 +438,13 @@ u8 *func_801980AC_ovl_06E660(u8 *t, u32 index) {
             _bcopy(func_80197FB4_ovl_06E660(t, index), func_80197FB4_ovl_06E660(out, 0), 0x200);
         }
     } else if (!(f & 6)) {
+        u8 *src;
+        u8 *ssrc;
+        u8 *prev;
+        u8 *sprev;
+        u8 *dst;
+        u8 *sdst;
+
         TEXSET_TEXELS(src, t, index);
         ssrc = func_80197F08_ovl_06E660(t, index);
         TEXSET_TEXELS(prev, base, 0);
