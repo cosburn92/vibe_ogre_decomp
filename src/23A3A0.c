@@ -140,8 +140,7 @@ extern u16 D_80197B60;
 extern u8 D_801976DC;
 extern u8 D_801976D8;
 extern u8 D_801936A8;
-extern u8 D_801953F0;
-extern u8 D_801953F1;
+extern u8 D_801953F0[];
 extern Arc23A D_801D16B0_ovl_23A3A0;
 extern PlayerChar23A D_80193BC0[];
 s32 ChunkSize(s32 id);
@@ -153,11 +152,6 @@ void func_80172394(void);
 void func_8017223C(s32 a);
 void func_801707F4(void);
 
-/* Builds the encounter squad (gSquads[30]) for formation D_80193670/71 (or the forced id in
- * D_80197B60): reads its 35-byte record from the formation archive, scales levels to the
- * strongest member of the player's squad D_801976DC (capped at 99), and creates the units */
-#ifdef NON_MATCHING
-/* encounter squad builder: logic complete, 664 vs 663 instructions; the group position checks need the original jump-threaded shape (explicit goto chain below gets the layout nearly right) */
 /* Adds one unit of class cls to the enemy roster and returns its roster index: class 1 takes a
  * pooled slot (index 100 + slot), any other class the first free enemy Character record */
 static inline s32 Squad23A_AddUnit(s32 cls, s32 level, s32 item1, s32 item2) {
@@ -182,53 +176,62 @@ static inline s32 Squad23A_AddUnit(s32 cls, s32 level, s32 item1, s32 item2) {
     return c - D_80195560;
 }
 
-/* Adds the group's units at each occupied position; returns the next free member slot */
+/* Adds the group's units at each occupied position; returns the next free member slot. The goto
+ * chain is the jump-threaded shape the original compiles to: all three positions are tested
+ * before the first unit is added (plain sequential ifs do not produce it). */
 static inline s32 Squad23A_AddGroup(SquadRec *sq, Formation23AGroup *grp, s32 level, s32 n) {
     if (grp->cls != 0) {
         if (grp->pos[0] == 0) {
             if (grp->pos[1] == 0) {
-                if (grp->pos[2] != 0) {
-                    goto pos2;
+                if (grp->pos[2] == 0) {
+                    goto done;
                 }
-                return n;
+                goto check1;
+            } else {
+                goto add1;
             }
-            goto pos1;
-        }
+        } else {
             sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
                                               (grp->item2[0] << 8) + grp->item2[1]);
             sq->pos[n] = grp->pos[0] - 1;
             n++;
-        if (grp->pos[1] != 0) {
-        pos1:
-            sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
-                                              (grp->item2[0] << 8) + grp->item2[1]);
-            sq->pos[n] = grp->pos[1] - 1;
-            n++;
-        }
-        if (grp->pos[2] != 0) {
-        pos2:
-            sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
-                                              (grp->item2[0] << 8) + grp->item2[1]);
-            sq->pos[n] = grp->pos[2] - 1;
-            n++;
+        check1:
+            if (grp->pos[1] != 0) {
+            add1:
+                sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level,
+                                                  (grp->item1[0] << 8) + grp->item1[1],
+                                                  (grp->item2[0] << 8) + grp->item2[1]);
+                sq->pos[n] = grp->pos[1] - 1;
+                n++;
+            }
+            if (grp->pos[2] != 0) {
+                sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level,
+                                                  (grp->item1[0] << 8) + grp->item1[1],
+                                                  (grp->item2[0] << 8) + grp->item2[1]);
+                sq->pos[n] = grp->pos[2] - 1;
+                n++;
+            }
         }
     }
+done:
     return n;
 }
 
+/* Builds the encounter squad (gSquads[30]) for formation D_80193670/71 (or the forced id in
+ * D_80197B60): reads its 35-byte record from the formation archive, scales levels to the
+ * strongest member of the player's squad D_801976DC (capped at 99), and creates the units */
 void func_801D0A8C_ovl_23A3A0(void) {
     u8 harmony = D_80193672;
     s32 id = (D_80193670 << 8) | D_80193671;
     s32 level = 99;
-    u8 *built = &D_801976E8;
+    u8 *built;
     Formation23A rec;
     Arc23A arc;
     Arc23A req;
     s32 *p;
     s32 chunk;
-    u32 i;
     s32 max;
-    s32 n;
+    u32 n;
     s32 idx;
     SquadRec *mine;
     SquadRec *sq = &gSquads[30];
@@ -237,6 +240,7 @@ void func_801D0A8C_ovl_23A3A0(void) {
     if (D_80197B60 != 0) {
         id = D_80197B60 & 0x7FFF;
     }
+    built = &D_801976E8;
     if (*built == 30) {
         return;
     }
@@ -249,6 +253,7 @@ void func_801D0A8C_ovl_23A3A0(void) {
     arc.buf = LoadChunkRaw(NULL, chunk);
     req.index = 0;
     func_8007ACB0(&arc, &req, 1);
+    n = 0; /* the level scan's counter, set before this call in the original */
     HFree(arc.buf);
     func_80080998(&rec, req.buf + id * sizeof(Formation23A), sizeof(Formation23A));
     HFree(req.buf);
@@ -257,8 +262,8 @@ void func_801D0A8C_ovl_23A3A0(void) {
 
     max = 0;
     mine = &gSquads[D_801976DC];
-    for (i = 0; i < 5; i++) {
-        u8 m = mine->members[i];
+    for (; n < 5; n++) {
+        u8 m = mine->members[n];
 
         if ((m != 0) & (m < 100)) {
             if (max < D_80193BC0[m].c.level) {
@@ -270,17 +275,18 @@ void func_801D0A8C_ovl_23A3A0(void) {
         level = max;
     }
 
+    n = 0;
     bzero(D_80195560, 0x141C);
-    bzero(&D_801953F0, 0x16C);
-    D_801953F0 = 120;
-    D_801953F1 = 120;
+    bzero(D_801953F0, 0x16C);
+    D_801953F0[0] = 120;
+    D_801953F0[1] = 120;
     func_801D0840_ovl_23A3A0(D_80195560, 1, level, 0, 0);
     D_801953F2.cur = D_80195560[0].maxHp;
 
     bzero(sq, sizeof(SquadRec));
-    n = 0;
-    idx = Squad23A_AddUnit(rec.cls, rec.level + level, (rec.item1[0] << 8) + rec.item1[1],
-                           (rec.item2[0] << 8) + rec.item2[1]);
+    idx = Squad23A_AddUnit(((Formation23A *)bp)->cls, ((Formation23A *)bp)->level + level,
+                           (((Formation23A *)bp)->item1[0] << 8) + ((Formation23A *)bp)->item1[1],
+                           (((Formation23A *)bp)->item2[0] << 8) + ((Formation23A *)bp)->item2[1]);
     sq->members[n] = idx;
     D_80195560[idx & 0xFF].status = 2;
     sq->flags = 0x81;
@@ -298,9 +304,6 @@ void func_801D0A8C_ovl_23A3A0(void) {
         func_801707F4();
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23A3A0", func_801D0A8C_ovl_23A3A0);
-#endif
 
 /* Creates a one-unit enemy squad in the first free slot from 49 down to 30 */
 void func_801D14E8_ovl_23A3A0(void) {
