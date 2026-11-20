@@ -83,7 +83,72 @@ void func_8019951C_ovl_066E10(void) {
     }
 }
 
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx680;
+
+void func_80199110_ovl_066E10(Gfx680 **gp);
+
+#ifdef NON_MATCHING
+/* 121/121 instructions, 30 words differ: scheduling of the task-field stores (same function in 1ED1D0 and 20FDC0) */
+void func_80199568_ovl_066E10(u8 last) {
+    NUScTask *t;
+    Gfx680 *gp;
+    Gfx680 *start;
+    u32 mask;
+
+    if (!last) {
+        gp = FIELD(D_8019A660_ovl_066E10, Gfx680 *, 0x5C);
+        func_80199110_ovl_066E10(&gp);
+        {
+            Gfx680 *_g = gp++;
+            _g->w0 = 0xE9000000;
+            _g->w1 = 0;
+        }
+        {
+            Gfx680 *_g = gp++;
+            _g->w0 = 0xDF000000;
+            _g->w1 = 0;
+        }
+        D_8019A660_ovl_066E10[0x7E]++;
+        FIELD(D_8019A660_ovl_066E10, Gfx680 *, 0x58) = gp;
+        return;
+    }
+    D_8019A660_ovl_066E10[0x7E]++;
+    t = (NUScTask *)D_8019A660_ovl_066E10;
+    start = FIELD(t, Gfx680 *, 0x5C);
+    t->framebuffer = FIELD(t, void *, 0x64);
+    t->state = 1;
+    t->next = D_800E7D90;
+    t->msgQ = &D_800E9BA8;
+    t->msg = D_8019A388_ovl_066E10;
+    t->flags = 0;
+    t->list.t.type = 1;
+    t->list.t.ucode_boot = D_8009ECB0;
+    t->list.t.ucode_boot_size = (s32)D_8009ED80 - (s32)D_8009ECB0;
+    t->list.t.ucode = D_800A5110;
+    t->list.t.ucode_size = (s32)D_800A69D0 - (s32)D_800A5110;
+    t->list.t.ucode_data = D_800AD590;
+    t->list.t.ucode_data_size = (s32)D_800AD920 - (s32)D_800AD590;
+    t->list.t.flags = 0;
+    t->list.t.dram_stack = D_800E8710;
+    t->list.t.dram_stack_size = 0x400;
+    t->list.t.output_buff = D_800C7970;
+    t->list.t.output_buff_size = (u64 *)(D_800A9E70 + (u32)D_800C7970);
+    t->list.t.data_ptr = (u64 *)start;
+    t->list.t.data_size = (FIELD(t, Gfx680 *, 0x58) - start) * sizeof(Gfx680);
+    t->list.t.yield_data_ptr = D_800C6D70;
+    t->list.t.yield_data_size = 0xC00;
+    mask = osSetIntMask(1);
+    D_800E79A4++;
+    osSetIntMask(mask);
+    osWritebackDCacheAll();
+    osSendMesg(&D_800E8B4C, D_8019A660_ovl_066E10, 1);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/680F0", func_80199568_ovl_066E10);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/680F0", func_8019974C_ovl_066E10);
 
