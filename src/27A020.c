@@ -734,7 +734,48 @@ void func_8022A95C_ovl_27A020(Obj27 *o) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A95C_ovl_27A020);
 #endif
 
+void func_802297D8_ovl_27A020(u8 *e, s16 x, s32 y, s16 mark);
+void func_802293B4_ovl_27A020(s32 x, s32 y, s32 icon);
+
+/* Draws the list entries that carry a mark: entry palette, background slot, the entry row,
+ * and the mark icon (12 for idle, 4 for flagged) */
+#ifdef NON_MATCHING
+/* marked entries draw: one instruction short, original keeps the palette in s4 */
+void func_8022AAA4_ovl_27A020(Obj27 *o) {
+    u8 *win = FIELD(o, u8 *, 0);
+    List27 *l = (List27 *)&o->w18;
+    s16 i;
+    s16 y;
+    s16 x;
+    s16 mark;
+    u8 *e;
+    u8 pal;
+
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    y = FIELD(win, s32, 0x30) + 3;
+    x = FIELD(win, s32, 0x2C) + 5;
+    for (i = 0; i < 5; i++) {
+        e = (u8 *)l->items[i];
+        mark = List27_EntryMark(l, e);
+        if (mark != 0) {
+            pal = ((u8 (*)(u8, u8))func_8016DE1C)(e[0x4B], e[0x4F]);
+            func_802291A0_ovl_27A020(x, y + 1, pal);
+            func_802297D8_ovl_27A020(e, x, y + 1, mark);
+            switch (mark) {
+                case 1:
+                    func_802293B4_ovl_27A020(x - 15, y + 20, 12);
+                    break;
+                case 2:
+                    func_802293B4_ovl_27A020(x - 7, y + 20, 4);
+                    break;
+            }
+            y += 36;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AAA4_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AC5C_ovl_27A020);
 
