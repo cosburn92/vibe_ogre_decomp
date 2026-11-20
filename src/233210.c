@@ -226,7 +226,58 @@ extern s8 D_801F6A44_ovl_22A280[][7];
 
 INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F00E4_ovl_22A280);
+s32 func_801C8AEC(void);
+s32 func_801C8AFC(void);
+s32 func_801C8C74(BattleUnit *u);
+extern s8 D_801F6A04_ovl_22A280[7][2]; /* (average minus unit's value) threshold, adjustment */
+
+/* Pulls every eligible unit's unk34[0] toward the side's average (table steps, clamped 0..100) */
+void func_801F00E4_ovl_22A280(void) {
+    BattleUnit *u;
+    s32 n;
+    s32 sum;
+    s32 i;
+    u32 k;
+    s32 v;
+    s32 d;
+
+    if (func_801C8AEC() == 0 && func_801C8AFC() == 0) {
+        n = 0;
+        if ((u8)*D_801976DC < 30) {
+            sum = 0;
+            for (i = 0; i < 20; i++) {
+                u = func_801C8FE8(i);
+                if (u != NULL && func_801C8B68(u) == 0 && func_801C8C74(u) == 0) {
+                    n++;
+                    sum += u->unk34[0];
+                }
+            }
+            if (n != 0) {
+                sum /= n;
+                for (i = 0; i < 20; i++) {
+                    u = func_801C8FE8(i);
+                    if (func_801C8E30(u) == 0 && func_801C8B68(u) == 0 && func_801C8C74(u) == 0 &&
+                        func_801C8E9C(u) == 0) {
+                        d = sum - u->unk34[0];
+                        for (k = 0; k < 7; k++) {
+                            if (d >= D_801F6A04_ovl_22A280[k][0]) {
+                                v = D_801F6A04_ovl_22A280[k][1] + u->unk34[0];
+                                if (v < 0) {
+                                    v = 0;
+                                }
+                                if (v > 100) {
+                                    v = 100;
+                                }
+                                u->unk34[0] = v;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 #ifdef NON_MATCHING
 /* u16 result kept in a0 unmasked; return-path masking differs */
