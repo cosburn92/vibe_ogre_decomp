@@ -91,7 +91,40 @@ void func_801AA62C_ovl_0EBBB0(s32 i, s32 a, s32 b, s32 c, f32 *x, f32 *y) {
     *y = sy / 240.0f * (D_800E82C8[i].y2 - D_800E82C8[i].y + 1);
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 29 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8007FEE0(s32 *, s32 *, s32 *); /* extern */
+s32 func_8007FFD0(s32 *);                   /* extern */
+s32 func_80080040(s32 *, s32, s32);         /* extern */
+s32 func_800800C0(s32 *, s32 *, s32 *); /* extern */
+s32 func_80080190(s32 *, f32);              /* extern */
+s32 func_800801D0(s32 *, s32 *);        /* extern */
+f32 func_8009CE20(f32);                             /* extern */
+
+void func_801AA720_ovl_0EBBB0(f32 *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, s32 *arg5) {
+    s32 sp10;
+    s32 sp20;
+    s32 sp30;
+
+    func_80080040(&sp10, arg0 + 0x20, arg0 + 0x14);
+    func_8007FFD0(&sp10);
+    func_8007FEE0(&sp30, &sp10, arg0 + 0x2C);
+    func_8007FFD0(&sp30);
+    func_8007FEE0(&sp20, &sp10, &sp30);
+    func_8007FFD0(&sp20);
+    func_80080190(&sp10, 1.0f / func_8009CE20(((*arg0 * 0.5f) / 360.0f) * 6.2831855f));
+    func_80080190(&sp20, 2.0f * ((arg2 / arg4) - 0.5f));
+    func_80080190(&sp30, 2.0f * ((((arg1 / arg3) - 0.5f) * arg3) / arg4));
+    func_800801D0(&sp10, &sp20);
+    func_800800C0(arg5, &sp10, &sp30);
+    func_8007FFD0(arg5);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA720_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA8A4_ovl_0EBBB0);
 

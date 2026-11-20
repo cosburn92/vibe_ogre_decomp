@@ -274,8 +274,198 @@ void func_801E15E0_ovl_213B10(u8 *u, s32 cls) {
     func_801C41C8(&a, &b, &c, &d, &e, 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E1660_ovl_213B10);
+#ifdef NON_MATCHING
+/* m2c draft, 16 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_801ADADC(s32);                         /* extern */
+s32 func_801ADB9C(s32);                         /* extern */
+s32 func_801C92F8();                                /* extern */
+s32 func_801C9380();                                /* extern */
+s32 func_801C96D4(u8 *, s32);                   /* extern */
+s32 func_801C974C(u8 *, s32, s32, s32);     /* extern */
+extern s32 D_801CE8BC;
 
+u8 *func_801E1660_ovl_213B10(u8 *arg0, s32 arg1, s32 arg2) {
+    s32 sp18;
+    s32 sp1C;
+    s32 sp20;
+    s32 sp24;
+    s32 sp28;
+    s32 temp_a1;
+    s32 temp_a2;
+    s32 temp_s2;
+    s32 var_a3;
+    s32 var_v0;
+    u8 *temp_s1;
+
+    temp_s2 = arg1 & 0xFF;
+    var_a3 = temp_s2;
+    temp_a2 = arg2 & 0xFF;
+    temp_a1 = FIELD(arg0, s32, 0x48);
+    temp_s1 = D_801CE8BC + ((temp_a2 * 0xF8) + 0x1C4);
+    if (FIELD(arg0, s32, 0x4C) != temp_a1) {
+        var_a3 = temp_a1;
+    }
+    FIELD(temp_s1, s32, 0x48) = var_a3;
+    FIELD(temp_s1, s32, 0x4C) = temp_s2;
+    FIELD(temp_s1, u8, 0xF6) = (u8) FIELD(arg0, u8, 0xF6);
+    FIELD(temp_s1, s32, 0x6C) = (s32) FIELD(arg0, s32, 0x6C);
+    FIELD(temp_s1, u8, 0x31) = (u8) FIELD(arg0, u8, 0x31);
+    FIELD(temp_s1, u8, 0x33) = (u8) FIELD(arg0, u8, 0x33);
+    FIELD(temp_s1, u16, 0x22) = (u16) FIELD(arg0, u16, 0x22);
+    FIELD(temp_s1, u16, 0x20) = (u16) FIELD(arg0, u16, 0x20);
+    FIELD(temp_s1, u16, 0x24) = (u16) FIELD(arg0, u16, 0x24);
+    FIELD(temp_s1, u16, 0x26) = (u16) FIELD(arg0, u16, 0x26);
+    FIELD(temp_s1, u16, 0x28) = (u16) FIELD(arg0, u16, 0x28);
+    FIELD(temp_s1, u16, 0x2A) = (u16) FIELD(arg0, u16, 0x2A);
+    FIELD(temp_s1, u16, 0x2C) = (u16) FIELD(arg0, u16, 0x2C);
+    FIELD(temp_s1, u16, 0x2E) = (u16) FIELD(arg0, u16, 0x2E);
+    FIELD(temp_s1, u8, 0x30) = (u8) FIELD(arg0, u8, 0x30);
+    FIELD(temp_s1, u8, 0x34) = (u8) FIELD(arg0, u8, 0x34);
+    FIELD(temp_s1, u8, 0x3F) = (u8) FIELD(arg0, u8, 0x3F);
+    FIELD(temp_s1, s32, 0x40) = (s32) FIELD(arg0, s32, 0x40);
+    FIELD(temp_s1, s32, 0x58) = (s32) FIELD(arg0, s32, 0x58);
+    FIELD(temp_s1, s32, 0x54) = (s32) FIELD(arg0, s32, 0x54);
+    func_801C974C(temp_s1, 0, temp_a2, var_a3);
+    if (func_801C8B84(arg0) != 0) {
+        var_v0 = func_801C9380();
+    } else {
+        var_v0 = func_801C92F8();
+    }
+    func_801C96D4(arg0, var_v0);
+    sp18 = FIELD(temp_s1, s32, 0x48);
+    sp20 = func_801C8B68(temp_s1);
+    sp24 = func_801C8BA4(temp_s1);
+    sp1C = temp_s2;
+    sp28 = func_801C8FB8(temp_s1) & 0xFFFF;
+    func_801C41C8(&sp18, &sp1C, &sp20, &sp24, &sp28, 1);
+    func_801ADADC(FIELD(temp_s1, s32, 0));
+    func_801ADB9C(FIELD(temp_s1, s32, 0xC));
+    return temp_s1;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/222190", func_801E1660_ovl_213B10);
+#endif
+
+#ifdef NON_MATCHING
+/* m2c draft, 41 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 guRandom(s32);                              /* extern */
+extern s32 D_801E5E20_ovl_213B10;
+
+void func_801E1810_ovl_213B10(void *arg0) {
+    s16 temp_v0_2;
+    s16 temp_v1;
+    s32 temp_fp;
+    s32 temp_s6;
+    s32 temp_v0_4;
+    s32 temp_v1_2;
+    s32 temp_v1_3;
+    s32 var_a0_2;
+    s32 var_a1;
+    s32 var_s5;
+    u16 temp_v0_3;
+    u8 *var_v0;
+    u8 *var_v1;
+    u8 temp_s7;
+    u8 temp_v0;
+    u8 var_a0;
+    void *temp_s0;
+    void *temp_s1;
+    void *temp_s2;
+    void *var_s4;
+
+    temp_v0 = FIELD(arg0, u8, 0xA7);
+    var_v1 = D_801976E8;
+    temp_s7 = FIELD(arg0, u8, 0xA6);
+    if (temp_v0 == 0) {
+        var_v1 = D_801976E8 - 0xC;
+    }
+    var_v0 = NULL;
+    if (FIELD(var_v1, u8, 1) & 1) {
+        var_v0 = func_801E14FC_ovl_213B10((s32) temp_v0);
+    }
+    var_a0 = 0xFF;
+    if (var_v0 != NULL) {
+        var_a0 = FIELD(var_v0, u8, 8);
+    }
+    var_a1 = var_a0 & 0xFF;
+    if (FIELD(arg0, u8, 0xA7) == 0) {
+        if (var_a1 != 6) {
+            if (var_a1 < 7) {
+                if (var_a1 == 5) {
+                    var_a1 = 7;
+                    goto block_20;
+                }
+                var_s5 = 0;
+            } else {
+                switch (var_a1) {                   /* irregular */
+                case 8:
+                    var_a1 = 6;
+                    goto block_20;
+                default:
+                    var_s5 = 0;
+                    break;
+                case 7:
+                    var_a1 = 5;
+                    goto block_20;
+                }
+            }
+        } else {
+            var_a1 = 8;
+            goto block_20;
+        }
+    } else {
+block_20:
+        var_s5 = 0;
+    }
+    temp_s6 = (var_a1 * 6) + ((FIELD(arg0, u8, 0xA8) & 1) * 3);
+    if (temp_s7 != 0) {
+        temp_fp = (temp_s6 == 0) | (temp_s6 == 0x18);
+        var_s4 = arg0;
+        do {
+            var_a0_2 = 0;
+            temp_s1 = FIELD(var_s4, void *, 0);
+            temp_s0 = FIELD(var_s4, void *, 0xC);
+            temp_s2 = ((temp_s6 + var_s5) * 8) + &D_801E5E20_ovl_213B10;
+            if (temp_fp != 0) {
+                var_a0_2 = guRandom(0) % 15;
+            }
+            temp_v0_2 = FIELD(arg0, s32, 0x5C) + FIELD(temp_s2, s32, 0) + var_a0_2;
+            FIELD(temp_s0, s16, 0x28) = temp_v0_2;
+            FIELD(temp_s0, s16, 0x1C) = temp_v0_2;
+            FIELD(temp_s1, s16, 0x28) = temp_v0_2;
+            FIELD(temp_s1, s16, 0x1C) = temp_v0_2;
+            temp_v1 = FIELD(arg0, s32, 0x64) + FIELD(temp_s2, s32, 4);
+            FIELD(temp_s0, s16, 0x2C) = temp_v1;
+            FIELD(temp_s0, s16, 0x20) = temp_v1;
+            FIELD(temp_s1, s16, 0x2C) = temp_v1;
+            FIELD(temp_s1, s16, 0x20) = temp_v1;
+            temp_v0_3 = FIELD(arg0, u16, 0x62);
+            FIELD(temp_s0, u16, 0x2A) = temp_v0_3;
+            FIELD(temp_s0, u16, 0x1E) = temp_v0_3;
+            FIELD(temp_s1, u16, 0x2A) = temp_v0_3;
+            FIELD(temp_s1, u16, 0x1E) = temp_v0_3;
+            temp_v1_2 = FIELD(arg0, s32, 0x5C) + (FIELD(temp_s2, s32, 0) * 0x1E);
+            FIELD(temp_s0, s32, 4) = temp_v1_2;
+            FIELD(temp_s1, s32, 4) = temp_v1_2;
+            temp_v1_3 = FIELD(arg0, s32, 0x64) + (FIELD(temp_s2, s32, 4) * 0x1E);
+            FIELD(temp_s0, s32, 0xC) = temp_v1_3;
+            FIELD(temp_s1, s32, 0xC) = temp_v1_3;
+            temp_v0_4 = FIELD(arg0, s32, 0x60);
+            var_s5 += 1;
+            FIELD(temp_s0, s32, 8) = temp_v0_4;
+            FIELD(temp_s1, s32, 8) = temp_v0_4;
+            var_s4 += 4;
+        } while (var_s5 < (s32) temp_s7);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E1810_ovl_213B10);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E1A48_ovl_213B10);

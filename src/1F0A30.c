@@ -472,6 +472,57 @@ s32 func_801B5524_ovl_1F0A30(s32 a) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 32 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_80098AA0(s32, f32, f32, f32);          /* extern */
+s32 guLookAt(s32, f32, f32, f32, f32, f32, f32, s32, f32, s32); /* extern */
+s32 guPerspective(s32, u16 *, f32, s32, f32, f32, f32); /* extern */
+extern void *D_800E9BA0;
+extern s32 D_801969B0;
+extern f32 D_801D06FC_ovl_1F0A30;
+extern f32 D_801D0700_ovl_1F0A30;
+extern f32 D_801D0704_ovl_1F0A30;
+extern f32 D_801D0710_ovl_1F0A30;
+extern f32 D_801D0720_ovl_1F0A30;
+extern f32 D_801D072C_ovl_1F0A30;
+extern f32 D_801D0730_ovl_1F0A30;
+extern f32 D_801D083C_ovl_1F0A30;
+
+void func_801B55C4_ovl_1F0A30(void) {
+    u16 sp28;
+    s32 temp_a0;
+    s32 temp_a1;
+    s32 temp_a2;
+    void *temp_v1;
+
+    guPerspective(D_801969B0, &sp28, D_801D0710_ovl_1F0A30, 0x3FAAAAAB, 1.0f, 4000.0f, 1.0f);
+    guLookAt(D_801969B0 + 0x40, D_801D0720_ovl_1F0A30, D_801D072C_ovl_1F0A30, D_801D0704_ovl_1F0A30, D_801D0730_ovl_1F0A30, D_801D083C_ovl_1F0A30, D_801D0700_ovl_1F0A30, 0, 1.0f, 0);
+    func_80098AA0(D_801969B0 + 0x80, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30);
+    temp_v1 = D_800E9BA0;
+    D_800E9BA0 = temp_v1 + 8;
+    FIELD(temp_v1, s32, 0) = 0xDB0E0000;
+    FIELD(temp_v1, s32, 4) = (s32) sp28;
+    temp_a1 = D_801969B0 + 0x40;
+    D_800E9BA0 = temp_v1 + 0x10;
+    FIELD(temp_v1, s32, 8) = 0xDA380007;
+    temp_a2 = D_801969B0 + 0x80;
+    D_800E9BA0 = temp_v1 + 0x18;
+    FIELD(temp_v1, s32, 0xC) = (s32) D_801969B0;
+    temp_a0 = D_801969B0 + 0xC0;
+    D_801969B0 = temp_a1;
+    FIELD(temp_v1, s32, 0x10) = 0xDA380005;
+    D_801969B0 = temp_a2;
+    FIELD(temp_v1, s32, 0x14) = temp_a1;
+    D_800E9BA0 = temp_v1 + 0x20;
+    FIELD(temp_v1, s32, 0x18) = 0xDA380003;
+    D_801969B0 = temp_a0;
+    FIELD(temp_v1, s32, 0x1C) = temp_a2;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B55C4_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B574C_ovl_1F0A30);

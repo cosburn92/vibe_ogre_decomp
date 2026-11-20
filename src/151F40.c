@@ -79,7 +79,68 @@ extern u8 D_80214EB9_ovl_14EBE0;
 void func_80204210_ovl_14EBE0();
 /* --- end decls --- */
 
+#ifdef NON_MATCHING
+/* m2c draft, 75 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern s32 D_80213180_ovl_14EBE0;
+
+void func_80200DD0_ovl_14EBE0(void *a, s32 b, s32 c) {
+    Gfx *temp_t1;
+    Gfx *temp_t2;
+    Gfx *temp_v1_2;
+    s16 temp_t3;
+    s32 temp_a0;
+    s32 temp_a1;
+    s32 temp_t0;
+    s32 temp_v0;
+    s32 temp_v1;
+    s32 var_a0;
+    s32 var_v0;
+    void *temp_a2;
+    void *temp_a3;
+
+    temp_t1 = D_800E9BA0;
+    D_800E9BA0 = temp_t1 + 8;
+    temp_t2 = temp_t1 + 0x10;
+    temp_t1->w0 = 0xE7000000;
+    temp_a2 = ((c & 0xFFFF) * 8) + &D_80213180_ovl_14EBE0;
+    temp_t1->w1 = 0;
+    temp_t3 = (s32) a * 4;
+    D_800E9BA0 = temp_t2;
+    D_800E9BA0 = temp_t1 + 0x18;
+    FIELD(temp_t1, s32, 0xC) = (s32) (((((s32) a * 4) & ((s32) ~temp_t3 >> 0x1F) & 0xFFC) << 0xC) | ((b * 4) & ((s32) ~(s16) (b * 4) >> 0x1F) & 0xFFC));
+    FIELD(temp_t1, s32, 0x10) = 0xE1000000;
+    temp_a3 = FIELD(temp_a2, u16, 0) + a;
+    temp_t0 = FIELD(temp_a2, u16, 2) + b;
+    FIELD(temp_t1, s32, 8) = (s32) (((((s32) temp_a3 * 4) & ((s32) ~(s16) ((s32) temp_a3 * 4) >> 0x1F) & 0xFFC) << 0xC) | (((temp_t0 * 4) & ((s32) ~(s16) (temp_t0 * 4) >> 0x1F) & 0xFFC) | 0xE4000000));
+    temp_a1 = FIELD(temp_a2, s16, 6) << 5;
+    temp_a0 = FIELD(temp_a2, s16, 4) << 5;
+    if (temp_t3 < 0) {
+        temp_v1 = temp_t3 * 8;
+        var_a0 = (temp_a0 - (temp_v1 & -(temp_v1 < 1))) << 0x10;
+    } else {
+        var_a0 = temp_a0 << 0x10;
+    }
+    if (!(b & 0x20000000)) {
+        var_v0 = temp_a1 & 0xFFFF;
+    } else {
+        temp_v0 = (s32) (b << 0x12) >> 0xD;
+        var_v0 = (temp_a1 - (temp_v0 & -(temp_v0 < 1))) & 0xFFFF;
+    }
+    temp_t2->w1 = var_a0 | var_v0;
+    temp_v1_2 = D_800E9BA0;
+    D_800E9BA0 = temp_v1_2 + 8;
+    temp_v1_2->w0 = 0xF1000000;
+    D_800E9BA0 = temp_v1_2 + 0x10;
+    temp_v1_2->w1 = 0x04000400;
+    FIELD(temp_v1_2, s32, 8) = 0xE7000000;
+    FIELD(temp_v1_2, s32, 0xC) = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200F70_ovl_14EBE0);
 
@@ -461,7 +522,49 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_8020296C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202B70_ovl_14EBE0);
 
+#ifdef NON_MATCHING
+/* m2c draft, 23 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern s32 D_80210AD0_ovl_14EBE0;
+extern s32 D_80214E80_ovl_14EBE0;
+
+void func_80202E10_ovl_14EBE0(void *arg0, s32 arg1, s32 arg2) {
+    Gfx *temp_v1;
+    Gfx *temp_v1_2;
+    f32 temp_fv1;
+    s32 var_a1;
+    u32 var_v0;
+
+    temp_fv1 = (f32) (arg2 & 0xFF) / 14.285714f;
+    if (!(temp_fv1 >= 2.1474836e9f)) {
+        var_a1 = (s32) temp_fv1;
+        var_v0 = var_a1 & 0xFFFF;
+    } else {
+        var_a1 = (s32) (temp_fv1 - 2.1474836e9f) | 0x80000000;
+        var_v0 = var_a1 & 0xFFFF;
+    }
+    if (var_v0 >= 7U) {
+        var_a1 = 6;
+    }
+    temp_v1 = D_800E9BA0;
+    D_800E9BA0 = temp_v1 + 8;
+    temp_v1->w0 = 0xDE000000;
+    temp_v1->w1 = (u32) D_80213648_ovl_14EBE0;
+    D_800E9BA0 = temp_v1 + 0x10;
+    FIELD(temp_v1, s32, 8) = 0xE3000C00;
+    FIELD(temp_v1, s32, 0xC) = 0;
+    func_80200F70_ovl_14EBE0(&D_80210AD0_ovl_14EBE0, D_80214E80_ovl_14EBE0 + ((var_a1 & 0xFFFF) << 8), 0x20, 0x10, 2);
+    func_80200DD0_ovl_14EBE0(arg0, arg1, 9);
+    temp_v1_2 = D_800E9BA0;
+    D_800E9BA0 = temp_v1_2 + 8;
+    temp_v1_2->w0 = 0xD7000000;
+    temp_v1_2->w1 = 0x80008000;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202E10_ovl_14EBE0);
+#endif
 
 /* Draws gauge cap: tiles 10/11/12 by fill level (pct / 14.29, 0-6) */
 void func_80202F54_ovl_14EBE0(u8 *p, s32 b, u8 pct) {

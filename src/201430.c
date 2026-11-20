@@ -495,7 +495,110 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BF59C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF858_ovl_1F0A30);
 
+#ifdef NON_MATCHING
+/* m2c draft, 99 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_801BF9B4_ovl_1F0A30(s32 arg0, u16 *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, u32 arg8, u32 arg9) {
+    u16 *sp2C;
+    s32 sp34;
+    s32 sp3C;
+    s32 sp44;
+    s32 sp4C;
+    s32 var_v0;
+    u16 *var_a1;
+    u16 *var_s2;
+    u16 var_a0;
+    u32 temp_v0;
+    u32 var_s0;
+    u32 var_s0_2;
+    u32 var_s1;
+    u32 var_s1_2;
+    u32 var_s3;
+    u32 var_s7;
+    u32 var_v1;
+
+    sp2C = arg1;
+    sp34 = arg2;
+    sp3C = arg3;
+    sp4C = arg0;
+    sp44 = arg4;
+    if (arg2 == 2) {
+        var_s7 = 0x10;
+        if (arg3 != 0) {
+            var_s7 = 0x100;
+        }
+        var_s0 = 0;
+        var_s3 = 0;
+        if (arg9 != 0) {
+loop_4:
+            var_s1 = 0;
+            if (arg8 != 0) {
+                var_s2 = &sp2C[var_s0];
+loop_6:
+                temp_v0 = func_801BF59C_ovl_1F0A30(sp44, arg5, arg6, arg7, arg8, arg9, var_s1, var_s3);
+                var_a0 = ((temp_v0 >> 0x10) & 0xF800) | ((temp_v0 >> 0xD) & 0x7C0) | ((temp_v0 >> 0xA) & 0x3E);
+                if (temp_v0 & 0xFF) {
+                    var_a0 |= 1;
+                }
+                var_v1 = 0;
+                if (var_s0 != 0) {
+                    var_a1 = sp2C;
+loop_10:
+                    var_v0 = var_v1 < var_s0;
+                    if (*var_a1 != (var_a0 & 0xFFFF)) {
+                        var_v1 += 1;
+                        var_a1 += 2;
+                        if (var_v1 >= var_s0) {
+                            var_v0 = var_v1 < var_s0;
+                        } else {
+                            goto loop_10;
+                        }
+                    }
+                    if (var_v0 == 0) {
+                        goto block_14;
+                    }
+                    goto block_15;
+                }
+block_14:
+                *var_s2 = var_a0;
+                var_s0 += 1;
+                var_s2 += 2;
+                if (var_s0 < var_s7) {
+block_15:
+                    var_s1 += 1;
+                    if (var_s1 >= arg8) {
+                        goto block_16;
+                    }
+                    goto loop_6;
+                }
+            } else {
+block_16:
+                var_s3 += 1;
+                if (var_s3 < arg9) {
+                    goto loop_4;
+                }
+            }
+        }
+    }
+    var_s1_2 = 0;
+    if (arg9 != 0) {
+        do {
+            var_s0_2 = 0;
+            if (arg8 != 0) {
+                do {
+                    func_801BEF14_ovl_1F0A30(sp4C, sp2C, sp34, sp3C, arg8, arg9, var_s0_2, var_s1_2, func_801BF59C_ovl_1F0A30(sp44, arg5, arg6, arg7, arg8, arg9, var_s0_2, var_s1_2));
+                    var_s0_2 += 1;
+                } while (var_s0_2 < arg8);
+            }
+            var_s1_2 += 1;
+        } while (var_s1_2 < arg9);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF9B4_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFBA0_ovl_1F0A30);
 

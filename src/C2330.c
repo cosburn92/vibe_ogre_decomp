@@ -98,7 +98,54 @@ u8 func_801D5A2C_ovl_087200(u8 m) {
     return n;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, 53 words from the target; queued for the permuter */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_8016DE1C(u8, u8);                          /* extern */
+extern s32 D_80193BC0;
+
+s32 func_801D5AD0_ovl_087200(s32 arg0, s32 arg1, s32 arg2) {
+    s32 *var_v1;
+    s32 temp_s2;
+    s32 var_s0;
+    s32 var_s1;
+    u8 temp_a0;
+    void *temp_s3;
+
+    var_s1 = 0;
+    var_s0 = 0;
+    temp_s2 = arg2 & 0xFF;
+    temp_s3 = D_80196AF8 + (((arg0 & 0xFFFF) * 0x36) + 0x117C);
+loop_1:
+    if (!(((s32) D_801EF474_ovl_087200[temp_s2] >> var_s0) & 1)) {
+        var_s0 += 1;
+        goto block_13;
+    }
+    temp_a0 = FIELD((temp_s3 + (temp_s2 + D_801EF480_ovl_087200[var_s0])), u8, 4);
+    if (!((temp_a0 != 0xFF) & (temp_a0 != (arg1 & 0xFF)))) {
+        var_s0 += 1;
+        goto block_13;
+    }
+    var_v1 = &D_80193BC0;
+    if (temp_a0 < 0x64U) {
+        var_v1 = (temp_a0 * 0x38) + &D_80193BC0;
+    }
+    if ((func_8016DE1C(FIELD(var_v1, u8, 0x11), FIELD(var_v1, u8, 0x12)) & 0xFF) != 2) {
+        var_s0 += 1;
+block_13:
+        if (var_s0 < 8) {
+            goto loop_1;
+        }
+    } else {
+        var_s1 = 1;
+    }
+    return var_s1 & 0xFF;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5AD0_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5BF0_ovl_087200);
 
