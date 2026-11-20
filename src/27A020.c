@@ -573,7 +573,24 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_80228D1C_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228EFC_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802291A0_ovl_27A020);
+#include "gbi_ultra.h"
+extern u8 D_8022CA98_ovl_27A020[];
+extern u8 D_8022CAB8_ovl_27A020[];
+void func_80228D1C_ovl_27A020(s32 x, s32 y, s32 z);
+
+/* Draws the 32x128 gauge frame (CI4, palette D_8022CA98) at (x, y); mode 2 sits one pixel in */
+void func_802291A0_ovl_27A020(s32 x, s32 y, s32 mode) {
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    gDPPipeSync(D_800E9BA0++);
+    gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_8022CA98_ovl_27A020);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, D_8022D108_ovl_27A020, G_IM_FMT_CI, 32, 128, 0, 2, 2, 5, 7, 0, 0);
+    if (mode == 2) {
+        func_80228D1C_ovl_27A020(x - 2, y + 12, 0);
+    } else {
+        func_80228D1C_ovl_27A020(x - 3, y + 11, 0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802293B4_ovl_27A020);
 
