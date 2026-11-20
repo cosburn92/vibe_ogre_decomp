@@ -380,7 +380,43 @@ u32 func_8022C228_ovl_29A4C0(u32 c) {
     return ((c >> 16) & 0xF800) | ((c >> 13) & 0x7C0) | ((c & 0xF800) >> 10) | 1;
 }
 
+/* (Re)creates the tint record of unit i (all present units when i is -1): colour, alpha range,
+ * duration and timer */
+#ifdef NON_MATCHING
+/* 86/86 instructions, 4 words differ: order of the last record stores */
+void func_8022C250_ovl_29A4C0(s32 i, s32 r, s32 g, s32 b, s32 a0, s32 a1, s32 a2, s32 dur, s32 time) {
+    s16 j;
+    s16 end;
+    u8 *rec;
+
+    j = 0;
+    end = 0x1C;
+    if (i != -1) {
+        j = i;
+        end = i + 1;
+    }
+    for (; j < end; j++) {
+        if (FLD(D_8022A974, u8 *, 0x248 + j * 4) != NULL) {
+            HFree(FLD(D_8022A974, u8 *, 0x248 + j * 4));
+        }
+        if (i != -1 || FLD(D_8022A974, u8 *, 0x18 + j * 4) != NULL) {
+            rec = HMalloc(0xC);
+            FLD(D_8022A974, u8 *, 0x248 + j * 4) = rec;
+            rec[0] = r;
+            rec[1] = g;
+            rec[2] = b;
+            rec[3] = a0;
+            rec[4] = a1;
+            rec[5] = a2;
+            FLD(rec, s16, 0xA) = 0;
+            FLD(rec, s16, 6) = time;
+            FLD(rec, u16, 8) = dur;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C250_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C3A8_ovl_29A4C0);
 
