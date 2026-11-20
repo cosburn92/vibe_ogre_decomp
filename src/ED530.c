@@ -428,7 +428,23 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A81A4_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8448_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A86F0_ovl_0EBBB0);
+#include "gbi_ultra.h"
+void *LoadAsset(u32 id, s32 a, s32 b);
+
+/* Loads the scrolling 32x32 cloud texture 0x0203C53E into tile 1 (TMEM 0x100), half-alpha,
+ * scrolled by the scene timer */
+void func_801A86F0_ovl_0EBBB0(void) {
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadMultiBlock(D_800E9BA0++, LoadAsset(0x0203C53E, 0x9E, -10), 0x100, 1, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0,
+                      0, 0, 5, 5, 0, 15);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, 0x80);
+    {
+        Gfx *g = D_800E9BA0++;
+
+        g->w0 = 0xF2000000 | (((D_801ABA58_ovl_0EBBB0->w104 * 4) & 0x7F) << 12);
+        g->w1 = 0x01000000;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A886C_ovl_0EBBB0);
 
