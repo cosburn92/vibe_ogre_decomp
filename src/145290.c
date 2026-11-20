@@ -311,7 +311,34 @@ void func_801F4C38_ovl_145210(s32 on) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F4CD0_ovl_145210);
+/* Facing (0-7) for a turn fraction a in [0, 1), in eighths centred on each direction */
+s32 func_801F4CD0_ovl_145210(f32 a) {
+    if (a >= 0.9375 || a < 0.0625) {
+        return 2;
+    }
+    if (a >= 0.0625 && a < 0.1875) {
+        return 3;
+    }
+    if (a >= 0.1875 && a < 0.3125) {
+        return 4;
+    }
+    if (a >= 0.3125 && a < 0.4375) {
+        return 5;
+    }
+    if (a >= 0.4375 && a < 0.5625) {
+        return 6;
+    }
+    if (a >= 0.5625 && a < 0.6875) {
+        return 7;
+    }
+    if (a >= 0.6875 && a < 0.8125) {
+        return 0;
+    }
+    if (a >= 0.8125 && a < 0.9375) {
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_801F4EB4_ovl_145210(MapUnit *u) {
     return u->unk70 == 1 && !(u->flags & 0x40);
