@@ -611,4 +611,47 @@ void func_801B55C4_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B55C4_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B574C_ovl_1F0A30);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+#include "gbi_ultra.h"
+#ifndef NON_MATCHING
+extern Gfx *D_800E9BA0;
+#endif
+extern u8 D_801CEAAC_ovl_1F0A30;
+extern u8 D_801CEAAD_ovl_1F0A30;
+extern u8 D_801CEAAE_ovl_1F0A30;
+
+/* Fills the screen with colour D_801CEAAC (r, g, b) at alpha a (no-op at 0) */
+void func_801B574C_ovl_1F0A30(u8 a) {
+    if (a == 0) {
+        return;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+    gSPSetOtherMode(D_800E9BA0++, G_SETOTHERMODE_H, 20, 2, 0);
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xD9000000;
+        _g->w1 = 0;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801CEAAC_ovl_1F0A30, D_801CEAAD_ovl_1F0A30, D_801CEAAE_ovl_1F0A30, a);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFCFFFFFF;
+        _g->w1 = 0xFFFDF6FB;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x00504240;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gSPTextureRectangle(D_800E9BA0++, 0, 0, 319 << 2, 239 << 2, 0, 0, 0, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+}
