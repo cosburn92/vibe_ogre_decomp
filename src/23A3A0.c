@@ -100,7 +100,196 @@ void func_801D0840_ovl_23A3A0(Character *c, s32 cls, s32 level, s32 item1, s32 i
     }
 }
 
+/* One member group of a formation record: class, level bonus, two items, up to three positions */
+typedef struct {
+    /* 0x0 */ u8 cls;
+    /* 0x1 */ s8 level;
+    /* 0x2 */ u8 item1[2];
+    /* 0x4 */ u8 item2[2];
+    /* 0x6 */ u8 pos[3];
+} Formation23AGroup; /* size 0x9 */
+
+/* Enemy formation record (35 bytes each in archive chunk 0x021AE74C) */
+typedef struct {
+    /* 0x00 */ u8 cls;
+    /* 0x01 */ s8 level;
+    /* 0x02 */ u8 item1[2];
+    /* 0x04 */ u8 item2[2];
+    /* 0x06 */ u8 pos;
+    /* 0x07 */ Formation23AGroup grp[2];
+    /* 0x19 */ u8 unk19[10];
+} Formation23A; /* size 0x23 */
+
+typedef struct {
+    /* 0x00 */ char *name;
+    /* 0x04 */ s32 index;
+    /* 0x08 */ u8 *buf;
+    /* 0x0C */ s32 size;
+} Arc23A;
+
+/* Player character record (0x38 bytes) */
+typedef struct {
+    Character c;
+    u8 unk34[4];
+} PlayerChar23A;
+
+extern u8 D_80193670;
+extern u8 D_80193671;
+extern u8 D_80193672;
+extern u16 D_80197B60;
+extern u8 D_801976DC;
+extern u8 D_801976D8;
+extern u8 D_801936A8;
+extern u8 D_801953F0;
+extern u8 D_801953F1;
+extern Arc23A D_801D16B0_ovl_23A3A0;
+extern PlayerChar23A D_80193BC0[];
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void HFree(void *p);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
+void func_80080998(void *dst, void *src, s32 n);
+void func_80172394(void);
+void func_8017223C(s32 a);
+void func_801707F4(void);
+
+/* Builds the encounter squad (gSquads[30]) for formation D_80193670/71 (or the forced id in
+ * D_80197B60): reads its 35-byte record from the formation archive, scales levels to the
+ * strongest member of the player's squad D_801976DC (capped at 99), and creates the units */
+#ifdef NON_MATCHING
+/* encounter squad builder: logic complete, 650 of 663 instructions; group position checks are jump-threaded differently */
+/* Adds one unit of class cls to the enemy roster and returns its roster index: class 1 takes a
+ * pooled slot (index 100 + slot), any other class the first free enemy Character record */
+static inline s32 Squad23A_AddUnit(u8 cls, s32 level, s32 item1, s32 item2) {
+    u32 i;
+    Character *c;
+
+    if (cls == 1) {
+        for (i = 0; i < 120; i++) {
+            if (!(D_801953F2.used[i] & 1)) {
+                break;
+            }
+        }
+        D_801953F2.vals[i] = D_801953F2.cur;
+        D_801953F2.used[i] = 1;
+        return i + 100;
+    }
+    c = &D_80195560[1];
+    while (c->cls != 0) {
+        c++;
+    }
+    func_801D0840_ovl_23A3A0(c, cls, level, item1, item2);
+    return c - D_80195560;
+}
+
+/* Adds the group's units at each occupied position; returns the next free member slot */
+static inline s32 Squad23A_AddGroup(SquadRec *sq, Formation23AGroup *grp, s32 level, s32 n) {
+    if (grp->cls != 0) {
+        if (grp->pos[0] != 0) {
+            sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
+                                              (grp->item2[0] << 8) + grp->item2[1]);
+            sq->pos[n] = grp->pos[0] - 1;
+            n++;
+        }
+        if (grp->pos[1] != 0) {
+            sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
+                                              (grp->item2[0] << 8) + grp->item2[1]);
+            sq->pos[n] = grp->pos[1] - 1;
+            n++;
+        }
+        if (grp->pos[2] != 0) {
+            sq->members[n] = Squad23A_AddUnit(grp->cls, grp->level + level, (grp->item1[0] << 8) + grp->item1[1],
+                                              (grp->item2[0] << 8) + grp->item2[1]);
+            sq->pos[n] = grp->pos[2] - 1;
+            n++;
+        }
+    }
+    return n;
+}
+
+void func_801D0A8C_ovl_23A3A0(void) {
+    u8 harmony = D_80193672;
+    s32 id = (D_80193670 << 8) | D_80193671;
+    s32 level = 99;
+    u8 *built = &D_801976E8;
+    Formation23A rec;
+    Arc23A arc;
+    Arc23A req;
+    s32 *p;
+    s32 chunk;
+    u32 i;
+    s32 max;
+    s32 n;
+    s32 idx;
+    SquadRec *mine;
+    SquadRec *sq = &gSquads[30];
+    u8 *bp;
+
+    if (D_80197B60 != 0) {
+        id = D_80197B60 & 0x7FFF;
+    }
+    if (*built == 30) {
+        return;
+    }
+    arc = D_801D16B0_ovl_23A3A0;
+    req = D_801D16B0_ovl_23A3A0;
+    p = LoadChunkRaw(NULL, 0x021AE74C);
+    chunk = *p;
+    HFree(p);
+    arc.size = ChunkSize(chunk);
+    arc.buf = LoadChunkRaw(NULL, chunk);
+    req.index = 0;
+    func_8007ACB0(&arc, &req, 1);
+    HFree(arc.buf);
+    func_80080998(&rec, req.buf + id * sizeof(Formation23A), sizeof(Formation23A));
+    HFree(req.buf);
+    bp = (u8 *)&rec;
+    *built = 30;
+
+    max = 0;
+    mine = &gSquads[D_801976DC];
+    for (i = 0; i < 5; i++) {
+        u8 m = mine->members[i];
+
+        if ((m != 0) & (m < 100)) {
+            if (max < D_80193BC0[m].c.level) {
+                max = D_80193BC0[m].c.level;
+            }
+        }
+    }
+    if ((u32)max < (u32)level) {
+        level = max;
+    }
+
+    bzero(D_80195560, 0x141C);
+    bzero(&D_801953F0, 0x16C);
+    D_801953F0 = 120;
+    D_801953F1 = 120;
+    func_801D0840_ovl_23A3A0(D_80195560, 1, level, 0, 0);
+    D_801953F2.cur = D_80195560[0].maxHp;
+
+    bzero(sq, sizeof(SquadRec));
+    idx = Squad23A_AddUnit(rec.cls, rec.level + level, (rec.item1[0] << 8) + rec.item1[1],
+                           (rec.item2[0] << 8) + rec.item2[1]);
+    sq->members[0] = idx;
+    D_80195560[idx & 0xFF].status = 2;
+    sq->flags = 0x81;
+    sq->harmony = harmony;
+    sq->pos[0] = ((Formation23A *)bp)->pos - 1;
+    bp += 7;
+    n = Squad23A_AddGroup(sq, (Formation23AGroup *)bp, level, 1);
+    bp += 9;
+    Squad23A_AddGroup(sq, (Formation23AGroup *)bp, level, n);
+    if (D_801976D8 & 8) {
+        D_801936A8 = 0x44;
+        func_80172394();
+        func_8017223C(8);
+        func_801707F4();
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23A3A0", func_801D0A8C_ovl_23A3A0);
+#endif
 
 /* Creates a one-unit enemy squad in the first free slot from 49 down to 30 */
 void func_801D14E8_ovl_23A3A0(void) {
