@@ -399,7 +399,20 @@ u16 func_801BEB28_ovl_1F0A30(u16 c) {
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEB28_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BEBE4_ovl_1F0A30);
+typedef struct {
+    u8 r, g, b, a;
+} Color201;
+
+/* Sepia tone of colour c: grey from 30/59/11 % weights, then tinted 220/180/120 % */
+s32 func_801BEBE4_ovl_1F0A30(Color201 c) {
+    Color201 out = c;
+    s32 grey = ((out.r * 30) / 100 + (out.g * 59) / 100 + (out.b * 11) / 100) / 3;
+
+    out.r = (u32)(grey * 220) / 100;
+    out.g = (u32)(grey * 180) / 100;
+    out.b = (u32)(grey * 120) / 100;
+    return *(s32 *)&out;
+}
 
 /* Blue-tinted shade of an RGBA8888 colour by its brightest channel */
 /* new r/g registers (a3/t0) swapped */
