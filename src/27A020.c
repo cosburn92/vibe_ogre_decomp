@@ -748,7 +748,27 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AFE8_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B1D8_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B36C_ovl_27A020);
+extern s16 D_8022CB2A_ovl_27A020;
+extern s16 D_8022CB64_ovl_27A020[2][8];
+u8 *func_8017BFB0(s32 a, s32 b, void *fn, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3);
+void func_8022BC80_ovl_27A020(void);
+
+/* Opens the shop window in layout `mode` (0 or 1; rectangles in D_8022CB64) */
+void func_8022B36C_ovl_27A020(s16 mode) {
+    Obj27 *o = D_8022CB20_ovl_27A020;
+
+    D_8022CB2A_ovl_27A020 = 1;
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    if (mode == 0) {
+        o->w24 = func_8017BFB0(4, 0, func_8022BC80_ovl_27A020, D_8022CB64_ovl_27A020[0][0], D_8022CB64_ovl_27A020[0][1],
+                               D_8022CB64_ovl_27A020[0][2], D_8022CB64_ovl_27A020[0][3], D_8022CB64_ovl_27A020[0][4],
+                               D_8022CB64_ovl_27A020[0][5], D_8022CB64_ovl_27A020[0][6], D_8022CB64_ovl_27A020[0][7]);
+    } else if (mode == 1) {
+        o->w24 = func_8017BFB0(4, 0, func_8022BC80_ovl_27A020, D_8022CB64_ovl_27A020[1][0], D_8022CB64_ovl_27A020[1][1],
+                               D_8022CB64_ovl_27A020[1][2], D_8022CB64_ovl_27A020[1][3], D_8022CB64_ovl_27A020[1][4],
+                               D_8022CB64_ovl_27A020[1][5], D_8022CB64_ovl_27A020[1][6], D_8022CB64_ovl_27A020[1][7]);
+    }
+}
 
 void func_8022B494_ovl_27A020(void) {
     D_8022D108_ovl_27A020 = LoadChunk(0x1DB3672);
