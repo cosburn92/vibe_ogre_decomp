@@ -235,7 +235,33 @@ void func_8017BD48_ovl_040E80(void) {
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BD48_ovl_040E80);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BDC0_ovl_040E80);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+Node *HMallocBack(s32 size);
+void func_800987E0(void *m); /* guMtxIdent */
+void *func_8009DE40(s32 id);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+
+/* Allocates the label sheets' node: projection/view matrices and the two sheet images */
+void func_8017BDC0_ovl_040E80(void) {
+    Node *n;
+
+    if (D_8018FDC0_ovl_040E80 == NULL) {
+        n = HMallocBack(0xD8);
+        D_8018FDC0_ovl_040E80 = n;
+        FIELD(n, s16, 0) = 0;
+        n->next = NULL;
+        FIELD(D_8018FDC0_ovl_040E80, void *, 0xC8) = func_8009DE40(0x01DFA632);
+        FIELD(D_8018FDC0_ovl_040E80, void *, 0xCC) = func_8009DE40(0x01DFB536);
+        guOrtho((u8 *)D_8018FDC0_ovl_040E80 + 8, -160.0f, 160.0f, -120.0f, 120.0f, -10.0f, 100.0f, 1.0f);
+        guLookAt((u8 *)D_8018FDC0_ovl_040E80 + 0x48, 0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        func_800987E0((u8 *)D_8018FDC0_ovl_040E80 + 0x88);
+        FIELD(D_8018FDC0_ovl_040E80, s16, 0xD0) = 0;
+        FIELD(D_8018FDC0_ovl_040E80, s8, 0xD2) = 0;
+    }
+}
 
 /* Releases nodes from the end of the list until it is empty. */
 void func_8017BED4_ovl_040E80(void) {
