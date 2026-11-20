@@ -90,12 +90,13 @@ typedef struct {
 
 void func_80199110_ovl_066E10(Gfx680 **gp);
 
-#ifdef NON_MATCHING
-/* 121/121 instructions, 30 words differ: scheduling of the task-field stores (same function in 1ED1D0 and 20FDC0) */
+/* Closes the display list (last == 0: full sync + end, records its end) or sends it to the
+ * scheduler as a graphics task, like nuGfxTaskStart */
 void func_80199568_ovl_066E10(u8 last) {
     NUScTask *t;
     Gfx680 *gp;
     Gfx680 *start;
+    Gfx680 *end;
     u32 mask;
 
     if (!last) {
@@ -117,6 +118,7 @@ void func_80199568_ovl_066E10(u8 last) {
     }
     D_8019A660_ovl_066E10[0x7E]++;
     t = (NUScTask *)D_8019A660_ovl_066E10;
+    end = FIELD(t, Gfx680 *, 0x58);
     start = FIELD(t, Gfx680 *, 0x5C);
     t->framebuffer = FIELD(t, void *, 0x64);
     t->state = 1;
@@ -129,15 +131,15 @@ void func_80199568_ovl_066E10(u8 last) {
     t->list.t.ucode_boot_size = (s32)D_8009ED80 - (s32)D_8009ECB0;
     t->list.t.ucode = D_800A5110;
     t->list.t.ucode_size = (s32)D_800A69D0 - (s32)D_800A5110;
+    t->list.t.flags = 0;
     t->list.t.ucode_data = D_800AD590;
     t->list.t.ucode_data_size = (s32)D_800AD920 - (s32)D_800AD590;
-    t->list.t.flags = 0;
     t->list.t.dram_stack = D_800E8710;
     t->list.t.dram_stack_size = 0x400;
     t->list.t.output_buff = D_800C7970;
     t->list.t.output_buff_size = (u64 *)(D_800A9E70 + (u32)D_800C7970);
     t->list.t.data_ptr = (u64 *)start;
-    t->list.t.data_size = (FIELD(t, Gfx680 *, 0x58) - start) * sizeof(Gfx680);
+    t->list.t.data_size = (end - start) * sizeof(Gfx680);
     t->list.t.yield_data_ptr = D_800C6D70;
     t->list.t.yield_data_size = 0xC00;
     mask = osSetIntMask(1);
@@ -146,9 +148,6 @@ void func_80199568_ovl_066E10(u8 last) {
     osWritebackDCacheAll();
     osSendMesg(&D_800E8B4C, D_8019A660_ovl_066E10, 1);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/680F0", func_80199568_ovl_066E10);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/680F0", func_8019974C_ovl_066E10);
 
