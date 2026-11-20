@@ -240,7 +240,73 @@ void func_8022BDDC_ovl_29A4C0(void) {
     }
 }
 
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx29;
+extern Gfx29 *D_800E9BA0;
+extern s32 D_80197178; /* frame vertex pool cursor */
+extern u8 D_8022AB48[];
+void func_80080998(s32 dst, void *src, s32 n);
+
+/* Draws the battle grid overlay: copies its 0x3A0 bytes of vertices into the frame's vertex
+ * pool (D_80197178) and emits four quad strips plus the border */
+#ifdef NON_MATCHING
+/* grid overlay: vertex cursor / display-list pointer registers swapped */
+void func_8022BE30_ovl_29A4C0(void) {
+    Grid29 *g = D_8022A974->grid;
+    s32 v;
+    s32 i;
+
+    if (g == NULL) {
+        return;
+    }
+    func_80080998(D_80197178, g->data, 0x3A0);
+    v = D_80197178;
+    {
+        Gfx29 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDE000000;
+        _g->w1 = (u32)D_8022AB48;
+    }
+    for (i = 0; i < 4; i++) {
+        {
+            Gfx29 *_g = D_800E9BA0++;
+
+            _g->w0 = 0x01004008;
+            _g->w1 = v;
+        }
+        v += 0x20;
+        {
+            Gfx29 *_g = D_800E9BA0++;
+
+            _g->w0 = 0x06000206;
+            _g->w1 = 0x604;
+        }
+    }
+    {
+        Gfx29 *_g = D_800E9BA0++;
+
+        _g->w0 = 0x01008010;
+        _g->w1 = D_80197178;
+    }
+    {
+        Gfx29 *_g = D_800E9BA0++;
+
+        _g->w0 = 0x06000408;
+        _g->w1 = 0x80C;
+    }
+    {
+        Gfx29 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    D_80197178 += 0x3A0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022BE30_ovl_29A4C0);
+#endif
 
 void func_8022BF5C_ovl_29A4C0(s32 *a) {
     s16 i = FLD(a, s16, 2);
