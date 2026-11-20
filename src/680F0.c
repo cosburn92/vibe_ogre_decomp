@@ -149,7 +149,55 @@ void func_80199568_ovl_066E10(u8 last) {
     osSendMesg(&D_800E8B4C, D_8019A660_ovl_066E10, 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/680F0", func_8019974C_ovl_066E10);
+void func_80080998(void *dst, void *src, s32 n);
+void func_80198E50_ovl_066E10(s8 mode, s32 a, s16 w, s16 h);
+
+/* Steps the background JPEG job: 0 starts the decode task and closes its display list once the
+ * decoder reaches step 2; 3 sends it and, at step 5, copies the decoded rows into the image (a
+ * "64" bitmap header unless raw) */
+void func_8019974C_ovl_066E10(void) {
+    u8 *src;
+    s32 row;
+    s16 y;
+
+    nuGfxTaskAllEndWait();
+    if (D_8019A660_ovl_066E10[0x7E] == 0) {
+        if (D_8019A660_ovl_066E10[0x80] == 0) {
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x70) = FIELD(D_8019A660_ovl_066E10, u8 *, 0x74) + 8;
+        } else {
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x70) = FIELD(D_8019A660_ovl_066E10, u8 *, 0x74);
+        }
+        func_80198E50_ovl_066E10(FIELD(D_8019A660_ovl_066E10, s8, 0x7D), FIELD(D_8019A660_ovl_066E10, s32, 0x68),
+                                 FIELD(D_8019A660_ovl_066E10, s16, 0x78), FIELD(D_8019A660_ovl_066E10, s16, 0x7A));
+        while (D_8019A660_ovl_066E10[0x7E] != 2) {
+            nuGfxTaskAllEndWait();
+        }
+        nuGfxTaskAllEndWait();
+        func_80199568_ovl_066E10(0);
+    } else if (D_8019A660_ovl_066E10[0x7E] == 3) {
+        func_80199568_ovl_066E10(1);
+        while (D_8019A660_ovl_066E10[0x7E] != 5) {
+            nuGfxTaskAllEndWait();
+        }
+        src = FIELD(D_8019A660_ovl_066E10, u8 *, 0x64);
+        row = FIELD(D_8019A660_ovl_066E10, s16, 0x78) * 2;
+        for (y = 0; y < FIELD(D_8019A660_ovl_066E10, s16, 0x7A); y++) {
+            func_80080998(FIELD(D_8019A660_ovl_066E10, u8 *, 0x70), src,
+                          FIELD(D_8019A660_ovl_066E10, s16, 0x78) * 2);
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x70) += row;
+            src += 0x280;
+        }
+        if (D_8019A660_ovl_066E10[0x80] == 0) {
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x74)[0] = '6';
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x74)[1] = '4';
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x74)[2] = 0;
+            FIELD(D_8019A660_ovl_066E10, u8 *, 0x74)[3] = 2;
+            FIELD(FIELD(D_8019A660_ovl_066E10, u8 *, 0x74), u16, 4) = FIELD(D_8019A660_ovl_066E10, s16, 0x78);
+            FIELD(FIELD(D_8019A660_ovl_066E10, u8 *, 0x74), u16, 6) = FIELD(D_8019A660_ovl_066E10, s16, 0x7A);
+        }
+        D_8019A660_ovl_066E10[0x7E]++;
+    }
+}
 
 /* Reports which frame buffer pair is current (o[0], o[1]) */
 void func_8019994C_ovl_066E10(u8 *o) {
