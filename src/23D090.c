@@ -473,7 +473,26 @@ void func_801EBCFC_ovl_23B220(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBDD8_ovl_23B220);
+#include "gbi_ultra.h"
+typedef struct {
+    u8 unk0[4];
+    u16 w;
+    u16 h;
+} SizeEB;
+extern u8 D_801F0320_ovl_23B220[];
+u32 func_801BE978(s32 siz, u16 w, u16 h);
+
+/* Draws the panel's CI4 image (palette after the pixels) at alpha ctx->0x653 */
+void func_801EBDD8_ovl_23B220(void) {
+    SizeEB *s = FIELD(D_801EFE48_ovl_23B220, SizeEB *, 0x5C4);
+
+    gSPDisplayList(D_800E9BA0++, D_801F0320_ovl_23B220);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, FIELD(D_801EFE48_ovl_23B220, u8, 0x653));
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, (u8 *)s + (func_801BE978(0, s->w, s->h) + 8));
+    func_801B5CAC((s32)s, 0xFF, 0x2B);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 /* Selects the title text for id and right-aligns it (x = 0x113 - width) */
 #ifdef NON_MATCHING
