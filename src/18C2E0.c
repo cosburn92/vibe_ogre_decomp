@@ -229,8 +229,9 @@ INCLUDE_ASM("asm/nonmatchings/18C2E0", func_80219F84_ovl_188B60);
  * (selected/highlighted palettes), each squad leader's class sprite with a crown on the first,
  * and the bouncing cursor over the selected slot */
 void func_80219584_ovl_188B60(Win18C *w, s32 page);
+void func_80219584_ovl_188B60(Win18C *w, s32 page);
 #ifdef NON_MATCHING
-/* formation editor draw: 613 vs 614 (permuter candidate); register pressure in the leader loop differs */
+/* formation editor draw: length matches (614), 153 words differ in register allocation */
 void func_8021A0A4_ovl_188B60(void)
 {
   s32 i;
@@ -245,6 +246,7 @@ void func_8021A0A4_ovl_188B60(void)
   u8 sprite;
   u8 *sheet;
   u8 c;
+  u8 t;
   s32 bob;
   s32 bx = 0x3A;
   s32 by = 0x72;
@@ -421,15 +423,16 @@ void func_8021A0A4_ovl_188B60(void)
     }
     x = (bx + D_8021B4B8_ovl_188B60[i].x) + 8;
     y = (by + D_8021B4B8_ovl_188B60[i].y) + 0xE;
-    sheet = D_80193BC0[gSquads[sq].members[0]];
-    cls = sheet[0x11];
-    base = sheet[0x12];
-    frame = func_8016DF18(cls, base);
+    cls = D_80193BC0[gSquads[sq].members[0]][0x11];
+    base = D_80193BC0[gSquads[sq].members[0]][0x12];
+    t = func_8016DF18(cls, base);
+    c = cls;
     if (gClassTable[cls].baseClass != base)
     {
-      cls = base;
+      c = base;
     }
-    if (D_8018ECE4[cls][0] & 0x80)
+    frame = t;
+    if (D_8018ECE4[c][0] & 0x80)
     {
       sheet = ss->sheetB;
     }
