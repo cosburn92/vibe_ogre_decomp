@@ -104,6 +104,7 @@ def check(sym, tu, rom, end, vram, local_names):
             binds[s['name']] = a
     relocs = [dict(offset='0x%08X' % off, type=RELTYPE[t], symbol=syms[si]['name'] or o.sections[syms[si]['shndx']]['name'],
                    section='.rel.text') for off, si, t in o.rels('.rel.text')]
+    relocs.sort(key=lambda r: int(r['offset'], 16))
     struct.pack_into('>I', o.data, o.by_name['.text'][1]['header'] + 32, 4)
     open(d + 'link.o', 'wb').write(o.data)
     open(d + 'source.ld', 'w', newline='\n').write(''.join('%s = 0x%x;\n' % kv for kv in binds.items()) +
@@ -130,9 +131,11 @@ def main():
                 n = row_at(end)
                 if not n or n[0] != end: break
                 k.append(n); end = n[1]
-            if end >= b and pad_ok(b, end) and not any(x[2].lower() in taken for x in k):
+            if end >= b and pad_ok(b, end) and not any(x[2].lower() in taken for x in k)                     and not any(x[2].startswith('zero_fill_') for x in k)                     and not any(x[2].lower() in ob64.EXCLUDE for x in k)                     and (ob64.ONLY is None or k[0][2].lower() in ob64.ONLY):
                 multi.append((e, k))
         elif r[0] != a or r[1] > b + 15:
+            if r[2].lower() in ob64.EXCLUDE or (ob64.ONLY is not None and r[2].lower() not in ob64.ONLY):
+                continue
             groups.setdefault(r, None)
     for r in list(groups):
         fns, x = [], r[0]
@@ -180,7 +183,11 @@ def main():
         for i, f in enumerate(fns):
             n = names[i]
             outside = len(re.findall(r'\b%s\b' % re.escape(f['name']), our_src)) > len(re.findall(r'\b%s\b' % re.escape(f['name']), ''.join(open(LC + g['source']).read() for g in fns)))
-            ctf.append(dict(symbol=n, offset='0x%08X' % offs[i], bytes=code(f)['size'],
+            nb = code(f)['size']
+            if i == len(fns) - 1:  # the last function's size excludes trailing alignment zeros
+                while nb > 4 and not any(ROM[code(f)['start'] + nb - 4:code(f)['start'] + nb]):
+                    nb -= 4
+            ctf.append(dict(symbol=n, offset='0x%08X' % offs[i], bytes=nb,
                             binding='GLOBAL' if i == 0 else 'LOCAL',
                             entryEvidence='owner' if i == 0 else ('fixed-address-call' if outside else 'internal-call-only')))
         yield dict(kind='group', symbol=sym, source='%s/%s.c' % (area(r[0], r[4]), sym), tu=tu, relocs=info, rom=r[0], ctf=ctf)
@@ -214,7 +221,7 @@ if __name__ == '__main__':
         s = open(p, 'rb').read().decode()
         used = {r['symbol'] for o in out for r in o['relocs']}
         cur = {x['name'] for x in json.loads(s)['symbols']}
-        add = sorted((n, a) for n, a in new_registry.items() if n in used and n not in cur)
+        add = sorted((n, a) for n, a in new_registry.items() if n in used and n not in cur and n not in ob64.LINKED)
         s = insert_array_tail(s, 'symbols', ''.join(',\n    {\n      "name": "%s",\n      "address": "0x%08X"\n    }' % na for na in add))
         def rel(o):
             return ',\n'.join('        {\n          "offset": "%(offset)s",\n          "type": "%(type)s",\n          "symbol": "%(symbol)s",\n          "section": "%(section)s"\n        }' % r for r in o['relocs'])

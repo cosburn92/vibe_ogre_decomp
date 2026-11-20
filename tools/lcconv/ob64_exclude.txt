@@ -1,0 +1,6 @@
+# Kept in assembly at OB64-Decomp's request (PR #1 review, 2026-11-20)
+func_000FDC9C  # entry label 12 bytes into the original section
+func_000FDF18  # entry label 12 bytes into the original section
+func_0000BF90  # fixed symbol definition conflict
+func_0000BFC0  # fixed symbol definition conflict
+func_000493d4  # needs their tail-admit procedure (they verified the layout)

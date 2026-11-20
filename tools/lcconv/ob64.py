@@ -35,6 +35,12 @@ for f in glob.glob(UP + 'asm/**/*.s', recursive=True):
                                    os.path.relpath(f, UP).replace(os.sep, '/'))
 targets_cfg = json.load(open(UP + 'config/matching-c-targets.json'))['targets']
 taken = {t['symbol'].lower() for t in targets_cfg}
+_here = os.path.dirname(os.path.abspath(__file__))
+# Functions OB64-Decomp asked to keep in assembly (entry-label / fixed-symbol conflicts, tail-admit)
+EXCLUDE = {l.split('#')[0].strip().lower() for l in open(os.path.join(_here, 'ob64_exclude.txt'))} - {''}
+ONLY = None  # optional: restrict to OB64 symbols listed in $OB64_ONLY (one per line)
+if os.environ.get('OB64_ONLY'):
+    ONLY = {l.strip().lower() for l in open(os.environ['OB64_ONLY']) if l.strip()}
 linkage = json.load(open(UP + 'config/matching-c-linkage.json'))
 registry = {s['name']: int(s['address'], 16) for s in linkage['symbols']}
 by_addr = {}
@@ -42,6 +48,10 @@ for n, a in registry.items():
     by_addr.setdefault(a, []).append(n)
 descriptors = [(int(d['fields']['romStart'], 16), int(d['fields']['romEnd'], 16), d['id'])
                for d in json.load(open(UP + 'config/overlays/us_rev0.json'))['descriptors']]
+LINKED = set()
+for _c in json.load(open(UP + 'asm/original/rev0/manifest.json'))['chunks']:
+    LINKED |= {_p['name'] for _p in _c['parts']}
+LINKED |= {t['symbol'] for t in targets_cfg}
 PLACEHOLDER = re.compile(r'^(func|D)_[0-9A-Fa-f]{8}$|_(start|end)$')  # also skip linker boundary markers
 
 # ---- ogredecomp model ------------------------------------------------------------
@@ -228,6 +238,7 @@ def attempt(e, own):
         s = syms[si]
         name = s['name'] if s['name'] else o.sections[s['shndx']]['name']
         relocs.append(dict(offset='0x%08X' % off, type=RELTYPE[typ], symbol=name, section='.rel.text'))
+    relocs.sort(key=lambda r: int(r['offset'], 16))  # OB64 requires numeric offset order
     struct.pack_into('>I', o.data, o.by_name['.text'][1]['header'] + 32, 4)
     open(d + 'link.o', 'wb').write(o.data)
     open(d + 'source.ld', 'w', newline='\n').write(''.join('%s = 0x%x;\n' % kv for kv in binds.items()) +
@@ -251,9 +262,13 @@ def main():
             stat['has rodata'] = stat.get('has rodata', 0) + 1; continue
         p = e['parts'][0]
         own = owners.get(p['start'])
-        if not own or own[0].lower() in taken:
+        if not own or own[0].lower() in taken or own[0].lower() in EXCLUDE or (ONLY is not None and own[0].lower() not in ONLY):
             stat['no owner / already upstream'] = stat.get('no owner / already upstream', 0) + 1; continue
-        if own[1] - (p['start'] + p['size']) not in range(0, 17) or any(ROM[p['start'] + p['size']:own[1]]):
+        ours_end = p['start'] + p['size']
+        if own[1] < ours_end:
+            if any(ROM[own[1]:ours_end]):  # longer than the owner by real code
+                stat['different extent'] = stat.get('different extent', 0) + 1; continue
+        elif own[1] - ours_end not in range(0, 17) or any(ROM[ours_end:own[1]]):
             stat['different extent'] = stat.get('different extent', 0) + 1; continue
         # OB64-Decomp's reference-split comments use a naive overlay VRAM; place at the
         # runtime address our matching build links (its jal/HI16 words prove it)
@@ -270,7 +285,8 @@ def main():
     print('skipped', stat, '\ncandidates', len(jobs), 'ok', len(ok), {k: len(v) for k, v in fails.items()})
     # registry entries actually referenced by accepted objects
     used = {r['symbol'] for o in ok for r in o['relocs']}
-    added = sorted((n, a) for n, a in new_registry.items() if n in used)
+    # names the linker already defines (assembly owners, targets) must not get absolute registry copies
+    added = sorted((n, a) for n, a in new_registry.items() if n in used and n not in LINKED)
     print('new registry symbols', len(added))
     if not WRITE: return
     for o in sorted(ok, key=lambda o: o['rom']):
