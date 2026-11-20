@@ -276,11 +276,10 @@ void func_8017BED4_ovl_040E80(void) {
 }
 
 /* Frees every node, then the list's buffers and head */
-#ifdef NON_MATCHING
-/* original reloads the list head between the final stores */
 void func_8017BF10_ovl_040E80(void) {
     Node *n;
     Node *t;
+    Node *h;
 
     if (D_8018FDC0_ovl_040E80 == NULL) {
         return;
@@ -296,14 +295,12 @@ void func_8017BF10_ovl_040E80(void) {
     }
     HFree(FIELD(D_8018FDC0_ovl_040E80, void *, 0xCC));
     HFree(FIELD(D_8018FDC0_ovl_040E80, void *, 0xC8));
-    FIELD(D_8018FDC0_ovl_040E80, u16, 0) = 0;
-    D_8018FDC0_ovl_040E80->next = NULL;
-    HFree(D_8018FDC0_ovl_040E80);
+    h = D_8018FDC0_ovl_040E80;
+    FIELD(h, u16, 0) = 0;
+    h->next = NULL;
+    HFree(h);
     D_8018FDC0_ovl_040E80 = NULL;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BF10_ovl_040E80);
-#endif
 
 Node *func_8017BFB0_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
     Node *n = func_8017C074_ovl_040E80(kind, b, fn, x, y, w, h);
