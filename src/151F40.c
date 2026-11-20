@@ -1022,7 +1022,30 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_8020808C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208304_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80208920_ovl_14EBE0);
+/* 12-byte record sorted by its key byte */
+typedef struct {
+    s32 a;
+    u8 key;
+    u8 pad[3];
+    s32 c;
+} SortRec;
+
+/* Insertion sort of n records by ascending key */
+void func_80208920_ovl_14EBE0(SortRec *list, s16 n) {
+    s16 i;
+    s16 j;
+    SortRec tmp;
+    u8 key;
+
+    for (i = 1; i < n; i++) {
+        key = list[i].key;
+        tmp = list[i];
+        for (j = i - 1; j >= 0 && key < list[j].key; j--) {
+            list[j + 1] = list[j];
+        }
+        list[j + 1] = tmp;
+    }
+}
 
 /* Insertion sort of n bytes, ascending */
 void func_80208A3C_ovl_14EBE0(u8 *a, s16 n) {
