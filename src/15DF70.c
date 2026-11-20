@@ -87,4 +87,49 @@ void func_8020D210_ovl_14EBE0(u8 k) {
 INCLUDE_ASM("asm/nonmatchings/15DF70", func_8020D210_ovl_14EBE0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/15DF70", func_8020D328_ovl_14EBE0);
+u8 func_8016DEC4(u8 cls, u8 base);
+extern u8 D_8018F481;
+extern u8 D_80193BC0[][0x38]; /* player characters */
+extern u8 D_80195560[][0x34]; /* enemy characters */
+extern u16 D_801F36BC;
+extern u8 D_801F401F;
+
+/* Portrait id for speaker kind: 4 = the current character's class portrait (0x4004/0x4005),
+ * 0 = its face (0x5000 | id), 15/18 = map-relative portraits */
+s32 func_8020D328_ovl_14EBE0(u8 kind) {
+    u8 a;
+    u8 b;
+
+    switch (kind) {
+        case 0:
+            if (D_801F401F >= 100 || D_801F401F == 0) {
+                a = 1;
+            } else if (D_801F36A0 & 1) {
+                a = D_80195560[D_801F401F][0x12];
+            } else {
+                a = D_80193BC0[D_801F401F][0x12];
+            }
+            if (D_8018F481 == 4 && a == 0x62) {
+                a = 0xE0;
+            }
+            return a | 0x5000;
+        case 4:
+            b = 0;
+            if (D_801F401F >= 100 || D_801F401F == 0) {
+                a = 0;
+            } else if (D_801F36A0 & 1) {
+                a = D_80195560[D_801F401F][0x11];
+                b = D_80195560[D_801F401F][0x12];
+            } else {
+                a = D_80193BC0[D_801F401F][0x11];
+                b = D_80193BC0[D_801F401F][0x12];
+            }
+            return func_8016DEC4(a, b) == 2 ? 0x4005 : 0x4004;
+        case 15:
+            return ((D_801F36BC >> 8) + 15) | 0x4000;
+        case 18:
+            return ((D_801F36BC >> 8) + 18) | 0x4000;
+        default:
+            return 0x40000;
+    }
+}
