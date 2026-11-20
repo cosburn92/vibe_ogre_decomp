@@ -382,10 +382,13 @@ INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA328_ovl_087200);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 
-#ifdef NON_MATCHING
-/* 79/79 instructions, 18 words differ: register choice (unit pointer vs loop counters) */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Recounts squad sq's items (ids from 100 in its leader's 9 slots, clearing their flags) and
+ * releases members from the back while the squad is over that count */
 void func_801CA44C_ovl_087200(u8 *sq) {
-    u8 *u;
     u8 *m;
     u8 *p;
     s32 i;
@@ -394,9 +397,9 @@ void func_801CA44C_ovl_087200(u8 *sq) {
     u8 c;
 
     n = 1;
-    u = D_80196AF8 + ((sq[2] * 0x36) + 0x117C);
+    m = D_80196AF8 + ((sq[2] * 0x36) + 0x117C);
     for (i = 0; i < 9; i++) {
-        c = u[i + 4];
+        c = (m + i)[4];
         n += (c != 0xFF) & (c >= 100);
         if (c != 0xFF) {
             p = D_80196AF8 + ((c * 2) + 0x1872);
@@ -405,7 +408,7 @@ void func_801CA44C_ovl_087200(u8 *sq) {
     }
     sq[9] = n;
     for (j = 4; n < sq[8] && j != 0; j--) {
-        c = sq[j + 2];
+        c = (sq + j)[2];
         if (c != 0xFF) {
             m = D_80196AF8 + ((c * 0x36) + 0x117C);
             if (m[1] & 8) {
@@ -413,15 +416,12 @@ void func_801CA44C_ovl_087200(u8 *sq) {
             }
             m[1] = 0;
             m[2] = 0xFF;
-            sq[j + 2] = 0xFF;
+            (sq + j)[2] = 0xFF;
             sq[8]--;
         }
     }
     func_801CE28C_ovl_087200();
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA44C_ovl_087200);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA588_ovl_087200);
 
