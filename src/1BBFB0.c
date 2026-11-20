@@ -112,7 +112,6 @@ s32 ChunkSize(s32 id);
 void *LoadChunkRaw(void *dst, s32 id);
 void *func_8017BFB0(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 void func_80229B98_ovl_1BA050();
-void func_802261D0_ovl_1BA050();
 extern u8 D_8022A821_ovl_1BA050;
 extern u8 D_8022A824_ovl_1BA050;
 extern s16 D_8022A826_ovl_1BA050;
@@ -471,7 +470,43 @@ s32 func_80226198_ovl_1BA050(void) {
     return 0;
 }
 
+extern u8 D_8022A068_ovl_1BA050[];
+extern void *D_8022A090_ovl_1BA050[];
+void func_801818A0(s32 x, s32 y, ScriptRes *r);
+
+extern ScriptRes D_8022A534_ovl_1BA050[]; /* = &D_8022A4E0[0].b[0x50] (owner window) */
+/* Draws message window w (callback arg0): its two caption lines, then (when not closing) the
+ * choice cursor of the script slot that owns the window */
+#ifdef NON_MATCHING
+/* message window draw: sign-extend of y scheduled late in the original */
+void func_802261D0_ovl_1BA050(s32 arg0, s32 arg1) {
+    u8 *w = (u8 *)arg0;
+    u32 i;
+    s32 j;
+    u16 y;
+    ScriptRes *r;
+    ScriptRes *p;
+
+    gSPDisplayList(D_800E9BA0++, D_8022A068_ovl_1BA050);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, w[0x19]);
+    y = FIELD(w, u16, 0x32);
+    for (i = 0; i < 2; i++, y += 0x14) {
+        func_80179034(D_8022A090_ovl_1BA050[i], FIELD(w, s32, 0x2C) + 0x14, (s16)y);
+    }
+    r = NULL;
+    if (FIELD(w, u16, 0x26) == 0) {
+        for (j = 0, p = D_8022A4E0_ovl_1BA050; j < 4; p++, j++) {
+            if (D_8022A4E0_ovl_1BA050[j].used != 0 && D_8022A534_ovl_1BA050[j].used == (s32)w) {
+                r = p;
+                break;
+            }
+        }
+        func_801818A0(FIELD(w, s32, 0x2C), FIELD(w, s32, 0x30) + (s8)r->b[0x54] * 0x14 + 4, r);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802261D0_ovl_1BA050);
+#endif
 
 #ifdef NON_MATCHING
 /* original copies x/y through extra temps (t2/t1/t4); b/fn assigned straight into a1/a2 */
