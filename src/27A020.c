@@ -353,7 +353,80 @@ void func_80226980_ovl_27A020(void) {
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80226A24_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_80226B5C_ovl_27A020);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void bzero(void *p, s32 n);
+void func_80179018(void);
+void func_801AEA90(void);
+void func_801B7E9C(void);
+void func_801BC5FC(void);
+void func_801BC640(void);
+void func_801BE71C(void);
+void func_801C1A94(void);
+void func_801C1D90(void);
+void func_801C22D0(s32 n);
+void func_801C2310(void);
+void func_8020B030(void);
+extern void *D_801CE8C0;
+extern s32 D_801CEAB0;
+
+/* System flags; byte 8 is cleared while this screen is open */
+typedef struct {
+    u8 unk0[8];
+    u8 unk8;
+} Flags27A;
+
+/* Enters the screen: allocates the 0x6094-byte work area and the 0x48-byte saved state (camera
+ * position and mode), then initialises the screen's subsystems */
+void func_80226B5C_ovl_27A020(void) {
+    u8 *buf;
+    u8 *state;
+    u8 flag;
+    u8 *st;
+    f32 x, y, z;
+
+    D_801CEAB0 = 0x29;
+    func_801BE71C();
+    buf = HMalloc(0x6094);
+    D_801CE8BC = buf;
+    bzero(buf, 0x6094);
+    D_801CE8C0 = (u8 *)D_801CE8BC + 0x57E0;
+    FIELD(D_801CE8BC, s8, 0x6084) = 1;
+    state = HMalloc(0x48);
+    D_8022C5C0_ovl_27A020 = state;
+    bzero(state, 0x48);
+    st = D_8022C5C0_ovl_27A020;
+    FIELD(st, s16, 4) = 0xFF;
+    FIELD(st, s32, 0) = 0;
+    FIELD(st, s32, 8) = 0;
+    FIELD(st, u8, 0x14) = D_801976DA;
+    x = D_801CE8EC;
+    y = D_801CE8F0;
+    z = D_801CE8F4;
+    D_801976DA = 0x18;
+    FIELD(st, f32, 0x18) = x;
+    FIELD(st, f32, 0x1C) = y;
+    FIELD(st, f32, 0x20) = z;
+    flag = ((Flags27A *)D_800E9C0A)->unk8;
+    ((Flags27A *)D_800E9C0A)->unk8 = 1;
+    D_8022C5C4_ovl_27A020 = flag;
+    func_802285B0_ovl_27A020();
+    func_8022B494_ovl_27A020();
+    func_801C1D90();
+    func_801C1A94();
+    func_801C2310();
+    func_801C22D0(2);
+    func_801BC5FC();
+    func_801BC640();
+    func_801B7E9C();
+    func_801AEA90();
+    func_8020B030();
+    func_80225CF8_ovl_27A020();
+    func_80179018();
+    func_802264B4_ovl_27A020();
+    FIELD(D_8022C5C0_ovl_27A020, s32, 0) = 0;
+}
 
 /* Leaves the field: saves the cursor/camera state and frees the overlay's resources */
 void func_80226CC0_ovl_27A020(void) {
