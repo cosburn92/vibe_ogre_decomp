@@ -236,7 +236,34 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DE04_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DF60_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E08C_ovl_29A4C0);
+#define BLIST(b, off) ((void **)((u8 *)(b) + (off)))
+
+void func_8019F3CC(void);
+
+/* Frees every battle unit's buffers and clears the unit tables */
+void func_8022E08C_ovl_29A4C0(void) {
+    u8 i;
+
+    for (i = 0; i < 0x1C; i++) {
+        HFree(D_8022A974->units[i]);
+        HFree(BLIST(D_8022A974, 0xF8)[i]);
+        HFree(BLIST(D_8022A974, 0x168)[i]);
+        HFree(BLIST(D_8022A974, 0x248)[i]);
+        HFree(BLIST(D_8022A974, 0x2B8)[i]);
+        HFree(BLIST(D_8022A974, 0x1A50)[i]);
+        HFree(BLIST(D_8022A974, 0x1D8)[i]);
+        HFree(BLIST(D_8022A974, 0x88)[i]);
+    }
+    bzero(BLIST(D_8022A974, 0x18), 0x70);
+    bzero(BLIST(D_8022A974, 0xF8), 0x70);
+    bzero(BLIST(D_8022A974, 0x168), 0x70);
+    bzero(BLIST(D_8022A974, 0x248), 0x70);
+    bzero(BLIST(D_8022A974, 0x1D8), 0x70);
+    bzero(BLIST(D_8022A974, 0x2B8), 0x70);
+    bzero(BLIST(D_8022A974, 0x1A50), 0x70);
+    bzero(BLIST(D_8022A974, 0x88), 0x70);
+    func_8019F3CC();
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E214_ovl_29A4C0);
 
