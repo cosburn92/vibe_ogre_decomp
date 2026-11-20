@@ -201,6 +201,32 @@ def prune(tu, target):
                      for i in range(len(items)) if i in keep) + '\n'
 
 
+SIZE_FLAGS = []  # targets whose emitted function size differs from the retail section (PR #1 review)
+
+
+def size_flag(sym, rom, end, text):
+    """Record sym when the compiled function (through the delay slot of its last `jr ra`) is not
+    exactly the retail section [rom, end). The trailing bytes are reported verbatim: a zero
+    word there can be a real delay-slot instruction, not alignment."""
+    jr = [i for i in range(0, len(text) - 3, 4) if text[i:i + 4] == b'\x03\xe0\x00\x08']
+    emitted = jr[-1] + 8 if jr else len(text)
+    retail = end - rom
+    if emitted == retail:
+        return
+    lo, hi = sorted((emitted, retail))
+    tail = ROM[rom + lo:rom + hi] if retail > emitted else text[lo:hi]
+    SIZE_FLAGS.append(dict(symbol=sym, romStart='0x%08X' % rom, romEndExclusive='0x%08X' % end,
+                           emittedBytes=emitted, retailBytes=retail,
+                           trailingSource='retail' if retail > emitted else 'emitted',
+                           trailingBytes=tail.hex().upper()))
+
+
+def write_size_flags(tag):
+    p = WORK + 'size_flags_%s.json' % tag
+    json.dump(sorted(SIZE_FLAGS, key=lambda f: f['romStart']), open(p, 'w'), indent=1)
+    print('size flags (emitted function != retail section):', len(SIZE_FLAGS), '->', p)
+
+
 def run(cwd, tool, args):
     return subprocess.run([TOOLS + tool] + args, cwd=cwd, capture_output=True, timeout=60)
 
@@ -261,6 +287,7 @@ def attempt(e, own):
     want = ROM[rom:end]
     if lt[:len(want)] != want or any(lt[len(want):]) or len(lt) - len(want) >= 16:
         return 'bytes', 'compiled %d bytes vs owner %d bytes' % (len(lt), len(want))
+    size_flag(sym, rom, end, lt)
     area = next(('src/overlays/descriptor_%02d' % i for a, b, i in descriptors if a <= rom < b),
                 'src/boot' if '/boot/' in asm else 'src/lib')
     return 'ok', dict(symbol=sym, source='%s/%s.c' % (area, sym), tu=tu, relocs=relocs, rom=rom)
@@ -294,6 +321,7 @@ def main():
     for (e, own), (s, i) in zip(jobs, res):
         if s != 'ok': fails.setdefault(s, []).append((e['name'], own[0], str(i)[:160]))
     json.dump(fails, open(WORK + 'fails.json', 'w'), indent=1)
+    write_size_flags('ob64')
     print('skipped', stat, '\ncandidates', len(jobs), 'ok', len(ok), {k: len(v) for k, v in fails.items()})
     # registry entries actually referenced by accepted objects
     used = {r['symbol'] for o in ok for r in o['relocs']}

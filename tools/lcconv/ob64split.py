@@ -115,6 +115,7 @@ def check(sym, tu, rom, end, vram, local_names):
     w = ROM[rom:end]
     if lt[:len(w)] != w or any(lt[len(w):]) or len(lt) - len(w) >= 16:
         return 'bytes', 'compiled %d vs %d' % (len(lt), len(w))
+    ob64.size_flag(sym, rom, end, lt)
     return 'ok', relocs
 
 
@@ -248,3 +249,4 @@ if __name__ == '__main__':
                 % dict(o['multi'], rows=',\n        '.join(map(str, o['multi']['ownerRows']))) for o in mo))
             open(p, 'wb').write(s.encode())
         print('wrote', len(out))
+    ob64.write_size_flags('split')
