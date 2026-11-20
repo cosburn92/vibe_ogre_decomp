@@ -228,131 +228,414 @@ INCLUDE_ASM("asm/nonmatchings/18C2E0", func_80219F84_ovl_188B60);
 /* Draws the legion formation editor: the backdrop (56 strips of 240x2), the five squad slots
  * (selected/highlighted palettes), each squad leader's class sprite with a crown on the first,
  * and the bouncing cursor over the selected slot */
+void func_80219584_ovl_188B60(Win18C *w, s32 page);
 #ifdef NON_MATCHING
-/* formation editor draw: structure matched (617 vs 614); register pressure in the leader loop differs */
-void func_8021A0A4_ovl_188B60(void) {
-    s32 i;
-    s32 y;
-    s32 off;
-    u8 *pal;
-    s32 sq;
-    s32 x;
-    u8 cls;
-    u8 base;
-    u8 frame;
-    u8 sprite;
-    u8 *sheet;
-    u8 c;
-    u8 *ch;
-    s32 bob;
-    s32 bx = 0x3A;
-    s32 by = 0x72;
-    SpriteSet18C *ss;
-
-    if (D_8021B59D_ovl_188B60 == 0 || D_801ED5C0 == NULL) {
-        return;
-    }
-    gSPDisplayList(D_800E9BA0++, D_80213648);
+/* formation editor draw: 613 vs 614 (permuter candidate); register pressure in the leader loop differs */
+void func_8021A0A4_ovl_188B60(void)
+{
+  s32 i;
+  s32 y;
+  s32 off;
+  u8 *pal;
+  s32 sq;
+  s32 x;
+  u8 cls;
+  u8 base;
+  u8 frame;
+  u8 sprite;
+  u8 *sheet;
+  u8 c;
+  s32 bob;
+  s32 bx = 0x3A;
+  s32 by = 0x72;
+  SpriteSet18C *ss;
+  if ((D_8021B59D_ovl_188B60 == 0) || (D_801ED5C0 == ((void *) 0)))
+  {
+    return;
+  }
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (unsigned int) ((((unsigned int) 0xDE) & ((0x01 << 8) - 1)) << 24);
+    _g->w1 = (unsigned int) D_80213648;
+  }
+  ;
+  {
+    Gfx *_g = D_800E9BA0++;
+    _g->w0 = 0xE200001C;
+    _g->w1 = 0x00504240;
+  }
+  {
+    Gfx *_g = D_800E9BA0++;
+    _g->w0 = 0xFC119623;
+    _g->w1 = 0xFF2FFFFF;
+  }
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (((unsigned int) ((((unsigned int) 0xE3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 19) - 1)) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 8) - 1)) << 0));
+    _g->w1 = (unsigned int) 0;
+  }
+  ;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (((unsigned int) ((((unsigned int) 0xFA) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 8) - 1)) << 0));
+    _g->w1 = ((((unsigned int) ((((unsigned int) 0xFF) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0xFF) & ((0x01 << 8) - 1)) << 16))) | ((unsigned int) ((((unsigned int) 0xFF) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) D_8021B5B8_ovl_188B60) & ((0x01 << 8) - 1)) << 0));
+  }
+  ;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (((unsigned int) ((((unsigned int) 0xE3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 14) - 2)) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) (2 - 1)) & ((0x01 << 8) - 1)) << 0));
+    _g->w1 = (unsigned int) (2 << 14);
+  }
+  ;
+  func_8020122C(D_8021B5BC_ovl_188B60);
+  for (i = 0, y = 0x5E, off = 0x200; i < 56; i++, y += 2, off += 0x1E0)
+  {
     {
-        Gfx *_g = D_800E9BA0++;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = ((((unsigned int) ((((unsigned int) 0xFD) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (unsigned int) (D_8021B5BC_ovl_188B60 + off);
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+        _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE6) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xF3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((((((240 * 2) + 1) >> 1) - 1) < 2047) ? ((((240 * 2) + 1) >> 1) - 1) : (2047))) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((((1 << 11) + ((1 > ((240 * 1) / 8)) ? (1) : ((240 * 1) / 8))) - 1) / ((1 > ((240 * 1) / 8)) ? (1) : ((240 * 1) / 8)))) & ((0x01 << 12) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 1) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((240 * 1) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+        _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xF2) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((240 - 1) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((2 - 1) << 2)) & ((0x01 << 12) - 1)) << 0));
+      }
+    }
+    ;
+    func_80200DD0(0x28, y, 0x5D);
+  }
 
-        _g->w0 = 0xE200001C;
-        _g->w1 = 0x00504240;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+    _g->w1 = 0;
+  }
+  ;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+    _g->w1 = 0;
+  }
+  ;
+  {
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = ((((unsigned int) ((((unsigned int) 0xFD) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 12) - 1)) << 0));
+      _g->w1 = (unsigned int) D_801ED5C0->slots;
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+      _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (unsigned int) ((((unsigned int) 0xE6) & ((0x01 << 8) - 1)) << 24);
+      _g->w1 = 0;
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (((unsigned int) ((((unsigned int) 0xF3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+      _g->w1 = (((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((((((32 * 128) + 3) >> 2) - 1) < 2047) ? ((((32 * 128) + 3) >> 2) - 1) : (2047))) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((((1 << 11) + ((1 > (32 / 16)) ? (1) : (32 / 16))) - 1) / ((1 > (32 / 16)) ? (1) : (32 / 16)))) & ((0x01 << 12) - 1)) << 0));
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+      _g->w1 = 0;
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((32 >> 1) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+      _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+    }
+    ;
+    {
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (((unsigned int) ((((unsigned int) 0xF2) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+      _g->w1 = (((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 1) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((128 - 1) << 2)) & ((0x01 << 12) - 1)) << 0));
+    }
+  }
+  ;
+  for (i = 0; i < 5; i++)
+  {
+    if (i == D_8021B59E_ovl_188B60)
+    {
+      pal = D_80212768;
+    }
+    else
+    {
+      pal = D_801F39B0;
+      if (i == D_8021B5A8_ovl_188B60)
+      {
+        pal += 0x60;
+      }
+    }
+    func_802012D8(pal);
+    func_80200DD0((bx + D_8021B4B8_ovl_188B60[i].x) + 1, (by + D_8021B4B8_ovl_188B60[i].y) + 1, 0x5C);
+  }
+
+  ss = D_801ED5C0;
+  for (i = 0; i < 5; i++)
+  {
+    sq = gLegions[D_8021B5B4_ovl_188B60][2 + i];
+    if (sq == 0xFF)
+    {
+      continue;
+    }
+    x = (bx + D_8021B4B8_ovl_188B60[i].x) + 8;
+    y = (by + D_8021B4B8_ovl_188B60[i].y) + 0xE;
+    sheet = D_80193BC0[gSquads[sq].members[0]];
+    cls = sheet[0x11];
+    base = sheet[0x12];
+    frame = func_8016DF18(cls, base);
+    if (gClassTable[cls].baseClass != base)
+    {
+      cls = base;
+    }
+    if (D_8018ECE4[cls][0] & 0x80)
+    {
+      sheet = ss->sheetB;
+    }
+    else
+    {
+      sheet = ss->sheetA;
     }
     {
-        Gfx *_g = D_800E9BA0++;
+      Gfx *_g = (Gfx *) (D_800E9BA0++);
+      _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+      _g->w1 = 0;
+    }
+    ;
+    func_8020122C(sheet + 0x200);
+    {
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = ((((unsigned int) ((((unsigned int) 0xFD) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (unsigned int) (sheet + ((frame * 0x180) + 0x400));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+        _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE6) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xF3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((((((16 * 24) + 1) >> 1) - 1) < 2047) ? ((((16 * 24) + 1) >> 1) - 1) : (2047))) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((((1 << 11) + ((1 > ((16 * 1) / 8)) ? (1) : ((16 * 1) / 8))) - 1) / ((1 > ((16 * 1) / 8)) ? (1) : ((16 * 1) / 8)))) & ((0x01 << 12) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 1) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((16 * 1) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+        _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xF2) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((16 - 1) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((24 - 1) << 2)) & ((0x01 << 12) - 1)) << 0));
+      }
+    }
+    ;
+    func_80200DD0(x, y - 0x18, 0x5E);
+    if (i == 0)
+    {
+      D_8018F480 = 1;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xE3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 14) - 2)) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) (2 - 1)) & ((0x01 << 8) - 1)) << 0));
+        _g->w1 = (unsigned int) (0 << 14);
+      }
+      ;
+      {
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = ((((unsigned int) ((((unsigned int) 0xFD) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 12) - 1)) << 0));
+          _g->w1 = (unsigned int) D_801F0BCC;
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+          _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (unsigned int) ((((unsigned int) 0xE6) & ((0x01 << 8) - 1)) << 24);
+          _g->w1 = 0;
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (((unsigned int) ((((unsigned int) 0xF3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+          _g->w1 = (((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((((((24 * 9) + 0) >> 0) - 1) < 2047) ? ((((24 * 9) + 0) >> 0) - 1) : (2047))) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((((1 << 11) + ((1 > ((24 * 2) / 8)) ? (1) : ((24 * 2) / 8))) - 1) / ((1 > ((24 * 2) / 8)) ? (1) : ((24 * 2) / 8)))) & ((0x01 << 12) - 1)) << 0));
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+          _g->w1 = 0;
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((24 * 2) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+          _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (((unsigned int) ((((unsigned int) 0xF2) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 12) - 1)) << 0));
+          _g->w1 = (((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((24 - 1) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((9 - 1) << 2)) & ((0x01 << 12) - 1)) << 0));
+        }
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xE4) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((x + 22) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((y - 13) << 2)) & ((0x01 << 12) - 1)) << 0));
+        _g->w1 = (((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((x + 12) << 2)) & ((0x01 << 12) - 1)) << 12))) | ((unsigned int) ((((unsigned int) ((y - 22) << 2)) & ((0x01 << 12) - 1)) << 0));
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (unsigned int) ((((unsigned int) 0xE1) & ((0x01 << 8) - 1)) << 24);
+          _g->w1 = (unsigned int) (((unsigned int) ((((unsigned int) (8 << 5)) & ((0x01 << 16) - 1)) << 16)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 16) - 1)) << 0)));
+        }
+        ;
+        {
+          Gfx *_g = (Gfx *) (D_800E9BA0++);
+          _g->w0 = (unsigned int) ((((unsigned int) 0xF1) & ((0x01 << 8) - 1)) << 24);
+          _g->w1 = (unsigned int) (((unsigned int) ((((unsigned int) (1 << 10)) & ((0x01 << 16) - 1)) << 16)) | ((unsigned int) ((((unsigned int) (1 << 10)) & ((0x01 << 16) - 1)) << 0)));
+        }
+        ;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+        _g->w1 = 0;
+      }
+      ;
+      D_8018F480 = 2;
+      {
+        Gfx *_g = (Gfx *) (D_800E9BA0++);
+        _g->w0 = (((unsigned int) ((((unsigned int) 0xE3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 14) - 2)) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) (2 - 1)) & ((0x01 << 8) - 1)) << 0));
+        _g->w1 = (unsigned int) (2 << 14);
+      }
+      ;
+    }
+  }
 
-        _g->w0 = 0xFC119623;
-        _g->w1 = 0xFF2FFFFF;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (unsigned int) ((((unsigned int) 0xDE) & ((0x01 << 8) - 1)) << 24);
+    _g->w1 = (unsigned int) D_80213648;
+  }
+  ;
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (((unsigned int) ((((unsigned int) 0xE3) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) ((32 - 19) - 1)) & ((0x01 << 8) - 1)) << 8))) | ((unsigned int) ((((unsigned int) (1 - 1)) & ((0x01 << 8) - 1)) << 0));
+    _g->w1 = (unsigned int) 0;
+  }
+  ;
+  bob = D_8021B5C0_ovl_188B60 & 0xF;
+  x = (bx + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].x) + 0xB;
+  y = (by + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].y) - 0x1E;
+  func_80200F70(D_80212518, D_80212410, 16, 32, 2);
+  func_80200DD0(x, y + bob, 0x3F);
+  {
+    Gfx *_g = (Gfx *) (D_800E9BA0++);
+    _g->w0 = (unsigned int) ((((unsigned int) 0xE7) & ((0x01 << 8) - 1)) << 24);
+    _g->w1 = 0;
+  }
+  ;
+  if (D_8021B5A8_ovl_188B60 == (-1))
+  {
+    if (D_8021B5C0_ovl_188B60 & 0x80)
+    {
+      D_8021B5C0_ovl_188B60--;
+      if (!(D_8021B5C0_ovl_188B60 & 0xF))
+      {
+        D_8021B5C0_ovl_188B60 &= 0x7F;
+      }
     }
-    gSPSetOtherMode(D_800E9BA0++, G_SETOTHERMODE_H, 19, 1, 0); /* no perspective correction */
-    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0xFF, 0xFF, 0xFF, D_8021B5B8_ovl_188B60);
-    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
-    func_8020122C(D_8021B5BC_ovl_188B60);
-    for (i = 0, y = 0x5E, off = 0x200; i < 56; i++, y += 2, off += 0x1E0) {
-        gDPLoadTextureBlock(D_800E9BA0++, D_8021B5BC_ovl_188B60 + off, G_IM_FMT_CI, G_IM_SIZ_8b, 240, 2, 0, 0, 0, 0,
-                            0, 0, 0);
-        func_80200DD0(0x28, y, 0x5D);
+    else
+    {
+      D_8021B5C0_ovl_188B60++;
+      if ((D_8021B5C0_ovl_188B60 & 0xF) >= 5)
+      {
+        D_8021B5C0_ovl_188B60 |= 0x80;
+      }
     }
-
-    gDPPipeSync(D_800E9BA0++);
-    gDPPipeSync(D_800E9BA0++);
-    gDPLoadTextureBlock_4b(D_800E9BA0++, D_801ED5C0->slots, G_IM_FMT_CI, 32, 128, 0, 0, 0, 0, 0, 0, 0);
-    for (i = 0; i < 5; i++) {
-        if (i == D_8021B59E_ovl_188B60) {
-            pal = D_80212768;
-        } else {
-            pal = D_801F39B0;
-            if (i == D_8021B5A8_ovl_188B60) {
-                pal += 0x60;
-            }
-        }
-        func_802012D8(pal);
-        func_80200DD0(bx + D_8021B4B8_ovl_188B60[i].x + 1, by + D_8021B4B8_ovl_188B60[i].y + 1, 0x5C);
-    }
-
-    ss = D_801ED5C0;
-    for (i = 0; i < 5; i++) {
-        sq = gLegions[D_8021B5B4_ovl_188B60][2 + i];
-        if (sq == 0xFF) {
-            continue;
-        }
-        x = bx + D_8021B4B8_ovl_188B60[i].x + 8;
-        y = by + D_8021B4B8_ovl_188B60[i].y + 0xE;
-        ch = D_80193BC0[gSquads[sq].members[0]];
-        cls = ch[0x11];
-        base = ch[0x12];
-        frame = func_8016DF18(cls, base);
-        if (gClassTable[cls].baseClass != base) {
-            cls = base;
-        }
-        if (D_8018ECE4[cls][0] & 0x80) {
-            sheet = ss->sheetB;
-        } else {
-            sheet = ss->sheetA;
-        }
-        gDPPipeSync(D_800E9BA0++);
-        func_8020122C(sheet + 0x200);
-        gDPLoadTextureBlock(D_800E9BA0++, sheet + (frame * 0x180 + 0x400), G_IM_FMT_CI, G_IM_SIZ_8b, 16, 24, 0, 2, 2, 0, 0,
-                            0, 0);
-        func_80200DD0(x, y - 0x18, 0x5E);
-        if (i == 0) {
-            D_8018F480 = 1;
-            gDPPipeSync(D_800E9BA0++);
-            gDPSetTextureLUT(D_800E9BA0++, G_TT_NONE);
-            gDPLoadTextureBlock(D_800E9BA0++, D_801F0BCC, G_IM_FMT_RGBA, G_IM_SIZ_16b, 24, 9, 0, 2, 2, 0, 0, 0, 0);
-            gDPPipeSync(D_800E9BA0++);
-            gSPTextureRectangle(D_800E9BA0++, (x + 12) << 2, (y - 22) << 2, (x + 22) << 2, (y - 13) << 2, 0, 8 << 5, 0,
-                                1 << 10, 1 << 10);
-            gDPPipeSync(D_800E9BA0++);
-            gDPPipeSync(D_800E9BA0++);
-            D_8018F480 = 2;
-            gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
-        }
-    }
-
-    gSPDisplayList(D_800E9BA0++, D_80213648);
-    gSPSetOtherMode(D_800E9BA0++, G_SETOTHERMODE_H, 19, 1, 0);
-    bob = D_8021B5C0_ovl_188B60 & 0xF;
-    x = bx + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].x + 0xB;
-    y = by + D_8021B4B8_ovl_188B60[D_8021B59E_ovl_188B60].y - 0x1E;
-    func_80200F70(D_80212518, D_80212410, 16, 32, 2);
-    func_80200DD0(x, y + bob, 0x3F);
-    gDPPipeSync(D_800E9BA0++);
-    if (D_8021B5A8_ovl_188B60 == -1) {
-        /* bob the cursor: count up to 5, then back down to 0 (bit 7 = direction) */
-        if (D_8021B5C0_ovl_188B60 & 0x80) {
-            D_8021B5C0_ovl_188B60--;
-            if (!(D_8021B5C0_ovl_188B60 & 0xF)) {
-                D_8021B5C0_ovl_188B60 &= 0x7F;
-            }
-        } else {
-            D_8021B5C0_ovl_188B60++;
-            if ((D_8021B5C0_ovl_188B60 & 0xF) >= 5) {
-                D_8021B5C0_ovl_188B60 |= 0x80;
-            }
-        }
-    }
+  }
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/18C2E0", func_8021A0A4_ovl_188B60);
