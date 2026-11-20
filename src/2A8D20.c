@@ -316,7 +316,66 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023B500_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023B998_ovl_2A8D20);
 
+/* Battle camera zoom state (D_8022A974 + 0x19F0) */
+typedef struct {
+    /* 0x00 */ f32 dsx;
+    /* 0x04 */ f32 dsy;
+    /* 0x08 */ u8 unk08[4];
+    /* 0x0C */ f32 dx;
+    /* 0x10 */ f32 dy;
+    /* 0x14 */ u8 unk14[0x10];
+    /* 0x24 */ f32 sx;
+    /* 0x28 */ f32 sy;
+    /* 0x2C */ u8 unk2C[4];
+    /* 0x30 */ f32 x;
+    /* 0x34 */ f32 y;
+    /* 0x38 */ u8 unk38[0x10];
+    /* 0x48 */ s16 frames;
+} Zoom2A8;
+
+static inline void Zoom2A8_SetSteps(s16 n) {
+    Zoom2A8 *z = FIELD(D_8022A974, Zoom2A8 *, 0x19F0);
+    f32 f = n;
+
+    z->frames = n;
+    z->dx = (0.0f - z->x) / f;
+    z->dy = (0.0f - z->y) / f;
+    z->dsx = (1.0f - z->sx) / f;
+    z->dsy = (1.0f - z->sy) / f;
+}
+
+/* Starts easing the battle camera zoom back to scale 1 / offset 0 over n frames
+ * (n == 0: pick a duration from the current offset and scale); returns the picked duration */
+#ifdef NON_MATCHING
+/* zoom reset: float register allocation differs */
+s16 func_8023BB48_ovl_2A8D20(s16 n) {
+    Zoom2A8 *z = FIELD(D_8022A974, Zoom2A8 *, 0x19F0);
+    s16 t = 0;
+    s16 u;
+    f32 s;
+
+    D_8022A980 = 0x80;
+    if (z->x == 0.0 && z->y == 0.0 && z->sx == 1.0 && z->sy == 1.0) {
+        D_8022A980 = 0x81;
+    }
+    if ((D_8022A980 | 1) != D_8022A980) {
+        if (n == 0) {
+            t = (z->x * z->x + z->y * z->y) / 80.0f;
+            s = (z->sy < z->sx) ? z->sx : z->sy;
+            u = (s - 1.0f) * 100.0f;
+            if (t < u) {
+                t = u;
+            }
+            Zoom2A8_SetSteps(t);
+        } else {
+            Zoom2A8_SetSteps(n);
+        }
+    }
+    return t;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BB48_ovl_2A8D20);
+#endif
 
 s32 func_8023BD7C_ovl_2A8D20(void) {
     s16 v = FIELD(FIELD(D_8022A974, u8 *, 0x19F0), s16, 0x48);
