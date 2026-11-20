@@ -679,22 +679,23 @@ void func_80206C70_ovl_14EBE0(void) {
     func_80179018();
 }
 
-#ifdef NON_MATCHING
 /* addu operand order (1 instruction) */
-void func_80206D78_ovl_14EBE0(void) {
-    u8 *o = D_80213778_ovl_14EBE0;
-    s8 v = o[0x5E];
-    u8 k = o[0x605 + v * 10];
-
-    if (v == 1) {
-        o[0x5D8] = (o + k * 8)[0x35C];
-    } else {
-        o[0x5D8] = 0;
-    }
+void func_80206D78_ovl_14EBE0(void)
+{
+  u8 *o = D_80213778_ovl_14EBE0;
+  u8 *new_var;
+  s8 v = o[0x5E];
+  u8 k = o[0x605 + (v * 10)];
+  if (v == 1)
+  {
+    new_var = &(o + (k * 8))[0x35C];
+    o[0x5D8] = *new_var;
+  }
+  else
+  {
+    o[0x5D8] = 0;
+  }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80206D78_ovl_14EBE0);
-#endif
 
 void func_80206DBC_ovl_14EBE0(u8 a, s16 *p) {
     p[2] = 4;

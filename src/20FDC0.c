@@ -96,18 +96,17 @@ s32 func_801CCFFC_ovl_1F0A30(s32 n) {
 }
 
 /* Backward byte copy (overlap-safe when dst > src) */
-#ifdef NON_MATCHING
 /* Loop counter compare differs. */
-void func_801CD01C_ovl_1F0A30(u8 *dst, u8 *src, s32 n) {
-    dst += n;
-    src += n;
-    while (n-- != 0) {
-        *--dst = *--src;
-    }
+void func_801CD01C_ovl_1F0A30(u8 *dst, u8 *src, s32 n)
+{
+  dst += n;
+  src += n;
+  while (0 != (n--))
+  {
+    *(--dst) = *(--src);
+  }
+
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD01C_ovl_1F0A30);
-#endif
 
 /* Number of decimal digits in n */
 s32 func_801CD058_ovl_1F0A30(u32 n) {
