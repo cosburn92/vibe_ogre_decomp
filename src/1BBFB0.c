@@ -356,7 +356,70 @@ void func_80224E1C_ovl_1BA050(void) {
     }
 }
 
+/* Scissor to (x0, y0)-(x1, y1), clamped to the 320x240 screen, between two pipe syncs */
+#ifdef NON_MATCHING
+/* scissor: structure right, display-list pointer scheduling differs */
+void func_80224E74_ovl_1BA050(s16 x0, s16 y0, s16 x1, s16 y1) {
+    u32 w;
+
+    if (x0 < 0) {
+        x0 = 0;
+    } else if (x0 > 320) {
+        x0 = 320;
+    }
+    if (y0 < 0) {
+        y0 = 0;
+    } else if (y0 > 240) {
+        y0 = 240;
+    }
+    if (x1 < 0) {
+        x1 = 0;
+    } else if (x1 > 320) {
+        x1 = 320;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    } else if (y1 > 240) {
+        y1 = 240;
+    }
+    {
+        GfxBB *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    {
+        GfxBB *g = D_800E9BA0++;
+
+        w = 0xED000000;
+        if (x0 >= 0) {
+            w = (((s32)(x0 * 4.0f) & 0xFFF) << 12) | 0xED000000;
+        }
+        g->w0 = w;
+        if (y0 >= 0) {
+            g->w0 = w | ((s32)(y0 * 4.0f) & 0xFFF);
+        }
+        if (x1 == 320) {
+            w = 0x4FC000;
+        } else {
+            w = ((s32)(x1 * 4.0f) & 0xFFF) << 12;
+        }
+        if (y1 == 240) {
+            g->w1 = w | 0x3BC;
+        } else {
+            g->w1 = w | ((s32)(y1 * 4.0f) & 0xFFF);
+        }
+    }
+    {
+        GfxBB *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224E74_ovl_1BA050);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80225058_ovl_1BA050);
 
