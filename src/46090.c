@@ -557,18 +557,22 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80172B10_ovl_040E80);
 #endif
 
 /* Sets bit flag n (1-based) */
-#ifdef NON_MATCHING
 /* param masking/register order differs */
-void func_80172B68_ovl_040E80(u8 n, u8 v) {
-    s32 i = n - 1;
-    s32 s;
-
+void func_80172B68_ovl_040E80(u8 n, u8 v)
+{
+  int new_var;
+  s32 i = n - 1;
+  s32 s;
+  unsigned int new_var2;
+  new_var2 = D_80196A81_ovl_040E80[i / 8];
+  if (1)
+  {
     s = i & 7;
-    D_80196A81_ovl_040E80[i / 8] = (D_80196A81_ovl_040E80[i / 8] & ~(1 << s)) | (v << s);
+ dummy_label_803137: ;
+  }
+  new_var = new_var2 & (~(1 << s));
+  D_80196A81_ovl_040E80[i / 8] = new_var | (v << s);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172B68_ovl_040E80);
-#endif
 
 u8 func_80172BBC_ovl_040E80(u8 n) {
     s32 i = n - 1;
@@ -576,16 +580,14 @@ u8 func_80172BBC_ovl_040E80(u8 n) {
     return (D_80196A81_ovl_040E80[i / 8] >> (i & 7)) & 1;
 }
 
-#ifdef NON_MATCHING
 /* param masking/register order differs */
-void func_80172BF0_ovl_040E80(u8 n, u8 v) {
-    s32 i = n - 1;
-
-    D_80196A93_ovl_040E80[i / 8] = (D_80196A93_ovl_040E80[i / 8] & ~(1 << (i & 7))) | (v << (i & 7));
+void func_80172BF0_ovl_040E80(u8 n, u8 v)
+{
+  int new_var;
+  s32 i = n - 1;
+  new_var = D_80196A93_ovl_040E80[i / 8] & (~(1 << (i & 7)));
+  D_80196A93_ovl_040E80[i / 8] = new_var | (v << ((n - 1) & 7));
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172BF0_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172C44_ovl_040E80);
 
