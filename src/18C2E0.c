@@ -232,17 +232,18 @@ void func_80219584_ovl_188B60(Win18C *w, s32 page);
 void func_80219584_ovl_188B60(Win18C *w, s32 page);
 void func_80219584_ovl_188B60(Win18C *w, s32 page);
 #ifdef NON_MATCHING
-/* formation editor draw: length matches (614), 139 words differ; loop 1 hoists the 0xE6000000 constant that the original keeps in s6 */
-void func_8021A0A4_ovl_188B60(void)
-{
+/* formation editor draw: 614 vs 614, 47 words differ (scheduling in loop 1 setup and leader loop start) */
+void func_8021A0A4_ovl_188B60(void) {
   s32 i;
   s32 y;
+  s32 sy;
   s32 off;
   u8 *pal;
   s32 sq;
   s32 x;
   u8 cls;
   u8 base;
+  u8 *new_var;
   u8 frame;
   u8 sprite;
   u8 *sheet;
@@ -252,6 +253,7 @@ void func_8021A0A4_ovl_188B60(void)
   s32 bx = 0x3A;
   s32 by = 0x72;
   SpriteSet18C *ss;
+
   if ((D_8021B59D_ovl_188B60 == 0) || (D_801ED5C0 == ((void *) 0)))
   {
     return;
@@ -291,7 +293,7 @@ void func_8021A0A4_ovl_188B60(void)
   }
   ;
   func_8020122C(D_8021B5BC_ovl_188B60);
-  for (i = 0, y = 0x5E, off = 0x200; i < 56; i++, y += 2, off += 0x1E0)
+  for (i = 0, sy = 0x5E, off = 0x200; i < 56; sy += 2, i++, off += 0x1E0)
   {
     {
       {
@@ -302,7 +304,8 @@ void func_8021A0A4_ovl_188B60(void)
       ;
       {
         Gfx *_g = (Gfx *) (D_800E9BA0++);
-        _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
+        _g->w0 = (unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24);
+        _g->w0 = (((_g->w0 | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
         _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
       }
       ;
@@ -337,7 +340,7 @@ void func_8021A0A4_ovl_188B60(void)
       }
     }
     ;
-    func_80200DD0(0x28, y, 0x5D);
+    func_80200DD0(0x28, sy, 0x5D);
   }
 
   {
@@ -386,7 +389,7 @@ void func_8021A0A4_ovl_188B60(void)
     {
       Gfx *_g = (Gfx *) (D_800E9BA0++);
       _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((32 >> 1) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
-      _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+      _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((0 & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
     }
     ;
     {
@@ -418,14 +421,15 @@ void func_8021A0A4_ovl_188B60(void)
   for (i = 0; i < 5; i++)
   {
     sq = gLegions[D_8021B5B4_ovl_188B60][2 + i];
+    new_var = gSquads[sq].members;
     if (sq == 0xFF)
     {
       continue;
     }
     x = (bx + D_8021B4B8_ovl_188B60[i].x) + 8;
     y = (by + D_8021B4B8_ovl_188B60[i].y) + 0xE;
-    cls = D_80193BC0[gSquads[sq].members[0]][0x11];
-    base = D_80193BC0[gSquads[sq].members[0]][0x12];
+    cls = D_80193BC0[new_var[0]][0x11];
+    base = D_80193BC0[new_var[0]][0x12];
     t = func_8016DF18(cls, base);
     c = cls;
     if (gClassTable[cls].baseClass != base)
@@ -518,7 +522,7 @@ void func_8021A0A4_ovl_188B60(void)
         {
           Gfx *_g = (Gfx *) (D_800E9BA0++);
           _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
-          _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+          _g->w1 = ((((((((unsigned int) ((((unsigned int) 7) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << (frame = 4)))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 0));
         }
         ;
         {
@@ -542,7 +546,7 @@ void func_8021A0A4_ovl_188B60(void)
         {
           Gfx *_g = (Gfx *) (D_800E9BA0++);
           _g->w0 = (((((unsigned int) ((((unsigned int) 0xF5) & ((0x01 << 8) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 21))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 19))) | ((unsigned int) ((((unsigned int) (((24 * 2) + 7) >> 3)) & ((0x01 << 9) - 1)) << 9))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 9) - 1)) << 0));
-          _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << 4) - 1)) << 0));
+          _g->w1 = ((((((((unsigned int) ((((unsigned int) 0) & ((0x01 << 3) - 1)) << 24)) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 20))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 18))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 14))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 10))) | ((unsigned int) ((((unsigned int) 2) & ((0x01 << 2) - 1)) << 8))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 4))) | ((unsigned int) ((((unsigned int) 0) & ((0x01 << frame) - 1)) << 0));
         }
         ;
         {
