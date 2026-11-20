@@ -32,7 +32,7 @@ extern u8 D_80213648_ovl_14EBE0[];
 extern void *D_80214F5C_ovl_14EBE0;
 extern u8 D_8018F480;
 
-void func_80200F70_ovl_14EBE0(void *a, void *b, s32 c, s32 d, s32 e);
+void func_80200F70_ovl_14EBE0(void *pal, void *img, u16 w, u16 h, u16 mode);
 void func_80200DD0_ovl_14EBE0(void *a, s32 b, s32 c);
 void func_80179018(void);
 void *LoadChunk(u32 handle);
@@ -142,7 +142,24 @@ void func_80200DD0_ovl_14EBE0(void *a, s32 b, s32 c) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80200DD0_ovl_14EBE0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80200F70_ovl_14EBE0);
+#include "gbi_ultra.h"
+/* Texture wrap/mask preset */
+typedef struct {
+    s32 cms;
+    s32 cmt;
+    s32 masks;
+    s32 maskt;
+} TexMode151;
+extern TexMode151 D_80213588_ovl_14EBE0[];
+
+/* Loads a CI4 texture (w x h pixels at img) with its 16-colour palette pal; wrap/mask settings
+ * come from preset `mode` in D_80213588 */
+void func_80200F70_ovl_14EBE0(void *pal, void *img, u16 w, u16 h, u16 mode) {
+    TexMode151 *m = &D_80213588_ovl_14EBE0[mode];
+
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, pal);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, img, G_IM_FMT_CI, w, h, 0, m->cms, m->cmt, m->masks, m->maskt, 0, 0);
+}
 
 /* Loads a 256-colour TLUT from pal */
 void func_8020122C_ovl_14EBE0(u32 pal) {
