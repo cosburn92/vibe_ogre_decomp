@@ -382,8 +382,6 @@ u32 func_801BEA70_ovl_1F0A30(Rgba201 in) {
 }
 
 /* Sepia tone of an RGBA5551 colour */
-#ifdef NON_MATCHING
-/* constant 30000 reciprocal loaded early; a1/a2 allocation differs */
 u16 func_801BEB28_ovl_1F0A30(u16 c) {
     u32 r = (c >> 8) & 0xF8;
     u32 g = (c >> 3) & 0xF8;
@@ -393,11 +391,9 @@ u16 func_801BEB28_ovl_1F0A30(u16 c) {
     r = lum * 255 / 30000;
     g = lum / 150;
     b = lum * 130 / 30000;
-    return ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+    lum = ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+    return lum;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BEB28_ovl_1F0A30);
-#endif
 
 typedef struct {
     u8 r, g, b, a;
