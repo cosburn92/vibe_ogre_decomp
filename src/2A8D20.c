@@ -524,7 +524,42 @@ INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BDF8_ovl_2A8D20);
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BE14_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BF5C_ovl_2A8D20);
+s32 func_801C8C58(u8 *u);
+
+/* Checks the pair (*pa, *pb) for unit u (-1/-2/0 are special values); clears a side that
+ * func_8016FF5C rejects for id */
+s32 func_8023BF5C_ovl_2A8D20(s32 id, s32 *pa, s32 *pb, u8 *u) {
+    s32 a = *pa;
+    s32 b = *pb;
+
+    if (a == -1 && func_801C8B68(u)) {
+        return 0;
+    }
+    if (b == -1 && !func_801C8B68(u)) {
+        return 0;
+    }
+    if (a == -2 && func_801C8B68(u) && func_801C8C58(u)) {
+        return 0;
+    }
+    if (b == -2 && !func_801C8B68(u) && func_801C8C58(u)) {
+        return 0;
+    }
+    if (a == 0 && func_801C8B68(u)) {
+        return 1;
+    }
+    if (b == 0 && !func_801C8B68(u)) {
+        return 1;
+    }
+    if (func_8016FF5C(a, id)) {
+        *pa = 0;
+        return 0;
+    }
+    if (func_8016FF5C(b, id)) {
+        *pb = 0;
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C0B0_ovl_2A8D20);
 
