@@ -478,7 +478,30 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A886C_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8A64_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8C5C_ovl_0EBBB0);
+extern u8 D_8018F520[];
+extern s32 D_8018F568;
+extern s8 D_8018F56C;
+extern u16 D_801AC474_ovl_0EBBB0[];
+
+/* Draws frame D_8018F568 (clamped to 45) of a 32x32 intensity animation in a fixed tan colour,
+ * faded by f15C; clears flag 2 from frame 12 on and flag 4 (and D_8018F56C/D) at the end */
+void func_801A8C5C_ovl_0EBBB0(void) {
+    s32 f = D_8018F568;
+
+    if (f >= 12) {
+        D_8018F520[0] &= ~2;
+    }
+    if (f >= 46) {
+        f = 45;
+        D_8018F56D = 0;
+        D_8018F56C = 0;
+        D_8018F520[0] &= ~4;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, LoadAsset(0x0203C53E, D_801AC474_ovl_0EBBB0[f], -0xA), G_IM_FMT_I, G_IM_SIZ_8b,
+                        32, 32, 0, G_TX_CLAMP, G_TX_CLAMP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0xB5, 0xA5, 0x83, (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8E64_ovl_0EBBB0);
 
