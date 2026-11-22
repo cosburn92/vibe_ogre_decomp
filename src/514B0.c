@@ -615,7 +615,60 @@ void func_8017E80C_ovl_040E80(s32 x0, s32 y, s32 x1) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EAE8_ovl_040E80);
+extern u8 D_8018FE10_ovl_040E80[];
+extern u8 D_8018FE14_ovl_040E80[];
+extern void (*D_8018FE18_ovl_040E80[])(u8 *s, s32 x, s32 y);
+void func_801818A0_ovl_040E80(s32 x, s32 y);
+
+/* Drawer for the two-line label node: both strings in the current language's font at fade
+ * fade[k], then the marker (lower when bit 0 of 0x22 is set) */
+void func_8017EAE8_ovl_040E80(Node *n, s32 k) {
+    s32 a = FIELD(n, s16, 0x18 + k * 2);
+    s32 x;
+    s32 y;
+    s32 dy;
+
+    if (a != 0) {
+        x = FIELD(n, s32, 0x2C);
+        y = FIELD(n, s32, 0x30);
+        dy = (FIELD(n, u8, 0x22) & 1) * 14 + 4;
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFA000000;
+            _g->w1 = a | ~0xFF;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE3000C00;
+            _g->w1 = 0;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE3001201;
+            _g->w1 = 0;
+        }
+        if (a == 0xFF) {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x0F0A7008;
+        } else {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x504240;
+        }
+        D_800E9BA0->w0 = 0xFC119623;
+        D_800E9BA0->w1 = 0xFF2FFFFF;
+        D_800E9BA0++;
+        D_8018FE18_ovl_040E80[D_80187020_ovl_040E80](D_8018FE10_ovl_040E80, x + 0x15, y + 2);
+        D_8018FE18_ovl_040E80[D_80187020_ovl_040E80](D_8018FE14_ovl_040E80, x + 0x15, y + 0xE);
+        func_801818A0_ovl_040E80(x + 1, y + dy);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EC84_ovl_040E80);
 
