@@ -634,36 +634,32 @@ typedef struct {
     /* 0x20 */ u8 index;
 } KeyOut1CE;
 
-static inline u8 *FindEnt1CE(s32 id) {
-    Ent1CE *e = D_801BA6F8_ovl_1CE070;
-    s32 n;
-
-    n = 9;
-    do {
-        if (e->id != 0 && e->id == id) {
-            return e->p3C;
-        }
-        e++;
-    } while (n--);
-    return NULL;
-}
-
 /* Copies key k of animation anim of loaded entry id into out (scales from 6.10 fixed point);
  * returns 0 when k is past the animation's key count */
-#ifdef NON_MATCHING
-/* 73 vs 74 instructions: GCC here gives the entry pointer a0 and copies id to t0; the original keeps id in a0 and the entry pointer in v1 */
 s32 func_8019B054_ovl_1CE070(s32 id, s32 anim, u32 k, KeyOut1CE *out) {
-    u8 *tab = FindEnt1CE(id);
+    Ent1CE *e = D_801BA6F8_ovl_1CE070;
+    s32 n = 9;
+    u8 *tab;
     u16 *a;
     Key1CE *key;
 
+    do {
+        if (e->id != 0 && e->id == id) {
+            tab = e->p3C;
+            goto found;
+        }
+        e++;
+    } while (n--);
+    tab = NULL;
+found:
     if (tab != NULL) {
         a = (u16 *)(tab + ((s32 *)tab)[anim]);
     } else {
         a = NULL;
     }
-    if (k < *a) {
-        key = (Key1CE *)(a + 1) + k;
+    if (k < *a++) {
+        a = (u16 *)((Key1CE *)a + k);
+        key = (Key1CE *)a;
         out->index = k;
         out->a = key->a;
         out->b = key->b;
@@ -677,9 +673,6 @@ s32 func_8019B054_ovl_1CE070(s32 id, s32 anim, u32 k, KeyOut1CE *out) {
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B054_ovl_1CE070);
-#endif
 
 extern u8 D_801B8098_ovl_1CE070[];
 
