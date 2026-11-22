@@ -745,7 +745,76 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_802293B4_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802297D8_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A120_ovl_27A020);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern u8 D_800EB1F0[];
+void func_800EA604(void *bank, s32 se);
+/* Entry list inside Obj27 (+0x18) */
+typedef struct {
+    /* 0x0 */ s32 *items;
+    /* 0x4 */ s16 unk4;
+    /* 0x6 */ s16 flags;
+} List27;
+
+static inline s16 List27_EntryMark(List27 *l, u8 *e) {
+    s16 mark = 0;
+
+    if (e == NULL) {
+        return 0;
+    }
+    if ((l->flags & 2) && (FIELD(e, s32, 0x40) & 2)) {
+        mark = 2;
+    }
+    if ((l->flags & 1) && FIELD(e, u16, 0x20) == 0) {
+        mark = 1;
+    }
+    return mark;
+}
+
+extern u16 D_800E8100;
+extern s32 gGoth;
+
+/* Shop list cursor (five rows at o->0x10): up/down move to the next pickable entry with a key
+ * repeat delay; A returns 1 (3 when the price exceeds gGoth), B returns 2, else 0 */
+s32 func_8022A120_ovl_27A020(Obj27 *o) {
+    List27 *l = (List27 *)&o->w18;
+    s16 d = 0;
+
+    if (--FIELD(o, s16, 0x1C) > 0) {
+        return 0;
+    }
+    FIELD(o, s16, 0x1C) = 0;
+    if (D_800E8100 & 0x8000) {
+        return ((u32)gGoth < func_8022592C_ovl_27A020(FIELD(o, s16, 0x10))) ? 3 : 1;
+    }
+    if (D_800E8100 & 0x4000) {
+        return 2;
+    }
+    while (1) {
+        if (D_800E9BE4[0] & 0x800) {
+            d--;
+            l->unk4 = 5;
+            if (FIELD(o, s16, 0x10) + d < 0) {
+                break;
+            }
+        } else if (D_800E9BE4[0] & 0x400) {
+            d++;
+            l->unk4 = 5;
+            if (FIELD(o, s16, 0x10) + d >= 5) {
+                break;
+            }
+        } else {
+            break;
+        }
+        if (List27_EntryMark(l, (u8 *)l->items[FIELD(o, s16, 0x10) + d]) != 0) {
+            FIELD(o, s16, 0x10) += d;
+            func_800EA604(D_800EB1F0, 2);
+            break;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A2A8_ovl_27A020);
 
@@ -811,27 +880,6 @@ void func_8016DE1C(u8 a, u8 b);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-/* Entry list inside Obj27 (+0x18) */
-typedef struct {
-    /* 0x0 */ s32 *items;
-    /* 0x4 */ s16 unk4;
-    /* 0x6 */ s16 flags;
-} List27;
-
-static inline s16 List27_EntryMark(List27 *l, u8 *e) {
-    s16 mark = 0;
-
-    if (e == NULL) {
-        return 0;
-    }
-    if ((l->flags & 2) && (FIELD(e, s32, 0x40) & 2)) {
-        mark = 2;
-    }
-    if ((l->flags & 1) && FIELD(e, u16, 0x20) == 0) {
-        mark = 1;
-    }
-    return mark;
-}
 
 
 /* Draws the marks beside the (up to five) list entries that need one: 2 when the list
@@ -929,8 +977,6 @@ typedef struct {
 extern u16 D_800E79B0;
 extern s16 D_8022CB28_ovl_27A020;
 extern s16 D_8022CB2A_ovl_27A020;
-extern u8 D_800EB1F0[];
-void func_800EA604(void *bank, s32 se);
 void func_8017C384(u8 *w);
 
 /* Shop yes/no cursor: up selects 1, down 0 (with a click when it moves); A returns the
