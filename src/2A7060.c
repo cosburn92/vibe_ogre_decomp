@@ -55,7 +55,68 @@ void func_80237B84_ovl_29A4C0(u16 msg, u8 *ctx) {
 
 INCLUDE_ASM("asm/nonmatchings/2A7060", func_80237C90_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_80237E4C_ovl_29A4C0);
+void func_8023841C_ovl_29A4C0(u16 msg, u8 *ctx);
+extern f32 D_80220F6C;
+extern f32 D_80220F70;
+extern f32 D_80220F74;
+extern u8 D_80220EE0[];
+u8 *func_80214C84(s32 size, void (*fn)(u16, u8 *));
+void func_8020A4A8(u8 *a, u8 *b);
+void func_8020A5A0(u8 *a, u8 *b);
+void func_8020D814(u8 *o);
+void func_8020D86C(u8 *o, s32 a, s32 b);
+void func_8020E0E4(u8 *o, s32 a, s32 b);
+
+/* Scene script for the drifting sprites (func_8023841C): sets up the camera, spawns the sprite
+ * object and steps through its states */
+s32 func_80237E4C_ovl_29A4C0(u16 msg, u8 *ctx) {
+    u8 *o;
+    u8 *p;
+
+    switch (msg) {
+        case 0x101:
+            if (FIELD(ctx, u8 *, 0x10) != NULL) {
+                func_8020D814(FIELD(ctx, u8 *, 0x10));
+            }
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(ctx, f32, 0) = D_80220F6C;
+            FIELD(ctx, f32, 4) = D_80220F70;
+            FIELD(ctx, f32, 8) = D_80220F74;
+            FIELD(ctx, void *, 0x10) = NULL;
+            FIELD(ctx, s32, 0xC) = 0;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            o = func_80214C84(0x1AC, func_8023841C_ovl_29A4C0);
+            FIELD(ctx, u8 *, 0x10) = o;
+            FIELD(o, u16, 0xA) |= 0x1000;
+            FIELD(FIELD(ctx, u8 *, 0x10), s32, 0xC) = -30000;
+            p = FIELD(ctx, u8 *, 0x10) + 0x1C;
+            func_8020A4A8(D_80220EE0, p);
+            func_8020A5A0(p, ctx);
+            func_8020E0E4(FIELD(ctx, u8 *, 0x10), 0x1A, 0x1002);
+            break;
+        case 0x1002:
+            FIELD(FIELD(ctx, u8 *, 0x10), u16, 0xA) |= 0x2000;
+            func_8020DC80(0x1003);
+        case 0x1003:
+            if (FIELD(ctx, s32, 0xC) != 0) {
+                func_8020DC80(0x1005);
+            }
+            break;
+        case 0x1004:
+            FIELD(ctx, s32, 0xC) = 1;
+            break;
+        case 0x1005:
+            FIELD(FIELD(ctx, u8 *, 0x10), u16, 0xA) &= ~0x2000;
+            func_8020D86C(FIELD(ctx, u8 *, 0x10), 0x2C, 0x3A);
+            func_8020DC80(0x1006);
+            break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/2A7060", func_80238004_ovl_29A4C0);
 
