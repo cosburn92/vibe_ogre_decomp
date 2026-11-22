@@ -587,7 +587,46 @@ __asm__(".section .rodata\n.global D_80239190_ovl_29A4C0\nD_80239190_ovl_29A4C0:
 
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022CDF4_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022CF60_ovl_29A4C0);
+typedef struct {
+    s16 v[12];
+} Steps29A;
+extern Steps29A D_80239198_ovl_29A4C0;
+void func_80231090_ovl_29A4C0(u32 i, s32 a, s32 b, s16 c, f32 x, f32 y, f32 z, s32 d, s32 e);
+
+/* Steps the 28 cycling effects: each time its timer runs out, advances the phase (mod 12),
+ * re-applies the phase's value and frees the effect after its last cycle */
+void func_8022CF60_ovl_29A4C0(void) {
+    Steps29A tab = D_80239198_ovl_29A4C0;
+    u32 i;
+    s16 *o;
+    s16 v;
+
+    for (i = 0; i < 28; i++) {
+        o = FIELD(D_8022A974, s16 *, 0x168 + i * 4);
+        if (o == NULL) {
+            continue;
+        }
+        if (o[3] == 0) {
+            o[1]--;
+            o[3] = o[2];
+            o[0] = v = o[0] + o[4];
+            if (v < 0) {
+                o[0] = v + 12;
+            } else if (v >= 12) {
+                o[0] = v - 12;
+            }
+            func_80231090_ovl_29A4C0(i, -1, -1, tab.v[o[0]], -1.0f, -1.0f, -1.0f, -1, 1);
+            if (o[1] == 0) {
+                HFree(o);
+                o = NULL;
+                FIELD(D_8022A974, s32, 0x168 + i * 4) = 0;
+            }
+        }
+        if (o != NULL) {
+            o[3]--;
+        }
+    }
+}
 
 s32 func_8022D0FC_ovl_29A4C0(s32 i) {
     return D_8022A974->p168[i] != NULL;
