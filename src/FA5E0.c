@@ -441,7 +441,78 @@ void func_801B022C_ovl_0FA5E0(u8 *p) {
     }
 }
 
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p1;
+    /* 0x08 */ u8 (*mtx)[0x40];
+} FbSetFA5;
+extern FbSetFA5 *D_800E9BE0;
+extern u16 D_800C4BE4;
+void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
+void guMtxF2L(f32 mf[4][4], void *m);
+void func_801AFD30_ovl_0FA5E0(void *a, s32 b, s32 c);
+
+typedef struct {
+    /* 0x00 */ u16 state;
+    /* 0x02 */ u8 unk02[6];
+    /* 0x08 */ f32 x;
+    /* 0x0C */ f32 y;
+    /* 0x10 */ f32 z;
+    /* 0x14 */ f32 scale;
+    /* 0x18 */ s16 alpha;
+} CursorFA5;
+
+/* Draws the cursor model (D_801B3E20's model at 0x19C) at the object's position, scaled by
+ * 0x14 and faded by its alpha */
+#ifdef NON_MATCHING
+/* 97/97 instructions, 24 words differ: the original stores the matrix index and list pointer after the matrix word and loads the model pointer first */
+void func_801B02C0_ovl_0FA5E0(CursorFA5 *o) {
+    f32 mf[4][4];
+
+    if (o->state != 0) {
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE7000000;
+            _g->w1 = 0;
+        }
+        if (o->alpha == 0xFF) {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x0F0A4000;
+        } else {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x504340;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFCFFFFFF;
+            _g->w1 = 0xFFFCF67B;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFA000000;
+            _g->w1 = (u8)o->alpha;
+        }
+        func_80098B60(mf, o->scale, o->scale, o->scale);
+        mf[3][0] = o->x;
+        mf[3][1] = o->y;
+        mf[3][2] = o->z;
+        guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
+        D_800E9BA0->w0 = 0xDA380003;
+        D_800E9BA0->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++];
+        D_800E9BA0++;
+        func_801AFD30_ovl_0FA5E0(FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x19C), 0, 0);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B02C0_ovl_0FA5E0);
+#endif
 
 void func_801B0444_ovl_0FA5E0(Anim0444 *p, s32 a, f32 x, f32 y, u16 *src) {
     s32 i;
@@ -551,16 +622,6 @@ void func_801B060C_ovl_0FA5E0(TweenFA5 *tw) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B073C_ovl_0FA5E0);
 
-typedef struct {
-    /* 0x00 */ void *p0;
-    /* 0x04 */ void *p1;
-    /* 0x08 */ u8 (*mtx)[0x40];
-} FbSetFA5;
-extern FbSetFA5 *D_800E9BE0;
-extern u16 D_800C4BE4;
-void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
-void guMtxF2L(f32 mf[4][4], void *m);
-void func_801AFD30_ovl_0FA5E0(void *a, s32 b, s32 c);
 void func_801B073C_ovl_0FA5E0(void *a, void *b, s32 c, s32 d, s32 e);
 
 /* Draws the tween's sprite at (x, y) scaled by (sx, sy) in colour cur[]; mode 2 flips between
