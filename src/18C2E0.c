@@ -233,7 +233,29 @@ void func_80219584_ovl_188B60(Win18C *w, s32 page) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/18C2E0", func_80219F84_ovl_188B60);
+extern void *D_8021B590_ovl_188B60;
+extern u8 D_8021B5C8_ovl_188B60[];
+extern s16 D_8021B5EA_ovl_188B60[];
+void func_8021AA3C_ovl_188B60();
+
+/* Opens the list window: counts the 0xFF-terminated entries of D_8021B5C8, shows up to four
+ * rows and centres the window on them */
+void func_80219F84_ovl_188B60(void) {
+    s32 n = 0;
+
+    while (D_8021B5C8_ovl_188B60[n] != 0xFF) {
+        n++;
+    }
+    D_8021B5EC_ovl_188B60 = n;
+    if (D_8021B5EC_ovl_188B60 >= 4) {
+        D_8021B5EA_ovl_188B60[0] = 4;
+    } else {
+        D_8021B5EA_ovl_188B60[0] = n + 1;
+    }
+    D_8021B590_ovl_188B60 = func_8017BFB0(0x400, 0, func_8021AA3C_ovl_188B60, 0x30, 0xE8, 0x9C, 0xF0, 0x30,
+                                          (s16)((4 - D_8021B5EA_ovl_188B60[0]) * 15 / 2 + 99), 0x9C,
+                                          (s16)((4 - D_8021B5EA_ovl_188B60[0]) * 15 / 2 + (s16)(D_8021B5EA_ovl_188B60[0] * 15 + 141)));
+}
 
 /* Draws the legion formation editor: the backdrop (56 strips of 240x2), the five squad slots
  * (selected/highlighted palettes), each squad leader's class sprite with a crown on the first,
