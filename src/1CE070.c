@@ -681,7 +681,67 @@ s32 func_8019B054_ovl_1CE070(s32 id, s32 anim, u32 k, KeyOut1CE *out) {
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B054_ovl_1CE070);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", UnitAnimGetCommand);
+extern u8 D_801B8098_ovl_1CE070[];
+
+/* Command n of animation anim of loaded entry id: returns its opcode and stores up
+ * to three operand bytes (the command's length comes from D_801B8098) */
+u8 UnitAnimGetCommand(s32 id, s32 anim, u32 n, u8 *p1, u8 *p2, u8 *p3) {
+    Ent1CE *e = D_801BA6F8_ovl_1CE070;
+    s32 k = 9;
+    u8 *tab;
+    u8 *c;
+    u32 count;
+    u32 i;
+
+    do {
+        if (e->id != 0 && e->id == id) {
+            tab = e->p38;
+            goto found;
+        }
+        e++;
+    } while (k--);
+    tab = NULL;
+found:
+    if (tab != NULL) {
+        c = (u8 *)(((s32 *)tab)[anim] + (s32)tab);
+    } else {
+        c = NULL;
+    }
+    count = *c++;
+    for (i = 0; i < count; i++) {
+        if (i == n) {
+            switch (D_801B8098_ovl_1CE070[c[0]]) {
+                case 2:
+                    if (p1 != NULL) {
+                        *p1 = c[1];
+                    }
+                    break;
+                case 3:
+                    if (p1 != NULL) {
+                        *p1 = c[1];
+                    }
+                    if (p2 != NULL) {
+                        *p2 = c[2];
+                    }
+                    break;
+                case 4:
+                    if (p1 != NULL) {
+                        *p1 = c[1];
+                    }
+                    if (p2 != NULL) {
+                        *p2 = c[2];
+                    }
+                    if (p3 != NULL) {
+                        *p3 = c[3];
+                    }
+                    break;
+            }
+            return c[0];
+        }
+        c += D_801B8098_ovl_1CE070[c[0]];
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B2E0_ovl_1CE070);
 
