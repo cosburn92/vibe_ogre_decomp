@@ -723,7 +723,47 @@ u8 func_801CA5A0_ovl_1F0A30(u8 c, f32 t) {
 
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CA680_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CBC2C_ovl_1F0A30);
+typedef struct {
+    /* 0x00 */ u16 next;
+    /* 0x02 */ u16 a;
+    /* 0x04 */ u16 b;
+    /* 0x06 */ u8 unk06[2];
+    /* 0x08 */ s32 c;
+    /* 0x0C */ u8 unk0C[0x78];
+} Node20B; /* size 0x84 */
+
+extern Node20B *D_801D0708_ovl_1F0A30;
+extern s16 D_801D0714_ovl_1F0A30;
+extern u16 D_801D0724_ovl_1F0A30;
+extern u16 D_801D0818_ovl_1F0A30;
+extern Node20B *D_801D081C_ovl_1F0A30;
+extern s32 D_801D0834_ovl_1F0A30;
+
+/* Allocates the node pool (16 nodes of 0x84 bytes chained into a free list, then a 0xA0-byte
+ * header) and empties the lists */
+void func_801CBC2C_ovl_1F0A30(void) {
+    Node20B *n;
+    s32 i;
+
+    D_801D0834_ovl_1F0A30 = 16;
+    n = HMalloc(0x8E0);
+    D_801D0824_ovl_1F0A30 = n;
+    D_801D081C_ovl_1F0A30 = n;
+    D_801D0708_ovl_1F0A30 = n + D_801D0834_ovl_1F0A30;
+    for (i = 0; i < D_801D0834_ovl_1F0A30; i++) {
+        n[i].c = 0;
+        n[i].b = 0xFFFF;
+        n[i].a = 0xFFFF;
+    }
+    for (i = 0; i < D_801D0834_ovl_1F0A30 - 1; i++) {
+        D_801D081C_ovl_1F0A30[i].next = i + 1;
+    }
+    D_801D081C_ovl_1F0A30[i].next = 0xFFFF;
+    bzero(D_801D0708_ovl_1F0A30, 0xA0);
+    D_801D0714_ovl_1F0A30 = 0;
+    D_801D0818_ovl_1F0A30 = 0xFFFF;
+    D_801D0724_ovl_1F0A30 = 0xFFFF;
+}
 
 void func_801CBD48_ovl_1F0A30(void) {
     HFree(D_801D0824_ovl_1F0A30);
