@@ -315,7 +315,100 @@ Node *func_8017BFB0_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w
     return n;
 }
 
+void func_80180B1C_ovl_040E80(Vtx514 *v, s16 x0, s16 y0, s16 x1, s16 y1);
+
+typedef struct {
+    /* 0x00 */ Node *prev;
+    /* 0x04 */ Node *next;
+    /* 0x08 */ void (*fn)();
+    /* 0x0C */ s32 wC;
+    /* 0x10 */ s32 w10;
+    /* 0x14 */ u8 flags;
+    /* 0x15 */ u8 unk15;
+    /* 0x16 */ u16 id;
+    /* 0x18 */ s16 fade;
+    /* 0x1A */ u8 unk1A[0xC];
+    /* 0x26 */ s16 h26;
+    /* 0x28 */ s16 h28;
+    /* 0x2A */ u8 unk2A[2];
+    /* 0x2C */ s32 rect[4];
+    /* 0x3C */ u8 unk3C[0x10];
+    /* 0x4C */ s32 rect0[4];
+    /* 0x5C */ u8 unk5C[0x38];
+    /* 0x94 */ s16 st[4][8];
+    /* 0xD4 */ u8 unkD4[0xC];
+    /* 0xE0 */ s32 wE0;
+    /* 0xE4 */ u8 unkE4[4];
+} WinNode514; /* size 0xE8; st[k] = (s, t, pad, pad, r, g, b, a) per corner */
+
+/* Appends a new 0xE8-byte window node of kind `kind` with drawer fn and rectangle (x, y, w, h)
+ * to the node list, with the default corner colours; returns it */
+#ifdef NON_MATCHING
+/* 118/118 instructions, 29 words differ: the original sign-extends the rectangle before the colour stores and orders the parameter registers fn/b/kind/x as s2-s5 */
+Node *func_8017C074_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h) {
+    WinNode514 *n;
+    WinNode514 *last;
+
+    if (D_8018FDC0_ovl_040E80 == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (n = (WinNode514 *)D_8018FDC0_ovl_040E80->next; n != NULL; n = (WinNode514 *)n->next) {
+        last = n;
+    }
+    n = HMalloc(0xE8);
+    if (last != NULL) {
+        last->next = (Node *)n;
+    } else {
+        D_8018FDC0_ovl_040E80->next = (Node *)n;
+    }
+    n->flags = b | 0x88;
+    n->fade = 0xFF;
+    ((u8 *)n->st[0])[8] = 0xB5;
+    ((u8 *)n->st[0])[9] = 0xB5;
+    ((u8 *)n->st[0])[10] = 0xB5;
+    ((u8 *)n->st[1])[8] = 0xD5;
+    ((u8 *)n->st[1])[9] = 0xD5;
+    ((u8 *)n->st[1])[10] = 0xD5;
+    n->prev = (Node *)last;
+    n->next = NULL;
+    n->fn = fn;
+    n->wC = 0;
+    n->w10 = 0;
+    n->h28 = 0;
+    n->h26 = 0;
+    n->id = kind;
+    n->rect[0] = n->rect0[0] = x;
+    n->rect[1] = n->rect0[1] = y;
+    n->rect[2] = n->rect0[2] = w;
+    n->rect[3] = n->rect0[3] = h;
+    n->st[0][0] = 0;
+    n->st[0][1] = 0;
+    ((u8 *)n->st[0])[11] = 0xFF;
+    n->st[1][0] = 0;
+    n->st[1][1] = 0;
+    ((u8 *)n->st[1])[11] = 0xFF;
+    n->st[2][0] = 0;
+    n->st[2][1] = 0;
+    ((u8 *)n->st[2])[8] = 0xFF;
+    ((u8 *)n->st[2])[9] = 0xFF;
+    ((u8 *)n->st[2])[10] = 0xFF;
+    ((u8 *)n->st[2])[11] = 0xFF;
+    n->st[3][0] = 0;
+    n->st[3][1] = 0;
+    ((u8 *)n->st[3])[8] = 0xE0;
+    ((u8 *)n->st[3])[9] = 0xE0;
+    ((u8 *)n->st[3])[10] = 0xE0;
+    ((u8 *)n->st[3])[11] = 0xFF;
+    func_80180B1C_ovl_040E80((Vtx514 *)n, x, y, w, h);
+    FIELD(n, s32, 0xD0) = 0;
+    n->wE0 = 0;
+    FIELD(D_8018FDC0_ovl_040E80, u16, 0)++;
+    return (Node *)n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C074_ovl_040E80);
+#endif
 
 #ifdef NON_MATCHING
 /* Stores match; the stack arguments are loaded earlier than in the original. */
