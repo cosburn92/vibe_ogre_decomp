@@ -171,7 +171,75 @@ s32 func_80237E4C_ovl_29A4C0(u16 msg, u8 *ctx) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_80238004_ovl_29A4C0);
+extern u8 D_801CFC70;
+s32 func_8020DF00(s32 (*fn)(u16, u8 *));
+void func_8020DCAC(s32 h, u16 msg);
+u8 *func_802158AC(s32 id);
+u8 *func_80216018(s32 id);
+s32 func_80237E4C_ovl_29A4C0(u16 msg, u8 *ctx);
+s32 func_8023823C_ovl_29A4C0(u16 msg);
+
+/* Parent scene: runs the two drifting sprite scripts (handles at 0xC and 0x10) around the
+ * central object and passes the camera position on to them */
+s32 func_80238004_ovl_29A4C0(u16 msg, u8 *ctx) {
+    switch (msg) {
+        case 0x101:
+            D_801CFC70 = 0;
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(ctx, f32, 0) = D_80220F68;
+            FIELD(ctx, f32, 4) = D_80220F6C;
+            FIELD(ctx, f32, 8) = D_80220F70;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            D_80220F68 = FIELD(ctx, f32, 0);
+            D_80220F6C = FIELD(ctx, f32, 4);
+            D_80220F70 = FIELD(ctx, f32, 8);
+            FIELD(ctx, s32, 0xC) = func_8020DF00(func_80237C90_ovl_29A4C0);
+            func_8020E0B4(0x105, 0x1003);
+            break;
+        case 0x1003: {
+            u8 *o = func_802158AC(0x1AD);
+            u8 *p;
+
+            FIELD(o, s32, 0xC) = 10000;
+            FIELD(o, u16, 0xA) |= 0x9000;
+            p = o + 0x1C;
+            func_8020A4A8(D_80220EE0, p);
+            func_8020A5A0(p, ctx);
+            func_8020DF00((s32 (*)(u16, u8 *))func_8023823C_ovl_29A4C0);
+            func_801C5938(D_800EB240, 0x1F9);
+            func_8020E0B4(0x10, 0x1001);
+            break;
+        }
+        case 0x1001: {
+            u8 *o = func_80216018(0x1AB);
+
+            FIELD(o, u16, 0xA) |= 0x8000;
+            FIELD(o, f32, 0x1C) = FIELD(ctx, f32, 0);
+            FIELD(o, f32, 0x20) = FIELD(ctx, f32, 4);
+            FIELD(o, f32, 0x24) = FIELD(ctx, f32, 8);
+            func_8020E0B4(0x16, 0x1002);
+            break;
+        }
+        case 0x1002:
+            D_80220F6C = FIELD(ctx, f32, 0);
+            D_80220F70 = FIELD(ctx, f32, 4);
+            D_80220F74 = FIELD(ctx, f32, 8);
+            FIELD(ctx, s32, 0x10) = func_8020DF00(func_80237E4C_ovl_29A4C0);
+            func_8020DC80(0x1004);
+            break;
+        case 0x1005:
+            func_8020DCAC(FIELD(ctx, s32, 0xC), 0x1003);
+            func_8020DCAC(FIELD(ctx, s32, 0x10), 0x1004);
+            break;
+        case 0x1004:
+            break;
+    }
+    return 0;
+}
 
 s32 func_8023823C_ovl_29A4C0(u16 msg) {
     switch (msg) {
