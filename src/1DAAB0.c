@@ -56,7 +56,37 @@ INCLUDE_ASM("asm/nonmatchings/1DAAB0", func_801A576C_ovl_1CE070);
 void func_801A590C_ovl_1CE070(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/1DAAB0", func_801A5914_ovl_1CE070);
+void func_801A5190_ovl_1CE070(u8 *w, s32 i);
+void *func_8017C074(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
+void func_801A49CC_ovl_1CE070();
+void func_801A5300_ovl_1CE070(void);
+extern void *D_801BA550_ovl_1CE070;
+extern u8 *D_801BA554_ovl_1CE070;
+extern s32 *D_801BA558_ovl_1CE070;
+extern s32 *D_801BA55C_ovl_1CE070;
+extern s32 D_801BA6EC_ovl_1CE070;
+
+/* Menu step: 0 starts, 1 opens the title bar and list windows, 2 runs the list; then points
+ * D_801BA558 at the current entry */
+s32 func_801A5914_ovl_1CE070(void) {
+    switch (D_801BA6EC_ovl_1CE070) {
+        case 0:
+            D_801BA6E1_ovl_1CE070 = 1;
+            D_801BA6EC_ovl_1CE070 = 1;
+            break;
+        case 1:
+            func_8017C074(0, 0, func_801A5190_ovl_1CE070, 0x20, 0x20, 0x120, 0x3A);
+            func_8017C074(0x400, 0, func_801A49CC_ovl_1CE070, 0x20, 0x44, 0x120, 0xD0);
+            *D_801BA554_ovl_1CE070 = 1;
+            D_801BA6EC_ovl_1CE070++;
+            break;
+        case 2:
+            func_801A5300_ovl_1CE070();
+            break;
+    }
+    D_801BA558_ovl_1CE070 = D_801BA55C_ovl_1CE070 + FIELD(D_801BA550_ovl_1CE070, s32, 0xC);
+    return 0;
+}
 
 void func_801A5A34_ovl_1CE070(void) {
     func_8019915C_ovl_1CE070();
