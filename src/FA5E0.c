@@ -551,7 +551,89 @@ void func_801B060C_ovl_0FA5E0(TweenFA5 *tw) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B073C_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B09B8_ovl_0FA5E0);
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p1;
+    /* 0x08 */ u8 (*mtx)[0x40];
+} FbSetFA5;
+extern FbSetFA5 *D_800E9BE0;
+extern u16 D_800C4BE4;
+void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
+void guMtxF2L(f32 mf[4][4], void *m);
+void func_801AFD30_ovl_0FA5E0(void *a, s32 b, s32 c);
+void func_801B073C_ovl_0FA5E0(void *a, void *b, s32 c, s32 d, s32 e);
+
+/* Draws the tween's sprite at (x, y) scaled by (sx, sy) in colour cur[]; mode 2 flips between
+ * its two buffers each frame */
+void func_801B09B8_ovl_0FA5E0(TweenFA5 *tw) {
+    f32 mf[4][4];
+
+    switch (tw->state) {
+        case 0:
+        case 0xFFFD:
+        case 0xFFFE:
+        case 0xFFFF:
+            return;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x4041C8;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFC119623;
+        _g->w1 = 0xFF2FFFFF;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFA000000;
+        _g->w1 = ((u8)tw->cur[0] << 24) | ((u8)tw->cur[1] << 16) | ((u8)tw->cur[2] << 8) | (u8)tw->cur[3];
+    }
+    func_80098B60(mf, FIELD(tw, f32, 0x10), FIELD(tw, f32, 0x14), 1.0f);
+    mf[3][0] = FIELD(tw, f32, 8);
+    mf[3][1] = FIELD(tw, f32, 0xC);
+    mf[3][2] = 0.0f;
+    guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380000;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++];
+    }
+    switch (tw->state) {
+        case 1:
+            func_801AFD30_ovl_0FA5E0(FIELD(tw, void *, 4), 0, 0);
+            break;
+        case 2:
+            func_801B073C_ovl_0FA5E0(FIELD(tw, void *, 4), FIELD(tw, void *, 0x38 + FIELD(tw, s32, 0x34) * 4),
+                                     FIELD(tw, s32, 0x40), FIELD(tw, s32, 0x44), FIELD(tw, s32, 0x48));
+            func_801AFD30_ovl_0FA5E0(FIELD(tw, void *, 0x38 + FIELD(tw, s32, 0x34) * 4), 0, 0);
+            FIELD(tw, s32, 0x34) ^= 1;
+            break;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xD8380002;
+        _g->w1 = 0x40;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+}
 
 void func_801B0C0C_ovl_0FA5E0(u8 *p, s32 a, s32 b, s32 c, u16 d) {
     FIELD(p, s32, 0xC) = a;
