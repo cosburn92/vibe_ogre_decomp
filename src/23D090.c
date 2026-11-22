@@ -64,7 +64,51 @@ void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
 void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
+typedef struct {
+    void *name;
+    s32 index;
+    u8 *buf;
+    s32 size;
+} Arc16_23D;
+extern Arc16_23D D_801F0490_ovl_23B220;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
+void func_801EFB24_ovl_23B220(u8 *data, s32 a, s32 b);
+void *func_801EFC78_ovl_23B220(void);
+
+/* Loads chunk id and unpacks it: LHa archives ("-lh"), Huffman images ("HU" / "B5", decoded by
+ * func_801EFB24) or LZ */
+void *func_801E8E20_ovl_23B220(s32 id) {
+    s32 size = ChunkSize(id);
+    u8 *raw = HMalloc(size);
+    void *out;
+
+    LoadChunkRaw(raw, id);
+    if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
+        Arc16_23D arc = D_801F0490_ovl_23B220;
+        Arc16_23D req = D_801F0490_ovl_23B220;
+
+        arc.size = size;
+        arc.buf = raw;
+        func_8007ACB0(&arc, &req, 1);
+        HFree(raw);
+        out = req.buf;
+    } else if (raw[0] == 'H' && raw[1] == 'U') {
+        func_801EFB24_ovl_23B220(raw, 1, 0);
+        out = func_801EFC78_ovl_23B220();
+    } else if (raw[0] == 'B' && raw[1] == '5') {
+        func_801EFB24_ovl_23B220(raw, 1, 0);
+        out = func_801EFC78_ovl_23B220();
+    } else {
+        out = HMalloc(ReadU32BE(raw));
+        DecodeLZ(out, raw);
+        HFree(raw);
+    }
+    return out;
+}
 
 typedef struct {
     /* 0x00 */ s32 w0;
