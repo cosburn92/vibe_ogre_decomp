@@ -10,10 +10,121 @@ void func_8020E0B4(s32 a, s32 b);
 void func_8020B538(s32 a, u8 *s);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_80237830_ovl_29A4C0);
-
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern f32 D_80220F68;
+extern f32 D_80220F6C;
+extern f32 D_80220F70;
+extern u8 D_80220EE0[];
+extern u8 D_800EB240[];
+extern u8 D_800EB290[];
+u8 *func_80214BE8(s32 id);
+u8 *func_80214C84(s32 id, void (*fn)(u16, u8 *));
+u8 *func_80216018(s32 id);
+void func_8020A4A8(u8 *a, u8 *b);
+void func_8020A5A0(u8 *a, u8 *b);
+void func_8020D86C(u8 *o, s32 a, s32 b);
+void func_8020D884(u8 *o);
+void func_801C5938(void *bank, s32 se);
+void func_8020E0B4(s32 a, s32 b);
+void func_80237B84_ovl_29A4C0(u16 msg, u8 *ctx);
+
+/* Event scene with the two blinking sprites (func_80237B84 at 0x50 and a second object at 0x54):
+ * spawns them, waits for the cue (0x1009), then plays the follow-up objects */
+s32 func_80237830_ovl_29A4C0(u16 msg, u8 *ctx) {
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(ctx, f32, 0) = D_80220F68;
+            FIELD(ctx, f32, 4) = D_80220F6C;
+            FIELD(ctx, f32, 8) = D_80220F70;
+            FIELD(ctx, s32, 0xC) = 0;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_8020A4A8(D_80220EE0, ctx + 0x10);
+            func_8020A5A0(ctx + 0x10, ctx);
+            func_801C5938(D_800EB240, 0x1F2);
+        case 0x1001:
+            FIELD(ctx, u8 *, 0x50) = func_80214C84(0x1A8, func_80237B84_ovl_29A4C0);
+            FIELD(FIELD(ctx, u8 *, 0x50), u16, 0xA) |= 0x8000;
+            func_8020D86C(FIELD(ctx, u8 *, 0x50), 0x96, 0xAA);
+            func_8020A4A8(ctx + 0x10, FIELD(ctx, u8 *, 0x50) + 0x1C);
+            func_8020E0B4(4, 0x1002);
+            break;
+        case 0x1002: {
+            u8 *o = func_80214BE8(0x1A9);
+
+            FIELD(o, u16, 0xA) |= 0x8000;
+            func_8020A4A8(ctx + 0x10, o + 0x1C);
+            func_8020E0B4(0x49, 0x1003);
+            break;
+        }
+        case 0x1003:
+            FIELD(ctx, u8 *, 0x54) = func_80214BE8(0x1A6);
+            FIELD(FIELD(ctx, u8 *, 0x54), u16, 0xA) |= 0x1000;
+            func_8020D86C(FIELD(ctx, u8 *, 0x54), 0x48, 0x5C);
+            FIELD(FIELD(ctx, u8 *, 0x54), s32, 0xC) = -10000;
+            func_8020A4A8(ctx + 0x10, FIELD(ctx, u8 *, 0x54) + 0x1C);
+            func_801C5938(D_800EB290, 0x1F3);
+            func_8020DC80(0x1004);
+            break;
+        case 0x1004:
+            if (FIELD(ctx, s32, 0xC) != 0) {
+                func_8020D884(FIELD(ctx, u8 *, 0x50));
+                func_8020D884(FIELD(ctx, u8 *, 0x54));
+                func_8020DC80(0x1005);
+            }
+            break;
+        case 0x1005:
+            if (FIELD(FIELD(ctx, u8 *, 0x50), s32, 0x10) >= 0xAA) {
+                func_801C5938(D_800EB290, 0x1F4);
+                func_8020E0B4(0x8D, 0x1006);
+            }
+            break;
+        case 0x1006: {
+            u8 *o = func_80216018(0x1A4);
+
+            FIELD(o, f32, 0x1C) = FIELD(ctx, f32, 0);
+            FIELD(o, f32, 0x20) = FIELD(ctx, f32, 4);
+            FIELD(o, f32, 0x24) = FIELD(ctx, f32, 8);
+            func_801C5938(D_800EB290, 0x1F5);
+            func_8020E0B4(0x1C, 0x1007);
+            break;
+        }
+        case 0x1007: {
+            u8 *o = func_80216018(0x1A7);
+
+            FIELD(o, f32, 0x1C) = FIELD(ctx, f32, 0);
+            FIELD(o, f32, 0x20) = FIELD(ctx, f32, 4);
+            FIELD(o, f32, 0x24) = FIELD(ctx, f32, 8);
+            func_8020E0B4(0x1A, 0x1008);
+            break;
+        }
+        case 0x1008: {
+            u8 *o = func_80216018(0x1A5);
+
+            FIELD(o, u16, 0xA) |= 0x8000;
+            FIELD(o, f32, 0x1C) = FIELD(ctx, f32, 0);
+            FIELD(o, f32, 0x20) = FIELD(ctx, f32, 4);
+            FIELD(o, f32, 0x24) = FIELD(ctx, f32, 8);
+            func_8020E0B4(0x3C, 0x101);
+            break;
+        }
+        case 0x1009:
+            FIELD(ctx, s32, 0xC) = 1;
+            break;
+    }
+    return 0;
+}
+
+#ifndef FIELD
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
 #endif
 extern u8 D_8020F390[];
 extern s32 D_80239130_ovl_29A4C0[2];
