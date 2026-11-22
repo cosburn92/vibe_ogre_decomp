@@ -763,7 +763,68 @@ void func_8017EAE8_ovl_040E80(Node *n, s32 k) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017EC84_ovl_040E80);
+s32 func_80181498_ovl_040E80(u8 *p, s32 i);
+
+/* Drawer for list-box nodes: the visible rows (top 0x5F1, rows 0x5F4 of 0x5F5 entries, height
+ * 0x5F6) of the state at 0xD0 in the current font at fade fade[k], then the cursor and label */
+void func_8017EC84_ovl_040E80(Node *n, s32 k) {
+    s32 a = FIELD(n, s16, 0x18 + k * 2);
+    s32 x;
+    s32 y;
+    u8 *s;
+    s32 dy;
+    s32 i;
+
+    if (a != 0) {
+        x = FIELD(n, s32, 0x2C);
+        y = FIELD(n, s32, 0x30);
+        s = FIELD(n, u8 *, 0xD0);
+        dy = FIELD(n, s8, 0x22) * s[0x5F6] + 6;
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFA000000;
+            _g->w1 = a | ~0xFF;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE3000C00;
+            _g->w1 = 0;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE3001201;
+            _g->w1 = 0;
+        }
+        if (a == 0xFF) {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x0F0A7008;
+        } else {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x504240;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFC119623;
+            _g->w1 = 0xFF2FFFFF;
+        }
+        for (i = 0; i < s[0x5F4]; i++) {
+            if (s[0x5F1] + i < s[0x5F5]) {
+                D_8018FE18_ovl_040E80[D_80187020_ovl_040E80]((u8 *)func_80181498_ovl_040E80((u8 *)n, s[0x5F1] + i), x + 0x18,
+                                                             (y + 4) + i * s[0x5F6]);
+            }
+        }
+        func_801818A0_ovl_040E80(x + 3, y + dy);
+        func_8017CBE8_ovl_040E80((WinLabel514 *)n, (UnitLabel514 *)s);
+    }
+}
 
 void func_8017EE64_ovl_040E80(s32 a, u16 kind, s16 x, s16 y, s16 w, s16 h) {
     Node *n = func_8017C074_ovl_040E80(kind | 0x100, 0, func_8017C584_ovl_040E80, x, y, w, h);
@@ -837,7 +898,7 @@ void func_8017F114_ovl_040E80(Node *o) {
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F114_ovl_040E80);
 #endif
 
-void func_8017EC84_ovl_040E80(Node *n);
+void func_8017EC84_ovl_040E80(Node *n, s32 k);
 
 /* Like func_8017EF24 with the func_8017EC84 drawer: creates the box node, sets its inner
  * rectangle and the two colour bytes c/d, and returns it */
