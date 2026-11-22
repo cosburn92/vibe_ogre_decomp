@@ -423,7 +423,61 @@ void func_801CA44C_ovl_087200(u8 *sq) {
     func_801CE28C_ovl_087200();
 }
 
+typedef struct {
+    /* 0x0 */ u16 id;
+    /* 0x2 */ u8 equipped;
+    /* 0x3 */ u8 count;
+} StockB48;
+extern StockB48 D_80193AC0[];
+u16 func_8016B738(u16 id);
+u8 func_801CDEB8_ovl_087200(u8 sq);
+void func_801CA704_ovl_087200(u16 r);
+void func_801CAD90_ovl_087200(u16 id);
+
+/* Disbands squad record sq of the organize screen: clears its grid row if it is deployed, frees
+ * its nine members, returns its ten items to the stock and resets the record */
+#ifdef NON_MATCHING
+/* 95/95 instructions, 6 words differ: the original loads the state pointer before masking the row index, so the two swap v0/v1 */
+void func_801CA588_ovl_087200(u16 sq) {
+    u8 *m = D_80196AF8 + (sq * 0x36 + 0x117C);
+    s32 i;
+    u8 r;
+    u8 c;
+    u16 it;
+
+    if (m[1] & 8) {
+        r = func_801CDEB8_ovl_087200(sq);
+        if ((D_80196AF8 + r * 14)[0x10D6] == sq) {
+            func_801CA704_ovl_087200(r);
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        c = (m + i)[4];
+        if (c != 0xFF) {
+            func_801CAD90_ovl_087200(c);
+            (m + i)[4] = 0xFF;
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        it = FIELD(m + i * 2, u16, 0x22);
+        if (it != 0) {
+            D_80193AC0[func_8016B738(it)].equipped--;
+            FIELD(m + i * 2, u16, 0x22) = 0;
+        }
+    }
+    m[3] = 0xFF;
+    m[0] = 0;
+    m[1] = 0;
+    if (sq != 30) {
+        FIELD(D_80196AF8, s32, 0x2C0)--;
+        FIELD(D_80196AF8, s32, 0x2C4)--;
+    }
+    func_801CE540_ovl_087200();
+    func_801CE28C_ovl_087200();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA588_ovl_087200);
+#endif
 
 /* Clears grid row r: frees its units (members lose their 0x20 flag) and resets the row */
 void func_801CA704_ovl_087200(u16 r) {
