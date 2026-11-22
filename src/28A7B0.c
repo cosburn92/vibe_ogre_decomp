@@ -1282,7 +1282,40 @@ block_15:
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238D14_ovl_286BD0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238EC4_ovl_286BD0);
+extern u16 gPlayTime;
+extern u8 D_80196A2A;
+extern u8 D_80196A2B;
+extern char *D_8023E0B0_ovl_286BD0[10];
+extern char *D_8023E0D8_ovl_286BD0;
+
+void func_8009C620(void *dst, void *src);
+
+/* Writes the play time into p as "HH:MM:SS" (digits from the D_8023E0B0 strings), capped at
+ * 99:59:59 */
+void func_80238EC4_ovl_286BD0(void *p) {
+    s32 h;
+    s32 m;
+    s32 s;
+
+    if (gPlayTime >= 100) {
+        h = 99;
+        m = 59;
+        s = 59;
+    } else {
+        h = gPlayTime;
+        m = D_80196A2A;
+        s = D_80196A2B;
+    }
+    *(u8 *)p = 0;
+    func_8009C550(p, D_8023E0B0_ovl_286BD0[h / 10]);
+    func_8009C620(p, D_8023E0B0_ovl_286BD0[h % 10]);
+    func_8009C620(p, D_8023E0D8_ovl_286BD0);
+    func_8009C620(p, D_8023E0B0_ovl_286BD0[m / 10]);
+    func_8009C620(p, D_8023E0B0_ovl_286BD0[m % 10]);
+    func_8009C620(p, D_8023E0D8_ovl_286BD0);
+    func_8009C620(p, D_8023E0B0_ovl_286BD0[s / 10]);
+    func_8009C620(p, D_8023E0B0_ovl_286BD0[s % 10]);
+}
 
 void *func_8023906C_ovl_286BD0(void) {
     void *p = HMalloc(0x500);
