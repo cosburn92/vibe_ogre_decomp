@@ -535,7 +535,95 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_80226DA8_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80227130_ovl_27A020);
 
+void func_80227130_ovl_27A020(s32 a, Task27 *t);
+void func_801BC9F0(void);
+void func_8020B104(void);
+void func_801D8010(void);
+s32 func_80186210(s32 flag);
+extern u8 D_800EB0B0[];
+void func_800EA7E4(void *bank, s32 a);
+
+typedef struct {
+    /* 0x00 */ u32 state;
+    /* 0x04 */ s16 fade;
+    /* 0x06 */ u8 unk06[2];
+    /* 0x08 */ Task27 *task;
+    /* 0x0C */ s16 *fadep;
+    /* 0x10 */ s16 target;
+    /* 0x12 */ s16 step;
+} Shop27;
+
+/* Shop main step: 0 starts the shop task and fades in, 2 waits for the fade, 4 runs the menu
+ * (0x12F / 0x130 pick the next scene), 5 fades out and finishes (1) */
+#ifdef NON_MATCHING
+/* 111/111 instructions, 4 words differ: the next scene state for 0x12F is built in v1 where the original reuses v0 */
+s32 func_802283C0_ovl_27A020(void) {
+    switch (((Shop27 *)D_8022C5C0_ovl_27A020)->state) {
+        case 1:
+            return 1;
+        case 0:
+            ((Shop27 *)D_8022C5C0_ovl_27A020)->task = func_8022874C_ovl_27A020(func_80227130_ovl_27A020);
+            ((Shop27 *)D_8022C5C0_ovl_27A020)->state = 2;
+            ((Shop27 *)D_8022C5C0_ovl_27A020)->fadep = &((Shop27 *)D_8022C5C0_ovl_27A020)->fade;
+            ((Shop27 *)D_8022C5C0_ovl_27A020)->target = 10;
+            ((Shop27 *)D_8022C5C0_ovl_27A020)->step = 60;
+            break;
+        case 2:
+            if ((s16)func_80226A24_ovl_27A020() != 0) {
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->fadep = &((Shop27 *)D_8022C5C0_ovl_27A020)->fade;
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->target = 0xFF;
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->step = 60;
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->state = 4;
+            }
+            break;
+        case 4: {
+            Task27 *t = ((Shop27 *)D_8022C5C0_ovl_27A020)->task;
+            s16 r = func_80228844_ovl_27A020((Find27 *)t);
+            s16 next;
+
+            if (r == 0) {
+                next = 0;
+            } else {
+                switch (r) {
+                    case 0x12F:
+                        if (func_80186210(0x13) == 0) {
+                            t->state = 0x109;
+                        } else {
+                            t->state = 0x103;
+                        }
+                        next = 4;
+                        break;
+                    case 0x130:
+                        func_800EA7E4(D_800EB0B0, 0x78);
+                        t->state = 0x107;
+                        next = 5;
+                        break;
+                    default:
+                        next = r;
+                        break;
+                }
+            }
+            if (next != 0) {
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->state = next;
+            }
+            break;
+        }
+        case 5:
+            if ((s16)func_80226A24_ovl_27A020() != 0) {
+                func_800EA76C();
+                ((Shop27 *)D_8022C5C0_ovl_27A020)->state = 1;
+            }
+            break;
+    }
+    func_801BC9F0();
+    func_80228680_ovl_27A020();
+    func_8020B104();
+    func_801D8010();
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802283C0_ovl_27A020);
+#endif
 
 s16 func_8022857C_ovl_27A020(void) {
     func_80226980_ovl_27A020();
