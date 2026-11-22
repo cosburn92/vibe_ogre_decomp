@@ -1089,7 +1089,50 @@ void func_8022AFCC_ovl_27A020(Obj27 *o) {
     o->h1E ^= o->h1E;
 }
 
+void func_8022BCD0_ovl_27A020(void);
+void func_8016DE1C(u8 a, u8 b);
+
+/* Sizes the shop list window for the marked entries (0x24 per row plus 0xB) and selects the
+ * first marked entry; returns 0 when no entry is marked */
+#ifdef NON_MATCHING
+/* 124/124 instructions, 3 words differ: the found flag is set after the height update in the original */
+s32 func_8022AFE8_ovl_27A020(Obj27 *o) {
+    List27 *l = (List27 *)&o->w18;
+    s16 i;
+    s16 any = 0;
+
+    FIELD(o, u16, 0xC) = 0;
+    l->flags = (l->flags ^ l->flags) | 3;
+    for (i = 0; i < 5; i++) {
+        if (List27_EntryMark(l, (u8 *)l->items[i])) {
+            u8 *e = (u8 *)l->items[i];
+
+            func_8016DE1C(e[0x4B], e[0x4F]);
+            FIELD(o, u16, 0xC) += 0x24;
+            any = 1;
+        }
+    }
+    if (!any) {
+        return any;
+    }
+    FIELD(o, u16, 0xC) += 0xB;
+    FIELD(o, s16, 0x10) = 0;
+    FIELD(o, s16, 0xE) = 0x7C;
+    FIELD(o, s16, 8) = 0x1E;
+    FIELD(o, s16, 0xA) = 0xE6 - FIELD(o, u16, 0xC);
+    for (i = 0; i < 5; i++) {
+        if (List27_EntryMark(l, (u8 *)l->items[FIELD(o, s16, 0x10)])) {
+            break;
+        }
+        FIELD(o, s16, 0x10)++;
+    }
+    FIELD(o, void *, 4) = func_8022BCD0_ovl_27A020;
+    FIELD(o, s32, 0) = 0;
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AFE8_ovl_27A020);
+#endif
 
 typedef struct {
     /* 0x00 */ u8 unk00[0x18];
