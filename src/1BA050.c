@@ -146,7 +146,100 @@ void func_80220FD0_ovl_1BA050(u16 id) {
     }
 }
 
+typedef struct Node1BA {
+    struct Node1BA *prev;
+    struct Node1BA *next;
+} Node1BA;
+
+typedef struct {
+    s32 key;
+    Node1BA *node;
+} Pair1BA;
+
+extern Node1BA *D_8018FDC0;
+
+static inline void SortAppend1BA(Pair1BA **order, s32 n) {
+    s32 i, j;
+    Node1BA *t;
+    Node1BA *h;
+
+    if (n > 0) {
+        for (i = 0; i < n - 1; i++) {
+            for (j = i + 1; j < n; j++) {
+                if (order[j]->key < order[i]->key) {
+                    Pair1BA *x = order[i];
+
+                    order[i] = order[j];
+                    order[j] = x;
+                }
+            }
+        }
+        h = D_8018FDC0;
+        i = 1;
+        if (h->next != NULL) {
+            for (t = h->next; t->next != NULL; t = t->next) {
+            }
+            i = 0;
+        } else {
+            h->next = order[0]->node;
+            t = order[0]->node;
+        }
+        for (; i < n; i++) {
+            t->next = order[i]->node;
+            order[i]->node->prev = t;
+            t = order[i]->node;
+        }
+    }
+}
+
+/* Detaches the objects of the used script slots from the object list, sorts them by slot value
+ * and appends them to the end of the list in that order (slots whose object is gone are freed) */
+#ifdef NON_MATCHING
+/* 143/143 instructions, 77 words differ: the original copies the count into another register before the sort and the slot loop's registers are rotated */
+void func_80221030_ovl_1BA050(void) {
+    Pair1BA *pairs = HMalloc(0x48);
+    Pair1BA **order = HMalloc(0x24);
+    s32 n = 0;
+    Pair1BA *p;
+    Pair1BA **q;
+    Node1BA *o;
+    Node1BA *t;
+    s32 i;
+
+    p = pairs;
+    q = order;
+    for (i = 0; i < 8; i++) {
+        if (D_8022A1F0_ovl_1BA050[i].used) {
+            o = func_8017F334(D_8022A1F0_ovl_1BA050[i].id);
+            if (o != NULL) {
+                t = o->prev;
+                if (t == NULL) {
+                    t = D_8018FDC0;
+                }
+                t->next = o->next;
+                if (o->next != NULL) {
+                    o->next->prev = o->prev;
+                }
+                o->next = NULL;
+                o->prev = NULL;
+                n++;
+                p->key = D_8022A1F0_ovl_1BA050[i].value;
+                p->node = o;
+                *q++ = p;
+                p++;
+            } else {
+                D_8022A1F0_ovl_1BA050[i].used = 0;
+            }
+        }
+    }
+    order[n] = NULL;
+    SortAppend1BA(order, n);
+    HFree(order);
+    HFree(pairs);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221030_ovl_1BA050);
+#endif
 
 inline void func_8022126C_ovl_1BA050(void) {
     if (D_8022A248_ovl_1BA050 != NULL && D_8022A24C_ovl_1BA050 != 0) {
