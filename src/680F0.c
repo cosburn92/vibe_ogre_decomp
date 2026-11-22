@@ -36,7 +36,62 @@ void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 /* --- end decls --- */
 
+extern u64 jpegTextStart[]; /* = D_8009ED80 */
+extern u64 D_8009F540[];
+extern u64 D_800AC050[];
+extern u64 D_800AC140[];
+
+/* Waits for the previous task, then sends the JPEG decoder RSP task for a w x h image (16x16
+ * blocks) at data with quality q */
+#ifdef NON_MATCHING
+/* 94/94 instructions, 17 words differ: the microcode addresses, sizes and mode take rotated temporaries (t0-t5) */
+void func_80198E50_ovl_066E10(s8 q, s32 data, s16 w, s16 h) {
+    NUScTask *t;
+    s32 blocks = (w / 16) * (h / 16);
+    u64 *boot = D_8009ECB0;
+    s32 bootSize = (s32)D_8009ED80 - (s32)boot;
+    u64 *ucode = jpegTextStart;
+    s32 ucodeSize = (s32)D_8009F540 - (s32)ucode;
+    u64 *udata = D_800AC050;
+    s32 dataSize = (s32)D_800AC140 - (s32)udata;
+    s32 qq = q;
+    u32 mask;
+
+    do {
+    } while (D_800E79A4 != 0);
+    t = (NUScTask *)D_8019A660_ovl_066E10;
+    t->state = 1;
+    t->next = D_800E7D90;
+    t->msgQ = &D_800E9BA8;
+    t->msg = D_8019A388_ovl_066E10;
+    t->flags = 2;
+    t->list.t.type = 4;
+    t->list.t.flags = 0;
+    t->list.t.ucode_boot = boot;
+    t->list.t.ucode_boot_size = bootSize;
+    t->list.t.ucode = ucode;
+    t->list.t.ucode_size = ucodeSize;
+    t->list.t.ucode_data = udata;
+    t->list.t.ucode_data_size = dataSize;
+    t->list.t.dram_stack = NULL;
+    t->list.t.dram_stack_size = 0;
+    t->list.t.output_buff = NULL;
+    t->list.t.output_buff_size = NULL;
+    t->list.t.data_ptr = (u64 *)data;
+    t->list.t.data_size = blocks;
+    t->list.t.yield_data_ptr = NULL;
+    t->list.t.yield_data_size = qq;
+    t->framebuffer = FIELD(t, void *, 0x64);
+    osWritebackDCacheAll();
+    mask = osSetIntMask(1);
+    D_800E79A4++;
+    osSetIntMask(mask);
+    D_8019A660_ovl_066E10[0x7E]++;
+    osSendMesg(&D_800E8B4C, D_8019A660_ovl_066E10, 1);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/680F0", func_80198E50_ovl_066E10);
+#endif
 
 /* Sends the JPEG decode RSP task (data at data_ptr) to the scheduler, like nuGfxTaskStart */
 void func_80198FC8_ovl_066E10(void *data_ptr, u32 data_size, s32 unused, u32 flags) {
