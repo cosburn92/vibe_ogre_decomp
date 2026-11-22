@@ -30,8 +30,6 @@ u8 *func_80232DE0_ovl_29A4C0(s32 a, s32 id);
 
 /* Copies key k of animation anim of resource id (owner's) into out, like func_8019B054 in
  * ovl_1CE070; returns 0 when k is past the key count */
-#ifdef NON_MATCHING
-/* 71/71 instructions, 9 words differ: the table and animation pointers swap v1/a0 */
 s32 func_80233800_ovl_29A4C0(s32 owner, s32 anim, u32 k, s32 id, KeyOut2A3 *out) {
     u8 *tab = func_80232DE0_ovl_29A4C0(owner, id);
     u16 *a;
@@ -42,8 +40,9 @@ s32 func_80233800_ovl_29A4C0(s32 owner, s32 anim, u32 k, s32 id, KeyOut2A3 *out)
     } else {
         a = NULL;
     }
-    if (k < *a) {
-        key = (Key2A3 *)(a + 1) + k;
+    if (k < *a++) {
+        a = (u16 *)((Key2A3 *)a + k);
+        key = (Key2A3 *)a;
         out->a = key->a;
         out->b = key->b;
         out->c = key->c;
@@ -56,6 +55,3 @@ s32 func_80233800_ovl_29A4C0(s32 owner, s32 anim, u32 k, s32 id, KeyOut2A3 *out)
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2A3030", func_80233800_ovl_29A4C0);
-#endif
