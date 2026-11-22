@@ -1039,7 +1039,36 @@ void func_801DD2D4_ovl_101CE0(MapUnit *u, u8 a, u8 b) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2D4_ovl_101CE0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD410_ovl_101CE0);
+u16 func_8016B6FC(u16 id);
+
+/* Adds one of item v to the stock: into its existing slot (func_8016B6FC), else the first
+ * free one; both counts are capped at 99 */
+void func_801DD410_ovl_101CE0(u16 v) {
+    s32 i;
+
+    if (v != 0) {
+        i = func_8016B6FC(v);
+        if (i == 0x1FF) {
+            for (i = 0; i < 0x116; i++) {
+                if (D_80196B00[i].id == 0) {
+                    D_80196B00[i].id = v;
+                    D_80196B00[i].equipped++;
+                    D_80196B00[i].count++;
+                    break;
+                }
+            }
+        } else {
+            D_80196B00[i].equipped++;
+            D_80196B00[i].count++;
+        }
+        if (D_80196B00[i].count >= 100) {
+            D_80196B00[i].count = 99;
+        }
+        if (D_80196B00[i].equipped >= 100) {
+            D_80196B00[i].equipped = 99;
+        }
+    }
+}
 
 void func_801DD530_ovl_101CE0(void) {
     if (D_801F3670_ovl_101CE0 != 0) {
