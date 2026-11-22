@@ -224,7 +224,65 @@ extern s8 D_801F6A44_ovl_22A280[][7];
 #define FOLD_AFFINITY(k)        switch (k) {                    case 1:                     case 2:                     case 3:                     case 4:                     case 5:                     case 6:                         break;                  case 11:                        k = 3;                      break;                  case 12:                        k = 4;                      break;                  case 9:                     case 13:                        k = 1;                      break;                  case 10:                    case 14:                        k = 2;                      break;                  default:                        k = 0;                      break;              }
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/233210", BattleAlignmentChange);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_801C8AEC(void);
+s32 func_801C8AFC(void);
+s32 func_801C8C74(BattleUnit *u);
+extern s8 D_801F69D0_ovl_22A280[11][2]; /* alignment difference threshold, step */
+extern s8 D_801F69E8_ovl_22A280[11][2]; /* level difference threshold, step */
+extern s8 D_801F6A00_ovl_22A280[];      /* per-battle bias */
+
+/* How much attacker a's alignment (unk34[0]) changes for defeating b: steps from the
+ * alignment and level differences plus the battle's bias, -5..5, kept within 0..100 */
+s32 BattleAlignmentChange(BattleUnit *a, BattleUnit *b) {
+    s32 da;
+    s32 dl;
+    u32 i;
+    u32 j;
+    s32 v;
+
+    if ((a == NULL) | (b == NULL)) {
+        return 0;
+    }
+    if (func_801C8AEC() != 0 || func_801C8AFC() != 0 || (u32)(a->unk48 - 0x51) < 3 || func_801C8B68(a) != 0 ||
+        func_801C8C74(a) != 0 || func_801C8C74(b) != 0) {
+        return 0;
+    }
+    if ((u8)*D_801976DC >= 30) {
+        return 0;
+    }
+    da = a->unk34[0] - b->unk34[0];
+    for (i = 0; i < 11; i++) {
+        if (da >= D_801F69D0_ovl_22A280[i][0]) {
+            da = D_801F69D0_ovl_22A280[i][1];
+            break;
+        }
+    }
+    dl = a->unk31[0] - b->unk31[0];
+    for (j = 0; j < 11; j++) {
+        if (dl <= D_801F69E8_ovl_22A280[j][0]) {
+            dl = D_801F69E8_ovl_22A280[j][1];
+            break;
+        }
+    }
+    da += dl + D_801F6A00_ovl_22A280[FIELD(D_801CE8BC, s32, 0x1C0)];
+    if (da > 5) {
+        da = 5;
+    }
+    if (da < -5) {
+        da = -5;
+    }
+    v = a->unk34[0] + da;
+    if (v < 0) {
+        v = 0;
+    }
+    if (v > 100) {
+        v = 100;
+    }
+    return v - a->unk34[0];
+}
 
 s32 func_801C8AEC(void);
 s32 func_801C8AFC(void);
