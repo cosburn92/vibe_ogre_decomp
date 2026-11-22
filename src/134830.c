@@ -5,7 +5,67 @@
 extern s32 D_801ED4A4_ovl_101CE0[];
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/134830", func_801E00F0_ovl_101CE0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    /* 0x00 */ s32 id;
+    /* 0x04 */ u8 unk04[8];
+    /* 0x0C */ s32 x2;
+    /* 0x10 */ s32 y2;
+    /* 0x14 */ s32 w2;
+    /* 0x18 */ s32 h2;
+    /* 0x1C */ s32 x;
+    /* 0x20 */ s32 y;
+    /* 0x24 */ s32 w;
+    /* 0x28 */ s32 h;
+    /* 0x2C */ u8 *win;
+    /* 0x30 */ u8 unk30[8];
+    /* 0x38 */ s32 a;
+    /* 0x3C */ s32 b;
+    /* 0x40 */ s32 c;
+    /* 0x44 */ u8 unk44[0x1D];
+    /* 0x61 */ s8 d;
+} Dialog134;
+extern Dialog134 D_801ED540_ovl_101CE0;
+extern s32 D_801F0B40_ovl_101CE0;
+extern u16 *D_801F0CA0_ovl_101CE0;
+extern u16 *D_800C4BDC;
+void func_801E09DC_ovl_101CE0(Dialog134 *d);
+void func_801E0594_ovl_101CE0();
+u8 *func_8017BFB0(s32 kind, s32 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
+void func_8017C384(u8 *w);
+void func_8020CDA0(s32 se);
+
+/* Yes/no dialog step: opens dialog id on the first call; once the window is up, returns 1 for
+ * the confirm button and 3 for the cancel button (closing it), 2 while waiting */
+s32 func_801E00F0_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2) {
+    if (D_801ED540_ovl_101CE0.id == -1) {
+        D_801ED540_ovl_101CE0.d = d;
+        D_801ED540_ovl_101CE0.id = id;
+        D_801ED540_ovl_101CE0.a = a;
+        D_801ED540_ovl_101CE0.b = b;
+        D_801ED540_ovl_101CE0.c = c;
+        D_801F0B40_ovl_101CE0 = 0;
+        D_801ED540_ovl_101CE0.x2 = x2;
+        func_801E09DC_ovl_101CE0(&D_801ED540_ovl_101CE0);
+        D_801ED540_ovl_101CE0.win = func_8017BFB0(4, 0, func_801E0594_ovl_101CE0, D_801ED540_ovl_101CE0.x,
+                                                  D_801ED540_ovl_101CE0.y, D_801ED540_ovl_101CE0.w,
+                                                  D_801ED540_ovl_101CE0.h, D_801ED540_ovl_101CE0.x2,
+                                                  D_801ED540_ovl_101CE0.y2, D_801ED540_ovl_101CE0.w2,
+                                                  D_801ED540_ovl_101CE0.h2);
+        return 2;
+    }
+    if (FIELD(D_801ED540_ovl_101CE0.win, u16, 0x26) == 0) {
+        if ((*D_800C4BDC & D_801F0CA0_ovl_101CE0[0]) || (*D_800C4BDC & D_801F0CA0_ovl_101CE0[1])) {
+            func_8020CDA0(6);
+            func_8017C384(D_801ED540_ovl_101CE0.win);
+            D_801ED540_ovl_101CE0.id = -1;
+            return (D_801F0CA0_ovl_101CE0[0] & *D_800C4BDC) ? 1 : 3;
+        }
+    }
+    return 2;
+}
 
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E027C_ovl_101CE0);
 
