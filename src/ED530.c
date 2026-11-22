@@ -97,9 +97,9 @@ typedef struct {
     /* 0x00 */ Tree0E link;
     /* 0x08 */ f32 dist;
     /* 0x0C */ s32 c;
-    /* 0x10 */ s16 key;
+    /* 0x10 */ u16 key;
     /* 0x12 */ u16 m;
-    /* 0x14 */ s16 frame;
+    /* 0x14 */ u16 frame;
 } DrawNode0E;
 void guMtxXFMF(f32 mf[4][4], f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
 void guMtxXFML(void *m, f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
