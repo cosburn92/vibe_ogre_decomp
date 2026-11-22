@@ -161,7 +161,46 @@ void *func_801985D0_ovl_1CE070(s32 id) {
     return out;
 }
 
+/* Loads entry k of the index chunk id and unpacks it like func_801985D0; stores the unpacked
+ * size in *outSize when given */
+#ifdef NON_MATCHING
+/* 88/88 instructions, 24 words differ: k and the chunk buffers swap s0/s2 */
+void *func_801986E0_ovl_1CE070(s32 id, s32 k, s32 *outSize) {
+    s32 *index = HMalloc(ChunkSize(id));
+    s32 size;
+    u8 *raw;
+    void *out;
+    s32 n;
+
+    LoadChunkRaw(index, id);
+    k = index[k];
+    HFree(index);
+    size = ChunkSize(k);
+    raw = HMalloc(size);
+    LoadChunkRaw(raw, k);
+    if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
+        Arc16_1CE070 arc = D_801B99A0_ovl_1CE070;
+        Arc16_1CE070 req = D_801B99A0_ovl_1CE070;
+
+        arc.buf = raw;
+        arc.size = size;
+        func_8007ACB0(&arc, &req, 1);
+        out = req.buf;
+        n = req.size;
+    } else {
+        n = ReadU32BE(raw);
+        out = HMalloc(n);
+        DecodeLZ(out, raw);
+    }
+    if (outSize != NULL) {
+        *outSize = n;
+    }
+    HFree(raw);
+    return out;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_801986E0_ovl_1CE070);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_80198840_ovl_1CE070);
 
