@@ -332,7 +332,42 @@ block_28:
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802264B4_ovl_27A020);
 #endif
 
+#include "scene.h"
+s32 func_8007F648(void *func, s16 x, s16 y, s16 b, u16 c);
+void D_80198BE8(void);
+
+/* Creates a scene box: image id, kind b (top bit set), position (x, y), size (w, h), z, colour
+ * index col, with flags 4 (f1) and 8 (f2); returns its slot */
+#ifdef NON_MATCHING
+/* 109/109 instructions, 92 words differ: register allocation (the original keeps z in s6 and spills id and col to the frame) */
+s32 func_80226644_ovl_27A020(u8 id, u16 b, u32 x, u32 y, u16 w, u16 col, u32 z, u8 f1, u8 f2) {
+    s32 i = func_8007F648(D_80198BE8, 0, 0, 0, 0);
+    u8 flags;
+
+    bzero(&D_800E82C8[i].unk88, 0x10);
+    flags = (f1 != 0) * 4;
+    D_800E82C8[i].unk89 = b;
+    D_800E82C8[i].unk88 = (b >> 8) | 0x80;
+    if (f2) {
+        flags |= 8;
+    }
+    D_800E82C8[i].unk8A = flags;
+    D_800E82C8[i].unk8C = x >> 8;
+    D_800E82C8[i].unk8D = x;
+    D_800E82C8[i].unk8F = id;
+    D_800E82C8[i].unk90[1] = 8;
+    D_800E82C8[i].unk90[2] = z >> 8;
+    D_800E82C8[i].unk90[3] = z;
+    D_800E82C8[i].unk94 = y >> 8;
+    D_800E82C8[i].unk95 = y;
+    D_800E82C8[i].unk8E = w >> 8;
+    D_800E82C8[i].unk90[0] = w;
+    D_800E82C8[i].unk8B = col;
+    return i;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80226644_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802267F8_ovl_27A020);
 
