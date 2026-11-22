@@ -53,8 +53,6 @@ void func_80237B84_ovl_29A4C0(u16 msg, u8 *ctx) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_80237C90_ovl_29A4C0);
-
 void func_8023841C_ovl_29A4C0(u16 msg, u8 *ctx);
 extern f32 D_80220F6C;
 extern f32 D_80220F70;
@@ -66,6 +64,61 @@ void func_8020A5A0(u8 *a, u8 *b);
 void func_8020D814(u8 *o);
 void func_8020D86C(u8 *o, s32 a, s32 b);
 void func_8020E0E4(u8 *o, s32 a, s32 b);
+
+extern f32 D_80220F68;
+extern u8 D_800EB240[];
+void func_8023830C_ovl_29A4C0(u16 msg, u8 *ctx);
+void func_801C5938(void *bank, s32 se);
+
+/* Scene script for the other drifting sprites (func_8023830C), with sounds on spawn and exit */
+s32 func_80237C90_ovl_29A4C0(u16 msg, u8 *ctx) {
+    u8 *o;
+    u8 *p;
+
+    switch (msg) {
+        case 0x101:
+            if (FIELD(ctx, u8 *, 0xC) != NULL) {
+                func_8020D814(FIELD(ctx, u8 *, 0xC));
+            }
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(ctx, f32, 0) = D_80220F68;
+            FIELD(ctx, f32, 4) = D_80220F6C;
+            FIELD(ctx, f32, 8) = D_80220F70;
+            FIELD(ctx, void *, 0xC) = NULL;
+            FIELD(ctx, s32, 0x10) = 0;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            o = func_80214C84(0x1AA, func_8023830C_ovl_29A4C0);
+            FIELD(ctx, u8 *, 0xC) = o;
+            p = o + 0x1C;
+            func_8020A4A8(D_80220EE0, p);
+            func_8020A5A0(p, ctx);
+            func_801C5938(D_800EB240, 0x1F8);
+            func_8020E0E4(FIELD(ctx, u8 *, 0xC), 0x146, 0x1001);
+            break;
+        case 0x1001:
+            FIELD(FIELD(ctx, u8 *, 0xC), u16, 0xA) |= 0x2000;
+            func_8020DC80(0x1002);
+        case 0x1002:
+            if (FIELD(ctx, s32, 0x10) != 0) {
+                func_801C5938(D_800EB240, 0x1F9);
+                func_8020DC80(0x1004);
+            }
+            break;
+        case 0x1003:
+            FIELD(ctx, s32, 0x10) = 1;
+            break;
+        case 0x1004:
+            FIELD(FIELD(ctx, u8 *, 0xC), u16, 0xA) &= ~0x2000;
+            func_8020D86C(FIELD(ctx, u8 *, 0xC), 0x158, 0x166);
+            func_8020DC80(0x1005);
+            break;
+    }
+    return 0;
+}
 
 /* Scene script for the drifting sprites (func_8023841C): sets up the camera, spawns the sprite
  * object and steps through its states */
