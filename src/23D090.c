@@ -66,9 +66,74 @@ void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8E20_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E8F90_ovl_23B220);
+typedef struct {
+    /* 0x00 */ s32 w0;
+    /* 0x04 */ s32 w4;
+    /* 0x08 */ s16 h8;
+    /* 0x0A */ s16 hA;
+    /* 0x0C */ s32 w[16];
+    /* 0x4C */ void *owner;
+} Spr23; /* size 0x50 */
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9130_ovl_23B220);
+typedef struct {
+    u16 x;
+    u16 y;
+} Pos23;
+
+extern Pos23 D_801EFFF8_ovl_23B220[];
+void func_801AD9D4(Spr23 *s, s32 a);
+void func_801ADD88(Spr23 *s, s32 x, s32 y, s32 a, s32 b);
+s32 func_801C49A0(s32 x, s32 y, s16 h, s32 a, s32 b, u16 c, void *out);
+s32 func_801C8B68(u8 *u);
+s32 func_801C8BA4(u8 *u);
+u16 func_801C8FB8(u8 *u);
+
+/* Builds portrait slot i (0-2) for side 1's unit i: draws its sprite into the slot and
+ * places it at layout position k */
+void func_801E8F90_ovl_23B220(s32 i, s32 k) {
+    u8 *e = (u8 *)D_801EFE48_ovl_23B220 + (i * 0x18 + 0x1AC);
+    u8 *u = func_801C8FE8(1);
+    s32 *xy;
+    Spr23 s;
+
+    xy = (s32 *)(e + 4);
+    s = *(Spr23 *)(((u8 **)u)[i] + 0x44);
+    s.w0 = FIELD(u, s32, 0x50);
+    s.owner = ((u8 **)u)[i];
+    func_801AD9D4(&s, 0);
+    func_801ADD88(&s, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), func_801C8B68(u), func_801C8BA4(u));
+    FIELD(e, s32, 0) = func_801C49A0(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), s.hA, func_801C8B68(u),
+                                     func_801C8BA4(u), func_801C8FB8(u), xy);
+    FIELD(e, u16, 0x14) = D_801EFFF8_ovl_23B220[k].x + 0x5A;
+    FIELD(e, u16, 0x16) = D_801EFFF8_ovl_23B220[k].y + 0x40;
+    FIELD(e, u16, 0x14) += FIELD(e, s32, 4);
+    FIELD(e, u16, 0x16) += FIELD(e, s32, 8);
+}
+
+extern Pos23 D_801F0010_ovl_23B220[];
+
+/* Builds portrait slot i (3-5) for side 2's unit i - 3: draws its sprite into the slot and
+ * places it at layout position k */
+void func_801E9130_ovl_23B220(s32 i, s32 k) {
+    u8 *e = (u8 *)D_801EFE48_ovl_23B220 + (i * 0x18 + 0x1AC);
+    u8 *u = func_801C8FE8(2);
+    s32 j = i - 3;
+    s32 *xy;
+    Spr23 s;
+
+    xy = (s32 *)(e + 4);
+    s = *(Spr23 *)(((u8 **)u)[j] + 0x44);
+    s.w0 = FIELD(u, s32, 0x50);
+    s.owner = ((u8 **)u)[j];
+    func_801AD9D4(&s, 0);
+    func_801ADD88(&s, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), func_801C8B68(u), func_801C8BA4(u));
+    FIELD(e, s32, 0) = func_801C49A0(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), s.hA, func_801C8B68(u),
+                                     func_801C8BA4(u), func_801C8FB8(u), xy);
+    FIELD(e, u16, 0x14) = D_801F0010_ovl_23B220[k].x + 0x38;
+    FIELD(e, u16, 0x16) = D_801F0010_ovl_23B220[k].y + 0x44;
+    FIELD(e, u16, 0x14) += FIELD(e, s32, 4);
+    FIELD(e, u16, 0x16) += FIELD(e, s32, 8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E92D4_ovl_23B220);
 
