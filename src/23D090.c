@@ -72,7 +72,81 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9130_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E92D4_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9618_ovl_23B220);
+void _bcopy(void *src, void *dst, s32 n);
+u8 *func_801C8FE8(s32);
+void *func_801CC234(s32, s32);
+void func_801E8F90_ovl_23B220(s32, s32);
+void func_801E9130_ovl_23B220(s32, s32);
+void func_801E92D4_ovl_23B220(s32, s32);
+
+/* For each of the two sides: copies image 0x36EA02 into the side's sheet (0x150 / 0xE8), then
+ * builds its 1-3 entries (slots 0-2 and 3-5) and frees their 0x1AC buffers */
+void func_801E9618_ovl_23B220(void) {
+    {
+        u8 *u = func_801C8FE8(1);
+        s32 n, k, i;
+        u8 *img;
+        Ctx23 *s;
+        void **pp;
+
+        if (func_801C8C74(u)) {
+            n = 3;
+            k = 1;
+        } else if (func_801C8C90(u)) {
+            n = 2;
+            k = 4;
+        } else {
+            n = 1;
+            k = 0;
+        }
+        s = D_801EFE48_ovl_23B220;
+        img = func_801CC234(0x36EA02, 0);
+        _bcopy(img + 8, FIELD(s, u8 *, 0x150) + 8, func_801BE978(2, FIELD(FIELD(s, u8 *, 0x150), u16, 4), FIELD(FIELD(s, u8 *, 0x150), u16, 6)));
+        HFree(img);
+        for (i = 0; i < n; i++) {
+            func_801E8F90_ovl_23B220(i, k);
+            func_801E92D4_ovl_23B220(i, 3);
+            pp = &FIELD(D_801EFE48_ovl_23B220, void *, 0x1AC + i * 0x18);
+            k++;
+            if (*pp != NULL) {
+                HFree(*pp);
+                *pp = NULL;
+            }
+        }
+    }
+    {
+        u8 *u = func_801C8FE8(2);
+        s32 n, k, i;
+        u8 *img;
+        Ctx23 *s;
+        void **pp;
+
+        if (func_801C8C74(u)) {
+            n = 3;
+            k = 1;
+        } else if (func_801C8C90(u)) {
+            n = 2;
+            k = 4;
+        } else {
+            n = 1;
+            k = 0;
+        }
+        s = D_801EFE48_ovl_23B220;
+        img = func_801CC234(0x36EA02, 1);
+        _bcopy(img + 8, FIELD(s, u8 *, 0xE8) + 8, func_801BE978(2, FIELD(FIELD(s, u8 *, 0xE8), u16, 4), FIELD(FIELD(s, u8 *, 0xE8), u16, 6)));
+        HFree(img);
+        for (i = 3; i < n + 3; i++) {
+            func_801E9130_ovl_23B220(i, k);
+            func_801E92D4_ovl_23B220(i, 2);
+            pp = &FIELD(D_801EFE48_ovl_23B220, void *, 0x1AC + i * 0x18);
+            k++;
+            if (*pp != NULL) {
+                HFree(*pp);
+                *pp = NULL;
+            }
+        }
+    }
+}
 
 void func_801E9834_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
