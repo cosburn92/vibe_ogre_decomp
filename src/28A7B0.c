@@ -341,7 +341,7 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022EEB4_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F024_ovl_286BD0);
 
-void func_8022F148_ovl_286BD0(void) {
+inline void func_8022F148_ovl_286BD0(void) {
     nuGfxTaskAllEndWait();
     func_80089AB0(D_800A8204, 3);
     D_800C4BB8 = D_800A8204[0];
@@ -416,7 +416,51 @@ void func_8022F324_ovl_286BD0(void) {
     func_80231D58_ovl_286BD0(D_8023DE30_ovl_286BD0[0x244], D_8023DE30_ovl_286BD0[0x245]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F408_ovl_286BD0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+void func_80089C50(void);
+
+/* Leaves the screen: stops the graphics tasks and display, then frees the object table at
+ * D_8023DE30 (50 objects with their 0x30 buffers and four buffer lists) and reloads chunk 0x14 */
+void func_8022F408_ovl_286BD0(void) {
+    void **t;
+    s32 i;
+    u8 *raw;
+
+    func_8022F148_ovl_286BD0();
+    func_80089C50();
+    for (i = 0; i < 50; i++) {
+        if (((void **)D_8023DE30_ovl_286BD0)[i] != NULL) {
+            HFree(FIELD(((void **)D_8023DE30_ovl_286BD0)[i], void *, 0x30));
+            HFree(((void **)D_8023DE30_ovl_286BD0)[i]);
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        HFree(FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0x208));
+    }
+    for (i = 0; i < 10; i++) {
+        if (FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0x168) != NULL) {
+            HFree(FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0x168));
+        }
+    }
+    for (i = 0; i < 40; i++) {
+        if (FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0xC8) != NULL) {
+            HFree(FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0xC8));
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        if (FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0x190) != NULL) {
+            HFree(FIELD(D_8023DE30_ovl_286BD0 + i * 4, void *, 0x190));
+        }
+    }
+    HFree(D_8023DE30_ovl_286BD0);
+    D_8023DE30_ovl_286BD0 = NULL;
+    raw = LoadChunkRaw(NULL, 0x1890C90);
+    D_8023DE34_ovl_286BD0->chunk14 = LoadChunk(*(u32 *)(raw + 0x4C));
+    HFree(raw);
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F5C4_ovl_286BD0);
 
