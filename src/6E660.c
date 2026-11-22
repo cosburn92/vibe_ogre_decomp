@@ -543,7 +543,59 @@ INCLUDE_ASM("asm/nonmatchings/6E660", func_80198FA4_ovl_06E660);
 
 INCLUDE_ASM("asm/nonmatchings/6E660", func_80199354_ovl_06E660);
 
-INCLUDE_ASM("asm/nonmatchings/6E660", func_80199624_ovl_06E660);
+typedef struct {
+    /* 0x00 */ u8 unk00[8];
+    /* 0x08 */ void *p08;
+    /* 0x0C */ u8 unk0C[0xC];
+    /* 0x18 */ u32 count;
+    /* 0x1C */ u8 unk1C[0xC];
+    /* 0x28 */ void *p28;
+    /* 0x2C */ u8 unk2C[8];
+    /* 0x34 */ void **parts;
+    /* 0x38 */ u8 unk38[8];
+    /* 0x40 */ void *p40;
+    /* 0x44 */ void *p44;
+    /* 0x48 */ u8 unk48[8];
+    /* 0x50 */ void *p50;
+} Model6E;
+Model6E *func_80199354_ovl_06E660(Model6E *out, s32 a, s32 b, s32 c, s32 d, s32 e);
+s32 func_80198FA4_ovl_06E660(SpriteEntry *dst, Model6E *m, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+void func_80199E00_ovl_06E660(SpriteTable *t);
+
+static inline void FreeModel6E(Model6E *m) {
+    u32 i;
+
+    for (i = 0; i < m->count; i++) {
+        HFree(m->parts[i]);
+    }
+    HFree(m->p08);
+    HFree(m->p44);
+    HFree(m->p40);
+    HFree(m->p50);
+    HFree(m->p28);
+}
+
+/* Loads the model for (a..e) into a local header and builds a one-entry sprite table from it (frame data via
+ * func_80198FA4); frees the model either way and returns NULL on failure */
+SpriteTable *func_80199624_ovl_06E660(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f) {
+    Model6E tmp;
+    Model6E *m = func_80199354_ovl_06E660(&tmp, a, b, c, d, e);
+    SpriteTable *t;
+
+    if (m == NULL) {
+        return NULL;
+    }
+    t = HMalloc(0xDA8);
+    bzero(t, 0xDA8);
+    if (func_80198FA4_ovl_06E660(t->entries, m, a, b, c, d, e, f, 0) == 0) {
+        func_80199E00_ovl_06E660(t);
+        FreeModel6E(m);
+        return NULL;
+    }
+    t->count = 1;
+    FreeModel6E(m);
+    return t;
+}
 
 INCLUDE_ASM("asm/nonmatchings/6E660", func_801997D0_ovl_06E660);
 
