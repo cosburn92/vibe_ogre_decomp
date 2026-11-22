@@ -573,7 +573,42 @@ void func_8019AF0C_ovl_1CE070(void) {
     bzero(p, 0x398);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019AF3C_ovl_1CE070);
+typedef struct {
+    /* 0x00 */ u8 unk00[8];
+    /* 0x08 */ void *p08;
+    /* 0x0C */ u8 unk0C[0xC];
+    /* 0x18 */ u32 count;
+    /* 0x1C */ u8 unk1C[0xC];
+    /* 0x28 */ void *p28;
+    /* 0x2C */ u8 unk2C[8];
+    /* 0x34 */ void **parts;
+    /* 0x38 */ void *p38;
+    /* 0x3C */ void *p3C;
+    /* 0x40 */ u8 unk40[0x18];
+    /* 0x58 */ void *p58;
+} Ent1CE; /* size 0x5C */
+
+/* Frees the ten entries of the table func_8019AF0C allocates (each entry's parts and buffers), then the table */
+void func_8019AF3C_ovl_1CE070(void) {
+    u32 i, j;
+
+    if (D_801BA6F8_ovl_1CE070 != NULL) {
+        for (i = 0; i < 10; i++) {
+            for (j = 0; j < ((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].count; j++) {
+                if (((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].parts[j] != NULL) {
+                    HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].parts[j]);
+                }
+            }
+            HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].p08);
+            HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].p3C);
+            HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].p38);
+            HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].p58);
+            HFree(((Ent1CE *)D_801BA6F8_ovl_1CE070)[i].p28);
+        }
+        HFree(D_801BA6F8_ovl_1CE070);
+        D_801BA6F8_ovl_1CE070 = NULL;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B054_ovl_1CE070);
 
