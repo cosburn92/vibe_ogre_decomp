@@ -79,7 +79,64 @@ void func_80214F80_ovl_18F100(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_80214F80_ovl_18F100);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/18F100", func_802150FC_ovl_18F100);
+typedef struct {
+    u8 unk0;
+    u8 flags;
+    u8 members[5];
+    u8 pos[5];
+    u8 rest[0xD];
+} Squad18F; /* size 0x19 */
+
+typedef struct {
+    u8 unk00[0x11];
+    u8 b11;
+    u8 b12;
+    u8 rest[0x25];
+} Unit18F; /* size 0x38 */
+
+extern Squad18F gSquads[];
+extern Unit18F D_80193BC0[];
+extern s32 D_801F3658;
+extern s32 D_801ED5B0;
+extern u8 D_8021B290_ovl_18F100[];
+extern s32 D_8021B2A8_ovl_18F100;
+extern s32 D_8021B2B0_ovl_18F100;
+extern s32 D_8021B2B8_ovl_18F100;
+u8 func_8016DE1C(u8 a, u8 b);
+void bzero(void *p, s32 n);
+
+/* Builds the 3x3 grid for squad D_801F3658: the member in each cell and its size (1 for
+ * special members >= 100), and resets the selection */
+void func_802150FC_ovl_18F100(void) {
+    s32 i;
+    s32 m;
+    u8 p;
+
+    bzero(D_8021B290_ovl_18F100, 9);
+    bzero(D_8021B299_ovl_18F100, 9);
+    for (i = 0; i < 5; i++) {
+        m = gSquads[D_801F3658].members[i];
+        if (m != 0) {
+            p = gSquads[D_801F3658].pos[i];
+            D_8021B290_ovl_18F100[p] = m;
+            if (m >= 100) {
+                D_8021B299_ovl_18F100[p] = 1;
+            } else {
+                D_8021B299_ovl_18F100[p] = func_8016DE1C(D_80193BC0[m].b11, D_80193BC0[m].b12);
+            }
+        }
+    }
+    D_801ED5B0 = gSquads[D_801F3658].pos[0];
+    D_8021B2A8_ovl_18F100 = -1;
+    D_8021B2AC_ovl_18F100 = -1;
+    D_8021B2B4_ovl_18F100 = -1;
+    D_8021B2B0_ovl_18F100 = -1;
+    D_8021B170_ovl_18F100 = NULL;
+    D_8021B174_ovl_18F100 = NULL;
+    D_8021B2A4_ovl_18F100 = 0;
+    D_8021B2B8_ovl_18F100 = 0;
+    D_80210219 = (D_80210219 & 0xF) | 0x20;
+}
 
 /* Closes this screen's windows */
 /* Closes this screen's windows */
