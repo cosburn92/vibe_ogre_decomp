@@ -23,6 +23,7 @@ typedef struct {
     void (*f2)(void);
     void (*f3)(s16);
     void (*f4)(s16);
+    s32 (*f5)(BattleUnit *u);
 } BattleCallbacks;
 
 extern BattleCallbacks *D_801D0810_ovl_1F0A30;
@@ -120,7 +121,42 @@ void func_801B5524_ovl_1F0A30();
 extern s32 D_801CE8FC_ovl_1F0A30;
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C896C_ovl_1F0A30);
+u8 func_8016E230(u8 a, u8 cls, u8 c);
+u8 func_8016E458(u8 a);
+u8 func_8016E470(u8 a, u16 i0, u16 i1, u16 i2, u16 i3);
+void func_8016E50C(u8 *a, u8 b, u8 cls, u8 c, u8 d, u16 i0, u16 i1, u16 i2, u16 i3);
+u8 func_8016F5E0(u16 id);
+
+/* Unit u's current element: from the battle callback if one is set, else from its class
+ * and equipment */
+s32 func_801C896C_ovl_1F0A30(BattleUnit *u) {
+    u8 a;
+    u8 k;
+    u8 t;
+
+    if (D_801D0810_ovl_1F0A30->f5 != NULL) {
+        return D_801D0810_ovl_1F0A30->f5(u);
+    }
+    if (u->unk48 == 0x101) {
+        return u->unk00[0x33];
+    }
+    a = func_8016E230(u->unk48, u->cls, func_801C9FA4_ovl_1F0A30(u->unk58));
+    k = func_8016E458(a);
+    if ((u8)(k - 3) < 2 || k == 5) {
+        if ((u8)(a - 0x31) < 2) {
+            return u->unk00[0x33];
+        }
+        if (a == 0x91) {
+            t = func_8016F5E0(func_801C8FB8_ovl_1F0A30(u));
+            if (t >= 15) {
+                return u->unk00[0x33];
+            }
+            return t;
+        }
+        func_8016E50C(&a, u->unk48, u->cls, a, u->unk00[0x33], u->items[0], u->items[1], u->items[2], u->items[3]);
+    }
+    return func_8016E470(a, u->items[0], u->items[1], u->items[2], u->items[3]);
+}
 
 s32 func_801C8AA4_ovl_1F0A30(s32 a) {
     return (a - 1) * 38;
