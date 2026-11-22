@@ -137,7 +137,32 @@ void func_8022D2A8_ovl_29A4C0(Mtx29 m, s32 *x, s32 *y) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022D3AC_ovl_29A4C0);
+void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
+f32 sinf(f32 x);
+f32 cosf(f32 x);
+void func_80233AE0_ovl_29A4C0(f32 x, f32 y, f32 z, f32 *out, f32 mf[4][4]);
+
+/* Projects point p through model matrix m and the camera (eye, at, up, vertical fov in degrees)
+ * to 320x240 screen coordinates */
+void func_8022D3AC_ovl_29A4C0(f32 *out, f32 *p, f32 m[4][4], f32 *at, f32 *eye, f32 *up, f32 fov) {
+    f32 mf[4][4];
+    f32 v[3];
+    f32 t;
+
+    guLookAtF(mf, eye[0], eye[1], eye[2], at[0], at[1], at[2], up[0], up[1], up[2]);
+    guMtxCatF(m, mf, mf);
+    func_80233AE0_ovl_29A4C0(p[0], p[1], p[2], v, mf);
+    t = fov * 3.141592653589793 / 360.0;
+    t = v[2] * sinf(t) / cosf(t);
+    if (t != 0.0f) {
+        out[0] = 160.0 - v[0] * 160.0f / (t * 1.333);
+        out[1] = 120.0f - v[1] * 120.0f / t;
+    } else {
+        out[0] = v[0];
+        out[1] = v[1];
+    }
+}
 
 /* Vec3f {0, 1, 0} + pad (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_802391D0_ovl_29A4C0\nD_802391D0_ovl_29A4C0:\n.word 0x00000000, 0x3F800000, 0, 0\n.section .text\n");
