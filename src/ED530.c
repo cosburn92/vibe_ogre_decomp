@@ -261,7 +261,40 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5184_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5718_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A597C_ovl_0EBBB0);
+void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
+void guMtxXFMF(f32 mf[4][4], f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
+void func_80080210(f32 *out, f32 *a, f32 *v, f32 b, f32 c);
+void func_8007FFD0(f32 *v);
+void func_80080190(f32 *v, f32 s);
+
+/* For an angle (0x12C) within 15-165 degrees, rotates a point 50 units out into view and, when
+ * it lies in front, sets flag 0x138 and stores its projected position (0x130/0x134) */
+void func_801A597C_ovl_0EBBB0(void) {
+    f32 m[4][4];
+    f32 r[4][4];
+    f32 out[4];
+    f32 v[3];
+
+    D_801ABA58_ovl_0EBBB0->unk110[0x28] = 0;
+    if (FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C) < 15.0f || FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C) > 165.0f) {
+        return;
+    }
+    guRotateF((f32 *)m, 60.0f, 1.0f, 0.0f, 0.0f);
+    guRotateF((f32 *)r, FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C), 0.0f, -1.0f, 0.0f);
+    guMtxCatF((f32 *)r, (f32 *)m, (f32 *)m);
+    func_80098D00(r, -50.0f, 0.0f, 0.0f);
+    guMtxCatF((f32 *)r, (f32 *)m, (f32 *)m);
+    guMtxXFMF(m, 0.0f, 0.0f, 0.0f, &v[0], &v[1], &v[2]);
+    if (v[1] > 0.0f) {
+        func_80080210(out, (f32 *)&D_801ABA58_ovl_0EBBB0->unk000[0x18], v, FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x1C),
+                      v[1]);
+        D_801ABA58_ovl_0EBBB0->unk110[0x28] = 1;
+        FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x130) = out[0];
+        FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x134) = out[2];
+        func_8007FFD0(v);
+        func_80080190(v, 100.0f);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5B0C_ovl_0EBBB0);
 
