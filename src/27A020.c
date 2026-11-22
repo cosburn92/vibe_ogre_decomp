@@ -920,7 +920,75 @@ void func_8022AFCC_ovl_27A020(Obj27 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AFE8_ovl_27A020);
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B1D8_ovl_27A020);
+typedef struct {
+    /* 0x00 */ u8 unk00[0x18];
+    /* 0x18 */ s16 fade;
+    /* 0x1A */ u8 unk1A[0xE];
+    /* 0x28 */ u16 flags;
+} Win27;
+extern u16 D_800E79B0;
+extern s16 D_8022CB28_ovl_27A020;
+extern s16 D_8022CB2A_ovl_27A020;
+extern u8 D_800EB1F0[];
+void func_800EA604(void *bank, s32 se);
+void func_8017C384(u8 *w);
+
+/* Shop yes/no cursor: up selects 1, down 0 (with a click when it moves); A returns the
+ * selection, B returns 0, otherwise -1 */
+static inline s16 ShopYesNo27(void) {
+    if (D_800E79B0 & 0x8000) {
+        return D_8022CB2A_ovl_27A020;
+    }
+    if (D_800E79B0 & 0x4000) {
+        return 0;
+    }
+    if (D_800E9BE4[0] & 0x800) {
+        if (D_8022CB2A_ovl_27A020 != 1) {
+            func_800EA604(D_800EB1F0, 2);
+        }
+        D_8022CB2A_ovl_27A020 = 1;
+    } else if (D_800E9BE4[0] & 0x400) {
+        if (D_8022CB2A_ovl_27A020 != 0) {
+            func_800EA604(D_800EB1F0, 2);
+        }
+        D_8022CB2A_ovl_27A020 = 0;
+    }
+    return -1;
+}
+
+/* Runs the shop's yes/no window once it has faded in: 1 for yes, 2 for no (closing the window),
+ * 0 while undecided */
+s32 func_8022B1D8_ovl_27A020(void) {
+    Obj27 *o = D_8022CB20_ovl_27A020;
+    u8 *sub = (u8 *)&o->w18;
+    s16 r;
+
+    if (o->w24 == NULL) {
+        return 0;
+    }
+    D_8022CB28_ovl_27A020 = 2;
+    if (((Win27 *)o->w24)->fade <= 200) {
+        return 0;
+    }
+    r = ShopYesNo27();
+    if (r == 1) {
+        func_800EA604(D_800EB1F0, 0);
+        if (FIELD(sub, u8 *, 0xC) != NULL && !(((Win27 *)FIELD(sub, u8 *, 0xC))->flags & 2)) {
+            func_8017C384(FIELD(sub, u8 *, 0xC));
+            return 1;
+        }
+        return 1;
+    }
+    if (r == 0) {
+        func_800EA604(D_800EB1F0, 1);
+        if (FIELD(sub, u8 *, 0xC) != NULL && !(((Win27 *)FIELD(sub, u8 *, 0xC))->flags & 2)) {
+            func_8017C384(FIELD(sub, u8 *, 0xC));
+            return 2;
+        }
+        return 2;
+    }
+    return 0;
+}
 
 extern s16 D_8022CB2A_ovl_27A020;
 extern s16 D_8022CB64_ovl_27A020[2][8];
