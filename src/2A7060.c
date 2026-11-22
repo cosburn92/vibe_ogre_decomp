@@ -82,6 +82,72 @@ s32 func_8023823C_ovl_29A4C0(u16 msg) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_8023830C_ovl_29A4C0);
+extern s32 D_80239158_ovl_29A4C0[2];
 
-INCLUDE_ASM("asm/nonmatchings/2A7060", func_8023841C_ovl_29A4C0);
+/* Message handler for two drifting sprites: 0 resets them, 2 moves each one pixel left and down */
+void func_8023830C_ovl_29A4C0(u16 msg, u8 *ctx) {
+    u32 i;
+
+    switch (msg) {
+        case 0:
+            for (i = 0; i < 2; i++) {
+                FIELD(FIELD(ctx, u8 **, 0x58)[D_80239158_ovl_29A4C0[i]], void *, 0) = D_8020F390;
+                {
+                    u8 *p = FIELD(ctx, u8 **, 0x58)[D_80239158_ovl_29A4C0[i]];
+
+                    FIELD(p, u16, 0x30) = 0;
+                    FIELD(p, u16, 0x32) = 0;
+                    FIELD(p, s16, 0x34) = FIELD(p, u16, 0x30) + 15;
+                    FIELD(p, s16, 0x36) = FIELD(p, u16, 0x32) + 15;
+                }
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            for (i = 0; i < 2; i++) {
+                u8 *p = FIELD(ctx, u8 **, 0x58)[D_80239158_ovl_29A4C0[i]];
+
+                FIELD(p, u16, 0x30)--;
+                FIELD(p, u16, 0x32)++;
+                FIELD(p, s16, 0x34) = FIELD(p, u16, 0x30) + 15;
+                FIELD(p, s16, 0x36) = FIELD(p, u16, 0x32) + 15;
+            }
+            break;
+    }
+}
+
+extern s32 D_80239160_ovl_29A4C0[2];
+
+/* Message handler for two drifting sprites: 0 resets them, 2 moves each one pixel left and down */
+void func_8023841C_ovl_29A4C0(u16 msg, u8 *ctx) {
+    u32 i;
+
+    switch (msg) {
+        case 0:
+            for (i = 0; i < 2; i++) {
+                FIELD(FIELD(ctx, u8 **, 0x58)[D_80239160_ovl_29A4C0[i]], void *, 0) = D_8020F390;
+                {
+                    u8 *p = FIELD(ctx, u8 **, 0x58)[D_80239160_ovl_29A4C0[i]];
+
+                    FIELD(p, u16, 0x30) = 0;
+                    FIELD(p, u16, 0x32) = 0;
+                    FIELD(p, s16, 0x34) = FIELD(p, u16, 0x30) + 15;
+                    FIELD(p, s16, 0x36) = FIELD(p, u16, 0x32) + 15;
+                }
+            }
+            break;
+        case 1:
+            break;
+        case 2:
+            for (i = 0; i < 2; i++) {
+                u8 *p = FIELD(ctx, u8 **, 0x58)[D_80239160_ovl_29A4C0[i]];
+
+                FIELD(p, u16, 0x30)--;
+                FIELD(p, u16, 0x32)++;
+                FIELD(p, s16, 0x34) = FIELD(p, u16, 0x30) + 15;
+                FIELD(p, s16, 0x36) = FIELD(p, u16, 0x32) + 15;
+            }
+            break;
+    }
+}
