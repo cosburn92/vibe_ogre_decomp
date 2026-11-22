@@ -574,7 +574,8 @@ void func_8019AF0C_ovl_1CE070(void) {
 }
 
 typedef struct {
-    /* 0x00 */ u8 unk00[8];
+    /* 0x00 */ s32 id;
+    /* 0x04 */ u8 unk04[4];
     /* 0x08 */ void *p08;
     /* 0x0C */ u8 unk0C[0xC];
     /* 0x18 */ u32 count;
@@ -610,7 +611,75 @@ void func_8019AF3C_ovl_1CE070(void) {
     }
 }
 
+typedef struct {
+    /* 0x00 */ u16 a;
+    /* 0x02 */ s16 b;
+    /* 0x04 */ s16 c;
+    /* 0x06 */ u16 d;
+    /* 0x08 */ u16 e;
+    /* 0x0A */ u16 f;
+    /* 0x0C */ u16 sx; /* 6.10 fixed point */
+    /* 0x0E */ u16 sy;
+} Key1CE;
+
+typedef struct {
+    /* 0x00 */ s32 a;
+    /* 0x04 */ s32 b;
+    /* 0x08 */ s32 c;
+    /* 0x0C */ s32 d;
+    /* 0x10 */ s32 e;
+    /* 0x14 */ s32 f;
+    /* 0x18 */ f32 sx;
+    /* 0x1C */ f32 sy;
+    /* 0x20 */ u8 index;
+} KeyOut1CE;
+
+static inline u8 *FindEnt1CE(s32 id) {
+    Ent1CE *e = D_801BA6F8_ovl_1CE070;
+    s32 n;
+
+    n = 9;
+    do {
+        if (e->id != 0 && e->id == id) {
+            return e->p3C;
+        }
+        e++;
+    } while (n--);
+    return NULL;
+}
+
+/* Copies key k of animation anim of loaded entry id into out (scales from 6.10 fixed point);
+ * returns 0 when k is past the animation's key count */
+#ifdef NON_MATCHING
+/* 73 vs 74 instructions: GCC here gives the entry pointer a0 and copies id to t0; the original keeps id in a0 and the entry pointer in v1 */
+s32 func_8019B054_ovl_1CE070(s32 id, s32 anim, u32 k, KeyOut1CE *out) {
+    u8 *tab = FindEnt1CE(id);
+    u16 *a;
+    Key1CE *key;
+
+    if (tab != NULL) {
+        a = (u16 *)(tab + ((s32 *)tab)[anim]);
+    } else {
+        a = NULL;
+    }
+    if (k < *a) {
+        key = (Key1CE *)(a + 1) + k;
+        out->index = k;
+        out->a = key->a;
+        out->b = key->b;
+        out->c = key->c;
+        out->d = key->d;
+        out->e = key->e;
+        out->f = key->f;
+        out->sx = (key->sx >> 10) + (key->sx & 0x3FF) / 1024.0f;
+        out->sy = (key->sy >> 10) + (key->sy & 0x3FF) / 1024.0f;
+        return 1;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B054_ovl_1CE070);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1CE070", UnitAnimGetCommand);
 
