@@ -61,7 +61,7 @@ s32 func_801E00F0_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2) {
             func_8020CDA0(6);
             func_8017C384(D_801ED540_ovl_101CE0.win);
             D_801ED540_ovl_101CE0.id = -1;
-            return (D_801F0CA0_ovl_101CE0[0] & *D_800C4BDC) ? 1 : 3;
+            return (*D_800C4BDC & D_801F0CA0_ovl_101CE0[0]) ? 1 : 3;
         }
     }
     return 2;
