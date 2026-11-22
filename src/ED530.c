@@ -87,7 +87,49 @@ void func_801A363C_ovl_0EBBB0(void) {
     func_80079618(0x2092506, -0x11);
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3688_ovl_0EBBB0);
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p1;
+    /* 0x08 */ u8 (*mtx)[0x40];
+} FbSet0E;
+extern FbSet0E *D_800E9BE0;
+typedef struct {
+    /* 0x00 */ Tree0E link;
+    /* 0x08 */ f32 dist;
+    /* 0x0C */ s32 c;
+    /* 0x10 */ s16 key;
+    /* 0x12 */ u16 m;
+    /* 0x14 */ s16 frame;
+} DrawNode0E;
+void guMtxXFMF(f32 mf[4][4], f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
+void guMtxXFML(void *m, f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
+f32 sqrtf(f32 x);
+
+/* Adds a draw-order node for matrix m (kind 10: a float matrix of the scene, else a frame
+ * matrix) keyed by key and by its distance from the camera at cam (+0x14) */
+void func_801A3688_ovl_0EBBB0(Tree0E *root, u16 kind, s32 c, s16 key, u16 m, u8 *cam) {
+    DrawNode0E *n = HMalloc(0x18);
+    f32 x, y, z;
+    f32 dx, dy, dz;
+
+    if (kind == 10) {
+        n->frame = 0;
+        guMtxXFMF((void *)(FIELDX(D_801ABA58_ovl_0EBBB0, u8 *, 0xC0) + (m << 6)), 0.0f, 0.0f, 0.0f, &x, &y, &z);
+    } else {
+        n->frame = 1;
+        guMtxXFML(D_800E9BE0->mtx[FIELDX(D_801ABA58_ovl_0EBBB0, u16 *, 0x124)[m]], 0.0f, 0.0f, 0.0f, &x, &y, &z);
+    }
+    dx = FIELDX(cam, f32, 0x14) - x;
+    dy = FIELDX(cam, f32, 0x18) - y;
+    dz = FIELDX(cam, f32, 0x1C) - z;
+    n->dist = sqrtf(dx * dx + dy * dy + dz * dz);
+    n->c = c;
+    n->key = key;
+    n->m = m;
+    n->link.left = NULL;
+    n->link.right = NULL;
+    func_801A382C_ovl_0EBBB0(root, &n->link);
+}
 
 /* Inserts n into the draw-order tree: by key (+0x10) ascending, then depth (+0x8) descending */
 Tree0E *func_801A382C_ovl_0EBBB0(Tree0E *root, Tree0E *n) {
