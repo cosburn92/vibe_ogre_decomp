@@ -40,7 +40,7 @@ void func_801B74CC_ovl_087200();
 void bzero(void *p, s32 n);
 void func_801CC72C_ovl_087200(u8 *w, void (*f)(), void (*g)(), s32 a, s32 b, s32 c, s32 d);
 void func_801CC5B4_ovl_087200(u8 *w, s32 a, s32 b, s32 c, s32 d);
-void func_801C67B0_ovl_087200(u8 sq);
+void func_801C67B0_ovl_087200(u16 sq);
 void func_801B4AF4_ovl_087200();
 void func_801B577C_ovl_087200();
 void HFree(void *p);
@@ -817,7 +817,48 @@ INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB0FC_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB21C_ovl_087200);
 
+u8 func_801D08B8_ovl_087200(u8 r);
+u8 func_801D1E38_ovl_087200(u8 sq);
+u8 func_801CF0D4_ovl_087200(u16 sq);
+void func_801D0484_ovl_087200(u16 sq);
+
+/* Refreshes squad record sq after an edit: its 0x1D value, its grid row's derived values when
+ * deployed, its members' deployed flag (0x20), then the dependent screens */
+#ifdef NON_MATCHING
+/* 99/99 instructions, 8 words differ: the grid row address is formed offset + base where the original adds base + offset */
+void func_801CB8A0_ovl_087200(u16 sq) {
+    u8 *m = D_80196AF8 + (sq * 0x36 + 0x117C);
+    s32 i;
+    u8 r;
+    u8 c;
+    u8 *p;
+
+    m[0x1D] = func_801D06F4_ovl_087200(sq);
+    if (m[1] & 8) {
+        r = func_801CDEB8_ovl_087200(sq);
+        D_80196AF8[r * 14 + 0x10DE] = func_801D080C_ovl_087200(r);
+        D_80196AF8[r * 14 + 0x10DF] = func_801D08B8_ovl_087200(r);
+        if (func_801D1E38_ovl_087200(sq)) {
+            D_80196AF8[func_801CDEB8_ovl_087200(sq) * 14 + 0x10DD] = func_801CF0D4_ovl_087200(sq) + 1;
+        }
+    }
+    for (i = 0; i < 9; i++) {
+        c = (m + i)[4];
+        if (c != 0xFF) {
+            p = D_80196AF8 + (c * 2 + 0x1872);
+            if (m[1] & 8) {
+                *p |= 0x20;
+            } else {
+                *p &= ~0x20;
+            }
+        }
+    }
+    func_801D0484_ovl_087200(sq);
+    func_801C67B0_ovl_087200(sq);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB8A0_ovl_087200);
+#endif
 
 void func_801CBA2C_ovl_087200(u16 i) {
     _bcopy(D_80196AF8 + 0x117C + i * 0x36, D_80196AF8 + 0x1806, 0x36);
