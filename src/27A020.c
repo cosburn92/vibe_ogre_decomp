@@ -939,7 +939,51 @@ s32 func_8022A120_ovl_27A020(Obj27 *o) {
     return 0;
 }
 
+extern s16 D_8022CB28_ovl_27A020;
+extern s16 D_8022CB2A_ovl_27A020; /* selected row: 1 = Yes, 0 = No */
+extern u8 D_8022CB2C_ovl_27A020;  /* cursor bob step */
+extern s16 D_8022CB30_ovl_27A020[]; /* cursor x offsets, 0x63-terminated */
+void func_80179034(s32 a, s32 x, s32 y);
+void func_801818A0(s16 x, s16 y);
+
+/* Draws the Yes/No prompt of window o and its cursor (bobbing while D_8022CB28 is 2) */
+#ifdef NON_MATCHING
+/* 120/120 instructions, 2 words differ: the window y load is scheduled one slot earlier than in the original (the Yes/No strings would also need the shared rodata block split) */
+void func_8022A2A8_ovl_27A020(Obj27 *o) {
+    char yes[4] = "Yes";
+    char no[3] = "No";
+    s32 x = FIELD(o->w24, s32, 0x2C);
+    s32 y = FIELD(o->w24, s32, 0x30);
+    s16 cx;
+    s16 cy;
+
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    func_80179034((s32)yes, x + 0x1A, y + 1);
+    func_80179034((s32)no, x + 0x1A, y + 0x13);
+    y += 2;
+    cy = y + (1 - D_8022CB2A_ovl_27A020) * 18;
+    if (D_8022CB30_ovl_27A020[D_8022CB2C_ovl_27A020] == 0x63) {
+        D_8022CB2C_ovl_27A020 = 0;
+    }
+    if (D_8022CB28_ovl_27A020 == 2) {
+        cx = D_8022CB30_ovl_27A020[D_8022CB2C_ovl_27A020++] + x;
+    } else {
+        cx = x + 3;
+    }
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x504240;
+    }
+    func_801818A0(cx, cy);
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A2A8_ovl_27A020);
+#endif
 
 /* Shared rodata after "Yes" that splat leaves unmigrated */
 __asm__(".section .rodata\n"
