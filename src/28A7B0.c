@@ -2184,74 +2184,63 @@ s32 func_8023A398_ovl_286BD0(s32 n, char *str, char *p) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A398_ovl_286BD0);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 _bcopy(s32 *, u8 *, s32);           /* extern */
+s32 func_8022ECBC_ovl_286BD0();
+/* Opens o's text window with paragraph n of message 0x018855FE (paragraphs are separated by
+ * "\r\n\r\n"), n coming from the selected entry's id; mode is kept at 0x600 */
+u8 *func_8023A42C_ovl_286BD0(u8 *o, s32 mode) {
+    u8 buf[0x500];
+    u8 *bp;
+    u8 *t;
+    u8 *e;
+    u16 n;
+    u8 *msg;
+    s32 start;
+    s32 k;
+    s32 i;
 
-u8 *func_8023A42C_ovl_286BD0(void *arg0, s32 arg1) {
-    s32 sp10;
-    s32 temp_s0;
-    s32 temp_s0_2;
-    s32 var_a2;
-    s32 var_a3;
-    s32 var_s2;
-    u8 *temp_s1;
-    u8 *temp_v0;
-    u8 *temp_v0_2;
-    u8 *var_v1;
-    u8 temp_a0;
-    u8 temp_a1;
-    void *temp_s6;
+    {
+        u8 *w = HMalloc(0x604);
 
-    temp_v0 = HMalloc(0x604);
-    FIELD(arg0, u8 *, 0xD0) = temp_v0;
-    bzero(temp_v0, 0x604);
-    bzero(&sp10, 0x500);
-    temp_s1 = FIELD(arg0, u8 *, 0xD0);
-    FIELD(temp_s1, s8, 0x5F3) = 0x3F;
-    FIELD(temp_s1, s8, 0x5F6) = 0x11;
-    FIELD(temp_s1, s8, 0x5F0) = 0;
-    FIELD(temp_s1, s8, 0x5FE) = 2;
-    FIELD(temp_s1, s32, 0x600) = arg1;
-    temp_s6 = *((FIELD(D_8023DE30_ovl_286BD0, u8, 0x23D) * 4) + D_8023DE30_ovl_286BD0);
-    var_s2 = 0;
-    temp_s0 = func_8022ECBC_ovl_286BD0(FIELD(temp_s6, u8, 0x2D)) & 0xFF;
-    temp_v0_2 = func_80227A18(0x018855FE, 2);
-    var_a3 = 0;
-    var_a2 = 0;
-    var_v1 = temp_v0_2;
-loop_1:
-    temp_a0 = FIELD(var_v1, u8, 0);
-    if ((temp_a0 == 0xD) && (temp_a1 = FIELD(var_v1, u8, 1), (temp_a1 == 0xA)) && (FIELD(var_v1, u8, 2) == temp_a0) && (FIELD(var_v1, u8, 3) == temp_a1)) {
-        var_a3 += 1;
-        if ((temp_s0 & 0xFFFF) != var_a3) {
-            var_s2 = var_a2 + 4;
-            goto block_9;
-        }
-        temp_s0_2 = var_a2 - var_s2;
-        bzero(&sp10, temp_s0_2 + 2);
-        func_80080998(&sp10, &temp_v0_2[var_s2], temp_s0_2);
-    } else {
-block_9:
-        var_a2 += 1;
-        var_v1 += 1;
-        if (var_a2 <= 0x0FFFFFFE) {
-            goto loop_1;
+        FIELD(o, u8 *, 0xD0) = w;
+        bzero(w, 0x604);
+    }
+    bzero(buf, 0x500);
+    t = FIELD(o, u8 *, 0xD0);
+    t[0x5F3] = 0x3F;
+    t[0x5F6] = 0x11;
+    t[0x5F0] = 0;
+    t[0x5FE] = 2;
+    {
+        u8 *d = D_8023DE30_ovl_286BD0;
+
+        FIELD(t, s32, 0x600) = mode;
+        e = ((u8 **)d)[d[0x23D]];
+    }
+    bp = buf;
+    start = 0;
+    n = func_8022ECBC_ovl_286BD0(e[0x2D]) & 0xFF;
+    msg = func_80227A18(0x018855FE, 2);
+    k = 0;
+    for (i = 0; i < 0x0FFFFFFF; i++) {
+        if (msg[i] == '\r' && msg[i + 1] == '\n' && msg[i + 2] == '\r' && msg[i + 3] == '\n') {
+            k++;
+            if (n == k) {
+                s32 len = i - start;
+
+                bzero(bp, len + 2);
+                func_80080998(bp, msg + start, len);
+                break;
+            }
+            start = i + 4;
         }
     }
-    HFree(temp_v0_2);
-    _bcopy(&sp10, temp_s1, 0x500);
-    FIELD(arg0, s8, 0x25) = 1;
-    FIELD(temp_s1, s8, 0x5F4) = 1;
-    FIELD(temp_s1, u8, 0x5F5) = func_80239EE0_ovl_286BD0(1, temp_s1, (s32) FIELD(temp_s6, s16, 0x2C));
-    return temp_s1;
+    HFree(msg);
+    _bcopy((s32 *)buf, t, 0x500);
+    o[0x25] = 1;
+    t[0x5F4] = 1;
+    t[0x5F5] = func_80239EE0_ovl_286BD0(1, t, FIELD(e, s16, 0x2C));
+    return t;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A42C_ovl_286BD0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A5D8_ovl_286BD0);
 
