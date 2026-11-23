@@ -114,54 +114,32 @@ u8 func_801D5AD0_ovl_087200(u16 sq, u8 m, u8 pos) {
     return n;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_8016DE1C(u8, u8);                          /* extern */
-extern s32 D_80193BC0;
+/* As func_801D5AD0 for the organize screen's current squad (0x18C) and cell (0x19B) */
+u8 func_801D5BF0_ovl_087200(u8 m) {
+    s32 n = 0;
+    s32 k;
+    u8 pos = D_80196AF8[0x19B];
+    u8 *q = D_80196AF8 + (FIELD(D_80196AF8, u16, 0x18C) * 0x36 + 0x117C);
 
-s32 func_801D5BF0_ovl_087200(s32 arg0) {
-    s32 *var_v1;
-    s32 var_s0;
-    s32 var_s2;
-    u8 temp_a0;
-    u8 temp_s1;
-    void *temp_s3;
+    for (k = 0; k < 8; k++) {
+        if ((D_801EF474_ovl_087200[pos] >> k) & 1) {
+            u8 c = (q + (pos + D_801EF480_ovl_087200[k]))[4];
 
-    var_s2 = 0;
-    var_s0 = 0;
-    temp_s1 = FIELD(D_80196AF8, u8, 0x19B);
-    temp_s3 = D_80196AF8 + ((FIELD(D_80196AF8, u16, 0x18C) * 0x36) + 0x117C);
-loop_1:
-    if (!(((s32) D_801EF474_ovl_087200[temp_s1] >> var_s0) & 1)) {
-        var_s0 += 1;
-        goto block_13;
-    }
-    temp_a0 = FIELD((temp_s3 + (temp_s1 + D_801EF480_ovl_087200[var_s0])), u8, 4);
-    if (!((temp_a0 != 0xFF) & (temp_a0 != (arg0 & 0xFF)))) {
-        var_s0 += 1;
-        goto block_13;
-    }
-    var_v1 = &D_80193BC0;
-    if (temp_a0 < 0x64U) {
-        var_v1 = (temp_a0 * 0x38) + &D_80193BC0;
-    }
-    if ((func_8016DE1C(FIELD(var_v1, u8, 0x11), FIELD(var_v1, u8, 0x12)) & 0xFF) != 2) {
-        var_s0 += 1;
-block_13:
-        if (var_s0 < 8) {
-            goto loop_1;
+            if ((c != 0xFF) & (c != m)) {
+                u8 *u = D_80193BC0[0];
+
+                if (c < 100) {
+                    u = D_80193BC0[c];
+                }
+                if (func_8016DE1C(u[0x11], u[0x12]) == 2) {
+                    n++;
+                    break;
+                }
+            }
         }
-    } else {
-        var_s2 = 1;
     }
-    return var_s2 & 0xFF;
+    return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5BF0_ovl_087200);
-#endif
 
 s32 func_801D5D10_ovl_087200(u8 *out) {
     u8 r;
