@@ -193,7 +193,53 @@ void func_801B7888_ovl_1F0A30(u8 **pp, void *b) {
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7888_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7914_ovl_1F0A30);
+s32 func_8009C7CC(void);
+extern u8 D_801CEAB8_ovl_1F0A30[][4];
+extern u8 D_8018F481;
+
+/* Random enemy kind for terrain t (4 choices per terrain from D_801CEAB8); terrains 15 and 19 depend
+ * on the current map */
+u8 func_801B7914_ovl_1F0A30(s32 t) {
+    s32 pad[0x1C];
+
+    if (t != 15 && t != 19) {
+        u32 row = (u32)(t - 1) % 22;
+
+        func_8009C7CC();
+        func_8009C7CC();
+        return D_801CEAB8_ovl_1F0A30[row][func_8009C7CC() & 3];
+    }
+    if (t == 15) {
+        if (D_8018F481 >= 0x2E && D_8018F481 <= 0x2F) {
+            return 0x3A;
+        }
+        if (D_8018F481 == 0x30) {
+            return 0x3A;
+        }
+        func_8009C7CC();
+        func_8009C7CC();
+        return (func_8009C7CC() & 1) + 0x15;
+    }
+    if (t == 19) {
+        switch (D_8018F481) {
+            case 7:
+                return 0x33;
+            case 17:
+                return 0x3B;
+            case 20:
+                return 0x34;
+            case 31:
+                return 0x37;
+            case 43:
+                return 0x35;
+            case 48:
+                return 0x36;
+            case 46:
+                return 0x39;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7A7C_ovl_1F0A30);
 
