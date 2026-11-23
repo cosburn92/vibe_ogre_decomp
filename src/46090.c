@@ -378,7 +378,39 @@ s32 func_80171ED8_ovl_040E80(void) {
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80171FE0_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172124_ovl_040E80);
+extern s32 D_80197B14_ovl_040E80;
+void *LoadChunk(s32 id);
+
+/* Starts the current message: mode 0/1 builds it (two ways), mode 2 loads message D_80197B01 of
+ * script D_80197B00 */
+s32 func_80172124_ovl_040E80(void) {
+    bzero(D_80196F60_ovl_040E80, 0x200);
+    if (D_80197B00_ovl_040E80[2] != 0) {
+        D_80197B00_ovl_040E80[2] = 0;
+        D_80197B04_ovl_040E80++;
+    }
+    switch (D_80197B03_ovl_040E80) {
+    case 0:
+    case 1:
+        if (D_80197B06_ovl_040E80 != 0) {
+            func_80171B94_ovl_040E80();
+            return;
+        }
+        return func_80171ED8_ovl_040E80();
+    case 2: {
+        s32 *t = LoadChunkRaw(NULL, 0x3A5668);
+        s32 id = t[D_80197B00_ovl_040E80[0]];
+        u8 *m;
+
+        HFree(t);
+        m = LoadChunk(id);
+        func_80170954_ovl_040E80(m + ((u16 *)m)[D_80197B01_ovl_040E80]);
+        HFree(m);
+        return D_80197B14_ovl_040E80;
+    }
+    }
+    return 0;
+}
 
 /* Sets the menu option mask and puts the cursor on the first enabled option */
 void func_8017223C_ovl_040E80(s16 mask) {
