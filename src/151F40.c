@@ -694,64 +694,38 @@ s32 func_80205D20_ovl_14EBE0(u8 a) {
     return r;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern s32 D_800E8328;
+/* Opens the list window (0xC000, drawn by func_80205F2C) on list (ids, ending below 0) with arg as
+ * its data; the cursor starts on id v when it is among the first 30 entries */
+s32 func_80205DC8_ovl_14EBE0(void *arg, s32 *list, s32 v) {
+    u8 *f = &D_80213780_ovl_14EBE0;
+    s32 i;
+    s32 k;
 
-s32 func_80205DC8_ovl_14EBE0(s32 arg0, s32 *arg1, s32 arg2) {
-    s32 *var_v1;
-    s32 temp_a1;
-    s32 temp_v1;
-    s32 var_v0;
-    s32 var_v0_2;
-    s8 var_a0;
-
-    if (D_80213780_ovl_14EBE0 == 0) {
+    if (*f == 0) {
         osSyncPrintf(D_80214D10_ovl_14EBE0);
         return 0;
     }
-    D_80213780_ovl_14EBE0 = 0;
+    *f = 0;
     D_80213781_ovl_14EBE0 = 3;
-    temp_a1 = func_80076F5C(0xC000, func_80205F2C_ovl_14EBE0, 0x19, 0x28, 0x23, 0x32, 0xC8);
-    if (arg2 >= 0) {
-        var_a0 = 0;
-        if (*arg1 >= 0) {
-            var_v1 = arg1;
-            var_v0 = *var_v1;
-loop_5:
-            var_v0_2 = var_a0 < 0x1E;
-            if (var_v0 != arg2) {
-                var_v1 += 4;
-                var_v0 = *var_v1;
-                var_a0 += 1;
-                if (var_v0 < 0) {
-                    goto block_7;
-                }
-                goto loop_5;
-            }
-        } else {
-block_7:
-            var_v0_2 = var_a0 < 0x1E;
-        }
-        if ((var_v0_2 == 0) || (*((var_a0 * 4) + arg1) < 0)) {
-            goto block_10;
-        }
-        *(&D_800E8328 + 0x28 + (temp_a1 * 0xA8)) = var_a0;
-    } else {
-block_10:
-        *(&D_800E8328 + 0x28 + (temp_a1 * 0xA8)) = 0xFF;
+    i = func_80076F5C(0xC000, func_80205F2C_ovl_14EBE0, 0x19, 0x28, 0x23, 0x32, 0xC8);
+    if (v < 0) {
+        goto none;
     }
-    temp_v1 = temp_a1 * 0xA8;
-    *(&D_800E8328 + temp_v1) = arg0;
-    *(&D_800E8328 + 4 + temp_v1) = arg1;
+    for (k = 0; list[k] >= 0; k++) {
+        if (list[k] == v) {
+            break;
+        }
+    }
+    if (k >= 30 || list[k] < 0) {
+    none:
+        D_800E82C8[i].unk88 = 0xFF;
+    } else {
+        D_800E82C8[i].unk88 = k;
+    }
+    D_800E82C8[i].slotsB[0] = arg;
+    D_800E82C8[i].slotsB[1] = list;
     return 1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80205DC8_ovl_14EBE0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80205F2C_ovl_14EBE0);
 
