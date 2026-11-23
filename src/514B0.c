@@ -18,7 +18,7 @@ s32 func_8019C67C(void);
 void func_8019C488(s32 a);
 Node *func_8017F3C0_ovl_040E80(void);
 void func_8017C2FC_ovl_040E80(Node *n);
-void func_801805D0_ovl_040E80(s32 a, s32 b, s32 c, s32 d);
+void func_801805D0_ovl_040E80(u8 *dst, s32 b, s32 c, s32 d);
 
 
 
@@ -1137,7 +1137,86 @@ void func_801805B4_ovl_040E80(s32 a, s32 b, s32 c) {
     func_801805D0_ovl_040E80(a, b, c, 0);
 }
 
+typedef struct {
+    s32 v[21];
+} Ids514;
+
+extern Ids514 D_80190E4C_ovl_040E80;
+s32 func_8017FC28_ovl_040E80(u8 *src, u8 *dst, s32 mode);
+void _bcopy(void *src, void *dst, s32 n);
+
+/* Builds text b (line c) into dst: expands it, reruns the 0xD0A-terminated pass until it reports
+ * no more changes, then copies it out, wrapping lines at 128 columns with 0x8197 ("@" break)
+ * unless a break or end follows; "@n" and 0x8197 restart the column count */
+#ifdef NON_MATCHING
+/* 1 instruction short: the original zero-extends the character twice (andi 0xFF, andi 0xFFFF) before
+ * the u16 compares; GCC here sees the lbu already did it */
+void func_801805D0_ovl_040E80(u8 *dst, s32 b, s32 line, s32 d) {
+    Ids514 ids;
+    u8 *a;
+    u8 *t;
+    u8 *tp;
+    u8 *o;
+    u8 *src;
+    s32 r;
+    s32 n;
+
+    ids = D_80190E4C_ovl_040E80;
+    a = HMalloc(0x500);
+    t = HMalloc(0x500);
+    tp = t;
+    func_8017FAF8_ovl_040E80(a, ids.v[b], line);
+    src = a;
+    do {
+        r = func_8017FC28_ovl_040E80(src, tp, d);
+        _bcopy(tp, src, 0x500);
+    } while (r);
+    HFree(t);
+    o = dst;
+    n = 0;
+    for (;;) {
+        s32 c = src[0];
+        u8 nx = src[1];
+        u8 ch = c;
+        u16 w = ch;
+
+        if (w == 0xD && nx == 0xA) {
+            break;
+        }
+        if (w < 0x81 || (u32)(ch - 0xA0) < 0x40 || w >= 0xFD) {
+            if (w == 0x40 && nx == 0x6E) {
+                n = -1;
+            }
+            *o = c;
+            src++;
+        } else {
+            if (w == 0x81 && nx == 0x97) {
+                n = -1;
+            }
+            src++;
+            *o = c;
+            o++;
+            c = *src++;
+            *o = c;
+        }
+        o++;
+        n++;
+        if (n >= 0x80) {
+            u16 x = (src[0] << 8) | src[1];
+
+            if (x != 0xD0A && x != 0x8197) {
+                *o++ = 0x81;
+                *o++ = 0x97;
+                n = 0;
+            }
+        }
+    }
+    *o = 0;
+    HFree(a);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801805D0_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801807F4_ovl_040E80);
 
