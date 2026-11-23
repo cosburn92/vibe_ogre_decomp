@@ -527,12 +527,44 @@ s32 func_801A7D44_ovl_0EBBB0(f32 a, f32 b) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7D9C_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A81A4_ovl_0EBBB0);
+void *LoadAsset(); /* (id, entry, mode[, slot]): some callers pass a fourth argument */
+
+/* Loads the two scrolling 32x32 water textures (tiles 0 and 1, both 0x02093576 entry 4) at
+ * half alpha and scrolls them against each other by the scene timer */
+void func_801A81A4_ovl_0EBBB0(void) {
+    void *a = LoadAsset(0x02093576, 4, -4, 5);
+    void *b = LoadAsset(0x02093576, 4, -4, 6);
+    s32 t = D_801ABA58_ovl_0EBBB0->w104;
+    u8 s;
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, a, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, 0, 0, 5, 5, 14, 14);
+    gDPLoadMultiBlock(D_800E9BA0++, b, 0x100, 1, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, 0, 0, 5, 5, 14, 14);
+    {
+        Gfx *g = D_800E9BA0++;
+
+        g->w0 = 0xE3001001;
+        g->w1 = 0;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, 0x80);
+    s = t >> 1;
+    {
+        Gfx *g = D_800E9BA0++;
+
+        g->w0 = 0xF2000000 | (((0x80 - s) & 0x7F) << 12) | (s & 0x7F);
+        g->w1 = 0;
+    }
+    {
+        Gfx *g = D_800E9BA0++;
+
+        g->w0 = 0xF2000000 | ((t & 0x7F) << 12) | (t & 0x7F);
+        g->w1 = 0x01000000;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8448_ovl_0EBBB0);
 
 #include "gbi_ultra.h"
-void *LoadAsset(u32 id, s32 a, s32 b);
 
 /* Loads the scrolling 32x32 cloud texture 0x0203C53E into tile 1 (TMEM 0x100), half-alpha,
  * scrolled by the scene timer */
