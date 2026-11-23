@@ -13,7 +13,13 @@ typedef struct Tree0E {
 } Tree0E;
 
 typedef struct {
-    /* 0x000 */ u8 unk000[0x104];
+    /* 0x000 */ u8 unk000[0x5C];
+    /* 0x05C */ f32 fov;
+    /* 0x060 */ u8 unk060[0x10];
+    /* 0x070 */ f32 eye[3];
+    /* 0x07C */ f32 at[3];
+    /* 0x088 */ f32 up[3];
+    /* 0x094 */ u8 unk094[0x70];
     /* 0x104 */ s32 w104;
     /* 0x108 */ u8 unk108[4];
     /* 0x10C */ f32 f10C;
@@ -266,7 +272,53 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3E30_ovl_0EBBB0);
 /* Vec3f {0, 1, 0} + pad (rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_801AD220_ovl_0EBBB0\nD_801AD220_ovl_0EBBB0:\n.word 0x00000000, 0x3F800000, 0, 0\n.section .text\n");
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3EA8_ovl_0EBBB0);
+typedef struct {
+    f32 v[3];
+} Vec3E;
+extern Vec3E D_801AD220_ovl_0EBBB0; /* default up */
+extern u8 D_8018F565;
+
+/* Samples the scene's camera curves at frame (30 fps): eye (curves 0-2), look-at (3-5), roll
+ * (curve 7, turning the up vector about the view axis) and field of view (curve 6, else the
+ * default at F4 + 0x18) */
+void func_801A3EA8_ovl_0EBBB0(s32 frame) {
+    void **c = *FIELDX(D_801ABA58_ovl_0EBBB0, void ***, 0xF0);
+    Vec3E up = D_801AD220_ovl_0EBBB0;
+    f32 t = (f32)frame / 30.0f;
+    f32 dir[3];
+    f32 side[3];
+    f32 u[3];
+    f32 mf[4][4];
+    s32 i;
+
+    if (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0xF8) != 0 && D_8018F565 != 0) {
+        for (i = 0; i < 3; i++) {
+            D_801ABA58_ovl_0EBBB0->eye[i] = func_801A7D9C_ovl_0EBBB0(c[i], t);
+        }
+        for (i = 0; i < 3; i++) {
+            D_801ABA58_ovl_0EBBB0->at[i] = func_801A7D9C_ovl_0EBBB0(c[i + 3], t);
+        }
+        if (c[7] != NULL) {
+            f32 a = func_801A7D9C_ovl_0EBBB0(c[7], t);
+
+            dir[0] = D_801ABA58_ovl_0EBBB0->at[0] - D_801ABA58_ovl_0EBBB0->eye[0];
+            dir[1] = D_801ABA58_ovl_0EBBB0->at[1] - D_801ABA58_ovl_0EBBB0->eye[1];
+            dir[2] = D_801ABA58_ovl_0EBBB0->at[2] - D_801ABA58_ovl_0EBBB0->eye[2];
+            func_8007FEE0(side, u, dir);
+            func_8007FEE0(u, dir, side);
+            guRotateF((f32 *)mf, a, dir[0], dir[1], dir[2]);
+            guMtxXFMF(mf, u[0], u[1], u[2], &up.v[0], &up.v[1], &up.v[2]);
+        }
+        for (i = 0; i < 3; i++) {
+            D_801ABA58_ovl_0EBBB0->up[i] = up.v[i];
+        }
+        if (c[6] != NULL) {
+            D_801ABA58_ovl_0EBBB0->fov = func_801A7D9C_ovl_0EBBB0(c[6], t);
+        } else {
+            D_801ABA58_ovl_0EBBB0->fov = FIELDX(FIELDX(D_801ABA58_ovl_0EBBB0, u8 *, 0xF4), f32, 0x18);
+        }
+    }
+}
 
 /* Samples the ten curves of each of the n channels at time t/30 into the 0xEC value table */
 #ifdef NON_MATCHING
