@@ -8,7 +8,7 @@ extern u8 D_8018FB20_ovl_040E80[];
 extern struct { u8 pad[4]; u16 state; } *D_800C4BBC;
 void func_80198080(s32 arg);
 void func_8007337C(void);
-void func_801C8864(void);
+s32 func_801C8864(void);
 void func_80173610_ovl_040E80(void);
 void func_801A9288(void);
 void func_8016C814_ovl_040E80(void);
@@ -36,7 +36,7 @@ extern u16 D_8018F1A2_ovl_040E80;
 void func_801A1FAC(s32 arg);
 s16 func_801ACC04(void);
 s32 func_801A1B54(void);
-u8 func_802276EC(s32 arg);
+u8 func_802276EC(); /* takes an argument from some callers, none from others */
 void func_80172394_ovl_040E80(void);
 void func_80172124_ovl_040E80(void);
 void func_801707F4_ovl_040E80(void);
@@ -679,7 +679,75 @@ void func_80178900_ovl_040E80(void) {
 void func_8017892C_ovl_040E80(void) {
 }
 
+s32 ProfileFlagTest(s32 flag);
+void ProfileFlagSet(s32 flag, s32 v);
+u8 func_80227E20(void);
+void func_80227380(void);
+void func_8022A554(void);
+extern u8 D_8022A998;
+extern u16 D_800E8100;
+extern u16 D_800E79B0;
+extern s32 D_8018F1A4_ovl_040E80;
+void func_801C5A20(void);
+void func_80178C90_ovl_040E80(void);
+
+/* Per-frame check of the battle-screen shortcuts, then the exit request */
+#ifdef NON_MATCHING
+/* 128/123 instructions: only the switch differs; the original tests 0, 6, 5, 2 in a linear chain where this gcc builds a balanced tree */
+void func_80178934_ovl_040E80(void) {
+    s32 f;
+
+    func_80227380();
+    f = ProfileFlagTest(0xB3);
+    if (f == 1 && func_80227E20() != f && (D_800E8100 & 0x1000) && D_8022A998 != f) {
+        func_8022A554();
+        D_8022A999 = 1;
+        ProfileFlagSet(0xB4, 1);
+    }
+    if (D_8018F1A4_ovl_040E80 != 0) {
+        if (func_80227E20() != 1 && (D_800E8100 & 0x4000) && D_8022A998 != 1) {
+            func_8022A554();
+            D_8022A999 = 1;
+        }
+    } else if (func_80227E20() != 1) {
+        if (D_800E79B0 & 8) {
+            if (D_800E79B0 & 4) {
+                if (D_800E79B0 & 2) {
+                    if (D_800E79B0 & 1) {
+                        if (func_80170794_ovl_040E80(0x40) == 0x40) {
+                            func_8022A554();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (func_802276EC() == 0xFF) {
+        func_8007337C();
+        switch (func_801C8864()) {
+            case 6:
+                D_800C4C26 = 0x8006;
+                break;
+            case 2:
+                D_800C4C26 = 0x8002;
+                break;
+            default:
+                func_80226F88();
+                break;
+            case 5:
+                func_80178C90_ovl_040E80();
+                break;
+            case 0:
+                break;
+        }
+    } else {
+        func_801C5A20();
+        func_801C58F0();
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178934_ovl_040E80);
+#endif
 
 void func_80178B20_ovl_040E80(s32 arg) {
     if (func_802276EC(arg) == 0xFF) {
