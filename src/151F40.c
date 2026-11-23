@@ -1208,7 +1208,68 @@ void func_80208ADC_ovl_14EBE0(Rec151_16 *a, s16 n) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80208BE4_ovl_14EBE0);
+typedef struct {
+    /* 0x0 */ u8 unk0[3];
+    /* 0x3 */ u8 flags;
+    /* 0x4 */ s32 unk4;
+    /* 0x8 */ s32 unk8;
+} Item151; /* size 0xC */
+
+typedef struct {
+    /* 0x0 */ u8 unk0[8];
+    /* 0x8 */ u8 count;
+    /* 0x9 */ u8 members[7];
+} Set151; /* size 0x10 */
+
+extern char D_80214D84_ovl_14EBE0[];
+extern char D_80214D9C_ovl_14EBE0[];
+void osSyncPrintf(const char *fmt, ...);
+void *memcpy(void *dst, const void *src, u32 n);
+
+/* Compacts items[0..n): drops flag-1 items and, at each flag-0x80 item, pulls in the members of
+ * the first unused set it heads (flag 0x81 members only), renumbering the set to the new order */
+void func_80208BE4_ovl_14EBE0(Set151 *sets, s32 nsets, Item151 *items, s32 n) {
+    Item151 *tmp;
+    s32 *used;
+    u8 out;
+    u8 i;
+    u8 j;
+    u8 k;
+
+    tmp = HMalloc(n * sizeof(Item151));
+    used = HMalloc(nsets * 4);
+    bzero(used, nsets * 4);
+    out = 0;
+    for (i = 0; i < n; i++) {
+        if (items[i].flags & 1) {
+            continue;
+        }
+        if (items[i].flags & 0x80) {
+            for (j = 0; j < nsets; j++) {
+                if (used[j] == 0 && sets[j].members[0] == i) {
+                    break;
+                }
+            }
+            if (j >= nsets) {
+                osSyncPrintf(D_80214D84_ovl_14EBE0);
+            }
+            used[j] = 1;
+            for (k = 0; k < sets[j].count; k++) {
+                if (items[sets[j].members[k]].flags & 0x81) {
+                    tmp[out] = items[sets[j].members[k]];
+                    sets[j].members[k] = out++;
+                } else {
+                    osSyncPrintf(D_80214D9C_ovl_14EBE0);
+                }
+            }
+        } else {
+            tmp[out++] = items[i];
+        }
+    }
+    memcpy(items, tmp, out * sizeof(Item151));
+    HFree(used);
+    HFree(tmp);
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208E64_ovl_14EBE0);
 
