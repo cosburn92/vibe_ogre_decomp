@@ -222,7 +222,78 @@ void func_8016BA10_ovl_040E80(u8 mode) {
     }
 }
 
+extern u8 D_80195560_ovl_040E80[][0x34];
+u8 ItemGetRank(u16 id);
+typedef struct {
+    u16 id;
+    u8 eq;
+    u8 cnt;
+} Stock40;
+#define STOCK40 ((Stock40 *)D_80196B00_ovl_040E80)
+
+/* Dismisses character idx (side 0: player roster, else enemy table): returns its equipment and its
+ * class's default items to stock (rank-0 defaults are used up), drops it from the roster order
+ * and clears its class */
+#ifdef NON_MATCHING
+/* 0x298 vs 0x2B4: the original reads the stock counts through the symbol and writes them through a
+ * hoisted base, and indexes the default-item function table at each call instead of hoisting it */
+void func_8016BA6C_ovl_040E80(u8 side, u8 idx) {
+    u8 *c;
+    u16 it = 0;
+    s32 k;
+    s32 j;
+    u16 s;
+
+    if (side == 0) {
+        c = (u8 *)&D_80193BC0_ovl_040E80[idx];
+        for (k = 0; k < 4; k++) {
+            switch (k) {
+                case 0:
+                    it = FIELD(c, u16, 0x2A);
+                    break;
+                case 1:
+                    it = FIELD(c, u16, 0x2C);
+                    break;
+                case 2:
+                    it = FIELD(c, u16, 0x2E);
+                    break;
+                case 3:
+                    it = FIELD(c, u16, 0x30);
+                    break;
+            }
+            if (it != 0) {
+                STOCK40[func_8016B6FC_ovl_040E80(it)].eq--;
+            }
+            it = ((u16 (*)(u8, u8))D_80186FD4_ovl_040E80[k])(c[0x11], c[0x12]);
+            if (it != 0) {
+                s = func_8016B6FC_ovl_040E80(it);
+                if (ItemGetRank(it) == 0) {
+                    STOCK40[s].cnt--;
+                }
+                STOCK40[s].eq--;
+                if (STOCK40[s].cnt == 0) {
+                    STOCK40[s].id = 0;
+                }
+            }
+        }
+        for (k = 1; k < 100; k++) {
+            if (D_80197710_ovl_040E80[k] == idx) {
+                for (j = k; j < 99; j++) {
+                    D_80197710_ovl_040E80[j] = D_80197710_ovl_040E80[j + 1];
+                }
+                D_80197710_ovl_040E80[j] = 0xFF;
+            }
+        }
+    } else {
+        c = D_80195560_ovl_040E80[idx];
+    }
+    c[0x11] = 0;
+    c[0x12] = 0;
+    c[0x33] = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/40E80", func_8016BA6C_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/40E80", func_8016BD20_ovl_040E80);
 
