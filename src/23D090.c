@@ -1297,45 +1297,23 @@ void func_801ED01C_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801ED01C_ovl_23B220);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 89 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801BE978(u8, u16, u16);                    /* extern */
-s32 func_801BEF14(void *, void *, u8, u8, s32, s32, s32, s32, s32); /* extern */
-s32 func_801BF59C(void *, void *, u8, u8, s32, s32, s32, s32); /* extern */
+s32 func_801BEF14(void *img, void *pal, u8 fmt, u8 siz, s32 w, s32 h, s32 x, s32 y, s32 c);
+s32 func_801BF59C(void *img, void *pal, u8 fmt, u8 siz, s32 w, s32 h, s32 x, s32 y);
 
-void func_801ED224_ovl_23B220(void *arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    s32 sp2C;
-    s32 sp34;
-    s32 var_s0;
-    s32 var_s3;
-    void *temp_fp;
-    void *temp_s5;
-    void *temp_s6;
-    void *temp_s7;
+/* Copies the rectangle (x0, y0) - (x1, y1) of texture src to texture dst at (dx, dy), pixel by
+ * pixel through each texture's own format and palette */
+void func_801ED224_ovl_23B220(u8 *dst, s32 dx, s32 dy, u8 *src, Rect23 r) {
+    u8 *sImg = src + 8;
+    u8 *sPal = sImg + func_801BE978(src[3], FIELD(src, u16, 4), FIELD(src, u16, 6));
+    u8 *dImg = dst + 8;
+    u8 *dPal = dImg + func_801BE978(dst[3], FIELD(dst, u16, 4), FIELD(dst, u16, 6));
+    s32 i, j;
 
-    sp2C = arg1;
-    sp34 = arg2;
-    var_s3 = 0;
-    temp_s6 = arg3 + 8;
-    temp_fp = temp_s6 + func_801BE978(FIELD(arg3, u8, 3), FIELD(arg3, u16, 4), FIELD(arg3, u16, 6));
-    temp_s5 = arg0 + 8;
-    temp_s7 = temp_s5 + func_801BE978(FIELD(arg0, u8, 3), FIELD(arg0, u16, 4), FIELD(arg0, u16, 6));
-    if ((arg7 - arg5) > 0) {
-        do {
-            var_s0 = 0;
-            if ((arg6 - arg4) > 0) {
-                do {
-                    func_801BEF14(temp_s5, temp_s7, FIELD(arg0, u8, 2), FIELD(arg0, u8, 3), (s32) FIELD(arg0, u16, 4), (s32) FIELD(arg0, u16, 6), sp2C + var_s0, sp34 + var_s3, func_801BF59C(temp_s6, temp_fp, FIELD(arg3, u8, 2), FIELD(arg3, u8, 3), (s32) FIELD(arg3, u16, 4), (s32) FIELD(arg3, u16, 6), arg4 + var_s0, arg5 + var_s3));
-                    var_s0 += 1;
-                } while (var_s0 < (arg6 - arg4));
-            }
-            var_s3 += 1;
-        } while (var_s3 < (arg7 - arg5));
+    for (j = 0; j < r.y1 - r.y0; j++) {
+        for (i = 0; i < r.x1 - r.x0; i++) {
+            func_801BEF14(dImg, dPal, dst[2], dst[3], FIELD(dst, u16, 4), FIELD(dst, u16, 6), dx + i, dy + j,
+                          func_801BF59C(sImg, sPal, src[2], src[3], FIELD(src, u16, 4), FIELD(src, u16, 6),
+                                        r.x0 + i, r.y0 + j));
+        }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ED224_ovl_23B220);
-#endif
