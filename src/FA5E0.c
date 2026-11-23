@@ -1311,7 +1311,7 @@ void func_801B1FD8_ovl_0FA5E0(f32 *x, f32 *y, s32 n, RibbonFA5 *r, s32 w, s32 b)
 
 /* Creates a ribbon through the n points (x[i], y[i]) */
 #ifdef NON_MATCHING
-/* 134/134 instructions, 18 words differ: register numbering in the colour copy and the grow limit */
+/* 134/134 instructions, 7 words differ: the colour-copy loop counter and pointer sit one register over */
 RibbonFA5 *func_801B3040_ovl_0FA5E0(f32 *x, f32 *y, s32 n, s32 percent, s32 width, s32 grow, s32 fade, u16 arg7,
                                     u16 *color) {
     RibbonFA5 *r = HMalloc(sizeof(RibbonFA5));
@@ -1339,12 +1339,14 @@ RibbonFA5 *func_801B3040_ovl_0FA5E0(f32 *x, f32 *y, s32 n, s32 percent, s32 widt
         r->shown = 5;
     } else {
         s32 lim = r->count * 2;
+        s32 lim2;
         RibbonStepsFA5 steps = D_801B4C78_ovl_0FA5E0;
 
         r->shown = 0;
-        lim = (lim - 2) * r->percent / 100;
+        lim2 = lim - 2;
+        lim2 = lim2 * r->percent / 100;
         while (1) {
-            if ((r->shown + steps.v[width - 1]) * 2 >= lim) {
+            if ((r->shown + steps.v[width - 1]) * 2 >= lim2) {
                 break;
             }
             r->shown += 2;
