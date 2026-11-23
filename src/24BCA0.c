@@ -10,7 +10,7 @@ u8 *func_801C8FE8(s32 i);
 void func_801F7344_ovl_24BCA0(u8 a, u8 *out, u8 b);
 u8 *func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
 u8 *func_801F885C_ovl_24BCA0(u8 *a, u8 *b);
-void func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c);
+u8 *func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c);
 void func_801F91BC_ovl_24BCA0(u8 *a, u8 *b, s32 c);
 u8 *func_802174C0(u16 id);
 void func_8020A4D0(f32 *scale, void *a, void *b);
@@ -412,7 +412,76 @@ u8 *func_801F885C_ovl_24BCA0(u8 *a, u8 *b) {
     return NULL;
 }
 
+#ifdef NON_MATCHING
+static inline u8 *Place24B(f32 *pos, AnimReq *r) {
+    u8 *m = func_801F8218_ovl_24BCA0(r);
+
+    ((f32 *)m)[0] = pos[0];
+    ((f32 *)m)[1] = pos[1];
+    ((f32 *)m)[2] = pos[2];
+    return m - 0x1C;
+}
+
+static inline u8 *Orient24B(f32 *pos, AnimReq *r, s32 n) {
+    u8 *o = D_80209718_ovl_24BCA0[n](r->id);
+    Dir24B dir;
+    u8 *m;
+    u8 k;
+
+    func_801F81C4_ovl_24BCA0(o, r->flags);
+    k = r->kind;
+    dir = D_8020A230_ovl_24BCA0;
+    m = o + 0x1C;
+    if (k & 0x40) {
+        func_8020A4A8(D_80220EE0, m);
+    } else {
+        if (k & 0x80) {
+            dir.v[0] = (-pos[0] < 0.0f) ? -1.0f : 1.0f;
+        }
+        func_80217680(dir.v, m);
+    }
+    func_8020A5A0(m, pos);
+    return m;
+}
+
+#endif
+/* As func_801F85C0, also scaled by c */
+#ifdef NON_MATCHING
+/* 214/214 instructions, 16 words differ: in kinds 1-2 the spawned object and the kind byte swap a2/a3 */
+u8 *func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c) {
+    f32 *pos = (f32 *)a;
+    AnimReq *r = (AnimReq *)b;
+    u8 *o;
+    u8 *m;
+    u8 k;
+
+    switch (r->kind & 3) {
+    case 0:
+        o = Place24B(pos, r);
+        FIELD(o, f32, 0x28) = FIELD(o, f32, 0x2C) = FIELD(o, f32, 0x30) = c;
+        return o;
+    case 1: {
+        f32 s[3];
+
+        m = Orient24B(pos, r, 1);
+        s[0] = s[1] = s[2] = c;
+        func_8020A4D0(s, m, m);
+        return m - 0x1C;
+    }
+    case 2: {
+        f32 s[3];
+
+        m = Orient24B(pos, r, 2);
+        s[0] = s[1] = s[2] = c;
+        func_8020A4D0(s, m, m);
+        return m - 0x1C;
+    }
+    }
+    return NULL;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8AF8_ovl_24BCA0);
+#endif
 
 void func_801F8E50_ovl_24BCA0(u8 a, u8 *b) {
     u8 tmp[16];
