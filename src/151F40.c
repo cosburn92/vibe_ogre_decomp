@@ -697,34 +697,45 @@ void func_80203FA4_ovl_14EBE0(s32 a, s32 b) {
     func_80200DD0_ovl_14EBE0((void *)a, b, 0x47);
 }
 
-#ifdef NON_MATCHING
-/* display-list setup: constant loads and pointer updates are scheduled differently */
+/* Sets prim colour alpha a, texture persp/filter modes, the render mode (opaque when a is 0xFF)
+ * and the combiner */
 void func_80204050_ovl_14EBE0(s32 a) {
-    Gfx *g;
+    {
+        Gfx *_g = D_800E9BA0++;
 
-    g = D_800E9BA0++;
-    g->w0 = 0xFA000000;
-    g->w1 = a | 0xFFFFFF00;
-    g = D_800E9BA0++;
-    g->w0 = 0xE3000C00;
-    g->w1 = 0;
-    g = D_800E9BA0++;
-    g->w0 = 0xE3001201;
-    g->w1 = 0;
-    g = D_800E9BA0++;
-    g->w0 = 0xE200001C;
-    if (a == 0xFF) {
-        g->w1 = 0x0F0A7008;
-    } else {
-        g->w1 = 0x00504240;
+        _g->w0 = 0xFA000000;
+        _g->w1 = a | 0xFFFFFF00;
     }
-    g = D_800E9BA0++;
-    g->w0 = 0xFC119623;
-    g->w1 = 0xFF2FFFFF;
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE3000C00;
+        _g->w1 = 0;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE3001201;
+        _g->w1 = 0;
+    }
+    if (a == 0xFF) {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x0F0A7008;
+    } else {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x00504240;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFC119623;
+        _g->w1 = 0xFF2FFFFF;
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80204050_ovl_14EBE0);
-#endif
 
 void func_80204120_ovl_14EBE0(u8 mode, s32 *p, u8 b, u8 c) {
     s32 i;
