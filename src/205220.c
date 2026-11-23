@@ -526,45 +526,40 @@ INCLUDE_ASM("asm/nonmatchings/205220", func_801C41C8_ovl_1F0A30);
 
 /* Frees every cache entry's per-item buffers (0x38/0x3C/0x40 lists of 0x18 items) and its ten
  * buffers at 0x70 */
-#ifdef NON_MATCHING
-/* 102/102 instructions, 23 words differ: the entry offset and the item index swap s1/s2 */
 void func_801C45E0_ovl_1F0A30(void) {
     s32 off;
-    u32 i;
     s32 j;
 
     if (D_801D0728_ovl_1F0A30 != NULL) {
         for (off = 0; off < 0xDC0; off += 0xB0) {
-            for (i = 0; i < FIELD(CE205(off), u32, 0x18); i++) {
-                if (FIELD(CE205(off), void **, 0x38)[i] != NULL) {
-                    HFree(FIELD(CE205(off), void **, 0x38)[i]);
-                    FIELD(CE205(off), void **, 0x38)[i] = NULL;
+            for (j = 0; j < FIELD(CE205A(off), u32, 0x18); j++) {
+                if (FIELD(CE205A(off), void **, 0x38)[j] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x38)[j]);
+                    FIELD(CE205A(off), void **, 0x38)[j] = NULL;
                 }
-                if (FIELD(CE205(off), void **, 0x3C)[i] != NULL) {
-                    HFree(FIELD(CE205(off), void **, 0x3C)[i]);
-                    FIELD(CE205(off), void **, 0x3C)[i] = NULL;
+                if (FIELD(CE205A(off), void **, 0x3C)[j] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x3C)[j]);
+                    FIELD(CE205A(off), void **, 0x3C)[j] = NULL;
                 }
-                if (FIELD(CE205(off), void **, 0x40)[i] != NULL) {
-                    HFree(FIELD(CE205(off), void **, 0x40)[i]);
-                    FIELD(CE205(off), void **, 0x40)[i] = NULL;
+                if (FIELD(CE205A(off), void **, 0x40)[j] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x40)[j]);
+                    FIELD(CE205A(off), void **, 0x40)[j] = NULL;
                 }
             }
+            j = 0;
             {
                 s32 o = off;
 
-                for (j = 0; j < 10; j++) {
-                    if (FIELD(CE205(o) + j * 4, void *, 0x70) != NULL) {
-                        HFree(FIELD(CE205(o) + j * 4, void *, 0x70));
-                        FIELD(CE205(o) + j * 4, void *, 0x70) = NULL;
+                for (; j < 10; j++) {
+                    if (FIELD(CE205A(o) + j * 4, void *, 0x70) != NULL) {
+                        HFree(FIELD(CE205A(o) + j * 4, void *, 0x70));
+                        FIELD(CE205A(o) + j * 4, void *, 0x70) = NULL;
                     }
                 }
             }
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C45E0_ovl_1F0A30);
-#endif
 
 #define CE205D(o) ((u8 *)((o) + (u32)D_801D0728_ovl_1F0A30))
 void bzero(void *p, s32 n);
