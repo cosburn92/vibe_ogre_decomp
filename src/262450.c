@@ -35,7 +35,30 @@ extern Task **D_80220D94_ovl_25EE90;
 void func_8020DCAC_ovl_25EE90(Task *t, u16 a);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020D8A0_ovl_25EE90);
+extern s32 D_80220D80_ovl_25EE90;
+void *HMalloc(s32 size);
+/* Allocates the task pool (24 tasks plus a 24-entry pointer list) and chains the free list */
+void func_8020D8A0_ovl_25EE90(void) {
+    s32 i;
+    s32 j;
+
+    D_80220D80_ovl_25EE90 = 24;
+    D_80220E8E_ovl_25EE90 = 0;
+    D_80220D8C_ovl_25EE90 = NULL;
+    D_80220D88_ovl_25EE90 = NULL;
+    D_80220FE8_ovl_25EE90 = NULL;
+    D_80220D90_ovl_25EE90 = 24;
+    D_80220D84_ovl_25EE90 = D_80220EDC_ovl_25EE90 = HMalloc(0xF04);
+    D_80220D94_ovl_25EE90 = (Task **)&D_80220D84_ovl_25EE90[D_80220D80_ovl_25EE90];
+    D_80220D94_ovl_25EE90[D_80220D90_ovl_25EE90] = NULL;
+    for (i = 0; i < D_80220D80_ovl_25EE90; i++) {
+        D_80220D84_ovl_25EE90[i].func = NULL;
+    }
+    for (j = 0; j < D_80220D80_ovl_25EE90 - 1; j++) {
+        D_80220D84_ovl_25EE90[j].nextFree = j + 1;
+    }
+    D_80220D84_ovl_25EE90[j].nextFree = 0xFFFF;
+}
 
 void func_8020D9D8_ovl_25EE90(void) {
     HFree(D_80220EDC_ovl_25EE90);
