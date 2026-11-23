@@ -76,7 +76,7 @@ typedef struct {
 #define SLOT151(k) (D_80213778_ovl_14EBE0 + (u8)(k) * 8)
 extern u8 D_80214EB8_ovl_14EBE0;
 extern u8 D_80214EB9_ovl_14EBE0;
-void func_80204210_ovl_14EBE0();
+void func_80204210_ovl_14EBE0(s16 id);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -711,7 +711,66 @@ void func_80204120_ovl_14EBE0(u8 mode, s32 *p, u8 b, u8 c) {
     D_800E82C8[i].unk8A = mode;
 }
 
+typedef struct {
+    /* 0x00 */ u16 flags;
+    /* 0x02 */ u8 flags2;
+    /* 0x03 */ u8 flags3;
+    /* 0x04 */ u8 unk04[0x10];
+    /* 0x14 */ void (*update)();
+    /* 0x18 */ void (*draw)();
+    /* 0x1C */ void (*exit)();
+    /* 0x20 */ u16 size;
+    /* 0x22 */ u8 unk22[2];
+    /* 0x24 */ s32 w24;
+    /* 0x28 */ u8 unk28[0x60];
+    /* 0x88 */ u8 b88;
+    /* 0x89 */ u8 b89;
+    /* 0x8A */ u8 b8A;
+} Win151;
+extern Win151 D_800E7A30;
+extern u8 D_800E91D0[];
+void func_8020439C_ovl_14EBE0();
+void func_80204B34_ovl_14EBE0(void);
+u8 func_80204BA4_ovl_14EBE0(Rec151 *r, u8 k);
+u8 func_80204BE8_ovl_14EBE0(Rec151 *a, u8 id);
+
+/* Window init for list id: installs the update/draw callbacks and resets the list state */
+#ifdef NON_MATCHING
+/* 99/99 instructions, 10 words differ: the last five stores reload the record pointer into v1/a0 where GCC here uses v0 */
+void func_80204210_ovl_14EBE0(s16 id) {
+    D_800E7A30.flags2 |= 8;
+    D_800E7A30.flags3 |= 1;
+    D_800E7A30.flags2 |= 9;
+    D_800E7A30.flags |= 0x200;
+    D_800E7A30.update = func_8020439C_ovl_14EBE0;
+    D_800E7A30.draw = func_80204B34_ovl_14EBE0;
+    D_800E7A30.size = 0x7C;
+    D_800E7A30.w24 = 0;
+    *(s16 *)D_800E91D0 = id;
+    *(s32 **)(D_800E91D0 + 0x60) = D_80214E60_ovl_14EBE0;
+    D_800E91D0[0x68] = D_800E7A30.b88;
+    D_800E91D0[0x66] = D_800E7A30.b89;
+    D_800E91D0[0x78] = D_800E7A30.b8A;
+    D_80213670_ovl_14EBE0[0x67] = func_80204BA4_ovl_14EBE0(*(Rec151 **)(D_80213670_ovl_14EBE0 + 0x60), D_80213670_ovl_14EBE0[0x66]);
+    D_80213670_ovl_14EBE0[0x64] = func_80204BE8_ovl_14EBE0(*(Rec151 **)(D_80213670_ovl_14EBE0 + 0x60), D_80213670_ovl_14EBE0[0x66]);
+    D_80213670_ovl_14EBE0[0x6A] = 0;
+    D_80213670_ovl_14EBE0[0x6B] = 0;
+    D_80213670_ovl_14EBE0[0x6C] = 0;
+    D_80213670_ovl_14EBE0[0x6D] = 0;
+    D_80213670_ovl_14EBE0[0x6E] = 0;
+    D_80213670_ovl_14EBE0[0x69] = 0xFF;
+    D_80213670_ovl_14EBE0[0x65] = D_80213670_ovl_14EBE0[0x64];
+    D_80213670_ovl_14EBE0[0x6F] = 0;
+    D_80213670_ovl_14EBE0[0x70] = 0;
+    D_80213670_ovl_14EBE0[0x76] = 0;
+    *(s16 *)(D_80213670_ovl_14EBE0 + 0x72) = 0xFF;
+    *(s16 *)(D_80213670_ovl_14EBE0 + 0x74) = 0;
+    *(s32 *)(D_80213670_ovl_14EBE0 + 0x5C) = 0;
+    D_80213670_ovl_14EBE0[0x77] = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80204210_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020439C_ovl_14EBE0);
 
