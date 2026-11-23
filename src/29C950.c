@@ -78,7 +78,7 @@ typedef struct {
 } Sort29C; /* size 0x14 */
 extern u8 *D_801CE8BC;
 void BattleAnimStep2(void *a);
-void func_8022EFB0_ovl_29A4C0(void *a);
+u8 func_8022EFB0_ovl_29A4C0(void *a);
 f32 func_8009CFE0(f32 y, f32 x);
 f32 func_8022F280_ovl_29A4C0(f32 a);
 /* --- end decls --- */
@@ -697,7 +697,117 @@ s32 func_8022EEDC_ovl_29A4C0(BUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022EEDC_ovl_29A4C0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022EFB0_ovl_29A4C0);
+typedef struct {
+    u8 b00[0x10];
+    u8 b10[0x10];
+    s32 w20;
+    s32 w24;
+    s32 w28;
+    s32 w2C;
+    s32 w30;
+    s32 w34;
+    s32 w38;
+    s32 w3C;
+    s16 h40;
+    s16 h42;
+    s32 w44;
+    s32 w48;
+    u8 b4C;
+} Anim29C;
+
+/* Runs animation script commands until one sets a positive wait: advances the frame, then handles
+ * the frame's command (wait, move, jump, set bytes, play sounds panned by x); returns the last
+ * command after taking 2 off the wait */
+u8 func_8022EFB0_ovl_29A4C0(void *p) {
+    Anim29C *a = p;
+    u8 c0, c1, c2;
+    u8 r = 1;
+    s32 id;
+    s32 sx;
+    u8 *b;
+
+    while (a->w38 <= 0) {
+        a->w34++;
+        r = func_80233968_ovl_29A4C0(a->w30, a->h42, a->w34, a->b4C, &c0, &c1, &c2);
+        switch (r) {
+            case 1:
+                a->w3C = c0;
+                a->w38 = c1;
+                break;
+            case 0x15:
+                a->w3C = c0 + (c1 << 8);
+                a->w38 = c2;
+                break;
+            case 4:
+                a->w34 = c0 - 1;
+                break;
+            case 5:
+                a->w34 = -1;
+                a->h42 = c0;
+                break;
+            case 3:
+                a->w38 = c0;
+                break;
+            case 2:
+                a->w24 -= (s8)c0;
+                a->w28 -= (s8)c1;
+                break;
+            case 0xD:
+                if (c0 == 0xFF) {
+                    memset(a->b00, c1, 0x10);
+                } else {
+                    a->b00[c0] = c1;
+                }
+                break;
+            case 0x10:
+                if (c0 == 0xFF) {
+                    memset(a->b10, c1, 0x10);
+                } else {
+                    a->b10[c0] = c1;
+                }
+                break;
+            case 0:
+                a->w38 = 2;
+                break;
+            case 0x11:
+                func_801C5938((s32)D_800EB240, D_801CF3F0[(c0 << 8) + c1]);
+                break;
+            case 0x13:
+                func_801C5938((s32)D_800EB290, D_801CF3F0[(c0 << 8) + c1]);
+                break;
+            case 0x12:
+            case 0x14:
+                sx = a->w28;
+                id = (c0 << 8) + c1;
+                if ((u32)(id - 0x24E) < 0xAB) {
+                    b = D_800EB290;
+                    if (r == 0x12) {
+                        b = D_800EB240;
+                    }
+                    if (sx >= 0xD5) {
+                        func_801C5938((s32)b, D_801CF3F0[id]);
+                    } else if (sx < 0x6A) {
+                        func_801C5938((s32)b, D_801CF3F4[id]);
+                    } else {
+                        func_801C5938((s32)b, D_801CF3F2[id]);
+                    }
+                } else {
+                    b = D_800EB290;
+                    if (r == 0x12) {
+                        b = D_800EB240;
+                    }
+                    if (sx < 0xA0) {
+                        func_801C5938((s32)b, D_801CEF10[id * 2]);
+                    } else {
+                        func_801C5938((s32)b, D_801CEF12[id * 2]);
+                    }
+                }
+                break;
+        }
+    }
+    a->w38 -= 2;
+    return r;
+}
 
 /* Wraps an angle into [0, 360) */
 f32 func_8022F280_ovl_29A4C0(f32 a) {
