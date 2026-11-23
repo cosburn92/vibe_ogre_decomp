@@ -17,9 +17,11 @@ typedef struct {
     /* 0x0E7 */ u8 unk0E7;
     /* 0x0E8 */ u16 mode;
     /* 0x0EA */ u16 type;
-    /* 0x0EC */ u16 unk0EC;
+    /* 0x0EC */ u8 order;
+    /* 0x0ED */ u8 unk0ED;
     /* 0x0EE */ u16 id;
-    /* 0x0F0 */ s32 unk0F0;
+    /* 0x0F0 */ u8 unk0F0;
+    /* 0x0F1 */ u8 unk0F1[3];
     /* 0x0F4 */ void *data;
     /* 0x0F8 */ u8 unk0F8[0x10];
 } AnimSlot; /* size 0x108 */
@@ -274,7 +276,92 @@ s32 func_801CC974_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, 
     return i;
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Opens an animated window of the given kind: renumbers the open slots' draw order (0xEC) to
+ * 0..n-1 in their current order, then sets up the first free slot over (x, y)-(w, h) with handler
+ * fn and order = count; returns its index (0 when all ten are busy). The sort compares ord[i + 1]
+ * where ord[j] was meant, so only adjacent orders get swapped (with the wrong index entry) */
+#ifdef NON_MATCHING
+/* 0x2AC vs 0x2B8: the original sort hoists n - 1 and its address arithmetic uses more temporaries,
+ * which pushes b and fn into saved registers (frame 0x80) */
+s32 func_801CCA50_ovl_087200(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h) {
+    u8 ord[16];
+    s32 idx[10];
+    s32 n = 0;
+    s32 i;
+    s32 j;
+    AnimSlot *e;
+    VtxB8 *v;
+
+    for (i = 0; i < 10; i++) {
+        e = &D_80196AF8->slots[i];
+        if (e->flags & 1) {
+            ord[n] = e->order;
+            idx[n] = i;
+            n++;
+        }
+    }
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (ord[i + 1] < ord[i]) {
+                u8 t = ord[i];
+                s32 u;
+
+                ord[i] = ord[i + 1];
+                ord[i + 1] = t;
+                u = idx[i];
+                idx[i] = idx[j];
+                idx[j] = u;
+            }
+        }
+    }
+    for (i = 0; i < n; i++) {
+        D_80196AF8->slots[idx[i]].order = i;
+    }
+    for (i = 0; i < 10; i++) {
+        e = &D_80196AF8->slots[i];
+        if (!(e->flags & 1)) {
+            v = (VtxB8 *)e;
+            e->unk0F0 = 15;
+            e->id = kind;
+            e->f00 = (s32)fn;
+            e->f04 = 0;
+            e->f08 = 0;
+            e->type = 0;
+            e->mode = 0;
+            FIELD(e, s16, 0xE0) = 0xFF;
+            FIELD(e, s16, 0xE2) = 0;
+            e->start[0] = e->cur[0] = x;
+            e->start[1] = e->cur[1] = y;
+            e->start[2] = e->cur[2] = w;
+            e->start[3] = e->cur[3] = h;
+            e->flags = b | 1;
+            v[6].z = 0;
+            v[6].flag = 0;
+            v[6].rgba[0] = v[6].rgba[1] = v[6].rgba[2] = v[6].rgba[3] = 0xFF;
+            v[7].z = 0;
+            v[7].flag = 0;
+            v[7].rgba[0] = v[7].rgba[1] = v[7].rgba[2] = v[7].rgba[3] = 0xFF;
+            v[8].z = 0;
+            e->order = D_80196AF8->count;
+            v[8].flag = 0;
+            v[8].rgba[0] = v[8].rgba[1] = v[8].rgba[2] = v[8].rgba[3] = 0xFF;
+            v[9].z = 0;
+            v[9].flag = 0;
+            v[9].rgba[0] = v[9].rgba[1] = v[9].rgba[2] = v[9].rgba[3] = 0xFF;
+            func_801CCD08_ovl_087200(v, x, y, w, h);
+            D_80196AF8->count++;
+            return i;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B8DE0", func_801CCA50_ovl_087200);
+#endif
 
 /* Fills the 4 vertices at +0x60 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
 void func_801CCD08_ovl_087200(VtxB8 *v, s16 x0, s16 y0, s16 x1, s16 y1) {
