@@ -1075,7 +1075,79 @@ INCLUDE_ASM("asm/nonmatchings/151F40", func_8020766C_ovl_14EBE0);
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207C94_ovl_14EBE0);
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_8020808C_ovl_14EBE0);
+typedef struct {
+    /* 0x00 */ u8 unk0[0x15];
+    /* 0x15 */ u8 count;
+    /* 0x16 */ u8 unk16[2];
+    /* 0x18 */ u8 *members;
+    /* 0x1C */ u16 flags;
+    /* 0x1E */ u8 unk1E[6];
+} Group151; /* size 0x24 */
+
+typedef struct {
+    /* 0x0 */ Group151 *g;
+    /* 0x4 */ u8 count;
+    /* 0x5 */ u8 start;
+} GroupOut151;
+
+typedef struct {
+    /* 0x0 */ u8 unk0;
+    /* 0x1 */ u8 id;
+    /* 0x2 */ u8 unk2[10];
+} Ref151; /* size 0xC */
+
+extern u8 *D_801F0CB0[];
+typedef struct {
+    u8 unk0[0x5D9];
+    u8 idx[1];
+} List151;
+
+void func_80208A3C_ovl_14EBE0(u8 *a, s16 n);
+
+/* Lists the active groups (flag 1) of g[0..n): each gets its slice of the index list at 0x5D9,
+ * holding for every member the position in r[0..m) of its squad id (bit 7: member flag 8);
+ * members without a match are left out. Returns the number listed */
+u8 func_8020808C_ovl_14EBE0(Group151 *g, s32 n, GroupOut151 *out, Ref151 *r, s32 m) {
+    u8 cnt = 0;
+    u8 k = 0;
+    s8 i;
+    s8 j;
+    s8 x;
+    s8 start;
+    u8 id;
+    u8 c;
+
+    for (i = 0; i < n; i++) {
+        if (!(g[i].flags & 1)) {
+            continue;
+        }
+        out[cnt].g = &g[i];
+        out[cnt].count = g[i].count;
+        out[cnt].start = k;
+        start = k;
+        for (j = 0; j < out[i].count; j++) {
+            id = g[i].members[j];
+            if (*(u32 *)D_801F0CB0[id] & 8) {
+                c = gSquads[id].id | 0x80;
+            } else {
+                c = gSquads[id].id & 0x7F;
+            }
+            for (x = 0; x < m; x++) {
+                if (r[x].id == c) {
+                    break;
+                }
+            }
+            if (x != m) {
+                ((List151 *)D_80213778_ovl_14EBE0)->idx[k++] = x;
+            }
+        }
+        out[cnt].count = k - start;
+        cnt++;
+        func_80208A3C_ovl_14EBE0(&D_80213778_ovl_14EBE0[0x5D9 + start], (u8)(k - start));
+    }
+    ((List151 *)D_80213778_ovl_14EBE0)->idx[k] = 0xFF;
+    return cnt;
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80208304_ovl_14EBE0);
 
