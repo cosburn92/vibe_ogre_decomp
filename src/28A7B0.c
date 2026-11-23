@@ -1745,7 +1745,79 @@ block_11:
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239B14_ovl_286BD0);
 #endif
 
+extern char D_8023E378_ovl_286BD0[];   /* date line format */
+extern char D_8023E38C_ovl_286BD0[];   /* indent format */
+extern char D_8023E394_ovl_286BD0[];   /* name format */
+extern char D_8023E0A0_ovl_286BD0[];
+extern char *D_8023E060_ovl_286BD0[];  /* month names */
+s32 sprintf(char *buf, const char *fmt, ...);
+void func_8009C550(char *dst, char *src);
+
+/* Entry index shown on list line n (a date line precedes each change of date) */
+static inline s32 ListEntry28(s32 n) {
+    TimeStamp *e;
+    s32 line = 0;
+    u8 mid = 0;
+    u16 hi = 0;
+    s32 i;
+
+    for (i = 0; i < 121; i++) {
+        e = func_8022EC34_ovl_286BD0(i);
+        if (e == NULL) {
+            return line;
+        }
+        if (hi != e->hi) {
+            mid = e->mid;
+            hi = e->hi;
+            if (n == line) {
+                return i;
+            }
+            line++;
+        } else if (mid != e->mid) {
+            if (n == line) {
+                return i;
+            }
+            line++;
+            mid = e->mid;
+        }
+        if (n == line) {
+            return i;
+        }
+        line++;
+    }
+    return line;
+}
+
+/* Builds the two text lines (date, then the name centred in 0xF2 pixels) of list line n, where a
+ * line is inserted before each entry whose date differs from the previous one */
+#ifdef NON_MATCHING
+/* 114/117 instructions: the original keeps the date-change exits (one shared stub) apart from the per-entry exit, where this gcc merges all three */
+char *func_80239C5C_ovl_286BD0(char *buf, s32 n) {
+    char tmp[100];
+    TimeStamp *e;
+    s32 len;
+    s32 pad;
+
+    e = func_8022EC34_ovl_286BD0(ListEntry28(n));
+    bzero(buf, 0x500);
+    bzero(tmp, 100);
+    sprintf(tmp, D_8023E378_ovl_286BD0, D_8023E0A0_ovl_286BD0, e->hi, D_8023E060_ovl_286BD0[e->mid], e->lo);
+    FIELD(buf, char *, 0x530) = buf;
+    func_8009C550(buf, tmp);
+    len = strlen(buf) + 1;
+    bzero(tmp, 100);
+    pad = (0xF2 - func_801794C8((char *)D_8023DE34_ovl_286BD0 + 0x24)) / 2;
+    if (pad > 0) {
+        sprintf(tmp, D_8023E38C_ovl_286BD0, pad);
+    }
+    sprintf(tmp + strlen(tmp), D_8023E394_ovl_286BD0, (char *)D_8023DE34_ovl_286BD0 + 0x24);
+    FIELD(buf, char *, 0x534) = buf + len;
+    func_8009C550(buf + len, tmp);
+    return buf;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239C5C_ovl_286BD0);
+#endif
 
 #ifdef NON_MATCHING
 /* Digit loop shape differs. */
