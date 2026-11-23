@@ -20,7 +20,7 @@ void func_8021C62C_ovl_25EE90(void);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 void *func_8020DF00_ovl_25EE90(void *fn);
-s32 func_801F7128(u8 c);
+s16 func_801F7128(u8 c);
 void func_8021BA3C_ovl_25EE90();
 u8 *func_80217460_ovl_25EE90(s32 id);
 void func_8020DC80_ovl_25EE90(u16 state);
@@ -314,7 +314,114 @@ void func_8021B8D8_ovl_25EE90(u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021BA3C_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021C044_ovl_25EE90);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern s32 D_80220F68_ovl_25EE90;
+extern s32 D_80220F6C_ovl_25EE90;
+void func_8020DFB8_ovl_25EE90(void);
+s32 func_8020DCAC_ovl_25EE90(void *t, u16 a);
+void *func_8021A998_ovl_25EE90(s32 a, s32 b);
+s16 func_801F7128(u8 c);
+void func_80207CE4(u8 *p);
+void func_8020E0B4_ovl_25EE90(s32 a, s32 b);
+s32 func_801C8B84(u8 *u);
+u8 *func_801C8FE8(s32 i);
+void func_801F9DFC(void *a, u8 b, s32 c);
+extern u8 D_800EB240[];
+extern u8 D_80220F6A_ovl_25EE90;
+extern void *D_80220F70_ovl_25EE90;
+s32 func_8021B040_ovl_25EE90();
+s32 func_8021A9C8_ovl_25EE90();
+u8 *func_8021C440_ovl_25EE90(s16 a, s32 c, s32 b, s32 d);
+void func_8020DC80_ovl_25EE90(u16 state);
+
+s32 func_8021C044_ovl_25EE90(u16 msg, u8 *o) {
+    u8 *t;
+    s32 c;
+    s32 *g;
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            FIELD(o, s32, 4) = D_80220F68_ovl_25EE90;
+            FIELD(o, s32, 8) = D_80220F6C_ovl_25EE90;
+            func_8020DC80_ovl_25EE90(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 4));
+            func_8020E0B4_ovl_25EE90(-1, 0x1001);
+            break;
+        case 0x1001:
+        case 0x1002:
+            g = &D_80220F68_ovl_25EE90;
+            if ((D_80220F68_ovl_25EE90 = func_801F7128(*FIELD(o, u8 *, 4))) != 0) {
+                *(f32 *)&D_80220F6C_ovl_25EE90 = 228.0f;
+            } else {
+                *(f32 *)&D_80220F6C_ovl_25EE90 = -228.0f;
+            }
+            g[3] = 0;
+            g[4] = 4;
+            ((f32 *)g)[2] = 50.0f;
+            t = (u8 *)func_8020DF00_ovl_25EE90(func_8021B040_ovl_25EE90);
+            func_8020DCAC_ovl_25EE90(t, 0x1007);
+            FIELD(o, u8 *, 0x18) = t;
+            D_80220F68_ovl_25EE90 = func_801C8B84(func_801C8FE8(*FIELD(o, u8 *, 4)));
+            D_80220F6C_ovl_25EE90 = 20;
+            FIELD(o, void *, 0x20) = func_8020DF00_ovl_25EE90(func_8021A630_ovl_25EE90);
+            FIELD(o, s32, 0x14) = 0;
+            FIELD(o, s32, 0x10) = 0;
+            FIELD(o, s32, 0xC) = 0;
+            c = 0x42;
+            switch (FIELD(o, s16, 0)) {
+                case 30:
+                    c = 0x43;
+                    break;
+                case 31:
+                    c = 0x44;
+                    break;
+            }
+            func_801F9DFC(D_800EB240, *FIELD(o, u8 *, 4), c);
+            func_8020DC80_ovl_25EE90(0x1003);
+        case 0x1003:
+            FIELD(o, s32, 0xC)++;
+            if (func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x18), 0x1005) != 0) {
+                func_8020DC80_ovl_25EE90(0x1004);
+            }
+            break;
+        case 0x1004:
+            D_80220F6A_ovl_25EE90 = *FIELD(o, u8 *, 4);
+            D_80220F6C_ovl_25EE90 = FIELD(o, s32, 8);
+            D_80220F70_ovl_25EE90 = func_8021C440_ovl_25EE90;
+            FIELD(o, void *, 0x1C) = (void *)func_8020DF00_ovl_25EE90(func_8021A9C8_ovl_25EE90);
+            func_8020DC80_ovl_25EE90(0x1005);
+            break;
+        case 0x1005:
+            if (func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x1C), 0x1003) != 0) {
+                func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x1C), 0x101);
+                func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x18), 0x1008);
+                func_8020DC80_ovl_25EE90(0x1006);
+            }
+            break;
+        case 0x1006:
+            FIELD(o, s32, 0x10)++;
+            if (FIELD(o, s32, 0x14) == 0 && FIELD(o, s32, 0x10) >= FIELD(o, s32, 0xC) - 20) {
+                func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x20), 0x1003);
+                FIELD(o, s32, 0x14) = 1;
+            }
+            if (func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x18), 0x1006) != 0) {
+                func_8020DCAC_ovl_25EE90(FIELD(o, void *, 0x18), 0x101);
+                func_8020DC80_ovl_25EE90(0x1007);
+            }
+            break;
+        case 0x1007:
+            func_8020DC80_ovl_25EE90(0x101);
+            break;
+    }
+    return 0;
+}
 
 void func_8021C360_ovl_25EE90(u16 msg, u8 *o) {
     s32 r;
