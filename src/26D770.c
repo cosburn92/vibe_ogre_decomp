@@ -26,7 +26,70 @@ void func_8020DC80_ovl_25EE90(u16 state);
 s32 func_8021B500_ovl_25EE90(u16 msg, u8 *o);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/26D770", func_80218BC0_ovl_25EE90);
+u8 *func_8020E570_ovl_25EE90(void *fn, s32 a);
+void func_802118D4_ovl_25EE90();
+void func_80212200_ovl_25EE90();
+void func_80212488_ovl_25EE90();
+void func_80210410_ovl_25EE90(s32 id, u8 *out);
+void func_8020A980_ovl_25EE90(void *a, void *b, u8 *out);
+void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
+void func_8020A4A8_ovl_25EE90(u8 *src, u8 *dst, s32 n);
+void func_80098D00(void *mf, f32 x, f32 y, f32 z);
+s32 func_8020AB8C_ovl_25EE90(s32 a);
+u8 *func_80214EB4_ovl_25EE90(s32 id, s32 a, s32 b, s32 c, s32 d);
+void bzero(void *p, s32 n);
+extern u8 D_802206DC_ovl_25EE90[];
+extern u8 D_802206D0_ovl_25EE90[];
+extern u8 D_802206A0_ovl_25EE90[];
+
+/* Sets up the parts of effect o: billboard sprite (frames from o+0x40), its shadow, a positioned
+ * marker and the 0x22 particle animation */
+void func_80218BC0_ovl_25EE90(u8 *o) {
+    u8 *s;
+    u8 *m;
+    u8 *p;
+
+    FIELD(o, u8 *, 0x14) = func_8020E570_ovl_25EE90(func_802118D4_ovl_25EE90, 1);
+    FIELD(FIELD(o, u8 *, 0x14), f32, 8) = 1000.0f;
+    s = FIELD(o, u8 *, 0x14);
+    func_80210410_ovl_25EE90(FIELD(o, s32, 0x40), s + 0x64);
+    FIELD(s, s16, 0x5A) = 0x20;
+    FIELD(s, s16, 0x5C) = 2;
+    FIELD(s, s16, 0x5E) = FIELD(s, u16, 0x68) >> 1;
+    FIELD(s, s16, 0x60) = FIELD(s, u16, 0x6A) >> 1;
+    m = s + 0x14;
+    FIELD(s, s16, 0x56) = FIELD(o, s32, 0);
+    FIELD(s, u16, 0x58) = FIELD(o, s32, 0x3C);
+    FIELD(s, s16, 0x62) = 1;
+    func_8020A980_ovl_25EE90(D_802206DC_ovl_25EE90, D_802206D0_ovl_25EE90, m);
+    func_8020A5A0_ovl_25EE90(m, o + 8);
+    FIELD(o, u8 *, 0x18) = p = func_8020E570_ovl_25EE90(func_80212200_ovl_25EE90, 1);
+    {
+        s32 n;
+
+        FIELD(p, s16, 0x58) = 0;
+        FIELD(p, s16, 0x5A) = 0;
+        n = FIELD(s, u16, 0x58) - 2;
+        FIELD(p, s16, 0x5E) = 0x20;
+        p[0x56] = 0;
+        p[0x55] = 0;
+        p[0x54] = 0;
+        p[0x57] = 0xFF;
+        FIELD(p, s16, 0x5C) = n;
+        func_8020A4A8_ovl_25EE90(m, p + 0x14, n);
+    }
+    FIELD(o, u8 *, 0x1C) = p = func_8020E570_ovl_25EE90(func_80212488_ovl_25EE90, 0);
+    func_80098D00(p + 0x14, FIELD(o, f32, 8), FIELD(o, f32, 0xC), FIELD(o, f32, 0x10));
+    FIELD(p, u8 *, 0x54) = D_802206A0_ovl_25EE90;
+    {
+        s32 n = func_8020AB8C_ovl_25EE90(FIELD(o, s32, 0x34));
+
+        FIELD(o, u8 *, 0x20) = p = func_80214EB4_ovl_25EE90(0x22, 8, n, 8, n);
+    }
+    FIELD(p, u16, 0xA) |= 0x4000;
+    bzero(FIELD(o, u8 *, 0x20) + 0x1C, 0x10);
+    FIELD(o, f32, 0x28) = FIELD(o, f32, 0x2C) = FIELD(o, f32, 0x30) = 0.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/26D770", func_80218D68_ovl_25EE90);
 
