@@ -377,7 +377,40 @@ INCLUDE_ASM("asm/nonmatchings/68E0", func_80077BF8);
 void func_80077F80(void) {
 }
 
+/* Closes scene i: first its child scenes (when flag 8 of byte 3 is set), then calls its close
+ * hook (0x1C), frees its ten slot buffers and its work buffer (0x24) and clears the record */
+#ifdef NON_MATCHING
+/* 84/83: GCC keeps &scene[0] + 0x1C in s0 and derives the slot base from it; the original rebuilds the slot base address (a second symbol name gets to 21) */
+void func_80077F88(s32 i) {
+    s32 j;
+
+    if (D_800E82C8[i].flags3 & 8) {
+        if (i >= 0) {
+            for (j = 0; j < 6; j++) {
+                if (j != i && (D_800E82C8[j].flags & 0x8000) && D_800E82C8[j].parent == i) {
+                    func_80077F88(j);
+                }
+            }
+        }
+    }
+    if (*(void (**)(s32))&D_800E82C8[i].unk14[8] != NULL) {
+        (*(void (**)(s32))&D_800E82C8[i].unk14[8])(i);
+    }
+    {
+        void **p = D_800E82C8[i].slotsA;
+
+        for (j = 0; j < 10; j++, p++) {
+            if (*p != NULL) {
+                HFree(*p);
+            }
+        }
+    }
+    HFree(*(void **)&D_800E82C8[i].unk14[0x10]);
+    bzero(&D_800E82C8[i], 0xA8);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/68E0", func_80077F88);
+#endif
 
 /* Saves n bytes of src into a new back-heap block: [kind, pad, n, n, data...] */
 void func_800780D4(u8 kind, void *src, u16 n, u8 **out) {
