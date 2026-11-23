@@ -990,7 +990,56 @@ s8 func_80206DE4_ovl_14EBE0(s8 cur) {
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80206EB4_ovl_14EBE0);
 
+typedef struct {
+    u8 id;
+    u8 flags;
+    u8 rest[23];
+} Sq151;
+extern Sq151 gSquads[];
+extern s32 D_801F0BA8;
+extern u8 D_80213783_ovl_14EBE0;
+
+/* Sets the cursor target byte D_80213783 for list row `row` of list kind `kind`: a table entry
+ * (|0x40) or a raw id (|0x80) */
+#ifdef NON_MATCHING
+/* 103 vs 106: the original re-masks the row byte (andi 0xFF) in every case, which GCC here omits since it knows the load is zero-extended; the squad search loop branches differ */
+void func_80207068_ovl_14EBE0(s8 kind, u8 *rows, u8 *tab, s32 unused, u8 *slots) {
+    u8 c = rows[kind * 10 + 1];
+
+    switch (kind) {
+        case 0:
+            D_80213783_ovl_14EBE0 = tab[c * 12] | 0x40;
+            break;
+        case 1:
+            if ((s8)D_80213778_ovl_14EBE0[0x5F6] != 2) {
+                D_80213783_ovl_14EBE0 = c | 0x80;
+            } else {
+                D_80213783_ovl_14EBE0 = tab[D_80213778_ovl_14EBE0[(u8)(D_80213778_ovl_14EBE0[0x62D] + slots[c * 8 + 5]) + 0x5D9] * 12] | 0x40;
+            }
+            break;
+        case 2:
+            D_80213783_ovl_14EBE0 = tab[(c + D_80213778_ovl_14EBE0[0x5F7]) * 12] | 0x40;
+            break;
+        case 3:
+            if (D_800E91D0[c * 8 + 0x3DF] != 0) {
+                D_80213783_ovl_14EBE0 = D_801F0BA8 | 0x80;
+            } else {
+                u8 side = D_80213778_ovl_14EBE0[c * 8 + 0x3DC] & 0x7F;
+                s32 i;
+
+                for (i = 0; (u8)i < 50; i++) {
+                    if (gSquads[(u8)i].id == side && (gSquads[(u8)i].flags & 1)) {
+                        break;
+                    }
+                }
+                D_80213783_ovl_14EBE0 = i | 0x40;
+            }
+            break;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207068_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207210_ovl_14EBE0);
 
