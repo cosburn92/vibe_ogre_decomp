@@ -409,7 +409,54 @@ u16 func_80201D9C_ovl_14EBE0(u8 side, u8 idx, u8 slot) {
     return v;
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201E4C_ovl_14EBE0);
+typedef struct {
+    f32 v[3];
+} Mult151;
+extern Mult151 D_80214CC4_ovl_14EBE0;
+u8 func_8016D2FC(u8 cls, u8 base);
+
+/* func_80201A44 with byte parameters, as inlined into the ratings below */
+static inline s16 ItemBonus151(u8 side, u8 idx, u8 k) {
+    u8 cls;
+    u8 base;
+    s16 sum = 0;
+    s32 i;
+
+    func_80201AFC_ovl_14EBE0(side, idx, &cls, &base);
+    for (i = 1; i < 5; i++) {
+        sum += (s8)D_80213054_ovl_14EBE0[k](func_80201B68_ovl_14EBE0(side, idx, i));
+    }
+    return sum;
+}
+
+/* Dexterity-based rating of character idx (player side 0, else enemy; idx 100+ reads 0): the class
+ * value from func_8016D2FC plus item bonus 0, scaled by (dex + 50) / 50 and (vit + item bonus 5 +
+ * 100) / 100, then by multiplier `kind` from D_80214CC4 */
+u16 func_80201E4C_ovl_14EBE0(u8 side, u8 n, u8 kind) {
+    Mult151 m = D_80214CC4_ovl_14EBE0;
+    Character *c;
+    u8 idx;
+    u8 cls;
+    u8 base;
+    f32 dex;
+    f32 vit;
+    f32 bonus;
+    u16 r;
+
+    idx = n < 100 ? n : 0;
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    cls = c->cls;
+    base = c->baseCls;
+    dex = c->dex;
+    vit = c->vit + ItemBonus151(side, idx, 5);
+    bonus = ItemBonus151(side, idx, 0);
+    r = (func_8016D2FC(cls, base) + bonus) / 20.0f * (dex + 50.0f) / 50.0f * (vit + 100.0f) / 100.0f;
+    return r * m.v[kind];
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202140_ovl_14EBE0);
 
