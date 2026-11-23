@@ -20,7 +20,7 @@ void *HFree(void *p);
 void *HMalloc(s32 size);
 extern s32 D_80220DA4_ovl_25EE90;
 void func_801B55C4(void);
-void func_8020E224_ovl_25EE90(s32 a);
+void func_8020E224_ovl_25EE90(u16 layer);
 typedef struct {
     u32 w0;
     u32 w1;
@@ -59,7 +59,59 @@ void func_8020E1F4_ovl_25EE90(void) {
     HFree(D_80220DAC_ovl_25EE90);
 }
 
+#define LIST262 ((Blk78 **)D_80220DAC_ovl_25EE90)
+
+/* Runs the active type-1 blocks of layer `layer` in priority order (w8 ascending; sorted by a
+ * two-ended selection sort into the scratch list D_80220DAC) */
+#ifdef NON_MATCHING
+/* 96 vs 93 instructions: block scan loop setup and the sort's pointer induction variables differ; priorities compare as floats */
+void func_8020E224_ovl_25EE90(u16 layer) {
+    s32 n = 0;
+    s32 i;
+
+    if (D_80220DA4_ovl_25EE90 > 0) {
+        Blk78 *b = D_80220DA8_ovl_25EE90;
+        Blk78 **list = LIST262;
+
+        i = 0;
+        do {
+            if (b->w4 != 0 && b->wC == 1 && (u16)b->h10 == layer) {
+                *list++ = b;
+                n++;
+            }
+            i++;
+            b++;
+        } while (i < D_80220DA4_ovl_25EE90);
+    }
+    if (n > 0) {
+        s32 hi = n - 1;
+        s32 lo;
+        s32 j;
+
+        for (lo = 0; lo < hi; lo++, hi--) {
+            for (j = lo; j <= hi; j++) {
+                Blk78 *a = LIST262[j];
+                Blk78 *c = LIST262[lo];
+
+                if (*(f32 *)&a->w8 < *(f32 *)&c->w8) {
+                    LIST262[lo] = a;
+                    LIST262[j] = c;
+                }
+                c = LIST262[hi];
+                if (*(f32 *)&c->w8 < *(f32 *)&LIST262[j]->w8) {
+                    LIST262[hi] = LIST262[j];
+                    LIST262[j] = c;
+                }
+            }
+        }
+        for (i = 0; i < n; i++) {
+            ((void (*)(Blk78 *))LIST262[i]->w4)(LIST262[i]);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/262CC0", func_8020E224_ovl_25EE90);
+#endif
 
 /* 2D pass: orthographic 320x240 projection and identity model view, then draws the blocks of layer a */
 void func_8020E3A0_ovl_25EE90(u16 a) {
