@@ -1038,6 +1038,15 @@ s32 func_801B4398_ovl_1F0A30(u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B464C_ovl_1F0A30);
 
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+#include "gbi_ultra.h"
+#ifndef NON_MATCHING
+extern Gfx *D_800E9BA0;
+#endif
+
 s32 func_801B5524_ovl_1F0A30(s32 a) {
     if (D_801D071C_ovl_1F0A30 != 0) {
         func_801B464C_ovl_1F0A30(a, D_801D0768_ovl_1F0A30, D_801D0718_ovl_1F0A30, D_801D0814_ovl_1F0A30, D_801D071C_ovl_1F0A30);
@@ -1048,16 +1057,16 @@ s32 func_801B5524_ovl_1F0A30(s32 a) {
     return 0;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 32 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 func_80098AA0(s32, f32, f32, f32);          /* extern */
-s32 guLookAt(s32, f32, f32, f32, f32, f32, f32, s32, f32, s32); /* extern */
-s32 guPerspective(s32, u16 *, f32, s32, f32, f32, f32); /* extern */
-extern void *D_800E9BA0;
-extern s32 D_801969B0;
+typedef struct {
+    s32 m[16];
+} Mtx1F;
+void func_80098AA0(Mtx1F *m, f32 x, f32 y, f32 z);
+void guLookAt(Mtx1F *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guPerspective(Mtx1F *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+extern Mtx1F *D_801969B0;
 extern f32 D_801D06FC_ovl_1F0A30;
 extern f32 D_801D0700_ovl_1F0A30;
 extern f32 D_801D0704_ovl_1F0A30;
@@ -1067,48 +1076,30 @@ extern f32 D_801D072C_ovl_1F0A30;
 extern f32 D_801D0730_ovl_1F0A30;
 extern f32 D_801D083C_ovl_1F0A30;
 
+/* Loads the battle camera: perspective (fov 0x710), look-at (eye 0x720.., at 0x730..) and the
+ * world scale (0x6FC) into the next three matrices of the pool */
 void func_801B55C4_ovl_1F0A30(void) {
-    u16 sp28;
-    s32 temp_a0;
-    s32 temp_a1;
-    s32 temp_a2;
-    void *temp_v1;
+    u16 norm;
+    Gfx *g;
 
-    guPerspective(D_801969B0, &sp28, D_801D0710_ovl_1F0A30, 0x3FAAAAAB, 1.0f, 4000.0f, 1.0f);
-    guLookAt(D_801969B0 + 0x40, D_801D0720_ovl_1F0A30, D_801D072C_ovl_1F0A30, D_801D0704_ovl_1F0A30, D_801D0730_ovl_1F0A30, D_801D083C_ovl_1F0A30, D_801D0700_ovl_1F0A30, 0, 1.0f, 0);
-    func_80098AA0(D_801969B0 + 0x80, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30);
-    temp_v1 = D_800E9BA0;
-    D_800E9BA0 = temp_v1 + 8;
-    FIELD(temp_v1, s32, 0) = 0xDB0E0000;
-    FIELD(temp_v1, s32, 4) = (s32) sp28;
-    temp_a1 = D_801969B0 + 0x40;
-    D_800E9BA0 = temp_v1 + 0x10;
-    FIELD(temp_v1, s32, 8) = 0xDA380007;
-    temp_a2 = D_801969B0 + 0x80;
-    D_800E9BA0 = temp_v1 + 0x18;
-    FIELD(temp_v1, s32, 0xC) = (s32) D_801969B0;
-    temp_a0 = D_801969B0 + 0xC0;
-    D_801969B0 = temp_a1;
-    FIELD(temp_v1, s32, 0x10) = 0xDA380005;
-    D_801969B0 = temp_a2;
-    FIELD(temp_v1, s32, 0x14) = temp_a1;
-    D_800E9BA0 = temp_v1 + 0x20;
-    FIELD(temp_v1, s32, 0x18) = 0xDA380003;
-    D_801969B0 = temp_a0;
-    FIELD(temp_v1, s32, 0x1C) = temp_a2;
+    guPerspective(D_801969B0, &norm, D_801D0710_ovl_1F0A30, 4.0f / 3.0f, 1.0f, 4000.0f, 1.0f);
+    guLookAt(D_801969B0 + 1, D_801D0720_ovl_1F0A30, D_801D072C_ovl_1F0A30, D_801D0704_ovl_1F0A30,
+             D_801D0730_ovl_1F0A30, D_801D083C_ovl_1F0A30, D_801D0700_ovl_1F0A30, 0.0f, 1.0f, 0.0f);
+    func_80098AA0(D_801969B0 + 2, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30);
+    g = D_800E9BA0++;
+    g->w0 = 0xDB0E0000;
+    g->w1 = norm;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380007;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380005;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380003;
+    g->w1 = (u32)D_801969B0++;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B55C4_ovl_1F0A30);
-#endif
 
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gfx;
-#include "gbi_ultra.h"
-#ifndef NON_MATCHING
-extern Gfx *D_800E9BA0;
-#endif
 extern u8 D_801CEAAC_ovl_1F0A30;
 extern u8 D_801CEAAD_ovl_1F0A30;
 extern u8 D_801CEAAE_ovl_1F0A30;
