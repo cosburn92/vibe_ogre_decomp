@@ -499,4 +499,104 @@ u8 func_801DF34C_ovl_101CE0(u8 *u) {
     return max;
 }
 
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DF4A0_ovl_101CE0);
+extern u16 D_80190EBC[]; /* player generic troops' HP; [99] is the cap */
+extern u8 D_80191010[];
+extern u16 D_8019532C[]; /* enemy generic troops' HP; [99] is the cap */
+extern u8 D_80195480[];
+
+/* One rest tick for squad u's members: characters (id < 100) with a class and HP lose 2 fatigue
+ * and gain 1 HP up to max; generic troops regain 1 HP up to the next third of the cap. Returns the
+ * highest fatigue left */
+u8 func_801DF4A0_ovl_101CE0(u8 *u) {
+    u8 max = 0;
+    s32 k;
+    s32 c;
+    u16 *p;
+    u16 *cap;
+    u8 *f;
+
+    for (k = 0; k < 5; k++) {
+        c = gSquads[u[4]].members[k];
+        if (c == 0) {
+            continue;
+        }
+        if (c >= 100) {
+            u16 m;
+            u16 t;
+            u16 v;
+
+            if (FIELD(u, u32, 0) & 8) {
+                if (D_80191010[c] & 4) {
+                    continue;
+                }
+                p = &D_80190EBC[c];
+                cap = &D_80190EBC[99];
+            } else {
+                if (D_80195480[c] & 4) {
+                    continue;
+                }
+                p = &D_8019532C[c];
+                cap = &D_8019532C[99];
+            }
+            m = *cap;
+            t = m / 3;
+            v = *p;
+            if (t >= v) {
+                *p = v + 1;
+                if (t < *p) {
+                    *p = t;
+                }
+            } else {
+                s32 t2 = t * 2;
+
+                if (t2 >= v) {
+                    *p = v + 1;
+                    if (t2 < *p) {
+                        *p = t2;
+                    }
+                } else if (m >= v) {
+                    *p = v + 1;
+                    if (*cap < *p) {
+                        *p = *cap;
+                    }
+                } else {
+                    *p = m;
+                }
+            }
+            continue;
+        }
+        if (u[4] < 30) {
+            if (D_80193BC0[c].c.baseCls == 0 || D_80193BC0[c].c.hp == 0 || (D_80193BC0[c].c.status & 4)) {
+                continue;
+            }
+            f = &D_80193BC0[c].c.fatigue;
+            p = &D_80193BC0[c].c.hp;
+            cap = &D_80193BC0[c].c.maxHp;
+        } else {
+            if (D_80195560[c].baseCls == 0 || D_80195560[c].hp == 0 || (D_80195560[c].status & 4)) {
+                continue;
+            }
+            f = &D_80195560[c].fatigue;
+            p = &D_80195560[c].hp;
+            cap = &D_80195560[c].maxHp;
+        }
+        if (*p == 0) {
+            continue;
+        }
+        if (*f >= 2) {
+            *f -= 2;
+        } else {
+            *f = 0;
+        }
+        if (max < *f) {
+            max = *f;
+        }
+        if (*p < *cap) {
+            *p += 1;
+            if (*cap < *p) {
+                *p = *cap;
+            }
+        }
+    }
+    return max;
+}
