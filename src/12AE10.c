@@ -160,7 +160,72 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D66D0_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D677C_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D6A84_ovl_101CE0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+f32 func_8009CFE0(f32 y, f32 x); /* atan2f */
+void func_801B25A0_ovl_101CE0(void *a, f32 *h, f32 s);
+
+/* Turns map object o of unit u toward point tgt: the heading (0x1C, in turns) faces tgt when the
+ * unit is marching (0xC000) or o is flagged 0x10000, otherwise the unit's own heading (0x18); while
+ * the hold counter (0x88) runs the old heading is kept */
+void func_801D6A84_ovl_101CE0(u8 *u, s32 unused, u8 *o, f32 *tgt) {
+    f32 prev = FIELD(o, f32, 0x1C);
+    f32 one; /* turn speed, set on both paths */
+    f32 dx;
+    f32 dz;
+    s32 n;
+
+    if ((FIELD(u, u32, 0) & 0xC000) || (FIELD(o, u32, 0) & 0x10000)) {
+        dx = FIELD(o, f32, 8) - tgt[0];
+        dz = FIELD(o, f32, 0x10) - tgt[2];
+        if (dx == 0.0f) {
+            if (dz > 0.0f) {
+                FIELD(o, f32, 0x1C) = 0.75f;
+            } else if (dz < 0.0f) {
+                FIELD(o, f32, 0x1C) = 0.25f;
+            }
+        } else if (dz == 0.0f) {
+            if (dx > 0.0f) {
+                FIELD(o, f32, 0x1C) = 0.0f;
+            } else if (dx < 0.0f) {
+                FIELD(o, f32, 0x1C) = 0.5f;
+            }
+        } else {
+            FIELD(o, f32, 0x1C) = 1.0 - func_8009CFE0(dz, dx) / 6.283185307179586;
+            while (FIELD(o, f32, 0x1C) < 0.0f) {
+                FIELD(o, f32, 0x1C) += 1.0f;
+            }
+            while (FIELD(o, f32, 0x1C) >= 1.0f) {
+                FIELD(o, f32, 0x1C) -= 1.0f;
+            }
+        }
+        if ((dx == 0.0f) & (dz == 0.0f)) {
+            FIELD(o, f32, 0x1C) = FIELD(u, f32, 0x18);
+        }
+        n = FIELD(o, s32, 0x88);
+        one = 1.0f;
+        if (n == 0) {
+            goto reset;
+        }
+        FIELD(o, f32, 0x1C) = prev;
+        n--;
+        FIELD(o, s32, 0x88) = n;
+        if (n < 0) {
+            goto reset;
+        }
+        if (n < 6) {
+            goto done;
+        }
+    reset:
+        FIELD(o, s32, 0x88) = 5;
+    } else {
+        FIELD(o, f32, 0x1C) = FIELD(u, f32, 0x18);
+        one = 1.0f;
+    }
+done:
+    func_801B25A0_ovl_101CE0(o + 0x18, (f32 *)(o + 0x1C), one);
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D6D00_ovl_101CE0);
 
