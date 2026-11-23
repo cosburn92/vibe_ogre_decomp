@@ -268,7 +268,23 @@ u8 func_8023A0FC_ovl_2A8D20(s32 i) {
                          FIELD(o, s32, 0xF0), &b[0], &b[1], &b[2]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A164_ovl_2A8D20);
+#define TERRAIN2A8(o, d)                                                                                       \
+    func_801C1AA4(FIELD(o, s32, 0xE8), FIELD(o, s32, 0xEC), (o)[0x146], FIELD(o, s16, 0x13A), FIELD(o, s16, 0x134), \
+                  FIELD(o, s32, 0xF0) + (d), NULL, NULL, NULL)
+
+/* Whether unit i can stand where it is: not on terrain 0, nor on a 1-4-0 column while F4 < 2 */
+s32 func_8023A164_ovl_2A8D20(s32 i) {
+    u8 *o = SLOT(i);
+    u8 t = TERRAIN2A8(o, 0);
+
+    if (t == 0) {
+        return 0;
+    }
+    if (t == 1 && TERRAIN2A8(o, 1) == 4 && TERRAIN2A8(o, 2) == 0 && FIELD(o, s32, 0xF4) < 2) {
+        return 0;
+    }
+    return 1;
+}
 
 f32 func_8009CFB0(f32);                             /* extern */
 
