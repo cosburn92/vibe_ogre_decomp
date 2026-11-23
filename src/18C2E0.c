@@ -105,7 +105,68 @@ u8 func_8016DF18(u8 cls, u8 base);
 void func_8020122C(void *pal);
 /* --- end decls --- */
 
+extern u8 D_8021B5C8_ovl_188B60[];
+extern void *D_8021B590_ovl_188B60;
+extern s16 D_8021B5E8_ovl_188B60;
+extern u8 D_8021B598_ovl_188B60[5];
+extern s32 D_8021B594_ovl_188B60;
+extern s32 D_8021B5A0_ovl_188B60;
+extern u8 D_8021B5B9_ovl_188B60;
+extern s32 D_801F0CB0[];
+extern s32 D_801F3658;
+extern s32 D_801F0B94;
+extern s32 D_801ED5B0;
+extern s32 D_801F0B98;
+extern s32 D_801F3618;
+extern u8 D_80210219;
+s32 func_801DA228(s32 a, s32 b);
+u8 *LoadAsset(s32 id, s32 a, s32 b, s32 c);
+
+/* Opens the legion screen for the squad list ids (terminated by a negative id): copies the list,
+ * picks the legion and resets the screen state */
+#ifdef NON_MATCHING
+/* 123/123 instructions, 57 words differ in scheduling only: the original keeps the D_8021B5xx stores in source order and does not hoist the D_801F0CB0 load above them, so these globals are probably fields of one screen-state struct */
+void func_80218700_ovl_188B60(s32 *ids) {
+    s32 i;
+
+    for (i = 0; *ids >= 0; i++) {
+        D_8021B5C8_ovl_188B60[i] = *ids++;
+    }
+    for (; i < 30; i++) {
+        D_8021B5C8_ovl_188B60[i] = 0xFF;
+    }
+    D_8021B5EC_ovl_188B60 = -1;
+    D_8021B5E8_ovl_188B60 = 0;
+    D_8021B5E6_ovl_188B60 = 0;
+    D_8021B5B4_ovl_188B60 = func_801DA228(D_801F0CB0[D_801F3658], i);
+    bzero(D_8021B598_ovl_188B60, 5);
+    for (i = 0; i < 5; i++) {
+        D_8021B598_ovl_188B60[i] = gLegions[D_8021B5B4_ovl_188B60].squads[i];
+    }
+    D_8021B59E_ovl_188B60 = 0;
+    D_8021B5A4_ovl_188B60 = -1;
+    D_8021B5A8_ovl_188B60 = -1;
+    D_8021B5B0_ovl_188B60 = -1;
+    D_8021B5AC_ovl_188B60 = -1;
+    D_8021B588_ovl_188B60[0] = NULL;
+    D_8021B588_ovl_188B60[1] = NULL;
+    D_8021B590_ovl_188B60 = NULL;
+    D_8021B594_ovl_188B60 = 0;
+    D_8021B5A0_ovl_188B60 = 0;
+    D_8021B59D_ovl_188B60 = 1;
+    D_8021B5B8_ovl_188B60 = 0;
+    D_8021B5B9_ovl_188B60 = 0;
+    D_8021B5C0_ovl_188B60 = 0;
+    D_801F0B94 = 0xB2;
+    D_801ED5B0 = -1;
+    D_801F0B98 = 0x7A;
+    D_801F3618 = gLegions[D_8021B5B4_ovl_188B60].squads[0];
+    D_8021B5BC_ovl_188B60 = LoadAsset(0x0218E9B4, 4, -3, 2);
+    D_80210219 = 0x22;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/18C2E0", func_80218700_ovl_188B60);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/18C2E0", func_802188EC_ovl_188B60);
 
