@@ -200,7 +200,47 @@ s32 func_801A3B4C_ovl_0EBBB0(f32 *cam, f32 (*pts)[3]) {
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3B4C_ovl_0EBBB0);
 #endif
 
+extern f32 D_801AD550_ovl_0EBBB0[4][3]; /* 4x3 transform copied from m */
+void _bcopy(const void *src, void *dst, s32 n);
+
+/* Whether any of the 8 corners pts lies in front of every one of the 4 view planes of cam
+ * (point at cam[0..2], normals from cam + 0x48), after transforming them by the 4x3 matrix m */
+#ifdef NON_MATCHING
+/* 122/143 instructions: the original hoists all twelve matrix floats and the negated camera position into registers (several held in GPRs) and keeps the empty corner loop as a counted loop */
+s32 func_801A3BEC_ovl_0EBBB0(f32 *cam, f32 (*pts)[3], f32 *m) {
+    s32 i;
+    s32 j;
+    f32 x;
+    f32 y;
+    f32 z;
+
+    _bcopy(m, D_801AD550_ovl_0EBBB0, 0x30);
+    for (j = 0; j < 8; j++) {
+    }
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 8; j++) {
+            x = pts[j][0];
+            y = pts[j][1];
+            z = pts[j][2];
+            if ((D_801AD550_ovl_0EBBB0[0][0] * x + D_801AD550_ovl_0EBBB0[1][0] * y + D_801AD550_ovl_0EBBB0[2][0] * z +
+                 D_801AD550_ovl_0EBBB0[3][0] + -cam[0]) * cam[i * 3 + 18] +
+                    (D_801AD550_ovl_0EBBB0[0][1] * x + D_801AD550_ovl_0EBBB0[1][1] * y + D_801AD550_ovl_0EBBB0[2][1] * z +
+                     D_801AD550_ovl_0EBBB0[3][1] + -cam[1]) * cam[i * 3 + 19] +
+                    (D_801AD550_ovl_0EBBB0[0][2] * x + D_801AD550_ovl_0EBBB0[1][2] * y + D_801AD550_ovl_0EBBB0[2][2] * z +
+                     D_801AD550_ovl_0EBBB0[3][2] + -cam[2]) * cam[i * 3 + 20] >=
+                0.0f) {
+                break;
+            }
+        }
+        if (j == 8) {
+            return 0;
+        }
+    }
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3BEC_ovl_0EBBB0);
+#endif
 
 /* Relocates n loaded tables by delta: each table pointer, its 10 entries and the word each entry points at */
 #ifdef NON_MATCHING
