@@ -24,7 +24,7 @@ extern Task *D_80220D88_ovl_25EE90;
 extern Task *D_80220D8C_ovl_25EE90;
 extern Task *D_80220FE8_ovl_25EE90; /* current task */
 void HFree(void *p);
-void func_8020DD60_ovl_25EE90(s32 a, Task *t);
+Task *func_8020DD60_ovl_25EE90(void (*fn)(), Task *t);
 
 
 
@@ -203,7 +203,68 @@ void func_8020DD34_ovl_25EE90(u16 a) {
     t->func(a, t->data);
 }
 
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020DD60_ovl_25EE90);
+/* Takes a task record off the free list (hangs when none is left) */
+static inline Task *TaskAlloc262(void) {
+    u16 i = D_80220E8E_ovl_25EE90;
+    Task *n;
+
+    if (i != 0xFFFF) {
+        n = &D_80220D84_ovl_25EE90[i];
+        D_80220E8E_ovl_25EE90 = n->nextFree;
+        return n;
+    }
+    while (1) {
+    }
+}
+
+/* Creates a task running fn, linked before t (or at the head of the list), and runs its init
+ * call (0x100) as the current task; returns it */
+Task *func_8020DD60_ovl_25EE90(void (*fn)(), Task *t) {
+    Task *n = TaskAlloc262();
+
+    if (n != NULL) {
+        n->state = 0x100;
+        n->func = NULL;
+        n->parent = NULL;
+        n->prev = NULL;
+        n->next = NULL;
+        if (t == NULL) {
+            if (D_80220D8C_ovl_25EE90 != NULL) {
+                if (D_80220D8C_ovl_25EE90->prev != NULL) {
+                    Task *p;
+
+                    do {
+                        p = D_80220D8C_ovl_25EE90->prev;
+                        D_80220D8C_ovl_25EE90 = p;
+                    } while (p->prev != NULL);
+                }
+                D_80220D8C_ovl_25EE90->prev = n;
+            }
+            n->next = D_80220D8C_ovl_25EE90;
+            D_80220D8C_ovl_25EE90 = n;
+            if (D_80220D88_ovl_25EE90 == NULL) {
+                D_80220D88_ovl_25EE90 = n;
+            }
+        } else {
+            n->prev = t->prev;
+            t->prev = n;
+            if (n->prev != NULL) {
+                n->prev->next = n;
+            }
+            n->next = t;
+            n->parent = t;
+            if (n->prev == NULL) {
+                D_80220D8C_ovl_25EE90 = n;
+            }
+        }
+        n->func = fn;
+        D_80220D94_ovl_25EE90[--D_80220D90_ovl_25EE90] = n;
+        D_80220FE8_ovl_25EE90 = n;
+        n->func(0x100, n->data);
+        D_80220FE8_ovl_25EE90 = D_80220D94_ovl_25EE90[++D_80220D90_ovl_25EE90];
+    }
+    return n;
+}
 
 void func_8020DF00_ovl_25EE90(s32 a) {
     func_8020DD60_ovl_25EE90(a, D_80220FE8_ovl_25EE90);
