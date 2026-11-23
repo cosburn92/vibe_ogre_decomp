@@ -620,9 +620,110 @@ void func_801B060C_ovl_0FA5E0(TweenFA5 *tw) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B073C_ovl_0FA5E0);
+/* Image: header then pixels at +8 */
+typedef struct {
+    /* 0x0 */ u8 unk0[3];
+    /* 0x3 */ u8 fmt;
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+    /* 0x8 */ u8 pix[1];
+} ImgFA5;
+typedef struct {
+    s16 lo;
+    s16 hi;
+} SpanFA5;
+extern s32 D_801B48A4_ovl_0FA5E0[]; /* bits per pixel by format */
 
-void func_801B073C_ovl_0FA5E0(void *a, void *b, s32 c, s32 d, s32 e);
+/* Clears dst, then copies the pixels of src inside the circle of radius r around (cx, cy) */
+#ifdef NON_MATCHING
+/* 159/159 instructions, 15 words differ: registers of the span clamp and copy loops */
+void func_801B073C_ovl_0FA5E0(ImgFA5 *src, ImgFA5 *dst, s32 r, s32 cx, s32 cy) {
+    SpanFA5 *spans;
+    s32 x;
+    s32 y;
+    s32 d;
+    s32 row;
+    s32 i;
+    s32 k;
+    s32 size;
+
+    size = src->w * src->h * D_801B48A4_ovl_0FA5E0[src->fmt];
+    size /= 8;
+    bzero(dst->pix, size);
+    if (r != 0) {
+        s32 size = src->h * 4;
+
+        spans = HMalloc(size);
+        bzero(spans, size);
+        x = 0;
+        y = r;
+        d = 3 - y * 2;
+        while (y >= x) {
+            row = cy + y;
+            if (row >= src->h) {
+                row = src->h - 1;
+            }
+            spans[row].hi = cx + x;
+            spans[row].lo = cx - x;
+            row = cy - y;
+            if (row < 0) {
+                row = 0;
+            }
+            spans[row].hi = cx + x;
+            spans[row].lo = cx - x;
+            row = cy + x;
+            if (row >= src->h) {
+                row = src->h - 1;
+            }
+            spans[row].hi = cx + y;
+            spans[row].lo = cx - y;
+            row = cy - x;
+            if (row < 0) {
+                row = 0;
+            }
+            spans[row].hi = cx + y;
+            spans[row].lo = cx - y;
+            if (d < 0) {
+                d = d + x * 4 + 6;
+            } else {
+                d = d + (x - y) * 4 + 10;
+                y--;
+            }
+            x++;
+        }
+        for (i = 0; i < src->h; i++) {
+            if (spans[i].lo < 0) {
+                spans[i].lo = 0;
+            }
+            if (spans[i].hi >= src->w) {
+                spans[i].hi = src->w - 1;
+            }
+        }
+        {
+            u8 *s = src->pix;
+            u8 *t = dst->pix;
+
+            for (i = 0; i < src->h; i++) {
+                k = spans[i].lo;
+                row = i * src->w + k;
+                if (k <= spans[i].hi) {
+                    u8 *p = t + row;
+                    u8 *q = s + row;
+
+                    do {
+                        *p++ = *q++;
+                        k++;
+                    } while (k <= spans[i].hi);
+                }
+            }
+        }
+        HFree(spans);
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B073C_ovl_0FA5E0);
+#endif
+
 
 /* Draws the tween's sprite at (x, y) scaled by (sx, sy) in colour cur[]; mode 2 flips between
  * its two buffers each frame */
