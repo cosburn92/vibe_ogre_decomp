@@ -199,7 +199,23 @@ s16 func_801F782C_ovl_24BCA0(u8 i) {
     return FIELD(u, s32, 0x58) * 3 + FIELD(u, s32, 0x54) + 20;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7868_ovl_24BCA0);
+/* Lists the free cells of a formation grid in out (0xFF-terminated): the nine cells starting at
+ * 38 when c's handler accepts it, else 20, whose map unit slot is empty */
+void func_801F7868_ovl_24BCA0(u8 *out, u8 c) {
+    s16 i;
+    s16 n;
+    s32 r = D_80209700_ovl_24BCA0[CellKind(c)](c) >= 0;
+    s32 base = r * 18 + 20;
+
+    for (i = 0, n = 0; i < 9; i++) {
+        u8 cell = i + base;
+
+        if (func_801CA1C4((cell - 20) % 3, (cell - 20) / 3) == -1) {
+            out[n++] = cell;
+        }
+    }
+    out[n] = 0xFF;
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F79BC_ovl_24BCA0);
 
