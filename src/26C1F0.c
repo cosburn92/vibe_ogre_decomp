@@ -163,7 +163,50 @@ void func_80217DE4_ovl_25EE90(s32 unused, void *dst) {
     _bcopy(((u8 **)func_801C8FE8())[0] + 0x44, dst, 0x50);
 }
 
+void *HMalloc(s32 size);
+
+/* Natural cubic spline through (x[i], y[i]), i < n: second derivatives into z (tridiagonal
+ * solve with scratch h = steps, u = diagonal / slopes) */
+#ifdef NON_MATCHING
+/* 131 vs 132: the original keeps a second copy of the scratch pointer (t3) for the middle passes; everything else lines up */
+void func_80217E1C_ovl_25EE90(s32 n, f32 *x, f32 *y, f32 *z) {
+    f32 *h;
+    f32 *u;
+    s32 i;
+
+    if (n < 3) {
+        for (;;) {
+        }
+    }
+    h = HMalloc(n * 8);
+    if (h == NULL) {
+        for (;;) {
+        }
+    }
+    u = h + n;
+    z[0] = 0.0f;
+    z[n - 1] = 0.0f;
+    for (i = 0; i < n - 1; i++) {
+        h[i] = x[i + 1] - x[i];
+        u[i + 1] = (y[i + 1] - y[i]) / h[i];
+    }
+    z[1] = (u[2] - u[1]) - h[0] * z[0];
+    u[1] = 2.0f * (x[2] - x[0]);
+    for (i = 1; i < n - 2; i++) {
+        f32 t = h[i] / u[i];
+
+        z[i + 1] = (u[i + 2] - u[i + 1]) - z[i] * t;
+        u[i + 1] = 2.0f * (x[i + 2] - x[i]) - h[i] * t;
+    }
+    z[n - 2] -= h[n - 2] * z[n - 1];
+    for (i = n - 2; i > 0; i--) {
+        z[i] = (z[i] - h[i] * z[i + 1]) / u[i];
+    }
+    HFree(h);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26C1F0", func_80217E1C_ovl_25EE90);
+#endif
 
 /* Cubic spline value at x through n knots (xs, ys) with per-knot coefficients m */
 f32 func_8021802C_ovl_25EE90(f32 x, s32 n, f32 *xs, f32 *ys, f32 *m) {
