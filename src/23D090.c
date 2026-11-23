@@ -842,7 +842,69 @@ void func_801EB594_ovl_23B220(void) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB6C8_ovl_23B220);
+typedef struct {
+    /* 0x0 */ s16 x;
+    /* 0x2 */ s16 y;
+    /* 0x4 */ s16 z;
+    /* 0x6 */ u8 pad6[6];
+    /* 0xC */ s8 nx;
+    /* 0xD */ s8 ny;
+    /* 0xE */ s8 nz;
+    /* 0xF */ u8 a;
+} Vtx23;
+extern Vtx23 *D_80197178; /* frame vertex pool cursor */
+
+/* Builds a lit box of half-size (a, b, c) in the vertex pool (four faces of four vertices each,
+ * normals +z, +y, -y, -z) and draws it as four quads */
+void func_801EB6C8_ovl_23B220(s16 a, s16 b, s16 c) {
+    Vtx23 *v = D_80197178;
+    s32 i;
+
+    for (i = 0; i < 16; i++) {
+        bzero(D_80197178, 0x10);
+        if ((u32)(i % 4) >= 2) {
+            D_80197178->x = 0;
+        } else {
+            D_80197178->x = -a;
+        }
+        if (i == 0 || i == 3 || (u32)(i - 4) < 4 || (u32)(i - 13) < 2) {
+            D_80197178->y = b;
+        } else {
+            D_80197178->y = -b;
+        }
+        if ((u32)i < 4 || (u32)(i - 5) < 2 || i == 8 || i == 11) {
+            D_80197178->z = c;
+        } else {
+            D_80197178->z = -c;
+        }
+        if ((u32)i < 4) {
+            D_80197178->nz = 0x7F;
+        } else if ((u32)(i - 4) < 4) {
+            D_80197178->ny = 0x7F;
+        } else if ((u32)(i - 8) < 4) {
+            D_80197178->ny = -0x7F;
+        } else {
+            D_80197178->nz = -0x7F;
+        }
+        D_80197178->a = 0xFF;
+        D_80197178++;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0x01010020;
+        _g->w1 = (u32)v;
+    }
+    for (i = 0; i < 16; i += 4) {
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = _SHIFTL(6, 24, 8) | (_SHIFTL(i * 2, 16, 8) | _SHIFTL((i + 1) * 2, 8, 8) | _SHIFTL((i + 2) * 2, 0, 8));
+            _g->w1 = _SHIFTL(i * 2, 16, 8) | _SHIFTL((i + 2) * 2, 8, 8) | _SHIFTL((i + 3) * 2, 0, 8);
+        }
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
 
 #include "gbi_ultra.h"
 typedef struct { s32 m[16]; } Mtx23;
