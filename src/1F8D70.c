@@ -586,7 +586,65 @@ D_801D02B0_ovl_1F0A30:
 .section .text
 ");
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BCFF0_ovl_1F0A30);
+typedef struct {
+    s32 unk0;
+    s32 index;
+    u8 *buf;
+    s32 size;
+} Arc16_1F8;
+extern Arc16_1F8 D_801D02B0_ovl_1F0A30;
+extern u8 D_801CEC80_ovl_1F0A30[];
+extern s16 D_801D0758_ovl_1F0A30;
+extern s16 D_801D075A_ovl_1F0A30;
+extern s16 D_801D075C_ovl_1F0A30;
+extern s16 D_801D075E_ovl_1F0A30;
+extern s16 D_801D0760_ovl_1F0A30;
+void *LoadChunk(s32 id);
+void *func_80071C04(s32 size);
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
+void func_801C5CE0_ovl_1F0A30(void);
+
+/* Reloads the battle frame graphics; the backdrop comes from the map's LHa archive (entry chosen by
+ * the time of day) */
+void func_801BCFF0_ovl_1F0A30(void) {
+    Arc16_1F8 arc;
+    Arc16_1F8 req;
+    u8 *dir;
+    s32 id;
+
+    HFree(D_801D0748_ovl_1F0A30[0]);
+    D_801D0748_ovl_1F0A30[0] = NULL;
+    HFree(D_801D074C_ovl_1F0A30);
+    D_801D074C_ovl_1F0A30 = NULL;
+    HFree(D_801D0750_ovl_1F0A30);
+    D_801D0750_ovl_1F0A30 = NULL;
+    HFree(D_801D0754_ovl_1F0A30);
+    D_801D0754_ovl_1F0A30 = NULL;
+    D_801D0748_ovl_1F0A30[0] = LoadChunk(0x31D484);
+    D_801D074C_ovl_1F0A30 = LoadChunk(0x31EE10);
+    D_801D0750_ovl_1F0A30 = LoadChunk(0x32007E);
+    arc = D_801D02B0_ovl_1F0A30;
+    req = D_801D02B0_ovl_1F0A30;
+    dir = func_80071C04(ChunkSize(0x0218E9B4));
+    LoadChunkRaw(dir, 0x0218E9B4);
+    id = FIELD(dir, s32, 8);
+    HFree(dir);
+    arc.size = ChunkSize(id);
+    arc.buf = func_80071C04(arc.size);
+    LoadChunkRaw(arc.buf, id);
+    req.index = D_801CEC80_ovl_1F0A30[D_801976DA == 0x18 ? 12 : (u8)(D_801976DA % 24)];
+    func_8007ACB0(&arc, &req, 1);
+    HFree(arc.buf);
+    D_801D0758_ovl_1F0A30 = 0xAA;
+    D_801D075A_ovl_1F0A30 = 0x10;
+    D_801D075C_ovl_1F0A30 = 0x16;
+    D_801D075E_ovl_1F0A30 = 0x98;
+    D_801D0760_ovl_1F0A30 = 1;
+    D_801D0754_ovl_1F0A30 = req.buf;
+    func_801C5CE0_ovl_1F0A30();
+}
 
 void func_801BD1F4_ovl_1F0A30(void) {
     HFree(D_801D0748_ovl_1F0A30[0]);
