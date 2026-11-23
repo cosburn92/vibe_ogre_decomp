@@ -7,7 +7,7 @@ s32 func_801C8AC0(s32 a);
 s32 func_801C8AA4(s32 a);
 s32 func_801CA1C4(s32 lane, s32 row);
 u8 *func_801C8FE8(s32 i);
-void func_801F7344_ovl_24BCA0(u8 a, u8 *out, u8 b);
+void func_801F7344_ovl_24BCA0(s32 c, f32 *p, u8 b);
 u8 *func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
 u8 *func_801F885C_ovl_24BCA0(u8 *a, u8 *b);
 u8 *func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c);
@@ -107,7 +107,48 @@ s32 func_801F730C_ovl_24BCA0(s32 a) {
     return (a - 47) % 4 * 38 - 57;
 }
 
+extern s32 (*D_8020970C_ovl_24BCA0[])(u8 c);
+f32 func_801BC35C(s16 x, s16 z);
+s32 func_8020ABF0(u8 c);
+s32 func_801CA100(u8 *u);
+
+/* World position of map cell c into p (x, y, z); flag 0x20 / 0x10 raise y by a full / half unit
+ * height (cells 0-19 are units: by their own height) */
+#ifdef NON_MATCHING
+/* same length; the last range test of the cell-kind chain becomes a store-flag sequence (xori/negu/ori) instead of the original's branch, as in func_801F751C */
+void func_801F7344_ovl_24BCA0(s32 c, f32 *p, u8 b) {
+    u8 k;
+
+    if ((u8)c < 20) {
+        k = 0;
+    } else if ((u8)(c - 20) < 27) {
+        k = 1;
+    } else if ((u8)(c - 47) < 40) {
+        k = 2;
+    } else {
+        k = 0xFF;
+    }
+    p[0] = D_80209700_ovl_24BCA0[k]((u8)c);
+    p[2] = D_8020970C_ovl_24BCA0[k]((u8)c);
+    if (k == 0) {
+        p[1] = func_8020ABF0((u8)c);
+        if (b & 0x20) {
+            p[1] = func_801CA100(func_801C8FE8((u8)c)) + p[1];
+        } else if (b & 0x10) {
+            p[1] = func_801CA100(func_801C8FE8((u8)c)) / 2 + p[1];
+        }
+    } else {
+        p[1] = func_801BC35C(p[0], p[2]);
+        if (b & 0x20) {
+            p[1] += 38.0f;
+        } else if (b & 0x10) {
+            p[1] += 19.0f;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7344_ovl_24BCA0);
+#endif
 
 extern s32 (*D_8020970C_ovl_24BCA0[])(u8 c);
 f32 func_801BC35C(s16 x, s16 z);
@@ -151,7 +192,7 @@ void func_801F7644_ovl_24BCA0(u8 *str, f32 *out, u8 c) {
 
     bzero(&sum, 0xC);
     for (i = 0; str[i] != 0xFF; i++) {
-        func_801F7344_ovl_24BCA0(str[i], (u8 *)&p, c);
+        func_801F7344_ovl_24BCA0(str[i], (f32 *)&p, c);
         sum.y += p.y;
         sum.z += p.z;
     }
@@ -662,7 +703,7 @@ void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
         s32 w;
     } t;
 
-    func_801F7344_ovl_24BCA0(a, (u8 *)&t, 0x20);
+    func_801F7344_ovl_24BCA0(a, (f32 *)&t, 0x20);
     func_80218104(t.x, t.y, t.z, b);
 }
 
