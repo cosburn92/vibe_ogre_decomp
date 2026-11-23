@@ -227,7 +227,57 @@ void func_8020B6B4_ovl_25EE90(void) {
     D_80220E60_ovl_25EE90.id = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/25F7F0", func_8020B6C0_ovl_25EE90);
+extern s8 D_801CEAAC;
+extern s8 D_801CEAAD;
+extern s8 D_801CEAAE;
+extern s16 D_80220E62_ovl_25EE90;
+
+/* Steps the timed light override: while it runs, holds light slot id-1 at the value and sets the
+ * tint; when it expires, clears both and ends the override */
+void func_8020B6C0_ovl_25EE90(void) {
+    Ovl25EE90Msg *m = &D_80220E60_ovl_25EE90;
+
+    if (m->id != 0) {
+        if (--D_80220E62_ovl_25EE90 < 0) {
+            D_801CEAAC = 0;
+            D_801CEAAD = 0;
+            D_801CEAAE = 0;
+            switch (m->id) {
+            case 1:
+                D_801CEAA8 = 0;
+                break;
+            case 2:
+                D_801CEAA9 = 0;
+                break;
+            case 3:
+                D_801CEAAA = 0;
+                break;
+            case 4:
+                D_801CEAAB = 0;
+                break;
+            }
+            m->id = 0;
+            return;
+        }
+        switch (m->id) {
+        case 1:
+            D_801CEAA8 = *(u16 *)&D_80220E60_ovl_25EE90.data[8];
+            break;
+        case 2:
+            D_801CEAA9 = *(u16 *)&D_80220E60_ovl_25EE90.data[8];
+            break;
+        case 3:
+            D_801CEAAA = *(u16 *)&D_80220E60_ovl_25EE90.data[8];
+            break;
+        case 4:
+            D_801CEAAB = *(u16 *)&D_80220E60_ovl_25EE90.data[8];
+            break;
+        }
+        D_801CEAAC = *(u16 *)&m->data[2];
+        D_801CEAAD = *(u16 *)&m->data[4];
+        D_801CEAAE = *(u16 *)&m->data[6];
+    }
+}
 
 void func_8020B83C_ovl_25EE90(u16 id, void *data) {
     D_80220E60_ovl_25EE90.id = id;
