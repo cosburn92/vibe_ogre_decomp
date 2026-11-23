@@ -6,7 +6,8 @@ typedef struct TextNode {
     /* 0x08 */ u8 data[0x70];
     /* 0x78 */ u16 id;
     /* 0x7A */ u8 value;
-} TextNode;
+    /* 0x7B */ u8 pad7B[5];
+} TextNode; /* size 0x80 */
 
 extern u32 *D_800E9BA0; /* display list head */
 extern void *D_8018FC68_ovl_040E80;
@@ -67,7 +68,74 @@ s32 func_8017B500_ovl_040E80(u8 **pp);
 s16 func_8017A720_ovl_040E80(u8 **pp);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017907C_ovl_040E80);
+extern u8 D_8018FC6C_ovl_040E80;
+extern void *D_80190F40_ovl_040E80;
+extern u32 D_80190F44_ovl_040E80;
+extern u8 *D_80190F50_ovl_040E80;
+extern u16 *D_80190F54_ovl_040E80;
+extern s32 D_80190F70_ovl_040E80;
+extern s32 D_80190F78_ovl_040E80;
+extern u8 *D_8018FC70_ovl_040E80;
+extern u8 *D_8018FC74_ovl_040E80;
+void *func_8009DD28(s32 id);
+s32 ChunkSize(s32 id);
+void *HMallocBack(s32 size);
+void RomRead(void *rom, void *dst, s32 size);
+void bzero(void *p, s32 n);
+
+/* Text system init: n glyph cache nodes in an LRU chain, then the glyph bitmap (0x200), the two
+ * font tables and the kanji index, all in one block from the back of the heap */
+extern u8 D_8018FC6C_ovl_040E80;
+extern void *D_80190F40_ovl_040E80;
+extern u32 D_80190F44_ovl_040E80;
+extern u8 *D_80190F50_ovl_040E80;
+extern u16 *D_80190F54_ovl_040E80;
+extern s32 D_80190F70_ovl_040E80;
+extern s32 D_80190F78_ovl_040E80;
+extern u8 *D_8018FC70_ovl_040E80;
+extern u8 *D_8018FC74_ovl_040E80;
+void *func_8009DD28(s32 id);
+s32 ChunkSize(s32 id);
+void *HMallocBack(s32 size);
+void RomRead(void *rom, void *dst, s32 size);
+void bzero(void *p, s32 n);
+
+/* Text system init: n glyph cache nodes in an LRU chain, then the glyph bitmap (0x200), the two
+ * font tables and the kanji index, all in one block from the back of the heap */
+void func_8017907C_ovl_040E80(s32 n) {
+    s32 i;
+
+    D_8018FC6C_ovl_040E80 = 0;
+    D_80190F40_ovl_040E80 = func_8009DD28(0x0218C4FA);
+    D_80190F70_ovl_040E80 = ChunkSize(0x0218C450);
+    D_80190F78_ovl_040E80 = ChunkSize(0x0218DE48);
+    D_80190F44_ovl_040E80 = ChunkSize(0x0216C9DE);
+    D_80190F48_ovl_040E80 = D_8018FC68_ovl_040E80 =
+        HMallocBack(n * 0x80 + 0x200 + ((D_80190F70_ovl_040E80 + 7) & ~7) + ((D_80190F78_ovl_040E80 + 7) & ~7) + D_80190F44_ovl_040E80);
+    for (i = 0; i < n; i++) {
+        TextNode *p = D_80190F48_ovl_040E80;
+
+        p->value = 0;
+        p->next = p - 1;
+        p->prev = p + 1;
+        p->id = 0x1FFF;
+        D_80190F48_ovl_040E80++;
+    }
+    D_80190F48_ovl_040E80 = D_8018FC68_ovl_040E80;
+    D_80190F48_ovl_040E80->next = NULL;
+    D_80190F4C_ovl_040E80 = (TextNode *)((u8 *)D_8018FC68_ovl_040E80 + (n * 0x80 - 0x80));
+    D_80190F4C_ovl_040E80->prev = NULL;
+    D_80190F50_ovl_040E80 = (u8 *)D_8018FC68_ovl_040E80 + n * 0x80;
+    bzero(D_80190F50_ovl_040E80, 0x200);
+    D_8018FC70_ovl_040E80 = D_80190F50_ovl_040E80 + 0x200;
+    RomRead(func_8009DD28(0x0218C450), D_8018FC70_ovl_040E80, D_80190F70_ovl_040E80);
+    D_8018FC74_ovl_040E80 = D_80190F50_ovl_040E80 + (((D_80190F70_ovl_040E80 + 7) & ~7) + 0x200);
+    RomRead(func_8009DD28(0x0218DE48), D_8018FC74_ovl_040E80, D_80190F78_ovl_040E80);
+    D_80190F54_ovl_040E80 = (u16 *)(D_80190F50_ovl_040E80 + (((D_80190F70_ovl_040E80 + 7) & ~7) + 0x200) +
+                                    ((D_80190F78_ovl_040E80 + 7) & ~7));
+    RomRead(func_8009DD28(0x0216C9DE), D_80190F54_ovl_040E80, D_80190F44_ovl_040E80);
+    func_80179354_ovl_040E80();
+}
 
 void func_801792BC_ovl_040E80(void) {
     D_8018FC68_ovl_040E80 = HFree(D_8018FC68_ovl_040E80);
