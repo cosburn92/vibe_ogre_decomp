@@ -30,9 +30,7 @@ u8 func_8016F5C8(u16 item);
 s32 func_801DC054(void);
 
 /* Puts item in the equipment slot whose class default item is of the same kind */
-#ifdef NON_MATCHING
-/* Only the prologue saves s1 before s3 in the original. */
-void CharacterEquipItem(s32 item, Character *c) {
+void CharacterEquipItem(u16 item, Character *c) {
     u8 kind = func_8016F5C8(item);
     ClassData *cls;
 
@@ -51,9 +49,6 @@ void CharacterEquipItem(s32 item, Character *c) {
         c->items[3] = item;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/195410", CharacterEquipItem);
-#endif
 
 #ifdef NON_MATCHING
 /* Prologue order and the masking of the second item id differ. */
