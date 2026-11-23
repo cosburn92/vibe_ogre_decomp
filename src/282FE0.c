@@ -188,7 +188,45 @@ void func_80227348_ovl_281860(void) {
     MusSetMasterVolume(1, 0x7FFF);
 }
 
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227380_ovl_281860);
+/* Per-frame music update: starts each channel's pending track (s8 at 0x1CB2 + k) once the channel
+ * is free, ending any volume fade; then steps the fade */
+void func_80227380_ovl_281860(void) {
+    s32 k;
+
+    if (D_8022A974_ovl_281860 != NULL) {
+        for (k = 0; k < 3; k++) {
+            if (FIELD(&D_8022A974_ovl_281860[k], u8, 0x1CB2) != 0 &&
+                func_80081B08(FIELD(D_8022A8A8_ovl_281860[k], s32, 0x24)) == 0) {
+                func_801C5938(D_8022A8A8_ovl_281860[k], FIELD(&D_8022A974_ovl_281860[k], u8, 0x1CB2));
+                MusSetMasterVolume(2, 0x7FFF);
+                if (D_8022A8C4_ovl_281860 != NULL) {
+                    HFree(D_8022A8C4_ovl_281860);
+                    D_8022A8C4_ovl_281860 = NULL;
+                    MusSetMasterVolume(1, 0x7FFF);
+                }
+                FIELD(&D_8022A974_ovl_281860[k], u8, 0x1CB2) = 0;
+            }
+        }
+    }
+    if (D_8022A8C4_ovl_281860 != NULL && D_8022A8C4_ovl_281860->h4 > 0) {
+        k = D_8022A8C4_ovl_281860->h2 + D_8022A8C4_ovl_281860->h0;
+        D_8022A8C4_ovl_281860->h4--;
+        if (k < 0) {
+            D_8022A8C4_ovl_281860->h2 = 0;
+        } else if (k > 0x7FFF) {
+            D_8022A8C4_ovl_281860->h2 = 0x7FFF;
+        } else {
+            D_8022A8C4_ovl_281860->h2 = k;
+        }
+        if (D_8022A8C4_ovl_281860->h6 == 7) {
+            MusSetMasterVolume(3, D_8022A8C4_ovl_281860->h2);
+        } else if (D_8022A8C4_ovl_281860->h6 >= 2) {
+            MusSetMasterVolume(1, D_8022A8C4_ovl_281860->h2);
+        } else {
+            MusSetMasterVolume(2, D_8022A8C4_ovl_281860->h2);
+        }
+    }
+}
 
 void func_802274F4_ovl_281860(s32 i, s32 v) {
     s32 k;
