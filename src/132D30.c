@@ -219,7 +219,91 @@ void func_801DEAF4_ovl_101CE0(void) {
     }
 }
 
+extern u8 gLegions[][11];
+extern u8 D_800E7A90[];
+void func_801DC910_ovl_101CE0(void);
+
+/* Applies unit u's resting result r: 0 ends a camp (stationed units under 30 get flag 0x4000
+ * instead), 100 starts one: a resting legion leader on suitable ground (or whose members are all
+ * at rest) gets flag 0x2000; otherwise the unit stops and, for a leader, all members camp */
+#ifdef NON_MATCHING
+/* same size; the original zero-extends the tile id (andi 0xFFFF) for the compares and adds the
+ * legion base and index the other way round in the last loop */
+void func_801DED50_ovl_101CE0(u8 *u, s32 r) {
+    u8 *l;
+    u8 *m;
+    s32 i;
+
+    if (r == -1) {
+        return;
+    }
+    if (r == 0) {
+        if (!(FIELD(u, u32, 0) & 0x20000)) {
+            return;
+        }
+        if ((FIELD(u, u32, 0) & 8) && u[4] < 30) {
+            FIELD(u, u32, 0x78) |= 0x4000;
+            return;
+        }
+        func_801DC910_ovl_101CE0();
+        FIELD(u, u32, 0) &= ~0x20000;
+        return;
+    }
+    if (r != 100) {
+        return;
+    }
+    if (FIELD(u, u32, 0) & 0x21000) {
+        return;
+    }
+    if ((FIELD(u, u32, 0) & 8) && u[4] < 30) {
+        if (FIELD(u, u32, 0) & 0x40) {
+            l = &D_801969BA[func_801DA228_ovl_101CE0(u) * 11];
+            for (i = 0; i < 5; i++) {
+                if (l[i] != 0xFF) {
+                    m = D_801F0CB0_ovl_101CE0[l[i]];
+                    if (FIELD(m, u32, 0) & 0x20000) {
+                        FIELD(u, u32, 0x78) |= 0x2000;
+                        break;
+                    }
+                    if (FIELD(m, u32, 0x78) & 0x2000) {
+                        break;
+                    }
+                }
+            }
+            if (i == 5) {
+                FIELD(u, u32, 0x78) |= 0x2000;
+            }
+        } else {
+            u8 c = ((u8 **)D_800E7A90)[D_800E7A90[0x33]][FIELD(u, s32, 0x14)];
+            u16 t = c;
+
+            if (t == 8 || t == 15 || (u32)(c - 0x10) < 2 || t == 0x12 || t == 0x13) {
+                return;
+            }
+            FIELD(u, u32, 0x78) |= 0x2000;
+        }
+        return;
+    }
+    func_801DC910_ovl_101CE0();
+    if (!(FIELD(u, u32, 0) & 0x40)) {
+        FIELD(u, u32, 0) |= 0x20000;
+        return;
+    }
+    {
+        s32 j;
+        u8 *g;
+
+        g = gLegions[func_801DA228_ovl_101CE0(u)];
+        for (j = 0; j < 5; j++) {
+            if (g[j + 2] != 0xFF) {
+                FIELD(D_801F0CB0_ovl_101CE0[g[j + 2]], u32, 0) |= 0x20000;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DED50_ovl_101CE0);
+#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
