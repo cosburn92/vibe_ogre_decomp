@@ -100,7 +100,48 @@ void func_8016C268_ovl_040E80(Date420 *d) {
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C268_ovl_040E80);
 #endif
 
+/* Converts d from the 12-month calendar back to the 16-month game one (year + 1748) */
+#ifdef NON_MATCHING
+/* 93 vs 89 instructions: as func_8016C268, the original evaluates (m == k) & leap as setcc + and; GCC here turns it into branches */
+void func_8016C3C4_ovl_040E80(Date420 *d) {
+    s32 leap = 0;
+    s16 days = d->day - 1;
+    s32 c;
+    u8 t;
+    u8 m;
+
+    if (func_8016C1D0_ovl_040E80(d->year, 1) == 1) {
+        leap = 1;
+    }
+    d->year += 1748;
+    for (m = 0; m < d->month - 1; m++) {
+        days += D_80187000_ovl_040E80[m];
+        c = (m == 2) & leap;
+        if (c) {
+            days++;
+        }
+    }
+    for (m = 0;; m++) {
+        t = D_80187010_ovl_040E80[m];
+        c = (m == 1) & leap;
+        days -= t;
+        if (c) {
+            days--;
+        }
+        if (days < 0) {
+            break;
+        }
+    }
+    if (c) {
+        days++;
+    }
+    days += t;
+    d->month = m + 1;
+    d->day = days + 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C3C4_ovl_040E80);
+#endif
 
 /* One-second tick; in day mode (1) wraps at 24 hours and returns 1, otherwise counts hours up to 0xFFFD */
 inline u8 func_8016C528_ovl_040E80(Clock420 *c, u8 mode) {
