@@ -158,26 +158,21 @@ void func_8021592C_ovl_18F100(void) {
 INCLUDE_ASM("asm/nonmatchings/18F100", func_802159B0_ovl_18F100);
 
 /* Whether any id in list i (except the current one) has a level of at least lvl */
-#ifdef NON_MATCHING
-/* Loop layout differs. */
+/* Whether any id in list i (except the current one) has a level of at least lvl */
 s32 func_80216FF4_ovl_18F100(s32 i, s32 lvl) {
-    s8 *p = &D_8021B188_ovl_18F100[i * 9];
+    s8 *l = &D_8021B188_ovl_18F100[i * 9];
+    s32 k;
 
-    if (*p == -1) {
-        return 0;
-    }
-    for (; *p != -1; p++) {
-        if (*p == D_801F0B9C) {
-            continue;
-        }
-        if (D_8021B299_ovl_18F100[*p] >= lvl) {
-            return 1;
-        }
+    if (l[0] != -1) {
+        k = 0;
+        do {
+            if (l[k] != D_801F0B9C && D_8021B299_ovl_18F100[l[k]] >= lvl) {
+                return 1;
+            }
+            k++;
+        } while (l[k] != -1);
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/18F100", func_80216FF4_ovl_18F100);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_80217068_ovl_18F100);
