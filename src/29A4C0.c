@@ -593,7 +593,91 @@ void func_8022C5C8_ovl_29A4C0(s32 i) {
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C5C8_ovl_29A4C0);
 #endif
 
+extern u8 D_802394F0_ovl_29A4C0[];
+extern u8 D_802394FC_ovl_29A4C0[];
+extern u8 *D_801CE8BC;
+extern s8 D_800E9C0A[];
+extern f32 D_8022A778;
+extern f32 D_8022A78C;
+extern f32 D_8022A790;
+extern f32 D_8022A794;
+extern f32 D_8022A798;
+extern f32 D_8022A79C;
+extern f32 D_8022A7A0;
+s8 func_8020B150(s16 id, u8 *idx, u8 *o);
+void func_8020B0E4(s16 id, u8 *a, u8 *b, s32 c);
+
+/* Starts battle message id for the objects in slots[0..3]: each one's message unit is placed at
+ * the object (offset by the current camera when not in mode 1), the camera parameters are
+ * restored and the message runs with sound byte 8 forced on */
+#ifdef NON_MATCHING
+/* 170/170, 157 words: the original keeps 0xFF in s4 across the loop (one more saved register) and tests the unit byte without re-masking */
+void func_8022C6C4_ovl_29A4C0(s16 id, s32 *slots) {
+    u8 idx[4];
+    u8 *cam;
+    u32 i;
+    s32 k;
+    u8 save;
+
+    memset(D_802394F0_ovl_29A4C0, -1, 0xC);
+    memset(D_802394FC_ovl_29A4C0, -1, 0xC);
+    memset(idx, -1, 4);
+    cam = NULL;
+    if (D_8018FC19 == 0) {
+        cam = FLD(D_8022A974, u8 *, FLD(D_8022A974, u8, 0x1CB0) * 4 + 0x1C54);
+    }
+    for (i = 0; i < 28; i++) {
+        u8 *o = FLD(D_8022A974, u8 *, i * 4 + 0x18);
+
+        if (o == NULL) {
+            continue;
+        }
+        for (k = 0; k < 4; k++) {
+            if (i == slots[k]) {
+                u8 *u;
+
+                if (o[0x147] != 0xFF) {
+                    idx[k] = o[0x147];
+                } else {
+                    idx[k] = i;
+                    o[0x147] = i;
+                }
+                u = D_801CE8BC + 0x1C4 + o[0x147] * 0xF8;
+                FLD(u, s32, 0x48) = 0x101;
+                FLD(u, s32, 0x5C) = FLD(o, f32, 0x11C);
+                FLD(u, s32, 0x60) = FLD(o, f32, 0x120);
+                FLD(u, s32, 0x64) = FLD(o, f32, 0x124);
+                if (D_8018FC19 == 0) {
+                    FLD(u, s32, 0x5C) = FLD(u, s32, 0x5C) + FLD(cam, f32, 0x40);
+                    FLD(u, s32, 0x64) = FLD(u, s32, 0x64) + FLD(cam, f32, 0x44);
+                }
+                u[0x33] = func_8020B150(id, &idx[k], o);
+                break;
+            }
+        }
+    }
+    if (D_8018FC19 == 0) {
+        D_801D0710 = D_8022A778;
+        D_801D0720 = D_8022A78C;
+        D_801D072C = D_8022A790;
+        D_801D0704 = D_8022A794;
+        D_801D0730 = D_8022A798;
+        D_801D083C = D_8022A79C;
+        D_801D0700 = D_8022A7A0;
+    }
+    save = D_800E9C0A[8];
+    D_800E9C0A[8] = 1;
+    D_802394F0_ovl_29A4C0[0] = idx[0];
+    D_802394F0_ovl_29A4C0[1] = idx[1];
+    D_802394FC_ovl_29A4C0[0] = idx[2];
+    D_802394FC_ovl_29A4C0[1] = idx[3];
+    func_8020B0E4(id, D_802394F0_ovl_29A4C0, D_802394FC_ovl_29A4C0, 0);
+    D_801CFC70 = 1;
+    D_800E9C0A[8] = save;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C6C4_ovl_29A4C0);
+#endif
 
 s32 func_8022C96C_ovl_29A4C0(void) {
     if (D_801CFC70 < 0) {
