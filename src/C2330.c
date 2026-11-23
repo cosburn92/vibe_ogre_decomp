@@ -213,7 +213,40 @@ INCLUDE_ASM("asm/nonmatchings/C2330", func_801D5D5C_ovl_087200);
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D6508_ovl_087200);
 
+u16 func_801CF320_ovl_087200(u8 id);
+u16 func_801CF2F0_ovl_087200(u8 id);
+
+/* 1 if items a and b can be combined: kinds 1/2 sharing a kind bit (same item or a has a
+ * sub-kind), or both of kind 8 with sub-kind 5 */
+#ifdef NON_MATCHING
+/* 61/69: the original's switch tree splits at 5 (range 1-2 left, 32 and 8 right) and counts r up with bnezl; ours roots at 8 */
+u8 func_801D6D8C_ovl_087200(u8 a, u8 b) {
+    s32 r = 0;
+    u16 ka = func_801CF320_ovl_087200(a);
+    u16 kb = func_801CF320_ovl_087200(b);
+
+    switch (ka) {
+        case 1:
+        case 2:
+            if (a == b || func_801CF2F0_ovl_087200(a) != 0) {
+                if (ka & (ka & kb)) {
+                    r++;
+                }
+            }
+            break;
+        case 8:
+            if (func_801CF2F0_ovl_087200(a) == 5 && func_801CF2F0_ovl_087200(b) == 5) {
+                r = 1;
+            }
+            break;
+        case 32:
+            break;
+    }
+    return (u8)r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D6D8C_ovl_087200);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/C2330", func_801D6EA0_ovl_087200);
 
