@@ -430,11 +430,97 @@ void func_80214324_ovl_25EE90(Set26 *s) {
     func_8020C074_ovl_25EE90(s->cnt);
 }
 
+typedef struct {
+    s16 frame;
+    s16 val;
+} Key26;
+s32 func_8020EC2C_ovl_25EE90(s32 kind, s32 val);
+
+/* Applies frame `frame` of model mdl's keyed tracks (record flag 0x8000) to the slots: each slot
+ * gets the value of the last key at or before the frame */
+#ifdef NON_MATCHING
+/* 78/78 instructions, 13 words differ: frame, record offset and slot pointer rotate through s2-s5 */
+void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
+    u32 i;
+
+    if (FIELD(mdl, s32, 0) >= frame) {
+        for (i = 0; i < mdl->n; i++) {
+            if (slots[i] != 0) {
+                u16 f = FIELD(&mdl->recs[i], u16, 2);
+                u8 *o = (u8 *)slots[i] + 0x18;
+
+                if (f & 0x8000) {
+                    Key26 *k = FIELD(mdl, Key26 **, 0x14)[f & 0x7FFF];
+                    s32 j = 0;
+
+                loop:
+                    if (k[j].frame == -1 && k[j].val == 0) {
+                        j--;
+                    } else if (frame == k[j].frame) {
+                        goto found;
+                    } else if (frame < k[j].frame) {
+                        j--;
+                    } else {
+                        j++;
+                        goto loop;
+                    }
+                    if (j < 0) {
+                        j = 0;
+                    }
+                found:
+                    FIELD(o, s32, 0xC) = func_8020EC2C_ovl_25EE90(7, k[j].val);
+                }
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_802143B4_ovl_25EE90);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_802144EC_ovl_25EE90);
 
+/* As func_802143B4 for the other slot layout (value at +0x20): applies frame `frame` of model mdl's keyed tracks (record flag 0x8000) to the slots: each slot
+ * gets the value of the last key at or before the frame */
+#ifdef NON_MATCHING
+/* same as func_802143B4 */
+void func_8021463C_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
+    u32 i;
+
+    if (FIELD(mdl, s32, 0) >= frame) {
+        for (i = 0; i < mdl->n; i++) {
+            if (slots[i] != 0) {
+                u16 f = FIELD(&mdl->recs[i], u16, 2);
+                u8 *o = (u8 *)slots[i] + 0x14;
+
+                if (f & 0x8000) {
+                    Key26 *k = FIELD(mdl, Key26 **, 0x14)[f & 0x7FFF];
+                    s32 j = 0;
+
+                loop:
+                    if (k[j].frame == -1 && k[j].val == 0) {
+                        j--;
+                    } else if (frame == k[j].frame) {
+                        goto found;
+                    } else if (frame < k[j].frame) {
+                        j--;
+                    } else {
+                        j++;
+                        goto loop;
+                    }
+                    if (j < 0) {
+                        j = 0;
+                    }
+                found:
+                    FIELD(o, s32, 0xC) = func_8020EC2C_ovl_25EE90(7, k[j].val);
+                }
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_8021463C_ovl_25EE90);
+#endif
 
 /* Converts object o to the func_80215654 layout (rebuilds its body from +0x1C) */
 void func_80214774_ovl_25EE90(u8 *o) {
