@@ -369,7 +369,54 @@ s16 func_802279F4_ovl_281860(void) {
     return 0;
 }
 
+typedef struct {
+    void *name;
+    s32 index;
+    u8 *buf;
+    s32 size;
+} Arc16_282;
+extern Arc16_282 D_8022ABA8_ovl_281860;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+void func_8007ACB0(void *arc, void *reqs, s32 n);
+void *func_80071C04(s32 size);
+
+/* Loads entry k of the index chunk id and unpacks it (LHa archive or LZ) */
+#ifdef NON_MATCHING
+/* 82/82 instructions, 12 words differ: id and the index buffer swap s1/s2 (same family as 20BCE0 func_801CC234) */
+void *func_80227A18_ovl_281860(s32 id, s32 k) {
+    s32 *index = func_80071C04(ChunkSize(id));
+    s32 e;
+    s32 size;
+    u8 *raw;
+    void *out;
+
+    LoadChunkRaw(index, id);
+    e = index[k];
+    size = ChunkSize(e);
+    HFree(index);
+    raw = func_80071C04(size);
+    LoadChunkRaw(raw, e);
+    if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
+        Arc16_282 arc = D_8022ABA8_ovl_281860;
+        Arc16_282 req = D_8022ABA8_ovl_281860;
+
+        arc.buf = raw;
+        arc.size = size;
+        func_8007ACB0(&arc, &req, 1);
+        out = req.buf;
+    } else {
+        out = HMalloc(ReadU32BE(raw));
+        DecodeLZ(out, raw);
+    }
+    HFree(raw);
+    return out;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227A18_ovl_281860);
+#endif
 
 void func_80227B60_ovl_281860(void) {
     u8 *p = D_8022A974_ovl_281860;
