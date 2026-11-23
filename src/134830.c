@@ -141,7 +141,60 @@ INCLUDE_ASM("asm/nonmatchings/134830", func_801E0868_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E09DC_ovl_101CE0);
 
+u8 func_801793E4(u8 c, s32 a);
+
+/* Length of string s in cells (control byte 0x0B takes two) while adding the glyph widths to *w */
+static inline s32 TextLen134(u8 *s, s32 *w) {
+    s32 n = 0;
+
+    while (*s != 0) {
+        s32 c = func_801793E4(*s, 0);
+
+        if (c == 0xB) {
+            s++;
+            n += 2;
+        } else {
+            n++;
+        }
+        s++;
+        *w += c;
+    }
+    return n;
+}
+
+/* Lays out the two-line prompt of window o: line lengths, and the button and text rects in r */
+#ifdef NON_MATCHING
+/* 93/93 instructions, 10 words differ: the original keeps right - 22 - w - 16 as three steps and stores the second length after loading both widths */
+void func_801E0DBC_ovl_101CE0(u8 *o, s32 *r) {
+    s32 w0;
+    s32 w1;
+    s32 w;
+    s32 x;
+    s32 y;
+    s32 m;
+
+    FIELD(o, s32, 0x58) = TextLen134(FIELD(o, u8 *, 0x44), &w0);
+    FIELD(o, s32, 0x5C) = TextLen134(FIELD(o, u8 *, 0x48), &w1);
+    {
+        s32 right = FIELD(o, s32, 0x14);
+
+        w = w0 < w1 ? w1 : w0;
+        x = right - 0x16 - w - 0x10;
+        y = FIELD(o, s32, 0x18);
+        m = (x + right) / 2;
+        *r++ = m - 2;
+        *r++ = y + 1;
+        *r++ = m + 2;
+        *r++ = y + 3;
+        *r++ = x;
+        *r++ = y + 1;
+        *r++ = right;
+        *r = y + 0x25;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E0DBC_ovl_101CE0);
+#endif
 
 s32 func_801E0F30_ovl_101CE0(s32 a) {
     s32 *p = D_801ED4A4_ovl_101CE0;
