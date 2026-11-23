@@ -552,8 +552,6 @@ s32 func_8022C96C_ovl_29A4C0(void) {
     return D_801CFC70;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C988_ovl_29A4C0);
-
 /* Colour fade slot (D_8022A974->p1BB4[i]) */
 typedef struct {
     /* 0x0 */ s16 total;
@@ -562,6 +560,53 @@ typedef struct {
     /* 0x7 */ u8 from[3];
     /* 0xA */ u8 to[3];
 } Fade29;
+
+extern u8 D_801D0828;
+extern u8 D_801D0829;
+extern u8 D_801D082A;
+extern u8 D_801D082B;
+extern u8 D_801D082C;
+
+/* (Re)creates unit k's tint record: colour a (bytes 4-9 twice) to b (10-12) over n frames */
+static inline void SetTint29(u32 k, s32 *a, s32 *b, s16 n) {
+    s32 i;
+
+    if (D_8022A974->p1BB4[k] != NULL) {
+        HFree(D_8022A974->p1BB4[k]);
+    }
+    D_8022A974->p1BB4[k] = HMalloc(0x50);
+    for (i = 0; i < 3; i++) {
+        ((Fade29 *)D_8022A974->p1BB4[k])->cur[i] = a[i];
+        ((Fade29 *)D_8022A974->p1BB4[k])->from[i] = a[i];
+        ((Fade29 *)D_8022A974->p1BB4[k])->to[i] = b[i];
+    }
+    ((Fade29 *)D_8022A974->p1BB4[k])->total = n;
+    ((Fade29 *)D_8022A974->p1BB4[k])->t = 0;
+}
+
+/* Sets the tint of unit k (all 20 when k is -1) and the global tint colour */
+#ifdef NON_MATCHING
+/* 147/147 instructions, 12 words differ: the original keeps the global tint stores and the colour loads in source order */
+void func_8022C988_ovl_29A4C0(s32 *a, s32 *b, s16 n, s32 k) {
+    u32 j;
+
+    if (k == -1) {
+        for (j = 0; j < 20; j++) {
+            SetTint29(j, a, b, n);
+        }
+    } else {
+        SetTint29(k, a, b, n);
+    }
+    D_801D082C = 0x5F;
+    D_801D0828 = a[0];
+    D_801D0829 = a[1];
+    D_801D082B = 0xFF;
+    D_801D082A = a[2];
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C988_ovl_29A4C0);
+#endif
+
 extern u8 D_801D0828;
 extern u8 D_801D0829;
 extern u8 D_801D082A;
