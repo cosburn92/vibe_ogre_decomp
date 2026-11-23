@@ -147,7 +147,7 @@ void func_801C8050_ovl_087200(s32 a, s32 v) {
     func_801CC410_ovl_087200(0x100)[0xE7] = v;
 }
 
-void func_801C80A8_ovl_087200(s32 a) {
+inline void func_801C80A8_ovl_087200(s32 a) {
     u8 *w = func_801CC410_ovl_087200(5);
 
     u8 *x = w;
@@ -268,46 +268,36 @@ void func_801CA110_ovl_087200(void) {
     D_80196AF8[0xA1] = 0;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801A7940_ovl_087200();                    /* extern */
-void func_801A87F8_ovl_087200();                    /* extern */
-extern s32 D_80193AC0;
-extern s32 D_80196B00;
+typedef struct {
+    /* 0x0 */ u16 id;
+    /* 0x2 */ u8 equipped;
+    /* 0x3 */ u8 count;
+} StockB48;
+extern StockB48 D_80193AC0[];
 
-void func_801CA148_ovl_087200(void) {
-    s32 temp_v0;
-    s32 var_v0;
-    u16 var_v1;
-    u8 *temp_v0_2;
-    void *temp_t0;
+void func_801A7940_ovl_087200();
+void func_801A87F8_ovl_087200();
+extern StockB48 D_80196B00[];
 
-    FIELD(D_80196AF8, s8, 0xA1) = 1;
-    temp_v0 = FIELD(((FIELD(D_80196AF8, s16, 0x1BDA) * 2) + D_80196AF8), u16, 0x1BEE) * 4;
-    if ((u8) FIELD(&D_80196AF8[FIELD(D_80196AF8, u8, 0x9D)], u8, 0x1E00) >= 7U) {
-        var_v1 = *(&D_80193AC0 + temp_v0);
-        var_v0 = 0x1B0000;
+/* Opens the item list for the selected category: list window (its frame flag 4 set), scroll
+ * bar, then the description window for the current entry (consumables use message group 0x1B) */
+void func_801CA148_ovl_087200(s32 unused) {
+    u16 k = FIELD(D_80196AF8 + FIELD(D_80196AF8, s16, 0x1BDA) * 2, u16, 0x1BEE);
+    s32 msg;
+    u8 *w;
+
+    D_80196AF8[0xA1] = 1;
+    if ((D_80196AF8 + D_80196AF8[0x9D])[0x1E00] >= 7) {
+        msg = D_80193AC0[k].id | 0x1B0000;
     } else {
-        var_v1 = *(&D_80196B00 + temp_v0);
-        var_v0 = 0x130000;
+        msg = D_80196B00[k].id | 0x130000;
     }
-    temp_t0 = D_80196AF8 + ((func_801CC974_ovl_087200(0x400U, 0xAU, func_801A87F8_ovl_087200, 0x18, 0x16, 0x20, 0x1E, 0x18, 0x16, 0xB2, 0xB0) * 0x108) + 0x650);
-    FIELD(temp_t0, u8, 0xE6) = (u8) (FIELD(temp_t0, u8, 0xE6) | 4);
-    func_801CC974_ovl_087200(3U, 0xAU, func_801A7940_ovl_087200, 0x120, 0x18, 0x128, 0x20, 0xBC, 0x18, 0x128, 0xAE);
-    temp_v0_2 = func_801CC410_ovl_087200(5);
-    if (temp_v0_2 == NULL) {
-        FIELD(D_80196AF8, s32, 0x10D0) = func_801CC974_ovl_087200(5U, 0xAU, func_801A43F4_ovl_087200, 0x9C, 0xD6, 0xA4, 0xDE, 0x18, 0xB6, 0x128, 0xDE);
-    } else {
-        HFree(FIELD(temp_v0_2, void *, 0xF4));
-    }
-    func_801C0798_ovl_087200(func_801CC3B8_ovl_087200(5), var_v1 | var_v0);
+    w = D_80196AF8 + ((s16)func_801CC974_ovl_087200(0x400, 10, func_801A87F8_ovl_087200, 0x18, 0x16, 0x20, 0x1E, 0x18, 0x16,
+                                               0xB2, 0xB0) * 0x108 + 0x650);
+    w[0xE6] |= 4;
+    func_801CC974_ovl_087200(3, 10, func_801A7940_ovl_087200, 0x120, 0x18, 0x128, 0x20, 0xBC, 0x18, 0x128, 0xAE);
+    func_801C80A8_ovl_087200(msg);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA148_ovl_087200);
-#endif
 
 u16 func_801CFA04_ovl_087200(u16 k);
 void func_801CA148_ovl_087200(s32 a);
@@ -386,12 +376,6 @@ void func_801CA44C_ovl_087200(u8 *sq) {
     func_801CE28C_ovl_087200();
 }
 
-typedef struct {
-    /* 0x0 */ u16 id;
-    /* 0x2 */ u8 equipped;
-    /* 0x3 */ u8 count;
-} StockB48;
-extern StockB48 D_80193AC0[];
 u16 func_8016B738(u16 id);
 u8 func_801CDEB8_ovl_087200(u8 sq);
 void func_801CA704_ovl_087200(u16 r);
