@@ -57,7 +57,7 @@ void *LoadChunkRaw(void *dst, s32 id);
 
 /* Loads entry k (> 0) of index chunk D_80220210[set] into the shared buffer unless it is already
  * there; hangs on a bad index or size */
-void func_8020C250_ovl_25EE90(u16 set, s32 k) {
+inline void func_8020C250_ovl_25EE90(u16 set, s32 k) {
     s32 id;
     s32 n;
 
@@ -86,7 +86,24 @@ void func_8020C250_ovl_25EE90(u16 set, s32 k) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C380_ovl_25EE90);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+
+/* Loads entry id of resource set `kind` (func_8020C250) and returns an LZ-decoded copy */
+void *func_8020C380_ovl_25EE90(s32 kind, s32 id) {
+    void *src;
+    void *p;
+
+    func_8020C250_ovl_25EE90(kind, id);
+    src = D_80220F20_ovl_25EE90;
+    p = HMalloc(ReadU32BE(src));
+    if (p != NULL) {
+        DecodeLZ(p, src);
+        return p;
+    }
+    while (1) {
+    }
+}
 
 /* Turns the offsets in a loaded model blob into pointers */
 void func_8020C4EC_ovl_25EE90(void *mv) {
