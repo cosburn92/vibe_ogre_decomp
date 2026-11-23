@@ -575,7 +575,79 @@ void func_80080998(void *dst, void *src, s32 n);
 s32 func_801C8AEC_ovl_1F0A30(void);
 s32 func_801C8AFC_ovl_1F0A30(void);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFC0C_ovl_1F0A30);
+extern u8 D_80196AED;
+extern u8 D_801976DA;
+extern u8 D_801976D9;
+extern u8 D_80197207[];
+void func_801BE71C_ovl_1F0A30();
+void func_801C1D90_ovl_1F0A30();
+void func_801C1A94_ovl_1F0A30();
+void func_801C2310_ovl_1F0A30();
+s32 func_801C22D0_ovl_1F0A30(s32);
+void func_801BC5FC_ovl_1F0A30();
+void func_801BC640_ovl_1F0A30();
+void func_801B7E9C_ovl_1F0A30();
+s32 func_801BCFF0_ovl_1F0A30();
+s32 func_8020B030();
+s32 func_801CBC2C_ovl_1F0A30();
+void func_801BDC78_ovl_1F0A30();
+void func_801C62E4_ovl_1F0A30();
+void func_801C88CC_ovl_1F0A30();
+void bzero(void *p, s32 n);
+
+/* Sets the battle context up (the reverse of func_801B00B0): saves the roster records when a
+ * special battle mode is on, then brings the subsystems up */
+void func_801AFC0C_ovl_1F0A30(void) {
+    D_801CEAB0_ovl_1F0A30 = (void *)(u32)D_80196AED;
+    if (func_801C8AEC_ovl_1F0A30() != 0) {
+        D_801976DA = 24;
+        D_801976D9 = 1;
+        D_801CEAB0_ovl_1F0A30 = (void *)0x31;
+    }
+    if (func_801C8AFC_ovl_1F0A30() != 0) {
+        D_801976D9 = 1;
+    }
+    func_801BE71C_ovl_1F0A30();
+    D_801CE8BC_ovl_1F0A30 = HMalloc(0x6094);
+    bzero(D_801CE8BC_ovl_1F0A30, 0x6094);
+    D_801CE8C0_ovl_1F0A30 = (s32 *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0x57E0);
+    FIELD(D_801CE8BC_ovl_1F0A30, u8, 0x6084) = 1;
+    if (func_801C8AEC_ovl_1F0A30() != 0 || func_801C8AFC_ovl_1F0A30() != 0) {
+        u8 *r = HMalloc(0x298);
+        s32 k;
+
+        func_80080998(r, D_80190F80, 0x16C);
+        for (k = 0; k < 100; k++) {
+            ((u16 *)(r + 0x16C))[k] = D_80193BD8[k].h0;
+            FIELD(r + k, u8, 0x234) = D_80193BD8[k].b1B;
+        }
+        FIELD(D_801CE8BC_ovl_1F0A30, u8 *, 0x607C) = r;
+    }
+    func_801C1D90_ovl_1F0A30();
+    func_801C1A94_ovl_1F0A30();
+    func_801C2310_ovl_1F0A30();
+    func_801C22D0_ovl_1F0A30(2);
+    func_801BC5FC_ovl_1F0A30();
+    func_801BC640_ovl_1F0A30();
+    func_801B7E9C_ovl_1F0A30();
+    D_801CE8BC_ovl_1F0A30->strategy = D_80197207[D_801976DC * 25];
+    func_801AEA90_ovl_1F0A30();
+    {
+        s32 *q = D_801CE8C0_ovl_1F0A30;
+
+        q[0] = 0;
+        q[1] = 0;
+        q[2] = 0;
+    }
+    func_801CA680_ovl_1F0A30(0);
+    func_801BCFF0_ovl_1F0A30();
+    func_8020B030();
+    func_801CBC2C_ovl_1F0A30();
+    func_801BDC78_ovl_1F0A30();
+    func_801C62E4_ovl_1F0A30(0, (u8 *)D_801CE8C0_ovl_1F0A30 + 0x82F, D_801976DC);
+    func_801C62E4_ovl_1F0A30(1, (u8 *)D_801CE8C0_ovl_1F0A30 + 0x848, D_801976E8);
+    func_801C88CC_ovl_1F0A30(2);
+}
 
 #ifdef NON_MATCHING
 /* m2c draft, 500 words from the target; queued for the permuter */
