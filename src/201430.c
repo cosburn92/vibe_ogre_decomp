@@ -594,86 +594,37 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BEF14_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF59C_ovl_1F0A30);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801BF858_ovl_1F0A30(u16 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, u32 arg6, u32 arg7) {
-    u32 sp38;
-    s16 *var_s2;
-    s16 var_a0;
-    s32 temp_a0;
-    s32 temp_v0_2;
-    s32 temp_v1;
-    s32 var_v0;
-    u16 *var_a1;
-    u32 temp_v0;
-    u32 var_s0;
-    u32 var_s1;
-    u32 var_s3;
-    u32 var_s6;
-    u32 var_t0;
-    u32 var_v1;
+u32 func_801BF59C_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, u32 w, u32 h, u32 x, u32 y);
 
-    var_t0 = arg7;
-    var_s6 = 0x10;
-    if (arg1 != 0) {
-        var_s6 = 0x100;
+/* Collects the distinct RGBA5551 colours of a w x h image (sampled through func_801BF59C) into
+ * pal, up to 16 colours (256 when big) */
+#ifdef NON_MATCHING
+/* 87/87, 8 words: a and b swap s7/s8 */
+inline void func_801BF858_ovl_1F0A30(u16 *pal, s32 big, s32 a, s32 b, s32 c, s32 d, u32 w, u32 h) {
+    u32 max = 16;
+    u32 n;
+    u32 x;
+    u32 y;
+    u32 k;
+
+    if (big) {
+        max = 256;
     }
-    var_s0 = 0;
-    var_s3 = 0;
-    if (var_t0 != 0) {
-loop_3:
-        var_s1 = 0;
-        if (arg6 != 0) {
-            var_s2 = (var_s0 * 2) + arg0;
-loop_5:
-            sp38 = var_t0;
-            temp_v0 = func_801BF59C_ovl_1F0A30(arg2, arg3, arg4, arg5, arg6, var_t0, var_s1, var_s3);
-            temp_a0 = ((temp_v0 >> 0x10) & 0xF800) | ((temp_v0 >> 0xD) & 0x7C0);
-            temp_v1 = (temp_v0 >> 0xA) & 0x3E;
-            temp_v0_2 = temp_v0 & 0xFF;
-            var_a0 = temp_a0 | temp_v1;
-            if (temp_v0_2 != 0) {
-                var_a0 |= 1;
-            }
-            var_v1 = 0;
-            if (var_s0 != 0) {
-                var_a1 = arg0;
-loop_9:
-                var_v0 = var_v1 < var_s0;
-                if (*var_a1 != (var_a0 & 0xFFFF)) {
-                    var_v1 += 1;
-                    var_a1 += 2;
-                    if (var_v1 >= var_s0) {
-                        var_v0 = var_v1 < var_s0;
-                    } else {
-                        goto loop_9;
-                    }
+    n = 0;
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            u32 rgba = func_801BF59C_ovl_1F0A30(a, b, c, d, w, h, x, y);
+            u16 col = ((rgba >> 16) & 0xF800) | ((rgba >> 13) & 0x7C0) | ((rgba >> 10) & 0x3E) | ((rgba & 0xFF) ? 1 : 0);
+            for (k = 0; k < n; k++) {
+                if (pal[k] == col) {
+                    break;
                 }
-                if (var_v0 == 0) {
-                    goto block_13;
-                }
-                goto block_14;
             }
-block_13:
-            *var_s2 = var_a0;
-            var_s0 += 1;
-            var_s2 += 2;
-            if (var_s0 < var_s6) {
-block_14:
-                var_s1 += 1;
-                if (var_s1 >= arg6) {
-                    goto block_15;
+            if (k >= n) {
+                pal[n++] = col;
+                if (n >= max) {
+                    return;
                 }
-                goto loop_5;
-            }
-        } else {
-block_15:
-            var_s3 += 1;
-            if (var_s3 < var_t0) {
-                goto loop_3;
             }
         }
     }
@@ -682,105 +633,23 @@ block_15:
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF858_ovl_1F0A30);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 99 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801BF9B4_ovl_1F0A30(s32 arg0, u16 *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, u32 arg8, u32 arg9) {
-    u16 *sp2C;
-    s32 sp34;
-    s32 sp3C;
-    s32 sp44;
-    s32 sp4C;
-    s32 var_v0;
-    u16 *var_a1;
-    u16 *var_s2;
-    u16 var_a0;
-    u32 temp_v0;
-    u32 var_s0;
-    u32 var_s0_2;
-    u32 var_s1;
-    u32 var_s1_2;
-    u32 var_s3;
-    u32 var_s7;
-    u32 var_v1;
+void func_801BEF14_ovl_1F0A30(s32 dst, u16 *pal, s32 fmt, s32 big, u32 w, u32 h, u32 x, u32 y, u32 rgba);
 
-    sp2C = arg1;
-    sp34 = arg2;
-    sp3C = arg3;
-    sp4C = arg0;
-    sp44 = arg4;
-    if (arg2 == 2) {
-        var_s7 = 0x10;
-        if (arg3 != 0) {
-            var_s7 = 0x100;
-        }
-        var_s0 = 0;
-        var_s3 = 0;
-        if (arg9 != 0) {
-loop_4:
-            var_s1 = 0;
-            if (arg8 != 0) {
-                var_s2 = &sp2C[var_s0];
-loop_6:
-                temp_v0 = func_801BF59C_ovl_1F0A30(sp44, arg5, arg6, arg7, arg8, arg9, var_s1, var_s3);
-                var_a0 = ((temp_v0 >> 0x10) & 0xF800) | ((temp_v0 >> 0xD) & 0x7C0) | ((temp_v0 >> 0xA) & 0x3E);
-                if (temp_v0 & 0xFF) {
-                    var_a0 |= 1;
-                }
-                var_v1 = 0;
-                if (var_s0 != 0) {
-                    var_a1 = sp2C;
-loop_10:
-                    var_v0 = var_v1 < var_s0;
-                    if (*var_a1 != (var_a0 & 0xFFFF)) {
-                        var_v1 += 1;
-                        var_a1 += 2;
-                        if (var_v1 >= var_s0) {
-                            var_v0 = var_v1 < var_s0;
-                        } else {
-                            goto loop_10;
-                        }
-                    }
-                    if (var_v0 == 0) {
-                        goto block_14;
-                    }
-                    goto block_15;
-                }
-block_14:
-                *var_s2 = var_a0;
-                var_s0 += 1;
-                var_s2 += 2;
-                if (var_s0 < var_s7) {
-block_15:
-                    var_s1 += 1;
-                    if (var_s1 >= arg8) {
-                        goto block_16;
-                    }
-                    goto loop_6;
-                }
-            } else {
-block_16:
-                var_s3 += 1;
-                if (var_s3 < arg9) {
-                    goto loop_4;
-                }
-            }
-        }
+/* Converts a w x h image sampled through func_801BF59C into dst in format fmt (2: colour-indexed,
+ * after collecting its palette into pal) */
+#ifdef NON_MATCHING
+/* 119 vs 123: the original spills dst/pal/fmt/big/a to stack slots and reloads them in the second loop */
+void func_801BF9B4_ovl_1F0A30(s32 dst, u16 *pal, s32 fmt, s32 big, s32 a, s32 b, s32 c, s32 d, u32 w, u32 h) {
+    u32 x;
+    u32 y;
+
+    if (fmt == 2) {
+        func_801BF858_ovl_1F0A30(pal, big, a, b, c, d, w, h);
     }
-    var_s1_2 = 0;
-    if (arg9 != 0) {
-        do {
-            var_s0_2 = 0;
-            if (arg8 != 0) {
-                do {
-                    func_801BEF14_ovl_1F0A30(sp4C, sp2C, sp34, sp3C, arg8, arg9, var_s0_2, var_s1_2, func_801BF59C_ovl_1F0A30(sp44, arg5, arg6, arg7, arg8, arg9, var_s0_2, var_s1_2));
-                    var_s0_2 += 1;
-                } while (var_s0_2 < arg8);
-            }
-            var_s1_2 += 1;
-        } while (var_s1_2 < arg9);
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            func_801BEF14_ovl_1F0A30(dst, pal, fmt, big, w, h, x, y, func_801BF59C_ovl_1F0A30(a, b, c, d, w, h, x, y));
+        }
     }
 }
 #else
