@@ -429,18 +429,20 @@ void func_801EA224_ovl_23B220(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* branch layout of the id test differs */
+/* Every other frame (0x23C odd) entries 0 and 3, otherwise 1 and 2, turn flag 0x10 into 0x20 */
 void func_801EA404_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
     s32 i;
-    s32 m = ~0x10;
+    s32 m;
 
-    for (i = 0; i < 4; i++) {
+    i = 0;
+    m = ~0x10;
+    for (; i < 4; i++) {
         if (FIELD(s, u16, 0x23C) & 1) {
-            if (s->ent[i].id == 0 || s->ent[i].id == 3) {
-                goto set;
+            if (((s->ent[i].id == 0) | (s->ent[i].id == 3)) == 0) {
+                continue;
             }
+            goto set;
         } else if ((u16)(s->ent[i].id - 1) < 2) {
         set:
             if (s->ent[i].flags & 0x10) {
@@ -450,9 +452,6 @@ void func_801EA404_ovl_23B220(void) {
     }
     FIELD(s, u16, 0x23C)++;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA404_ovl_23B220);
-#endif
 
 /* Whether all four entries have flag 0x10 */
 s32 func_801EA498_ovl_23B220(void) {
