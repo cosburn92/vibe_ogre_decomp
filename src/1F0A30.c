@@ -539,7 +539,81 @@ void func_801AF0B8_ovl_1F0A30(u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF1CC_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF730_ovl_1F0A30);
+extern u8 D_800E9C0A[];
+void func_801AF1CC_ovl_1F0A30();
+void func_8017C2FC(void *w);
+void func_8009C550(char *dst, char *src);
+u8 *func_8017C074(s32 a, s32 b, void *fn, s32 x0, s32 y0, s32 x1, s32 y1);
+void _bcopy(void *src, void *dst, s32 n);
+s32 strlen(char *s);
+#define WTXT(w) FIELD(w, u8 *, 0xD0)
+
+/* Shows name s in the lower-right window when right is set, else in the left window */
+void func_801AF730_ovl_1F0A30(void *s, s32 right) {
+    if (D_800E9C0A[5] != 0) {
+        if (right != 0) {
+            char *buf;
+            u8 *w;
+            Ctx1F *c;
+
+            if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x5748) != NULL) {
+                func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x5748));
+            }
+            func_8009C550((char *)D_801CE8BC_ovl_1F0A30 + 0x56C4, s);
+            buf = (char *)D_801CE8BC_ovl_1F0A30 + 0x56C4;
+            w = func_8017C074(0x100, 11, func_801AF1CC_ovl_1F0A30, 202, 210, 296, 228);
+            WTXT(w) = HMalloc(0x604);
+            _bcopy(buf, WTXT(w), strlen(buf) + 1);
+            FIELD(WTXT(w), u8 *, 0x530) = WTXT(w);
+            WTXT(w)[0x5F0] = 4;
+            WTXT(w)[0x5F5] = 1;
+            WTXT(w)[0x5F1] = 0;
+            WTXT(w)[0x5FC] = 0;
+            WTXT(w)[0x5FD] = 0;
+            WTXT(w)[0x5F2] = 0;
+            WTXT(w)[0x5F3] = 8;
+            WTXT(w)[0x5F4] = 1;
+            WTXT(w)[0x5F6] = 15;
+            WTXT(w)[0x5FE] = 2;
+            WTXT(w)[0x5F7] = 0;
+            c = D_801CE8BC_ovl_1F0A30;
+            FIELD(w, s16, 0x18) = 0xFF;
+            FIELD(c, u8 *, 0x5748) = w;
+            FIELD(c, u8, 0x5744) = 45;
+            return;
+        }
+        {
+        char *buf;
+        u8 *w;
+        Ctx1F *c;
+
+        if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x574C) != NULL) {
+            func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x574C));
+        }
+        func_8009C550((char *)D_801CE8BC_ovl_1F0A30 + 0x5704, s);
+        buf = (char *)D_801CE8BC_ovl_1F0A30 + 0x5704;
+        w = func_8017C074(0x100, 11, func_801AF1CC_ovl_1F0A30, 28, 131, 122, 149);
+        WTXT(w) = HMalloc(0x604);
+        _bcopy(buf, WTXT(w), strlen(buf) + 1);
+        FIELD(WTXT(w), u8 *, 0x530) = WTXT(w);
+        WTXT(w)[0x5F0] = 4;
+        WTXT(w)[0x5F5] = 1;
+        WTXT(w)[0x5F1] = 0;
+        WTXT(w)[0x5FC] = 0;
+        WTXT(w)[0x5FD] = 0;
+        WTXT(w)[0x5F2] = 0;
+        WTXT(w)[0x5F3] = 8;
+        WTXT(w)[0x5F4] = 1;
+        WTXT(w)[0x5F6] = 15;
+        WTXT(w)[0x5FE] = 2;
+        WTXT(w)[0x5F7] = 0;
+        c = D_801CE8BC_ovl_1F0A30;
+        FIELD(w, s16, 0x18) = 0xFF;
+        FIELD(c, u8 *, 0x574C) = w;
+        FIELD(c, u8, 0x5745) = 45;
+        }
+    }
+}
 
 void func_8017C2FC(void *w);
 void func_8009C550(char *dst, char *src);
