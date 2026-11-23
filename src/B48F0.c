@@ -630,7 +630,74 @@ void func_801CAA64_ovl_087200(void) {
     }
 }
 
+u8 func_801CBBA0_ovl_087200(void);
+u8 func_801CBBD4_ovl_087200(void);
+u8 func_801D1E38_ovl_087200(u8 sq);
+u8 func_801CF0D4_ovl_087200(u16 sq);
+void func_801D0484_ovl_087200(u16 sq);
+
+/* Commits squad sq (30 = the squad being built, stored into a new slot first): marks its members
+ * placed (0x08, counting down the free total unless already 0x40) and led (0x20), then refreshes */
+#ifdef NON_MATCHING
+/* 138/138 instructions, 7 words differ: only the operand order of the squad-record address adds (base + s * 0x36, then + i) */
+void func_801CAB68_ovl_087200(s32 sq) {
+    u16 s;
+    u8 *st;
+    s32 i;
+    s32 k;
+    u8 *f;
+    u8 id;
+
+    if (sq < 0x80) {
+        s = sq;
+        if (sq == 30) {
+            s = func_801CBBA0_ovl_087200();
+            st = D_80196AF8 + 0x17D0;
+            st[0x00] = func_801CBBD4_ovl_087200();
+            st[0x02] = 0xFF;
+            st[0x20] = 0;
+            st[0x0D] = 0xFF;
+            st[0x1F] = 0;
+            st[0x1E] = 0;
+            st[0x01] = 0;
+            st[0x1D] = func_801D06F4_ovl_087200(30);
+            for (k = 9; k >= 0; k--) {
+                ((s16 *)(st + 0x22))[k] = 0;
+            }
+            _bcopy(D_80196AF8 + 0x17D0, D_80196AF8 + (s * 0x36 + 0x117C), 0x36);
+            FIELD(D_80196AF8, s32, 0x2C0)++;
+            FIELD(D_80196AF8, s32, 0x2C4)++;
+        }
+        for (i = 0; i < 9; i++) {
+            id = ((OrgSquad *)(D_80196AF8 + 0x117C))[s].b[i + 4];
+            f = D_80196AF8 + (id * 2 + 0x1872);
+            if (id != 0xFF && !(*f & 8)) {
+                u8 v = *f;
+
+                *f = v & 0x7F;
+                if (v & 0x40) {
+                    *f = (v & 0x7F) | 0x48;
+                } else {
+                    *f = (v & 0x7F) | 8;
+                    FIELD(D_80196AF8, s32, 0x5D4)--;
+                }
+                if (((OrgSquad *)(D_80196AF8 + 0x117C))[s].b[2] != 0xFF) {
+                    *f |= 0x20;
+                }
+            }
+        }
+        if (sq != 30 && func_801D1E38_ovl_087200(sq)) {
+            D_80196AF8[func_801CDEB8_ovl_087200(sq) * 0xE + 0x10DD] = func_801CF0D4_ovl_087200(sq) + 1;
+        }
+        func_801D0484_ovl_087200(s);
+        func_801CE540_ovl_087200();
+        func_801CE074_ovl_087200();
+        func_801CE28C_ovl_087200();
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAB68_ovl_087200);
+#endif
 
 #ifdef NON_MATCHING
 /* store order/scheduling of the release block differs */
