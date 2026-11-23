@@ -273,102 +273,61 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_80225B90_ovl_27A020);
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225CF8_ovl_27A020);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801AD9D4(void *, s32);             /* extern */
-s32 func_801C8E30(void **);                         /* extern */
-void **func_801C8FE8(s32);                          /* extern */
+s32 func_801C8E30(u8 **u);
+u8 **func_801C8FE8(s32 i);
 
+/* Replays the battle-end animations of the 20 units: the leader's parts (0), petrified units (0x26),
+ * dead units (0x20, clearing their parts' 0x34), the rest unless func_801C8E30 (8; unit 1 also
+ * lowers its parts' 0x1C by 50) */
 void func_802264B4_ovl_27A020(void) {
-    s32 var_s2;
-    u32 var_s1;
-    u32 var_s1_2;
-    void **temp_s1;
-    void **var_s0;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_a0_4;
-    void *temp_v0;
-    void *temp_v1;
-    void *temp_v1_2;
+    s32 i;
+    u32 k;
+    u8 **u;
 
-    var_s2 = 0;
-    do {
-        var_s0 = func_801C8FE8(var_s2);
-        if (var_s0 != NULL) {
-            var_s1 = 0;
-            if (var_s2 == 0) {
-                do {
-                    temp_a0 = *var_s0;
-                    if (temp_a0 != NULL) {
-                        func_801AD9D4(temp_a0 + 0x44, 0);
-                    }
-                    var_s1 += 1;
-                    var_s0 += 4;
-                } while (var_s1 < 3U);
-                var_s2 += 1;
-            } else if (FIELD(var_s0, s32, 0x40) & 2) {
-                do {
-                    temp_a0_2 = *var_s0;
-                    if (temp_a0_2 != NULL) {
-                        func_801AD9D4(temp_a0_2 + 0x44, 0x26);
-                    }
-                    var_s1 += 1;
-                    var_s0 += 4;
-                } while (var_s1 < 3U);
-                var_s2 += 1;
-            } else {
-                var_s1_2 = 0;
-                if (FIELD(var_s0, u16, 0x20) == 0) {
-                    do {
-                        temp_a0_3 = FIELD(var_s0, void *, 0);
-                        if (temp_a0_3 != NULL) {
-                            func_801AD9D4(temp_a0_3 + 0x44, 0x20);
-                            FIELD(FIELD(var_s0, void *, 0), s16, 0x34) = 0;
-                        }
-                        temp_v0 = FIELD(var_s0, void *, 0xC);
-                        if (temp_v0 != NULL) {
-                            FIELD(temp_v0, s16, 0x34) = 0;
-                        }
-                        var_s1_2 += 1;
-                        var_s0 += 4;
-                    } while (var_s1_2 < 3U);
-                    var_s2 += 1;
-                } else {
-                    if (func_801C8E30(var_s0) == 0) {
-                        temp_s1 = var_s0 + 0xC;
-                        do {
-                            temp_a0_4 = FIELD(var_s0, void *, 0);
-                            if (temp_a0_4 != NULL) {
-                                func_801AD9D4(temp_a0_4 + 0x44, 8);
-                                if (var_s2 == 1) {
-                                    temp_v1 = FIELD(var_s0, void *, 0);
-                                    FIELD(temp_v1, u16, 0x1C) = (u16) (FIELD(temp_v1, u16, 0x1C) - 0x32);
-                                }
-                            }
-                            temp_v1_2 = FIELD(var_s0, void *, 0xC);
-                            var_s0 += 4;
-                            if ((temp_v1_2 != NULL) && (var_s2 == 1)) {
-                                FIELD(temp_v1_2, u16, 0x1C) = (u16) (FIELD(temp_v1_2, u16, 0x1C) - 0x32);
-                            }
-                        } while ((u32) var_s0 < (u32) temp_s1);
-                    }
-                    goto block_28;
+    for (i = 0; i < 20; i++) {
+        u = func_801C8FE8(i);
+        if (u == NULL) {
+            continue;
+        }
+        if (i == 0) {
+            for (k = 0; k < 3; k++) {
+                if (u[k] != NULL) {
+                    func_801AD9D4(u[k] + 0x44, 0);
                 }
             }
-        } else {
-block_28:
-            var_s2 += 1;
+        } else if (FIELD(u, s32, 0x40) & 2) {
+            for (k = 0; k < 3; k++) {
+                if (u[k] != NULL) {
+                    func_801AD9D4(u[k] + 0x44, 0x26);
+                }
+            }
+        } else if (FIELD(u, u16, 0x20) == 0) {
+            for (k = 0; k < 3; k++) {
+                if (u[k] != NULL) {
+                    func_801AD9D4(u[k] + 0x44, 0x20);
+                    FIELD(u[k], s16, 0x34) = 0;
+                }
+                if (u[k + 3] != NULL) {
+                    FIELD(u[k + 3], s16, 0x34) = 0;
+                }
+            }
+        } else if (func_801C8E30(u) == 0) {
+            for (k = 0; k < 3; k++) {
+                if (u[k] != NULL) {
+                    func_801AD9D4(u[k] + 0x44, 8);
+                    if (i == 1) {
+                        FIELD(u[k], u16, 0x1C) -= 50;
+                    }
+                }
+                if (u[k + 3] != NULL) {
+                    if (i == 1) {
+                        FIELD(u[k + 3], u16, 0x1C) -= 50;
+                    }
+                }
+            }
         }
-    } while (var_s2 < 0x14);
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802264B4_ovl_27A020);
-#endif
 
 #include "scene.h"
 s32 func_8007F648(void *func, s16 x, s16 y, s16 b, u16 c);
