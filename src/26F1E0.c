@@ -45,7 +45,61 @@ void func_8021A998_ovl_25EE90(s32 a, s32 b) {
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021A9C8_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021AC40_ovl_25EE90);
+void func_8020FFA0_ovl_25EE90();
+void func_8020C074_ovl_25EE90(s32 a);
+
+/* Scrolling-texture parts handler: 0 sets the parts up (draw routine, texture handle, 16x16
+ * window), 1 releases the texture, 2 scrolls the window by one texel */
+void func_8021AC40_ovl_25EE90(u16 msg, u8 *o) {
+    switch (msg) {
+    case 0: {
+        s32 r;
+        u32 i;
+        u8 *e;
+
+        r = func_8020C9B0_ovl_25EE90(3);
+        for (i = 0; i < FIELD(FIELD(o, u8 *, 0x50), u32, 4); i++) {
+            if (FIELD(o, u8 **, 0x58)[i] != NULL) {
+                FIELD(FIELD(o, u8 **, 0x58)[i], void *, 0) = func_8020FFA0_ovl_25EE90;
+                e = FIELD(o, u8 **, 0x58)[i];
+                FIELD(e, s32, 0x34) = r;
+                FIELD(e, u8 *, 0x30) = D_80220980_ovl_25EE90;
+                FIELD(e, s16, 0x3A) = 0;
+                FIELD(e, s16, 0x38) = 0;
+                FIELD(e, s16, 0x3E) = 0xF;
+                FIELD(e, s16, 0x3C) = 0xF;
+                FIELD(e, s16, 0x42) = 0;
+                FIELD(e, s16, 0x40) = 0;
+                FIELD(e, s16, 0x46) = 0xF;
+                FIELD(e, s16, 0x44) = 0xF;
+            }
+        }
+        break;
+    }
+    case 1: {
+        u32 i;
+
+        for (i = 0; FIELD(o, u8 **, 0x58)[i] == NULL; i++) {
+        }
+        func_8020C074_ovl_25EE90(FIELD(FIELD(o, u8 **, 0x58)[i], s32, 0x34));
+        break;
+    }
+    case 2: {
+        u32 i;
+        u8 *e;
+
+        for (i = 0; i < FIELD(FIELD(o, u8 *, 0x50), u32, 4); i++) {
+            e = FIELD(o, u8 **, 0x58)[i];
+            if (e != NULL) {
+                FIELD(e, s16, 0x42) = (FIELD(e, s16, 0x42) + 1) & 0xF;
+                FIELD(e, s16, 0x44) = FIELD(e, s16, 0x40) + 0x10;
+                FIELD(e, s16, 0x46) = FIELD(e, s16, 0x42) + 0xF;
+            }
+        }
+        break;
+    }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021ADE0_ovl_25EE90);
 
