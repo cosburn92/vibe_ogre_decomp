@@ -91,7 +91,109 @@ void func_80218BC0_ovl_25EE90(u8 *o) {
     FIELD(o, f32, 0x28) = FIELD(o, f32, 0x2C) = FIELD(o, f32, 0x30) = 0.0f;
 }
 
+extern s32 D_80220F6C_ovl_25EE90;
+extern void *D_80220F70_ovl_25EE90;
+extern s32 D_80220F74_ovl_25EE90;
+extern s32 D_80220F78_ovl_25EE90;
+extern s32 D_80220F7C_ovl_25EE90;
+extern void *D_801D0770;
+void *func_801BCFE4(void);
+void *HFree(void *p);
+void func_8020DFB8_ovl_25EE90(void);
+void func_8020D814_ovl_25EE90(void *p);
+void func_8020E51C_ovl_25EE90(void *p);
+void func_80218104_ovl_25EE90(f32 x, f32 y, f32 z, s32 a);
+void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+extern u8 D_802206E8_ovl_25EE90[];
+extern u8 D_802206F4_ovl_25EE90[];
+
+/* Growing/shrinking aura at (x, y, z) (o+8): 0x1007 grows it over o->dur frames, 0x1008 shrinks it */
+#ifdef NON_MATCHING
+/* 238 vs 246: GCC cross-jumps the shared alpha/scale computation of the 0x1003 and 0x1004 cases (the original keeps them separate and joins at the draw call); the dispatch tree also differs */
+s32 func_80218D68_ovl_25EE90(u16 msg, u8 *o) {
+    s32 r = 0;
+    s32 dur;
+    s32 a;
+    u8 *m;
+
+    switch (msg) {
+        case 0x101:
+            if (FIELD(o, s32, 4) != 0) {
+                func_8020D814_ovl_25EE90(FIELD(o, void *, 0x20));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x14));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x18));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x1C));
+            }
+            if (D_801D0770 != FIELD(o, void *, 0x40)) {
+                HFree(FIELD(o, void *, 0x40));
+            }
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            bzero(o, 0x44);
+            FIELD(o, f32, 8) = *(f32 *)&D_80220F68_ovl_25EE90;
+            FIELD(o, f32, 0xC) = *(f32 *)&D_80220F6C_ovl_25EE90;
+            FIELD(o, f32, 0x10) = *(f32 *)&D_80220F70_ovl_25EE90;
+            FIELD(o, s32, 0x38) = D_80220F74_ovl_25EE90;
+            FIELD(o, s32, 0x3C) = D_80220F78_ovl_25EE90;
+            FIELD(o, s32, 0) = 0;
+            FIELD(o, s32, 0x34) = D_80220F7C_ovl_25EE90;
+            FIELD(o, void *, 0x40) = func_801BCFE4();
+            func_8020DC80_ovl_25EE90(0x1000);
+            break;
+        case 0x1003:
+            dur = FIELD(o, s32, 0x38);
+            if (++FIELD(o, s32, 0) >= dur) {
+                FIELD(o, s32, 0) = dur;
+                func_8020DC80_ovl_25EE90(0x1001);
+            }
+            FIELD(o, f32, 0x24) = -(FIELD(o, s32, 0) * 160) / dur + 200;
+            a = FIELD(o, s32, 0) * 255 / dur;
+            FIELD(o, f32, 0x30) = FIELD(o, f32, 0x28) = (f32)(FIELD(o, s32, 0) + 1) / 64.0f;
+            FIELD(o, f32, 0x2C) = FIELD(o, f32, 0x24) / 120.0f;
+            goto draw;
+        case 0x1004:
+            dur = FIELD(o, s32, 0x38);
+            if (--FIELD(o, s32, 0) <= 0) {
+                FIELD(o, s32, 0) = 0;
+                func_8020DC80_ovl_25EE90(0x1002);
+            }
+            a = FIELD(o, s32, 0) * 255 / dur;
+            FIELD(o, f32, 0x30) = FIELD(o, f32, 0x28) = (f32)(FIELD(o, s32, 0) + 1) / 64.0f;
+            FIELD(o, f32, 0x2C) = FIELD(o, f32, 0x24) / 120.0f;
+        draw:
+            func_80218104_ovl_25EE90(FIELD(o, f32, 8), FIELD(o, f32, 0xC), FIELD(o, f32, 0x10), a);
+            m = FIELD(o, u8 *, 0x20) + 0x1C;
+            func_8020A980_ovl_25EE90(D_802206E8_ovl_25EE90, D_802206F4_ovl_25EE90, m);
+            func_8020A4D0_ovl_25EE90(o + 0x28, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 8);
+            FIELD(FIELD(o, u8 *, 0x18), s16, 0x5C) = FIELD(o, s32, 0) + 2;
+            FIELD(FIELD(o, u8 *, 0x14), s16, 0x56) = FIELD(o, s32, 0);
+            break;
+        case 0x1005:
+            if (FIELD(o, u16, -0x1C) == 0x1001) {
+                r = 1;
+            }
+            break;
+        case 0x1006:
+            if (FIELD(o, u16, -0x1C) == 0x1002) {
+                r = 1;
+            }
+            break;
+        case 0x1007:
+        case 0x1008:
+            if (FIELD(o, s32, 4) == 0) {
+                func_80218BC0_ovl_25EE90(o);
+                FIELD(o, s32, 4) = 1;
+            }
+            func_8020DC80_ovl_25EE90(msg == 0x1007 ? 0x1003 : 0x1004);
+            break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26D770", func_80218D68_ovl_25EE90);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/26D770", func_80219140_ovl_25EE90);
 
@@ -112,7 +214,7 @@ void func_801F9DFC(void *a, u8 b, s32 c);
 extern u8 D_800EB240[];
 extern u8 D_80220F6A_ovl_25EE90;
 extern void *D_80220F70_ovl_25EE90;
-s32 func_80218D68_ovl_25EE90();
+s32 func_80218D68_ovl_25EE90(u16 msg, u8 *o);
 s32 func_8021A9C8_ovl_25EE90();
 void func_80219A18_ovl_25EE90(s16 a, s32 b, s32 c);
 void func_8020DC80_ovl_25EE90(u16 state);
@@ -268,7 +370,7 @@ void func_801F9DFC(void *a, u8 b, s32 c);
 extern u8 D_800EB240[];
 extern u8 D_80220F6A_ovl_25EE90;
 extern void *D_80220F70_ovl_25EE90;
-s32 func_80218D68_ovl_25EE90();
+s32 func_80218D68_ovl_25EE90(u16 msg, u8 *o);
 s32 func_8021A9C8_ovl_25EE90();
 void func_8021A210_ovl_25EE90(s16 a, s32 b, s32 c);
 void func_8020DC80_ovl_25EE90(u16 state);
