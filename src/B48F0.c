@@ -688,79 +688,60 @@ void func_801CAEB0_ovl_087200(u16 sq, u16 v) {
     q->b[0x1D] = func_801D06F4_ovl_087200(sq);
 }
 
+/* Moves the member in cell a of squad sa to cell b of squad sb, swapping with its occupant (cells
+ * 9+ are the reserve list); the leader cell (row byte 3) follows the move. Clears flag 4 of both
+ * squads' members and rebuilds their flag grids */
 #ifdef NON_MATCHING
-/* m2c draft, 20 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801CAF18_ovl_087200(s32 arg0, u8 arg1, s32 arg2, u8 arg3) {
-    s32 var_a2;
-    s32 var_a2_2;
-    s32 var_t2;
-    u32 temp_a3;
-    u32 temp_t0;
-    u8 *var_t0;
-    u8 *var_t1;
-    u8 temp_a1;
-    u8 temp_v0;
-    u8 temp_v1;
-    u8 temp_v1_3;
-    void *temp_a2;
-    void *temp_a2_2;
-    void *temp_v1_2;
-    void *temp_v1_4;
+/* 121/121, 14 words: the member-flag loops swap the index and base registers and add the row offset in the other order */
+void func_801CAF18_ovl_087200(u16 sa, u16 a, u16 sb, u16 b) {
+    u8 moved = 0;
+    u8 *pa;
+    u8 *pb;
+    u8 *row;
+    u8 t;
+    s32 i;
 
-    var_t2 = 0;
-    temp_t0 = arg1 & 0xFFFF;
-    if (temp_t0 >= 9U) {
-        var_t1 = &FIELD(&D_80196AF8[temp_t0], u8, 0x1A21);
+    if (a >= 9) {
+        pa = D_80196AF8 + (a + 0x1A21);
     } else {
-        temp_a2 = D_80196AF8 + (((arg0 & 0xFFFF) * 0x36) + 0x117C);
-        var_t1 = temp_a2 + (temp_t0 + 4);
-        if (FIELD(temp_a2, u8, 3) == temp_t0) {
-            FIELD(temp_a2, u8, 3) = arg3;
-            var_t2 = 1;
+        row = D_80196AF8 + (sa * 0x36 + 0x117C);
+        pa = row + (a + 4);
+        if (row[3] == a) {
+            row[3] = b;
+            moved = 1;
         }
     }
-    temp_a3 = arg3 & 0xFFFF;
-    if (temp_a3 >= 9U) {
-        var_t0 = &FIELD(&D_80196AF8[temp_a3], u8, 0x1A21);
+    if (b >= 9) {
+        pb = D_80196AF8 + (b + 0x1A21);
     } else {
-        temp_a2_2 = D_80196AF8 + (((arg2 & 0xFFFF) * 0x36) + 0x117C);
-        var_t0 = temp_a2_2 + (temp_a3 + 4);
-        if (!(var_t2 & 0xFF) && (FIELD(temp_a2_2, u8, 3) == temp_a3)) {
-            FIELD(temp_a2_2, u8, 3) = arg1;
+        row = D_80196AF8 + (sb * 0x36 + 0x117C);
+        pb = row + (b + 4);
+        if (!moved && row[3] == b) {
+            row[3] = a;
         }
     }
-    temp_a1 = *var_t0;
-    if ((temp_a1 & 0xFF) == 0xFF) {
-        *var_t0 = *var_t1;
-        *var_t1 = 0xFF;
+    if (*pb == 0xFF) {
+        *pb = *pa;
+        *pa = 0xFF;
     } else {
-        temp_v0 = *var_t1;
-        *var_t1 = temp_a1;
-        *var_t0 = temp_v0;
+        t = *pa;
+        *pa = *pb;
+        *pb = t;
     }
-    var_a2 = 0;
-    do {
-        temp_v1 = FIELD((D_80196AF8 + ((arg0 & 0xFFFF) * 0x36) + var_a2), u8, 0x1180);
-        var_a2 += 1;
-        if (temp_v1 != 0xFF) {
-            temp_v1_2 = D_80196AF8 + (temp_v1 * 2);
-            FIELD(temp_v1_2, u8, 0x1872) = (u8) (FIELD(temp_v1_2, u8, 0x1872) & 0xFB);
+    for (i = 0; i < 9; i++) {
+        t = D_80196AF8[sa * 0x36 + i + 0x1180];
+        if (t != 0xFF) {
+            D_80196AF8[t * 2 + 0x1872] &= ~4;
         }
-    } while (var_a2 < 9);
-    var_a2_2 = 0;
-    do {
-        temp_v1_3 = FIELD((D_80196AF8 + ((arg2 & 0xFFFF) * 0x36) + var_a2_2), u8, 0x1180);
-        var_a2_2 += 1;
-        if (temp_v1_3 != 0xFF) {
-            temp_v1_4 = D_80196AF8 + (temp_v1_3 * 2);
-            FIELD(temp_v1_4, u8, 0x1872) = (u8) (FIELD(temp_v1_4, u8, 0x1872) & 0xFB);
+    }
+    for (i = 0; i < 9; i++) {
+        t = D_80196AF8[sb * 0x36 + i + 0x1180];
+        if (t != 0xFF) {
+            D_80196AF8[t * 2 + 0x1872] &= ~4;
         }
-    } while (var_a2_2 < 9);
-    func_801C67B0_ovl_087200(arg0 & 0xFFFF);
-    func_801C67B0_ovl_087200(arg2 & 0xFFFF);
+    }
+    func_801C67B0_ovl_087200(sa);
+    func_801C67B0_ovl_087200(sb);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAF18_ovl_087200);
