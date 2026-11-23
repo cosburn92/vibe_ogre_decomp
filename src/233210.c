@@ -737,7 +737,7 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F1B98_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1F04_ovl_22A280);
 
-f32 func_801F22CC_ovl_22A280(BattleUnit *u) {
+inline f32 func_801F22CC_ovl_22A280(BattleUnit *u) {
     f32 base = func_801F14E8_ovl_22A280(u);
     s32 b = 0;
 
@@ -811,9 +811,34 @@ s32 func_801F28E0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F2AF8_ovl_22A280);
+u8 func_8016D350(u8 a, u8 cls);
+f32 func_801F1F04_ovl_22A280(BattleUnit *a, BattleUnit *b);
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F2D10_ovl_22A280);
+/* Agility-based power: (class value + item bonus) / 6 * (agi + 50) / 50
+ * * (stat 0x2A + item bonus + 100) / 100 * (100 + func_801F1F04) / 100 */
+s32 func_801F2AF8_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 base = func_8016D350(a->unk48, a->cls);
+    f32 p;
+
+    p = (f32)(base + BattleUnitItemSum6FC(a)) / 6.0f;
+    p *= (f32)(a->agi + 50) / 50.0f;
+    p *= (f32)(a->unk2A + BattleUnitItemSum74C(a) + 100) / 100.0f;
+    p *= (func_801F1F04_ovl_22A280(a, b) + 100.0f) / 100.0f;
+    return p;
+}
+
+u8 func_8016D3F8(u8 a, u8 cls);
+
+/* Agility-based defence of b: class value / 20 * (stat 0x2A + item bonus + 25) / 25
+ * * (agi + item bonus + 100) / 100 * (100 + func_801F1B98) / 100 */
+s32 func_801F2D10_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    f32 p = func_8016D3F8(b->unk48, b->cls) / 20.0f;
+
+    p *= (f32)(b->unk2A + BattleUnitItemSum74C(b) + 25) / 25.0f;
+    p *= (f32)(b->agi + BattleUnitItemSum6FC(b) + 100) / 100.0f;
+    p *= (func_801F1B98_ovl_22A280(a, b) + 100.0f) / 100.0f;
+    return p;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2F1C_ovl_22A280);
 
