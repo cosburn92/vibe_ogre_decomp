@@ -339,7 +339,87 @@ s32 func_80170954_ovl_040E80(u8 *msg);
 void func_80172394_ovl_040E80(void);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/46090", func_80170838_ovl_040E80);
+extern u8 D_801939D1_ovl_040E80;
+extern u8 D_8018FAE0_ovl_040E80;
+extern u8 D_8018FBDC_ovl_040E80;
+
+/* Next game state for menu choice k (setting the battle / map mode flags some choices need) */
+s32 func_80170838_ovl_040E80(u8 k) {
+    s32 r;
+
+    switch (k) {
+        case 1:
+            r = 0x8002;
+            break;
+        case 2:
+            r = 0x8003;
+            break;
+        case 3:
+            r = 0x8005;
+            break;
+        case 4:
+            D_801939D1_ovl_040E80 = 1;
+            r = 0x8007;
+            break;
+        case 11:
+            r = 2;
+            break;
+        case 12:
+            r = 3;
+            break;
+        case 13:
+            r = 5;
+            break;
+        case 14:
+            D_801939D1_ovl_040E80 = 1;
+            r = 7;
+            break;
+        case 18:
+            r = 0x13;
+            break;
+        case 19:
+            r = 0x11;
+            break;
+        case 20:
+            D_801939D1_ovl_040E80 = 2;
+            r = 0x8007;
+            break;
+        case 21:
+            D_801939D1_ovl_040E80 = 0;
+            r = 0x8007;
+            break;
+        case 22:
+            D_8018FAE0_ovl_040E80 = 1;
+            r = 0x8016;
+            break;
+        case 23:
+            D_8018FAE0_ovl_040E80 = 0;
+            D_8018FBDC_ovl_040E80 = 0;
+            r = 0x8016;
+            break;
+        case 24:
+            r = 0x8016;
+            D_8018FAE0_ovl_040E80 = 0;
+            D_8018FBDC_ovl_040E80 = 1;
+            break;
+        case 25:
+            r = 0x8016;
+            D_8018FAE0_ovl_040E80 = 0;
+            D_8018FBDC_ovl_040E80 = 2;
+            break;
+        case 26:
+            r = 0xFFFD;
+            break;
+        case 27:
+            D_8018FAE0_ovl_040E80 = 3;
+            r = 0x8016;
+            break;
+        default:
+            r = 0xFFFE;
+            break;
+    }
+    return r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170954_ovl_040E80);
 
