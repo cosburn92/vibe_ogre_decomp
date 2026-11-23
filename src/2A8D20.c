@@ -694,7 +694,50 @@ void func_8023C9BC_ovl_2A8D20(void) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C9EC_ovl_2A8D20);
 
+extern Character D_80195560[];
+extern u8 D_8022A920[][2];
+
+/* Portrait expression of unit i: gender * 3 plus alignment band (0-32, 33-65, 66+), unless its
+ * class has a fixed face in D_8022A920 ({face, class} pairs ending at class 0xFF); 0xFF if none */
+#ifdef NON_MATCHING
+/* 80 vs 83 instructions: the original keeps the sign fix-up of al / 33 (GCC here knows al is non-negative) and walks the face table with separate pointer/index registers */
+u8 func_8023CFA0_ovl_2A8D20(s32 i) {
+    u8 *o = SLOT(i);
+    u8 *u;
+    s32 al;
+    u8 g;
+    u8 r;
+    s32 j;
+
+    if (o == NULL) {
+        return 0xFF;
+    }
+    u = D_801CE8BC + 0x1C4 + o[0x147] * 0xF8;
+    if (FIELD(u, s32, 0x48) == 0) {
+        return 0xFF;
+    }
+    al = u[0x34];
+    if (func_801C8B68(u) == 0) {
+        g = D_80193BC0[u[0xF6]].c.gender;
+    } else {
+        g = D_80195560[u[0xF6]].gender;
+    }
+    if (al >= 99) {
+        al = 98;
+    }
+    r = g * 3 + al / 33;
+    if (D_8022A920[0][1] != 0xFF) {
+        for (j = 0; D_8022A920[j][1] != 0xFF; j++) {
+            if (D_8022A920[j][1] == FIELD(u, s32, 0x48)) {
+                r = D_8022A920[j][0];
+            }
+        }
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023CFA0_ovl_2A8D20);
+#endif
 
 /* Finds the first battle unit record (20 x 0xF8 from 0x1C4) whose id passes func_8016FF5C(id, kind),
  * then swaps the first unit slot of that side with slot `slot` */
