@@ -149,10 +149,12 @@ static inline s16 BattleUnitWeaponBonus(BattleUnit *u) {
 s8 func_8016F6FC(u16 id);
 s8 func_8016F74C(u16 id);
 s8 func_8016F79C(u16 id);
+s8 func_8016F644(u16 id);
 
 /* ItemBonusX: one equipment slot's func_8016FX bonus (0 when empty); BattleUnitItemSumX: the sum
  * over the unit's four slots */
 #define ITEM_SUM_HELPERS(X)                                                                             static inline s8 ItemBonus##X(u16 id) {                                                                 return id != 0 ? func_8016F##X(id) : 0;                                                         }                                                                                                   static inline s16 BattleUnitItemSum##X(BattleUnit *u) {                                                 s16 s;                                                                                                                                                                                                  if (u == NULL) {                                                                                        return 0;                                                                                       }                                                                                                   s = ItemBonus##X(u->items[0]);                                                                      if (u->items[1] != 0) {                                                                                 s += func_8016F##X(u->items[1]);                                                                }                                                                                                   if (u->items[2] != 0) {                                                                                 s += func_8016F##X(u->items[2]);                                                                }                                                                                                   return u->items[3] != 0 ? s + func_8016F##X(u->items[3]) : s;                                   }
+ITEM_SUM_HELPERS(644)
 ITEM_SUM_HELPERS(65C)
 ITEM_SUM_HELPERS(6AC)
 ITEM_SUM_HELPERS(6FC)
@@ -902,7 +904,42 @@ s32 func_801F312C_ovl_22A280(BattleUnit *u) {
     return p;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F32EC_ovl_22A280);
+s32 func_8016FEF4(s32 id);
+
+/* Hit chance (0-100) of a against b: num/den * (a's stat 0x30 + item bonus - b's + 100), +10 for
+ * the enemy side; always 100 against a disabled target, and item 0xB2 makes it 100 for the enemy
+ * and 0 for the player side */
+s32 func_801F32EC_ovl_22A280(BattleUnit *a, BattleUnit *b, s32 num, s32 den) {
+    s32 p;
+    s32 da;
+
+    if (func_801C8E9C(b) != 0 || func_801C8E80(b) != 0 || func_801C8E64(b) != 0) {
+        return 100;
+    }
+    if (func_801C8C74(b) != 0) {
+        return 100;
+    }
+    da = a->unk30 + BattleUnitItemSum644(a);
+    p = (f32)num / (f32)den * (f32)(da - (b->unk30 + BattleUnitItemSum644(b)) + 100);
+    if (func_801C8B84(a) != 0) {
+        p += 10;
+    }
+    if (p < 0) {
+        p = 0;
+    }
+    if (p > 100) {
+        p = 100;
+    }
+    if (func_8016FEF4(0xB2) != 0 && func_801C8B84(a) != 0) {
+        return 100;
+    }
+    if (func_8016FEF4(0xB2) != 0) {
+        if (func_801C8B68(a) != 0) {
+            return 0;
+        }
+    }
+    return p;
+}
 
 /* Element affinity between two elements: 0 if either is none/7/8/15; Virtue/Bane (5, 6): 1 same, -1 opposite;
  * 9+ fold onto 1-4; otherwise 1 - |a - b| */
