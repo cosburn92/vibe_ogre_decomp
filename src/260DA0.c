@@ -51,7 +51,40 @@ void func_8020C22C_ovl_25EE90(void) {
     HFree(D_80220F20_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C250_ovl_25EE90);
+extern s32 D_80220210_ovl_25EE90[];
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+
+/* Loads entry k (> 0) of index chunk D_80220210[set] into the shared buffer unless it is already
+ * there; hangs on a bad index or size */
+void func_8020C250_ovl_25EE90(u16 set, s32 k) {
+    s32 id;
+    s32 n;
+
+    if (k > 0 && (id = D_80220210_ovl_25EE90[set]) != 0) {
+        if ((u16)D_80220D40_ovl_25EE90 != set || D_80220D44_ovl_25EE90 != id || D_80220D48_ovl_25EE90 != k) {
+            n = ChunkSize(id);
+            if (k >= n / 4) {
+                while (1) {
+                }
+            }
+            if (n == 0 || n > 0x7FFF) {
+                while (1) {
+                }
+            }
+            LoadChunkRaw(D_80220F20_ovl_25EE90, id);
+            n = ChunkSize(((s32 *)D_80220F20_ovl_25EE90)[k]);
+            if (n == 0 || n > 0x7FFF) {
+                while (1) {
+                }
+            }
+            LoadChunkRaw(D_80220F20_ovl_25EE90, ((s32 *)D_80220F20_ovl_25EE90)[k]);
+        }
+        return;
+    }
+    while (1) {
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020C380_ovl_25EE90);
 
