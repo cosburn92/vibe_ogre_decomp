@@ -333,7 +333,26 @@ void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CA58_ovl_25EE90);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CC00_ovl_25EE90);
+/* Loads the resources of each record of s (kind 6 h6, kind 5 h0, kind 4 h2); 1 if any record is
+ * flagged 0x8000 instead of having a kind-4 resource */
+s32 func_8020CC00_ovl_25EE90(RecSet *s) {
+    s32 r = 0;
+    Rec10b *rec = s->recs;
+    s32 n;
+
+    for (n = s->n; n > 0; n--, rec++) {
+        if (rec->h6 != 0) {
+            func_8020C860_ovl_25EE90(rec->h6);
+            func_8020C7B8_ovl_25EE90(rec->h0);
+            if (rec->h2 & 0x8000) {
+                r = 1;
+            } else if (rec->h2 != 0) {
+                func_8020C704_ovl_25EE90(rec->h2);
+            }
+        }
+    }
+    return r;
+}
 
 void func_8020CDF4_ovl_25EE90(RecSet *s) {
     s32 n = s->n;
