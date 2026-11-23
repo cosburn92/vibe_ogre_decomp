@@ -444,7 +444,26 @@ void func_801AEE18_ovl_1F0A30(u8 *o, s32 sel) {
     func_8017CBE8(o, &unit);
 }
 
+void *HMalloc(s32 size);
+u8 *func_8017BFB0(u16 kind, s32 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
+
+/* Opens the tactics window (flags k) from rectangle (x, y, w, h), sized to the options available */
+#ifdef NON_MATCHING
+/* 95/95 instructions, 30 words differ: v0/v1 swapped in the stack-argument block (the constant 99 is materialised earlier in the original) */
+u8 *func_801AEF3C_ovl_1F0A30(s32 k, s16 x, s16 y, s16 w, s32 h) {
+    s32 pad[2];
+    s32 n = func_801AED84_ovl_1F0A30();
+    s32 top = (240 - n * 14) >> 1;
+    u8 *o = func_8017BFB0(k | 0x1000, 8, func_801AEE18_ovl_1F0A30, x, y, w, h, 99, top, 220, top + n * 14 + 10);
+
+    FIELD(o, void *, 0xD0) = HMalloc(0x604);
+    bzero(FIELD(o, void *, 0xD0), 0x604);
+    o[0x22] = 0;
+    return o;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AEF3C_ovl_1F0A30);
+#endif
 
 extern u16 D_800E8700;
 
