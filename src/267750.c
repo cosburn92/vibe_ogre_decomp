@@ -321,7 +321,66 @@ inline void func_802138FC_ovl_25EE90(Set38 *s, s32 *out) {
     }
 }
 
+void *func_8020BF5C_ovl_25EE90(s32 kind, s32 id, s32 c);
+void func_8020F134_ovl_25EE90();
+
+/* Binds model mdl's bone slots: draw routine, bone matrix (0x44 each) and the cached kind-6 mesh,
+ * kind-5 texture and kind-4 animation of each record (hangs when one is missing) */
+#ifdef NON_MATCHING
+/* 82/82 instructions, 2 words differ: i = 0 lands in the branch delay slot in the original, slots copy after it */
+void func_80213980_ovl_25EE90(void *mdl, void *mtx, void *slots) {
+    s32 pad[2];
+
+    if (((Set38 *)mdl)->n != 0) {
+        u8 **sl = slots;
+        u8 *m = mtx;
+        s32 off = 0;
+        u32 i = 0;
+
+    loop:
+        if (*sl != NULL) {
+            u8 *o;
+            u8 *d;
+            u16 *r;
+
+            FIELD(*sl, void *, 0) = func_8020F134_ovl_25EE90;
+            o = *sl;
+            d = o + 0x18;
+            bzero(d, 0x18);
+            r = (u16 *)((u8 *)((Set38 *)mdl)->recs + off);
+            if (r[3] != 0) {
+                FIELD(o, u8 *, 0x1C) = m;
+                if ((FIELD(o, void *, 0x2C) = func_8020BF5C_ovl_25EE90(6, r[3], 0)) == NULL) {
+                    while (1) {
+                    }
+                }
+                if (r[0] != 0) {
+                    if ((FIELD(d, void *, 8) = func_8020BF5C_ovl_25EE90(5, r[0], 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+                FIELD(d, u16, 0x10) = r[2];
+                if (r[1] != 0 && !(r[1] & 0x8000)) {
+                    if ((FIELD(d, void *, 0xC) = func_8020BF5C_ovl_25EE90(4, r[1], 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+            }
+        }
+        m += 0x44;
+        off += 0xA;
+        i++;
+        sl++;
+        if (i < ((Set38 *)mdl)->n) {
+            goto loop;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_80213980_ovl_25EE90);
+#endif
 
 /* Instantiates model id: bone matrices (0x44 each) plus a slot table, 64-byte aligned */
 void func_80213AC8_ovl_25EE90(u8 *m, s32 id) {
