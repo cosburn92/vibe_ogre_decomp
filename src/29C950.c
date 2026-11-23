@@ -63,7 +63,7 @@ void func_8019F2C0(u8 a);
 extern s16 *D_8022A97C;
 void *HMalloc(s32 size);
 s32 ChunkSize(s32 id);
-void LoadChunkRaw(void *dst, s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
 u32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_802329B0_ovl_29A4C0(void);
@@ -443,7 +443,44 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_8022F2CC_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022FDB8_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230744_ovl_29A4C0);
+extern u8 *D_801CE8BC;
+
+/* Portrait of battle unit k: from the class/level table (chunk 0x01A8E7AE: offsets per level,
+ * 0xFFFF-terminated) for units not tied to a map unit (0x147 = 0xFF), otherwise the map unit's */
+s16 func_80230744_ovl_29A4C0(s32 k) {
+    BUnit *u = D_8022A974->units[k];
+    s32 v;
+
+    if (u == NULL) {
+        return -1;
+    }
+    if (FIELD(u, u8, 0x147) == 0xFF) {
+        u16 r = 0;
+        u16 *t = LoadChunkRaw(NULL, 0x01A8E7AE);
+        s16 i = 0;
+
+        if (t[0] != 0xFFFF) {
+            s32 n = u->wE8 - 1;
+
+            while (1) {
+                if (n == i) {
+                    r = t[t[n] + u->b146];
+                    break;
+                }
+                i++;
+                if (t[i] == 0xFFFF) {
+                    break;
+                }
+            }
+        }
+        HFree(t);
+        return r;
+    }
+    if ((v = FIELD(D_801CE8BC + FIELD(u, u8, 0x147) * 0xF8, s32, 0x20C)) == 0) {
+        return -1;
+    }
+    return v;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80230858_ovl_29A4C0);
 
