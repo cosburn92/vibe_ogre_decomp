@@ -611,7 +611,24 @@ void func_801A86F0_ovl_0EBBB0(void) {
     }
 }
 
+extern u16 D_801AC45C_ovl_0EBBB0[];
+
+/* Draws frame (timer / 6) % 6 of a 64x64 intensity animation in the scene colour (0x148-0x14A),
+ * faded by f15C */
+#ifdef NON_MATCHING
+/* 125/126 instructions: as func_801A8A64, the original gives the display-list pointer v0 and moves the texture pointer to t3 */
+void func_801A886C_ovl_0EBBB0(void) {
+    void *tex = LoadAsset(0x0203C53E, D_801AC45C_ovl_0EBBB0[D_801ABA58_ovl_0EBBB0->w104 / 6 % 6], -0xA);
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPLoadTextureBlock(D_800E9BA0++, tex, G_IM_FMT_I, G_IM_SIZ_8b, 64, 64, 0, G_TX_CLAMP, G_TX_CLAMP, 6, 6,
+                        G_TX_NOLOD, G_TX_NOLOD);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801ABA58_ovl_0EBBB0->unk120[0x28], D_801ABA58_ovl_0EBBB0->unk120[0x29],
+                    D_801ABA58_ovl_0EBBB0->unk120[0x2A], (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A886C_ovl_0EBBB0);
+#endif
 
 extern u16 D_801AC468_ovl_0EBBB0[];
 
