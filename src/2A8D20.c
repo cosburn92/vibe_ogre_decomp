@@ -909,7 +909,74 @@ void func_8023D7A8_ovl_2A8D20(void) {
     D_801976E8 = 0x1E;
 }
 
+s16 func_80231238(u8 *o, f32 x, f32 z, f32 tx, f32 tz);
+s32 func_801C8C58(u8 *u);
+
+/* Starts the walk-in of every placed battle object whose unit belongs to the side and line of
+ * phase n (n / 3: side, n % 3: 0 all, 1 rear-line units, 2 front-line units) and is not already
+ * at its formation spot; flags[i] = 1 for each started one (flags are created at 4) */
+#ifdef NON_MATCHING
+/* 146 vs 147: the flags pointer, phase and constant 1 get different saved registers; the original keeps n in s7 and copies the flags base once more */
+void func_8023D878_ovl_2A8D20(s32 n) {
+    s8 *flags = FIELD(D_8022A974, s8 *, 0x1CA8);
+    s32 i;
+    s32 k;
+
+    if (flags == NULL) {
+        u8 j;
+
+        flags = HMalloc(0x1D);
+        FIELD(D_8022A974, s8 *, 0x1CA8) = flags;
+        for (j = 0; j < 0x1C; j++) {
+            flags[j] = 4;
+        }
+    }
+    flags[0x1C] = 0;
+    k = n % 3;
+    for (i = 0; i < 0x1C; i++, flags++) {
+        u8 *o = SLOT(i);
+        u8 *u;
+        s32 side;
+
+        if (o == NULL || o[0x147] == 0xFF) {
+            continue;
+        }
+        u = D_801CE8BC + 0x1C4 + o[0x147] * 0xF8;
+        side = func_801C8B68(u) != 0;
+        if (n < 3) {
+            if (side == 0) {
+                continue;
+            }
+        } else if (side == 1) {
+            continue;
+        }
+        if (k == 1) {
+            if (func_801C8C58(u) == 0) {
+                continue;
+            }
+        } else if (k == 2 && func_801C8C58(u) != 0) {
+            continue;
+        }
+        {
+            u8 *p = ((u8 **)u)[o[0x149]];
+
+            if (func_80231238(o, FIELD(o, f32, 0x11C), FIELD(o, f32, 0x124), FIELD(p, s16, 0x28), FIELD(p, s16, 0x2C)) != 3) {
+                s16 a;
+
+                if (func_801C8C90(u) == 1) {
+                    a = (-(o[0x149] == 1) & 0x3B) | 9;
+                } else {
+                    a = 9;
+                }
+                func_80239C04_ovl_2A8D20(i, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), a, side, side, 0, 1);
+                *flags = 1;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D878_ovl_2A8D20);
+#endif
 
 s32 func_80231B94(s32 i);
 void func_8023B998_ovl_2A8D20(u8 *o, u8 *u);
