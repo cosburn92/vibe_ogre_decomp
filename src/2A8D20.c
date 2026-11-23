@@ -573,7 +573,30 @@ void func_8023BDF8_ovl_2A8D20(void) {
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BDF8_ovl_2A8D20);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BE14_ovl_2A8D20);
+/* Moves each side's leader (alive, or below 50) into slot 0 (enemy) or 1 (player) */
+void func_8023BE14_ovl_2A8D20(void) {
+    s32 i;
+
+    for (i = 0; i < 28; i++) {
+        u8 *o = SLOT(i);
+        u8 *u;
+
+        if (o != NULL) {
+            u = D_801CE8BC + 0x1C4 + o[0x147] * 0xF8;
+            if ((func_801C8C90(u) != 1 || FIELD(o, s16, 0x138) < 50) && func_801C8C58(u) != 0) {
+                if (func_801C8B68(u) != 0) {
+                    if (i != 1) {
+                        func_8023977C_ovl_2A8D20(1, i);
+                    }
+                } else {
+                    if (i != 0) {
+                        func_8023977C_ovl_2A8D20(0, i);
+                    }
+                }
+            }
+        }
+    }
+}
 
 s32 func_801C8C58(u8 *u);
 
