@@ -789,22 +789,18 @@ void func_801AFE30_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFE30_ovl_1F0A30);
 #endif
 
-#ifdef NON_MATCHING
-/* addu operand order (1 instruction) */
 void func_801B0020_ovl_1F0A30(void) {
     u32 i;
+    u32 off;
 
-    for (i = 0; i < 16; i++) {
-        HFree(*(void **)(i * 12 + (u8 *)D_801CE8BC_ovl_1F0A30));
+    for (i = 0, off = 0; i < 16; i++, off += 12) {
+        HFree(*(void **)((u8 *)D_801CE8BC_ovl_1F0A30 + off));
     }
     for (i = 0; i < 10; i++) {
         HFree(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x180 + i * 4));
     }
     bzero(D_801CE8BC_ovl_1F0A30, 0xC0);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0020_ovl_1F0A30);
-#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
