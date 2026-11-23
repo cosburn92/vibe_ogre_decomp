@@ -672,7 +672,77 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7150_ovl_0EBBB0);
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7754_ovl_0EBBB0);
 
+s32 func_801A6E3C_ovl_0EBBB0(s32 tri, s32 x, s32 z, s32 *h);
+
+/* Intersects segment (x0, y0, z0) - (x1, y1, z1) with triangle tri of ground cell (cx, cz); on a
+ * hit stores the point in out and returns 1 */
+#ifdef NON_MATCHING
+/* 157 vs 159: in the lowest-height test the original loads h[2] into v0 and copies it to v1 (two moves) */
+s32 func_801A7AA0_ovl_0EBBB0(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, s32 cx, s32 cz, s32 tri, f32 *out) {
+    s32 h[3];
+    s32 k;
+    s32 dx;
+    s32 dz;
+    s32 lo;
+    f32 d0;
+    f32 d1;
+    f32 p;
+    f32 t;
+
+    if (tri == 0) {
+        k = func_801A6E3C_ovl_0EBBB0(0, cx, cz, h);
+        dx = h[0] - h[2];
+        dz = h[2] - h[1];
+    } else {
+        k = func_801A6E3C_ovl_0EBBB0(1, cx, cz, h);
+        dx = h[2] - h[1];
+        dz = h[0] - h[2];
+    }
+    k = h[k];
+    if (h[0] < h[1]) {
+        lo = h[2];
+        if (h[0] < lo) {
+            lo = h[0];
+        }
+    } else {
+        lo = h[2];
+        if (h[1] < lo) {
+            lo = h[1];
+        }
+    }
+    if (k < y0 && k < y1) {
+        return 0;
+    }
+    if (y0 < lo && y1 < lo) {
+        return 0;
+    }
+    d0 = dx * (x0 - cx) + (y0 - h[0]) + dz * (z0 - cz);
+    d1 = dx * (x1 - cx) + (y1 - h[0]) + dz * (z1 - cz);
+    p = d0 * d1;
+    if (p > 0.0f) {
+        return 0;
+    }
+    if (p < 0.0f) {
+        t = d0 / (d0 - d1);
+        out[0] = (x1 - x0) * t + x0;
+        out[1] = (y1 - y0) * t + y0;
+        out[2] = (z1 - z0) * t + z0;
+        return 1;
+    }
+    if (d0 == 0.0f) {
+        out[0] = x0;
+        out[1] = y0;
+        out[2] = z0;
+        return 1;
+    }
+    out[0] = x1;
+    out[1] = y1;
+    out[2] = z1;
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7AA0_ovl_0EBBB0);
+#endif
 
 /* Whether b's fractional part is larger than a's */
 s32 func_801A7D44_ovl_0EBBB0(f32 a, f32 b) {
