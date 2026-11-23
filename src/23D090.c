@@ -485,7 +485,73 @@ s32 func_801EA498_ovl_23B220(void) {
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA4D4_ovl_23B220);
 
+typedef struct {
+    s32 x0;
+    s32 y0;
+    s32 x1;
+    s32 y1;
+} Rect23;
+/* A run of one piece repeated count times across (or down) the logo canvas */
+typedef struct {
+    /* 0x0 */ u16 x;
+    /* 0x2 */ u16 y;
+    /* 0x4 */ u8 vertical;
+    /* 0x5 */ u8 piece;
+    /* 0x6 */ u8 count;
+    /* 0x7 */ u8 unk7;
+} Run23;
+extern Rect23 D_801F00F0_ovl_23B220[]; /* pieces of image 0x36A9A0 */
+extern Run23 D_801F0170_ovl_23B220[8];
+extern Rect23 D_801F01B0_ovl_23B220;
+extern Rect23 D_801F01C0_ovl_23B220;
+u32 func_801BE978(s32 siz, u16 w, u16 h);
+void func_801ED224_ovl_23B220(u8 *dst, s32 x, s32 y, u8 *src, Rect23 r);
+void func_801EA4D4_ovl_23B220(Rect23 a, Rect23 b, u8 *dst, u8 *src);
+
+/* Builds the 280x60 16-bit frame image *out from pieces of image 0x36A9A0 */
+#ifdef NON_MATCHING
+/* 140/136 instructions: the original walks the run table with its own pointer (s1) next to the index used for the count (fp + k * 8) */
+void func_801EA770_ovl_23B220(u8 **out) {
+    u8 *img;
+    u8 *src;
+    s32 k;
+    s32 j;
+    s32 x;
+    s32 y;
+    s32 p;
+    Run23 *r;
+
+    img = HMalloc(func_801BE978(2, 280, 60) + 8);
+    bzero(img, func_801BE978(2, 280, 60) + 8);
+    img[0] = '6';
+    img[1] = '4';
+    img[3] = 2;
+    *(u16 *)(img + 4) = 280;
+    img[2] = 0;
+    *(u16 *)(img + 6) = 60;
+    *out = img;
+    src = func_801E8E20_ovl_23B220(0x36A9A0);
+    img = *out;
+    for (k = 0; k < 8; k++) {
+        r = &D_801F0170_ovl_23B220[k];
+        x = r->x;
+        y = r->y;
+        for (j = 0; j < D_801F0170_ovl_23B220[k].count; j++) {
+            p = r->piece;
+            func_801ED224_ovl_23B220(img, x, y, src, D_801F00F0_ovl_23B220[p]);
+            if (r->vertical) {
+                y += D_801F00F0_ovl_23B220[p].y1 - D_801F00F0_ovl_23B220[p].y0;
+            } else {
+                x += D_801F00F0_ovl_23B220[p].x1 - D_801F00F0_ovl_23B220[p].x0;
+            }
+        }
+    }
+    func_801EA4D4_ovl_23B220(D_801F01C0_ovl_23B220, D_801F01B0_ovl_23B220, img, src);
+    HFree(src);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA770_ovl_23B220);
+#endif
 
 /* The constant 20 is loaded once into a0 in the target. */
 void func_801EA990_ovl_23B220(void)
@@ -965,7 +1031,7 @@ void func_801ECD80_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags &= ~2;
 }
 
-void func_801EA770_ovl_23B220(void *p);
+void func_801EA770_ovl_23B220(u8 **out);
 void func_8017A704(void *a, void *b, void *c);
 extern s32 D_800E9C0A;
 extern u8 D_801976DA;
