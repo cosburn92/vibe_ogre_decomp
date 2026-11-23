@@ -580,8 +580,6 @@ inline void func_801E15E0_ovl_213B10(u8 *u, s32 cls) {
     func_801C41C8(&a, &b, &c, &d, &e, 1);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 16 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
@@ -590,15 +588,11 @@ s32 func_801ADB9C(s32);                         /* extern */
 s32 func_801C92F8();                                /* extern */
 s32 func_801C9380();                                /* extern */
 s32 func_801C96D4(u8 *, s32);                   /* extern */
-s32 func_801C974C(u8 *, s32, s32, s32);     /* extern */
-extern s32 D_801CE8BC;
+void func_801C974C();
 
+#ifdef NON_MATCHING
+/* 108/108, 7 words: the third and fourth argument addresses of the registration call are set up later in the original */
 u8 *func_801E1660_ovl_213B10(u8 *arg0, s32 arg1, s32 arg2) {
-    s32 sp18;
-    s32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 sp28;
     s32 temp_a1;
     s32 temp_a2;
     s32 temp_s2;
@@ -609,10 +603,9 @@ u8 *func_801E1660_ovl_213B10(u8 *arg0, s32 arg1, s32 arg2) {
     temp_s2 = arg1 & 0xFF;
     var_a3 = temp_s2;
     temp_a2 = arg2 & 0xFF;
-    temp_a1 = FIELD(arg0, s32, 0x48);
     temp_s1 = D_801CE8BC + ((temp_a2 * 0xF8) + 0x1C4);
-    if (FIELD(arg0, s32, 0x4C) != temp_a1) {
-        var_a3 = temp_a1;
+    if (FIELD(arg0, s32, 0x4C) != FIELD(arg0, s32, 0x48)) {
+        var_a3 = FIELD(arg0, s32, 0x48);
     }
     FIELD(temp_s1, s32, 0x48) = var_a3;
     FIELD(temp_s1, s32, 0x4C) = temp_s2;
@@ -641,12 +634,7 @@ u8 *func_801E1660_ovl_213B10(u8 *arg0, s32 arg1, s32 arg2) {
         var_v0 = func_801C92F8();
     }
     func_801C96D4(arg0, var_v0);
-    sp18 = FIELD(temp_s1, s32, 0x48);
-    sp20 = func_801C8B68(temp_s1);
-    sp24 = func_801C8BA4(temp_s1);
-    sp1C = temp_s2;
-    sp28 = func_801C8FB8(temp_s1) & 0xFFFF;
-    func_801C41C8(&sp18, &sp1C, &sp20, &sp24, &sp28, 1);
+    func_801E15E0_ovl_213B10(temp_s1, temp_s2);
     func_801ADADC(FIELD(temp_s1, s32, 0));
     func_801ADB9C(FIELD(temp_s1, s32, 0xC));
     return temp_s1;
