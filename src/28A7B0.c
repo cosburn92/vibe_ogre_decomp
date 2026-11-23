@@ -1938,7 +1938,7 @@ u8 *func_80239394_ovl_286BD0(u8 *w, s32 n) {
 
 /* Item index shown on display line `line` (a new group or subgroup adds an extra line);
  * past the end returns the line count */
-s16 func_802394A0_ovl_286BD0(s32 line) {
+inline s16 func_802394A0_ovl_286BD0(s32 line) {
     s32 k = 0;
     u8 lastB = 0;
     u16 lastH = 0;
@@ -1952,10 +1952,10 @@ s16 func_802394A0_ovl_286BD0(s32 line) {
         }
         if (lastH != *(u16 *)(e + 2)) {
             lastB = e[4];
+            lastH = *(u16 *)(e + 2);
             if (line == k) {
                 return i;
             }
-            lastH = *(u16 *)(e + 2);
             k++;
         } else if (lastB != e[4]) {
             if (line == k) {
@@ -2089,85 +2089,21 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802396F0_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802397B8_ovl_286BD0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_8009C550(void *, s32 *);           /* extern */
-s32 sprintf(s32 *, s32 *, s32 *, u16, s32, s32); /* extern */
-extern s32 D_8023E060_ovl_286BD0;
-extern s32 D_8023E0A0_ovl_286BD0;
-extern s32 D_8023E378_ovl_286BD0;
+extern char D_8023E378_ovl_286BD0[];
 
-void *func_80239B14_ovl_286BD0(void *arg0, s32 arg1) {
-    s32 sp18;
-    TimeStamp *temp_s0;
-    TimeStamp *temp_v0;
-    s32 var_s2;
-    u16 temp_v1;
-    u16 var_s5;
-    u32 var_a0;
-    u32 var_s0;
-    u32 var_s1;
-    u8 temp_v0_2;
-    u8 var_s3;
+/* Writes the full date of the entry on list line `line` into text window buffer w */
+u8 *func_80239B14_ovl_286BD0(u8 *w, s32 line) {
+    char buf[0x64];
+    TimeStamp *e;
 
-    bzero(arg0, 0x500);
-    var_s0 = 0;
-    var_s3 = 0;
-    var_s5 = 0;
-    var_s2 = 0;
-    var_s1 = 0;
-loop_1:
-    temp_v0 = func_8022EC34_ovl_286BD0(var_s2 & 0xFF);
-    if (temp_v0 != NULL) {
-        temp_v1 = temp_v0->hi;
-        if (var_s5 != temp_v1) {
-            var_s3 = temp_v0->mid;
-            var_s5 = temp_v1;
-            if (arg1 != var_s0) {
-                var_s0 += 1;
-                goto block_8;
-            }
-            goto block_9;
-        }
-        temp_v0_2 = temp_v0->mid;
-        if (var_s3 != temp_v0_2) {
-            var_s0 += 1;
-            if (arg1 != var_s0) {
-                var_s3 = temp_v0_2;
-                goto block_8;
-            }
-            goto block_9;
-        }
-block_8:
-        if (arg1 == var_s0) {
-block_9:
-            var_a0 = var_s1 >> 0x10;
-        } else {
-            var_s1 += 0x10000;
-            var_s2 += 1;
-            var_s0 += 1;
-            if (var_s2 >= 0x79) {
-                goto block_11;
-            }
-            goto loop_1;
-        }
-    } else {
-block_11:
-        var_a0 = var_s0;
-    }
-    temp_s0 = func_8022EC34_ovl_286BD0(var_a0 & 0xFF);
-    bzero(&sp18, 0x64);
-    sprintf(&sp18, &D_8023E378_ovl_286BD0, &D_8023E0A0_ovl_286BD0, temp_s0->hi, *(&D_8023E060_ovl_286BD0 + (temp_s0->mid * 4)), (s32) temp_s0->lo);
-    FIELD(arg0, void *, 0x530) = arg0;
-    func_8009C550(arg0, &sp18);
-    return arg0;
+    bzero(w, 0x500);
+    e = func_8022EC34_ovl_286BD0(func_802394A0_ovl_286BD0(line));
+    bzero(buf, 0x64);
+    sprintf(buf, D_8023E378_ovl_286BD0, D_8023E0A0_ovl_286BD0, e->hi, D_8023E060_ovl_286BD0[e->mid], e->lo);
+    FIELD(w, u8 *, 0x530) = w;
+    func_8009C550((char *)w, buf);
+    return w;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239B14_ovl_286BD0);
-#endif
 
 extern char D_8023E378_ovl_286BD0[];   /* date line format */
 extern char D_8023E38C_ovl_286BD0[];   /* indent format */
