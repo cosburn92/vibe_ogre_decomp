@@ -231,7 +231,61 @@ s32 func_80225AAC_ovl_27A020(s16 i) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225AAC_ovl_27A020);
 #endif
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_801AD9D4(void *, s32);
+
+/* Revives squad member k (HP 0 -> 1) and cures its status bit 2, then replays animation 0x25 on
+ * its parts */
+#ifdef NON_MATCHING
+/* 90/90 instructions, 41 words differ: the squad table base is materialised separately, the generic-index test branches the other way and the parts loop index is re-extended */
+void func_80225B90_ovl_27A020(s16 k) {
+    u8 *pc = NULL;
+    s32 gen = 0;
+    s16 g;
+    u8 c;
+    u8 *u;
+    u16 i;
+
+    if (D_8022D150_ovl_27A020[k] != 0) {
+        c = FIELD(&gSquads[D_801976DC].unk00[k], u8, 2);
+        if (c >= 100) {
+            g = c - 99;
+        } else {
+            g = 0;
+        }
+        if (g == 0) {
+            pc = (u8 *)D_8022D150_ovl_27A020[k];
+        } else {
+            gen = D_8022D150_ovl_27A020[k];
+        }
+        u = (u8 *)D_8022D134_ovl_27A020[k];
+        if (pc != NULL) {
+            if (FIELD(pc, u16, 0x18) == 0) {
+                FIELD(pc, u16, 0x18) = 1;
+                FIELD(u, s32, 0x20) = 1;
+            }
+            if (pc[0x33] & 4) {
+                pc[0x33] &= ~4;
+                FIELD(u, s32, 0x40) &= ~2;
+            }
+        } else if (gen != 0) {
+            if (FIELD(gen + g, u8, 0xF3) & 4) {
+                FIELD(gen + g, u8, 0xF3) &= ~4;
+                FIELD(u, s32, 0x40) &= ~2;
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            if (FIELD(u, s32, i * 4) != 0) {
+                func_801AD9D4(FIELD(u, u8 *, i * 4) + 0x44, 0x25);
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225B90_ovl_27A020);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80225CF8_ovl_27A020);
 
