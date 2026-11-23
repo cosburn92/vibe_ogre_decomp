@@ -387,7 +387,36 @@ void func_8017AA18_ovl_040E80(u8 *str, u8 *dst) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AAF4_ovl_040E80);
+/* Decodes an encoded string (0xFF-terminated) into ASCII: bytes below 0x30 become "{Tnn}"
+ * (nn = byte + 1), others byte - 0x10 ('.' for '{' and 0x7F+); stops when the line is full */
+void func_8017AAF4_ovl_040E80(u8 *src, char *dst) {
+    char *start = dst;
+    u8 c;
+
+    while ((c = *src) != 0xFF) {
+        if (c < 0x30) {
+            if (dst - start >= 8) {
+                break;
+            }
+            *dst++ = '{';
+            *dst++ = 'T';
+            *dst++ = (*src + 1) / 10 + '0';
+            *dst++ = (*src + 1) % 10 + '0';
+            *dst++ = '}';
+        } else {
+            if (dst - start >= 13) {
+                break;
+            }
+            if (c - 0x10 == '{' || c - 0x10 >= 0x7F) {
+                *dst++ = '.';
+            } else {
+                *dst++ = c - 0x10;
+            }
+        }
+        src++;
+    }
+    *dst = 0;
+}
 
 #ifdef NON_MATCHING
 /* m2c draft, 70 words from the target; queued for the permuter */
