@@ -2119,7 +2119,61 @@ u8 *func_8023AA70_ovl_286BD0(u8 *o, s32 kind, u8 *src) {
     return p;
 }
 
+void func_80239160_ovl_286BD0(u8 *w, s32 a, u8 *src);
+void func_802397B8_ovl_286BD0(u8 *w, s32 a, u8 *src);
+
+/* Gives window o its text block for page kind k (6: built list, 11: copied table with 7 line
+ * pointers, 16: second list) */
+#ifdef NON_MATCHING
+/* 102 vs 103 instructions: the original keeps the loop bound 7 in a register (slt), and stores 0x600 right after loading the window */
+u8 *func_8023AB74_ovl_286BD0(u8 *o, u32 k, u8 *src) {
+    u8 *w;
+    u32 kind;
+
+    FIELD(o, u8 *, 0xD0) = HMalloc(0x604);
+    bzero(FIELD(o, u8 *, 0xD0), 0x604);
+    w = FIELD(o, u8 *, 0xD0);
+    FIELD(w, s32, 0x600) = k;
+    kind = k & 0xFF;
+    w[0x5F0] = 6;
+    w[0x5F3] = 20;
+    w[0x5F6] = 17;
+    w[0x5FE] = 2;
+    w[0x5FD] = kind;
+    switch (kind) {
+    case 6:
+        FIELD(src, void *, 8) = HMalloc(0x500);
+        FIELD(src, void *, 4) = HMalloc(0x1F40);
+        w[0x5F4] = 5;
+        func_80239160_ovl_286BD0(w, 0, src);
+        break;
+    case 11: {
+        u8 *t;
+        s32 i;
+
+        w[0x5F4] = 7;
+        t = *FIELD(src, u8 **, 4);
+        bzero(w, 0x500);
+        func_80080998(w, t, 0x500);
+        for (i = 0; i < 7; i++) {
+            ((u8 **)(w + 0x530))[i] = w + (FIELD(src, s32 *, 4)[i] - FIELD(src, s32 *, 4)[0]);
+        }
+        break;
+    }
+    case 16:
+        w[0x5F4] = 8;
+        func_802397B8_ovl_286BD0(w, 0, src);
+        w[0x5FC] = 1;
+        break;
+    }
+    o[0x25] = 5;
+    w[0x5F5] = 5;
+    w[0x5F2] = 48;
+    return w;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AB74_ovl_286BD0);
+#endif
 
 /* The a and b saved registers are swapped. */
 #ifdef NON_MATCHING
