@@ -180,7 +180,39 @@ void func_801AE090_ovl_0FA5E0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AE0C4_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AE5BC_ovl_0FA5E0);
+#define GFXFA(w0_, w1_)                \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;        \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (w1_);                \
+    }
+extern u8 D_801B36A0_ovl_0FA5E0[8];
+extern u8 D_801B36A8_ovl_0FA5E0[8];
+
+/* Eight one-line fill rectangles across the screen at rows D_801B36A8, colours D_801B36A0 */
+void func_801AE5BC_ovl_0FA5E0(void) {
+    s32 i;
+
+    func_80197B70();
+    GFXFA(0xE7000000, 0);
+    GFXFA(0xE7000000, 0);
+    GFXFA(0xE3000A01, 0);
+    GFXFA(0xE7000000, 0);
+    GFXFA(0xD9000000, 0);
+    GFXFA(0xFCFFFFFF, 0xFFFDF6FB);
+    GFXFA(0xE200001C, 0x504340);
+    for (i = 0; i < 8; i++) {
+        GFXFA(0xE7000000, 0);
+        GFXFA(0xFA000000, D_801B36A0_ovl_0FA5E0[i]);
+        GFXFA(0xE7000000, 0);
+        GFXFA(((D_801B36A8_ovl_0FA5E0[i] + 1) * 4) | 0xE4500000, D_801B36A8_ovl_0FA5E0[i] * 4);
+        GFXFA(0xE1000000, 0);
+        GFXFA(0xF1000000, 0);
+        GFXFA(0xE7000000, 0);
+    }
+    GFXFA(0xE7000000, 0);
+}
 
 void func_801AE79C_ovl_0FA5E0(s32 i) {
     D_801B3390_ovl_0FA5E0->x88 = 1;
