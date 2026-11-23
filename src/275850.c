@@ -42,7 +42,43 @@ void func_80221368_ovl_275850(u8 *o, s32 a);
 
 INCLUDE_ASM("asm/nonmatchings/275850", func_802210C0_ovl_275850);
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#define G275(a, b)                   \
+    {                                \
+        Gfx *_g = D_800E9BA0++;      \
+                                     \
+        _g->w0 = (a);                \
+        _g->w1 = (b);                \
+    }
+
+/* Loads o's 32x32 texture (o+4) with its alpha (o+0x11) and draws its quads from vertex block a,
+ * four vertices at a time (o+0xA quads) */
+#ifdef NON_MATCHING
+/* 104/104 instructions, 22 words differ: the first command's word is stored before D_800E9BA0 advances in the original, and the final pointer store is sunk below the quad count load */
+void func_80221368_ovl_275850(u8 *o, s32 a) {
+    s16 i;
+
+    if (FIELD(o, u32, 4) != 0) {
+        G275(0xFD180000, FIELD(o, u32, 4));
+        G275(0xF5180000, 0x07000000);
+        G275(0xE6000000, 0);
+        G275(0xF3000000, 0x0717F100);
+        G275(0xE7000000, 0);
+        G275(0xF5180800, 0);
+        G275(0xF2000000, 0x3C05C);
+        G275(0xFA000000, o[0x11] | ~0xFF);
+        G275(0xE6000000, 0);
+        for (i = 0; i < FIELD(o, s16, 0xA) * 4; i += 4) {
+            G275(0x01004008, a + (i << 4));
+            G275(0x06000204, 0x406);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221368_ovl_275850);
+#endif
 
 /* Draws the two parts of o under an untranslated matrix, after the setup list */
 inline void func_80221508_ovl_275850(u8 *o) {
