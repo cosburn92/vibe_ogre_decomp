@@ -96,18 +96,52 @@ void func_801D5208_ovl_101CE0(MapUnit12 *u) {
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5238_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5910_ovl_101CE0);
-
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5A60_ovl_101CE0);
-
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5E34_ovl_101CE0);
-
 void bzero(void *p, s32 n);
 extern s16 D_8019532C[];
 extern u8 D_80195480[];
 extern u8 D_80195560[][0x34];
 extern u32 *D_801F0CB0_ovl_101CE0[];
 void func_801B2D2C_ovl_101CE0(u32 *o);
+void HFree(void *p);
+
+extern s32 D_801F367C_ovl_101CE0;
+extern u8 gLegions[][11];
+
+/* Clears the enemy side: map units, enemy characters 1-98, generic enemies, squads 30-49 and the
+ * enemy legions (flag 0x80) */
+void func_801D5910_ovl_101CE0(void) {
+    s32 i;
+
+    for (i = 0; i < D_801F367C_ovl_101CE0; i++) {
+        u32 *o = D_801F0CB0_ovl_101CE0[i];
+
+        func_801B2D2C_ovl_101CE0(o);
+        if (FIELD(o, void *, 0xA8) != NULL) {
+            HFree(FIELD(o, void *, 0xA8));
+        }
+        bzero(o, 0xC0);
+    }
+    for (i = 1; i < 99; i++) {
+        bzero(D_80195560[i], 0x34);
+        D_80195560[i][0x33] &= 0x7F;
+    }
+    for (i = 119; i >= 0; i--) {
+        D_8019532C[100 + i] = 0;
+    }
+    for (i = 30; i < 50; i++) {
+        bzero(&gSquads[i], 25);
+    }
+    for (i = 0; i < 10; i++) {
+        if (gLegions[i][1] & 0x80) {
+            bzero(gLegions[i], 11);
+        }
+    }
+}
+
+INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5A60_ovl_101CE0);
+
+INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5E34_ovl_101CE0);
+
 
 /* Disbands squad k: frees its members (generic ids 100+, else clears the character), clears the
  * record and hides its map unit */
