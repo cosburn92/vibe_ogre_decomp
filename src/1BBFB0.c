@@ -690,7 +690,89 @@ s32 func_80227F68_ovl_1BA050(s32 i) {
     return o == NULL;
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_8022750C_ovl_1BA050();
+
+/* Opens script text window i (0-3; hangs when out of range or busy) with style flags f (0x20: large
+ * text) and data d: appends it to the window list, sets its line size and visible rows (from the
+ * box height, 1-4) and a 0x200-byte text buffer, then creates its window node */
+#ifdef NON_MATCHING
+/* 164 vs 162: the list walk keeps the node and the last node in v1/v0 the other way and the row clamp branches differently */
+ScriptRes *func_80228048_ovl_1BA050(u32 i, s32 d, u8 f, u16 x, u16 y, u16 w, u16 h, u16 x2, u16 y2, u16 w2, u16 h2) {
+    ScriptRes *r;
+    u8 *l;
+    u8 *last;
+    u8 rows;
+
+    if (i >= 4) {
+        for (;;) {
+        }
+    }
+    r = &D_8022A4E0_ovl_1BA050[i];
+    if (r->used != 0) {
+        for (;;) {
+        }
+    }
+    bzero(r, 0x5C);
+    l = D_8022A650_ovl_1BA050;
+    last = NULL;
+    if (l != NULL) {
+        last = l;
+        while (FIELD(l, u8 *, 8) != NULL) {
+            l = FIELD(l, u8 *, 8);
+            last = l;
+        }
+    }
+    if (last != NULL) {
+        FIELD(last, ScriptRes *, 8) = r;
+    } else {
+        D_8022A650_ovl_1BA050 = (u8 *)r;
+    }
+    FIELD(r, u8, 0x58) = 1;
+    FIELD(r, u8, 0x12) = 1;
+    FIELD(r, s8, 0x59) = -1;
+    FIELD(r, u8, 0xC) = i;
+    FIELD(r, u8, 0xF) = f;
+    FIELD(r, s32, 0x18) = d;
+    if (f & 0x20) {
+        FIELD(r, s16, 0x14) = 3;
+    } else {
+        FIELD(r, s16, 0x14) = 2;
+    }
+    {
+        s16 n = 2;
+
+        if (f & 0x20) {
+            n = 4;
+        }
+        FIELD(r, s16, 0x20) = n;
+    }
+    rows = ((s16)h2 - (s16)y2) / 15;
+    FIELD(r, u8, 0x23) = rows;
+    if (rows == 0) {
+        FIELD(r, u8, 0x23) = rows + 1;
+    } else if (rows >= 5) {
+        FIELD(r, u8, 0x23) = 4;
+    }
+    FIELD(r, s32, 0x3C) = 0x200;
+    FIELD(r, void *, 0x34) = HMalloc(0x200);
+    bzero(FIELD(r, void *, 0x34), FIELD(r, s32, 0x3C));
+    {
+        u8 k = 3;
+
+        if (f & 0x20) {
+            k = 8;
+        }
+        r->used = (s32)func_8017BFB0(i | 0x5200, k, func_8022750C_ovl_1BA050, x, y, w, h, x2, y2, w2, h2);
+    }
+    D_8022A838_ovl_1BA050 = -1;
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80228048_ovl_1BA050);
+#endif
 
 void func_802282D0_ovl_1BA050(void) {
     u8 *n = D_8022A650_ovl_1BA050;
