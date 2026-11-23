@@ -117,7 +117,7 @@ u8 func_8016B0F4_ovl_040E80(u8 which, u8 k) {
 
 INCLUDE_ASM("asm/nonmatchings/40E80", func_8016B198_ovl_040E80);
 
-u16 func_8016B6FC_ovl_040E80(u16 id) {
+inline u16 func_8016B6FC_ovl_040E80(u16 id) {
     s32 i;
     u16 (*p)[2] = D_80196B00_ovl_040E80;
 
@@ -129,7 +129,7 @@ u16 func_8016B6FC_ovl_040E80(u16 id) {
     return 0x1FF;
 }
 
-u16 func_8016B738_ovl_040E80(u16 id) {
+inline u16 func_8016B738_ovl_040E80(u16 id) {
     s32 i;
     u16 (*p)[2] = D_80193AC0_ovl_040E80;
 
@@ -141,7 +141,70 @@ u16 func_8016B738_ovl_040E80(u16 id) {
     return 0x1FF;
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern u8 (*D_80186FD4_ovl_040E80[])(u8 cls, u8 base, u8 item);
+
+/* Recounts the items in use: the ten item slots of every active squad (into the 0x28-entry
+ * table), and each character's four equipment slots plus the item each slot's rule pairs with
+ * it (into the 0x116-entry table) */
+#ifdef NON_MATCHING
+/* 173 vs 167: two more saved registers here; the original walks the squads with one pointer and keeps the table bases in t0/s3 */
+void func_8016B774_ovl_040E80(void) {
+    u8 it = 0;
+    s32 i;
+    s32 k;
+
+    for (i = 0x27 * 4; i >= 0; i -= 4) {
+        ((u8 *)D_80193AC0_ovl_040E80)[i + 2] = 0;
+    }
+    for (i = 0x115 * 4; i >= 0; i -= 4) {
+        ((u8 *)D_80196B00_ovl_040E80)[i + 2] = 0;
+    }
+    for (i = 0; i < 30; i++) {
+        if (gSquads[i].flags & 1) {
+            for (k = 0; k < 10; k++) {
+                it = gSquads[i].unk02[k + 0xB];
+                if (it != 0) {
+                    ((u8 *)D_80193AC0_ovl_040E80[func_8016B738_ovl_040E80(it)])[2]++;
+                }
+            }
+        }
+    }
+    for (i = 1; i < 100; i++) {
+        Unit38 *c = &D_80193BC0_ovl_040E80[i];
+
+        if (c->unk11 != 0) {
+            for (k = 0; k < 4; k++) {
+                switch (k) {
+                    case 0:
+                        it = FIELD(c, u16, 0x2A);
+                        break;
+                    case 1:
+                        it = FIELD(c, u16, 0x2C);
+                        break;
+                    case 2:
+                        it = FIELD(c, u16, 0x2E);
+                        break;
+                    case 3:
+                        it = FIELD(c, u16, 0x30);
+                        break;
+                }
+                if (it != 0) {
+                    ((u8 *)D_80196B00_ovl_040E80[func_8016B6FC_ovl_040E80(it)])[2]++;
+                }
+                it = D_80186FD4_ovl_040E80[k](c->unk11, c->unk12[0], it);
+                if (it != 0) {
+                    ((u8 *)D_80196B00_ovl_040E80[func_8016B6FC_ovl_040E80(it)])[2]++;
+                }
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/40E80", func_8016B774_ovl_040E80);
+#endif
 
 void func_8016BA10_ovl_040E80(u8 mode) {
     s32 i;
