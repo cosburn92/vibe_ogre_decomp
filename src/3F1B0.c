@@ -131,7 +131,72 @@ void func_800EA0E4_ovl_03F1B0(SoundChannel *ch) {
     ch->pending = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA1C8_ovl_03F1B0);
+void func_80081B60(s32 h, s32 v);
+void func_80081BC0(s32 h, s32 v);
+void func_80081CA0(s32 h, s32 v);
+void func_80081C30(s32 h, f32 v);
+
+/* Runs channel ch's pending command (saved[1]) on its sequence player */
+void func_800EA1C8_ovl_03F1B0(SoundChannel *ch) {
+    switch (ch->saved[1]) {
+        case 1:
+            if (func_80081B08(ch->handle) == 0) {
+                CHF(ch, 0x20) = 0;
+            }
+            break;
+        case 2:
+            MusSetMasterVolume(2, ch->param);
+            break;
+        case 3:
+            func_80081B60(ch->handle, ch->param);
+            break;
+        case 4:
+            ch->saved[0] = 0;
+            ch->saved[2] = 0;
+            func_80081A54(ch->handle, 0);
+            break;
+        case 5:
+            ch->saved[0] = 0;
+            func_80081A54(ch->handle, ch->param);
+            break;
+        case 6:
+            D_800EB0B0_ovl_03F1B0[0].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[1].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[2].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[3].saved[0] = 0;
+            func_80081908(2, ch->saved[2]);
+            break;
+        case 7:
+            D_800EB0B0_ovl_03F1B0[4].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[5].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[6].saved[0] = 0;
+            func_80081908(1, ch->saved[2]);
+            break;
+        case 8:
+            D_800EB0B0_ovl_03F1B0[0].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[1].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[2].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[3].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[4].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[5].saved[0] = 0;
+            D_800EB0B0_ovl_03F1B0[6].saved[0] = 0;
+            func_80081908(3, ch->saved[2]);
+            break;
+        case 9:
+            func_80081BC0(ch->handle, ch->param);
+            break;
+        case 10:
+            func_80081D2C(ch->handle, ch->saved[2]);
+            CHF(ch, 0x44) = ch->saved[2];
+            break;
+        case 11:
+            func_80081CA0(ch->handle, ch->param);
+            break;
+        case 12:
+            func_80081C30(ch->handle, (u32)ch->param / 32768.0 - 1.0);
+            break;
+    }
+}
 
 void func_800EA3BC_ovl_03F1B0(SoundChannel *ch) {
     s32 a = ch->request;
