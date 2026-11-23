@@ -27,7 +27,50 @@ void func_80218140_ovl_25EE90(s32 a) {
     func_8020DF00_ovl_25EE90(func_80218AC0_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/26CCF0", func_8021816C_ovl_25EE90);
+typedef struct {
+    /* 0x00 */ f32 pos[3];
+    /* 0x0C */ f32 dir[3];
+    /* 0x18 */ s32 t;
+    /* 0x1C */ f32 len;
+    /* 0x20 */ f32 speed;
+    /* 0x24 */ u8 unk24[0xC];
+    /* 0x30 */ f32 a[4];
+    /* 0x40 */ f32 b[4];
+    /* 0x50 */ f32 out[4];
+} Path26C;
+void func_80217C84_ovl_25EE90(s32 id, f32 *out);
+f32 func_8020A3C8_ovl_25EE90(f32 *v);
+void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out);
+void func_80217E1C_ovl_25EE90(s32 n, f32 *a, f32 *b, f32 *out);
+
+/* Sets up o's flight path from its position to target 0x28's: unit direction, length less 40
+ * and the curve coefficients */
+void func_8021816C_ovl_25EE90(u8 *o) {
+    Path26C *p = FIELD(o, Path26C *, 0x3C);
+    f32 to[3];
+
+    p->pos[0] = FIELD(o, f32, 0xC);
+    p->pos[1] = FIELD(o, f32, 0x10);
+    p->pos[2] = FIELD(o, f32, 0x14);
+    func_80217C84_ovl_25EE90(FIELD(o, s32, 0x28), to);
+    p->dir[0] = to[0] - FIELD(o, f32, 0xC);
+    p->dir[1] = to[1] - FIELD(o, f32, 0x10);
+    p->dir[2] = to[2] - FIELD(o, f32, 0x14);
+    p->len = func_8020A3C8_ovl_25EE90(p->dir);
+    p->t = 0;
+    p->speed = 10.0f;
+    func_8020A2E0_ovl_25EE90(p->dir, 1.0f / p->len, p->dir);
+    p->a[0] = 0;
+    p->b[0] = 0;
+    p->b[3] = 0;
+    p->a[3] = p->len;
+    p->a[1] = p->len / 6.0f;
+    p->a[2] = p->len / 2.0f;
+    p->b[2] = p->len / 6.0f;
+    p->b[1] = -p->len / 20.0f;
+    func_80217E1C_ovl_25EE90(4, p->a, p->b, p->out);
+    p->len = p->len - 40.0f;
+}
 
 INCLUDE_ASM("asm/nonmatchings/26CCF0", func_802182C4_ovl_25EE90);
 
