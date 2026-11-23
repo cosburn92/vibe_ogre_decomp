@@ -255,7 +255,7 @@ s32 func_8009C7CC(void); /* rand */
 
 /* Resets panel p to animation a (0xFF: leave it); a = 0 with flag 2 picks one of the first five
  * at random, flag 1 selects the second set (+50) */
-void func_801AD9D4_ovl_1F0A30(Panel1F *p, s32 a) {
+inline void func_801AD9D4_ovl_1F0A30(Panel1F *p, s32 a) {
     if ((u8)a != 0xFF) {
         if (a == 0 && (FIELD(p, u8, 0x48) & 2)) {
             u32 x = func_8009C7CC();
@@ -775,82 +775,42 @@ void func_801AFC0C_ovl_1F0A30(void) {
     func_801C88CC_ovl_1F0A30(2);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_8009C7CC();                                /* extern */
-s32 func_8016E338(u8, u8, s32);                     /* extern */
-s32 func_801BCFF0_ovl_1F0A30();                 /* extern */
-s32 func_801C22D0_ovl_1F0A30(s32);          /* extern */
-s32 func_801C22E8_ovl_1F0A30(s32);          /* extern */
-s32 func_801C45E0_ovl_1F0A30();                 /* extern */
-s32 func_801C8E30_ovl_1F0A30(void **);              /* extern */
-void **func_801C8FE8_ovl_1F0A30(s32);               /* extern */
-s32 func_801C9FA4_ovl_1F0A30(s32);                  /* extern */
-s32 func_801CBC2C_ovl_1F0A30();                 /* extern */
-s32 func_801CBF44_ovl_1F0A30();                 /* extern */
-s32 func_801CC7EC_ovl_1F0A30(void **);          /* extern */
-s32 func_8020B030();                            /* extern */
-s32 osSyncPrintf(s32 *);                    /* extern */
+u8 func_8016E338(u8 a, u8 b, u8 c);
+void func_801C22E8_ovl_1F0A30(s32 a);
+void func_801C45E0_ovl_1F0A30(void);
+s32 func_801C8E30_ovl_1F0A30(u8 **u);
+u8 **func_801C8FE8_ovl_1F0A30(s32 i);
+u8 func_801C9FA4_ovl_1F0A30(s32 a);
+void func_801CBF44_ovl_1F0A30(void);
+void func_801CC7EC_ovl_1F0A30(u8 **u);
 extern s32 D_801CE8C4_ovl_1F0A30;
 
+/* Battle start: resets every part panel of the 20 units to its idle animation, recomputes each
+ * unit's 0x70 (func_8016E338) and rebuilds the battle state */
 void func_801AFE30_ovl_1F0A30(void) {
-    s16 var_s0;
-    s32 temp_s0;
-    s32 temp_s1;
-    s32 var_s0_2;
-    s32 var_s6;
-    u32 var_s5;
-    void **temp_v0;
-    void **var_s4;
-    void *temp_s2;
+    s32 i;
+    u32 k;
+    u8 **u;
+    s32 j;
 
     D_801CE8C4_ovl_1F0A30 = 0;
-    var_s6 = 0;
-    osSyncPrintf("\n");
-    do {
-        temp_v0 = func_801C8FE8_ovl_1F0A30(var_s6);
-        if (func_801C8E30_ovl_1F0A30(temp_v0) == 0) {
-            var_s5 = 0;
-            var_s4 = temp_v0;
-            do {
-                temp_s2 = *var_s4;
-                if (temp_s2 != NULL) {
-                    var_s0 = 0;
-                    if (FIELD(temp_s2, u8, 0x8C) & 2) {
-                        temp_s0 = func_8009C7CC();
-                        temp_s1 = func_8009C7CC();
-                        var_s0 = (((temp_s0 << 0x12) & 0x0C000000) | (temp_s1 << 0xF) | func_8009C7CC()) % 5;
-                    }
-                    if (FIELD(temp_s2, u8, 0x8C) & 1) {
-                        var_s0 += 0x32;
-                    }
-                    FIELD(temp_s2, s16, 0x48) = var_s0;
-                    FIELD(temp_s2, s16, 0x4A) = -1;
-                    FIELD(temp_s2, s16, 0x4C) = 0;
-                    FIELD(temp_s2, s16, 0x54) = 0;
-                    FIELD(temp_s2, s16, 0x52) = 0;
-                    FIELD(temp_s2, s16, 0x50) = 0;
-                    FIELD(temp_s2, s8, 0x8A) = 0;
-                    FIELD(temp_s2, s8, 0x8B) = 0;
-                    memset(temp_s2 + 0x56, 0xFF, 0x10);
-                    bzero(temp_s2 + 0x66, 0x10);
+    osSyncPrintf("
+");
+    for (i = 0; i < 20; i++) {
+        u = func_801C8FE8_ovl_1F0A30(i);
+        if (func_801C8E30_ovl_1F0A30(u) == 0) {
+            for (k = 0; k < 3; k++) {
+                if (u[k] != NULL) {
+                    func_801AD9D4_ovl_1F0A30((Panel1F *)(u[k] + 0x44), 0);
                 }
-                var_s5 += 1;
-                var_s4 += 4;
-            } while (var_s5 < 3U);
-            FIELD(temp_v0, s32, 0x6C) = 0;
-            FIELD(temp_v0, s32, 0x70) = (s32) (func_8016E338(FIELD(temp_v0, u8, 0x4B), FIELD(temp_v0, u8, 0x4F), func_801C9FA4_ovl_1F0A30(FIELD(temp_v0, s32, 0x58)) & 0xFF) & 0xFF);
+            }
+            FIELD(u, s32, 0x6C) = 0;
+            FIELD(u, s32, 0x70) = func_8016E338(FIELD(u, u8, 0x4B), FIELD(u, u8, 0x4F), func_801C9FA4_ovl_1F0A30(FIELD(u, s32, 0x58)));
         }
-        var_s6 += 1;
-        var_s0_2 = 0;
-    } while (var_s6 < 0x14);
-    do {
-        func_801CC7EC_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(var_s0_2));
-        var_s0_2 += 1;
-    } while (var_s0_2 < 0x14);
+    }
+    for (j = 0; j < 20; j++) {
+        func_801CC7EC_ovl_1F0A30(func_801C8FE8_ovl_1F0A30(j));
+    }
     func_801BCFF0_ovl_1F0A30();
     func_801CBC2C_ovl_1F0A30();
     func_801C22D0_ovl_1F0A30(2);
@@ -859,9 +819,6 @@ void func_801AFE30_ovl_1F0A30(void) {
     func_801C45E0_ovl_1F0A30();
     func_801CBF44_ovl_1F0A30();
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFE30_ovl_1F0A30);
-#endif
 
 void func_801B0020_ovl_1F0A30(void) {
     u32 i;
