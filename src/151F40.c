@@ -1000,8 +1000,13 @@ extern u8 D_80213782_ovl_14EBE0;
 /* Picks the target of menu choice `mode` for row recs[mode] (10-byte rows, target id at +1):
  * 0 a table entry, 1 the deployed unit (when 0x5F6 is 2), 2 the reserve entry, 3 the first
  * active squad of the slot's side (or none if the slot is taken) */
+extern u8 D_80213782_ovl_14EBE0;
+
+/* Picks the target of menu choice `mode` for row recs[mode] (10-byte rows, target id at +1):
+ * 0 a table entry, 1 the deployed unit (when 0x5F6 is 2), 2 the reserve entry, 3 the first
+ * active squad of the slot's side (or none if the slot is taken) */
 #ifdef NON_MATCHING
-/* 109/109: case 1 and case 2 index arithmetic scheduled/registered differently (sb before the slot load; case 2 adds before truncating) */
+/* 109/109: case 2 adds the reserve offset before truncating k, and the row address operands are swapped */
 void func_80206EB4_ovl_14EBE0(s8 mode, u8 *recs, u8 *tbl, s32 unused, u8 *slots) {
     u8 *sel = &D_80213781_ovl_14EBE0;
     u8 k;
@@ -1016,7 +1021,11 @@ void func_80206EB4_ovl_14EBE0(s8 mode, u8 *recs, u8 *tbl, s32 unused, u8 *slots)
         case 1:
             if ((s8)D_80213778_ovl_14EBE0[0x5F6] == 2) {
                 *sel = 0;
-                k = D_80213778_ovl_14EBE0[(u8)(D_80213778_ovl_14EBE0[0x62D] + slots[k * 8 + 5]) + 0x5D9];
+                {
+                    u8 base = D_80213778_ovl_14EBE0[0x62D];
+
+                    k = D_80213778_ovl_14EBE0[(u8)(base + slots[k * 8 + 5]) + 0x5D9];
+                }
                 D_80213782_ovl_14EBE0 = tbl[k * 12];
             } else {
                 D_80213782_ovl_14EBE0 = k;
