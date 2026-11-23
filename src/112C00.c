@@ -71,7 +71,107 @@ void func_801BECD0_ovl_101CE0(f32 speed) {
     }
 }
 
+extern s8 D_801F0E13_ovl_101CE0;
+extern u16 *D_801F0CA0_ovl_101CE0; /* button map */
+extern u16 D_800E8100;              /* buttons pressed */
+extern u8 D_801F0D90_ovl_101CE0;
+extern f32 D_801F0D94_ovl_101CE0;
+extern f32 D_801E91C8_ovl_101CE0; /* zoom angle min */
+extern f32 D_801E91CC_ovl_101CE0; /* zoom angle max */
+extern f32 D_8018F578;
+extern f32 D_8018F580;
+extern f32 D_8018F584;
+extern f32 D_8018F588;
+f32 sinf(f32 x);
+f32 cosf(f32 x);
+
+/* Steps the field camera zoom: the zoom buttons pick one of three levels, the angle (s + 0x10)
+ * accelerates toward it (0.18 per frame, at most 2.5) and the camera height, distance and fov
+ * follow it */
+#ifdef NON_MATCHING
+/* 231/227 instructions: the zoom-level switch is a tree (==1, <2, ==2) in the original, and the stores of the speed and D_801F3610 are scheduled differently */
+void func_801BEF54_ovl_101CE0(void) {
+    s32 m = D_801F0DE0_ovl_101CE0;
+    f32 target;
+    f32 a;
+    f32 r;
+    f32 *cam;
+
+    if ((m != 0x2A && m != 0) && (m != 1 && m != 0x1F)) {
+        return;
+    }
+    if (m == 1 && D_801F0E13_ovl_101CE0 == m) {
+        return;
+    }
+    if (m != 0x1F) {
+        if (D_801F0CA0_ovl_101CE0[0xC] & D_800E8100) {
+            if (D_801AB850[4] < 2) {
+                D_801AB850[4]++;
+            }
+        }
+        if (D_801F0CA0_ovl_101CE0[0xD] & D_800E8100) {
+            if (D_801AB850[4] != 0) {
+                D_801AB850[4]--;
+            }
+        }
+    }
+    D_801F0D90_ovl_101CE0 = D_801AB850[4];
+    D_801F0D94_ovl_101CE0 = FIELD(D_801AB850, f32, 0x10);
+    switch (D_801AB850[4]) {
+        case 1:
+            target = (D_801E91C8_ovl_101CE0 + D_801E91CC_ovl_101CE0) * 0.6f;
+            break;
+        case 2:
+            target = D_801E91CC_ovl_101CE0;
+            break;
+        default:
+            target = D_801E91C8_ovl_101CE0;
+            break;
+    }
+    if (FIELD(D_801AB850, f32, 0x10) < target) {
+        D_801F3610_ovl_101CE0 = 1;
+        FIELD(D_801AB850, f32, 0x14) += 0.18f;
+        if (FIELD(D_801AB850, f32, 0x14) > 2.5f) {
+            FIELD(D_801AB850, f32, 0x14) = 2.5f;
+        }
+        FIELD(D_801AB850, f32, 0x10) += FIELD(D_801AB850, f32, 0x14);
+        if (target < FIELD(D_801AB850, f32, 0x10)) {
+            FIELD(D_801AB850, f32, 0x10) = target;
+            FIELD(D_801AB850, f32, 0x14) = 0;
+        }
+    } else if (target < FIELD(D_801AB850, f32, 0x10)) {
+        D_801F3610_ovl_101CE0 = 1;
+        FIELD(D_801AB850, f32, 0x14) -= 0.18f;
+        if (FIELD(D_801AB850, f32, 0x14) < -2.5f) {
+            FIELD(D_801AB850, f32, 0x14) = -2.5f;
+        }
+        FIELD(D_801AB850, f32, 0x10) += FIELD(D_801AB850, f32, 0x14);
+        if (FIELD(D_801AB850, f32, 0x10) < target) {
+            FIELD(D_801AB850, f32, 0x10) = target;
+            FIELD(D_801AB850, f32, 0x14) = 0;
+        }
+    }
+    if (FIELD(D_801AB850, f32, 0x10) < D_801E91C8_ovl_101CE0) {
+        FIELD(D_801AB850, f32, 0x10) = D_801E91C8_ovl_101CE0;
+        FIELD(D_801AB850, f32, 0x14) = 0.0f;
+    }
+    if (D_801E91CC_ovl_101CE0 < FIELD(D_801AB850, f32, 0x10)) {
+        FIELD(D_801AB850, f32, 0x10) = D_801E91CC_ovl_101CE0;
+        FIELD(D_801AB850, f32, 0x14) = 0.0f;
+    }
+    D_801F0D94_ovl_101CE0 = FIELD(D_801AB850, f32, 0x10);
+    cam = D_8018F58C;
+    cam[0] = D_8018F584 + (D_8018F588 - D_8018F584) * (FIELD(D_801AB850, f32, 0x10) - D_801E91C8_ovl_101CE0) /
+                              (D_801E91CC_ovl_101CE0 - D_801E91C8_ovl_101CE0);
+    a = FIELD(D_801AB850, f32, 0x10) / 360.0f * 6.2831855f;
+    r = D_8018F578 * D_8018F580;
+    cam[7] = cam[10] + D_8018F578 * cosf(a);
+    cam = D_8018F58C;
+    cam[6] = cam[9] + r * sinf(a);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/112C00", func_801BEF54_ovl_101CE0);
+#endif
 
 /* Steps the 0..4 open counter at +0x1C (clears +0x20 when it reaches 4) */
 void func_801BF2F0_ovl_101CE0(void) {
