@@ -1,4 +1,5 @@
 #include "common.h"
+#include "tables.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
@@ -629,7 +630,62 @@ s32 func_8023C804_ovl_2A8D20(s32 i) {
     return 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C874_ovl_2A8D20);
+extern u8 D_8022A981;
+extern s32 D_801CEAB0;
+extern u8 D_80196AED;
+extern u8 *D_801CE8C0;
+extern u8 D_801976D8;
+extern u16 D_80197B60;
+extern u8 D_80190F80[];
+typedef struct {
+    /* 0x00 */ Character c;
+    /* 0x34 */ u8 unk34[4];
+} PlayerChar2A8; /* size 0x38 */
+extern PlayerChar2A8 D_80193BC0[];
+extern u8 D_8022A7F0;
+void func_801BE71C(void);
+void func_80080998(void *dst, void *src, s32 n);
+void func_801C1D90(void);
+void func_801C1A94(void);
+void func_801C2310(void);
+void func_801BC5FC(void);
+void func_801BC640(void);
+void func_801B7E9C(void);
+void func_801C5CE0(void);
+void func_801AECA4(s32 a);
+void func_8020B29C(void);
+
+/* Sets up the map scene once: its work area, a snapshot of the army (0x16C bytes of state plus
+ * every character's HP and status) when needed, then the scene modules */
+void func_8023C874_ovl_2A8D20(void) {
+    if (D_8022A981 == 0) {
+        D_801CEAB0 = D_80196AED;
+        func_801BE71C();
+        D_801CE8BC = HMalloc(0x6094);
+        bzero(D_801CE8BC, 0x6094);
+        D_801CE8C0 = D_801CE8BC + 0x57E0;
+        if ((D_801976D8 & 8) || D_80197B60 != 0) {
+            u8 *snap = HMalloc(0x298);
+            s32 i;
+
+            func_80080998(snap, D_80190F80, 0x16C);
+            for (i = 0; i < 100; i++) {
+                ((u16 *)(snap + 0x16C))[i] = D_80193BC0[i].c.hp;
+                (snap + i)[0x234] = D_80193BC0[i].c.status;
+            }
+            FIELD(D_801CE8BC, u8 *, 0x607C) = snap;
+        }
+        func_801C1D90();
+        func_801C1A94();
+        func_801C2310();
+        func_801BC5FC();
+        func_801BC640();
+        func_801B7E9C();
+        func_801C5CE0();
+        func_801AECA4(D_8022A7F0);
+        func_8020B29C();
+    }
+}
 
 void func_8023C9BC_ovl_2A8D20(void) {
     HFree(FIELD(D_8022A974, void *, 0x19F0));
