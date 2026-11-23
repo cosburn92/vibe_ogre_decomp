@@ -112,7 +112,7 @@ void func_801DF260_ovl_213B10(Pt21 *a, Pt21 *b) {
     a->h1E = v;
 }
 
-s32 func_801DF2AC_ovl_213B10(Blob50 *o, s32 a, s32 c) {
+inline s32 func_801DF2AC_ovl_213B10(Blob50 *o, s32 a, s32 c) {
     Blob50 copy = *o;
 
     func_801AD9D4(&copy, a);
@@ -246,7 +246,33 @@ void func_801E0708_ovl_213B10(Msg21 *m, s32 a, s32 b) {
 
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E0768_ovl_213B10);
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E08A8_ovl_213B10);
+void func_801D9F30_ovl_213B10(s32 a, s32 b, s32 c);
+s32 func_801C8E9C(u8 *u);
+s32 func_801C8E64(u8 *u);
+s32 func_801C8E80(u8 *u);
+
+/* Queues the battle messages for unit message m from line pos on: the hit or miss line with its
+ * damage, then the optional status effect (extra) or poison/other lines; stores the next line */
+void func_801E08A8_ovl_213B10(u8 *m, s32 pos, s32 hit, u8 extra) {
+    if (func_801C8E9C(m) == 0) {
+        func_801D9F60_ovl_213B10(hit ? 0xD : 0x12, pos, (s32)m, 0xFF);
+        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), hit ? 0x12 : 0x1A, 0);
+    } else {
+        func_801D9F30_ovl_213B10(0x2C, pos, (s32)m);
+    }
+    if (extra != 0) {
+        pos = func_801DFB80_ovl_213B10(m, pos, extra);
+    } else if (func_801C8E9C(m) == 0) {
+        if (func_801C8E64(m) != 0) {
+            func_801D9F8C_ovl_213B10(0x1D, pos, m, 0xFF, 0x20);
+            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x20, 0);
+        } else if (func_801C8E80(m) != 0) {
+            func_801D9F8C_ovl_213B10(0x1D, pos, m, 0xFF, 0x22);
+            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x22, 0);
+        }
+    }
+    FIELD(m, s32, 0x94) = pos;
+}
 
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E0ACC_ovl_213B10);
 
