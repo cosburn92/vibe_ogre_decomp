@@ -335,7 +335,7 @@ void func_8020A5A0(u8 *m, f32 *pos);
 
 /* Spawns animation r (variant i) at pos: its matrix is copied from D_80220EE0 (kind bit 6) or built
  * from the default direction, mirrored to face pos's side when kind bit 7 is set */
-u8 *func_801F8F24_ovl_24BCA0(f32 *pos, AnimReq *r, s32 i) {
+inline u8 *func_801F8F24_ovl_24BCA0(f32 *pos, AnimReq *r, s32 i) {
     u8 *o = func_80214CF0(r->id, D_8020A170_ovl_24BCA0[i]);
     Dir24B dir;
     u8 *m;
@@ -357,7 +357,13 @@ u8 *func_801F8F24_ovl_24BCA0(f32 *pos, AnimReq *r, s32 i) {
     return m - 0x1C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9060_ovl_24BCA0);
+/* As func_801F8F24 at the position of map cell c */
+u8 *func_801F9060_ovl_24BCA0(u8 c, AnimReq *r, s32 i) {
+    u8 tmp[16];
+
+    func_801F7344_ovl_24BCA0(c, tmp, r->kind & 0xF0);
+    return func_801F8F24_ovl_24BCA0((f32 *)tmp, r, i);
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F91BC_ovl_24BCA0);
 
