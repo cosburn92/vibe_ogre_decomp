@@ -701,7 +701,80 @@ s32 func_801F1444_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F14E8_ovl_22A280);
+BattleUnit *func_801C9380(void);
+BattleUnit *func_801C92F8(void);
+
+/* Class matchup bonus of the opposing leader's class against u's class: 15 for its favoured target
+ * group, 10 for the groups after it, 0 otherwise (or when either side is disabled) */
+s32 func_801F14E8_ovl_22A280(BattleUnit *u) {
+    BattleUnit *o;
+
+    if (func_801C8B84(u)) {
+        o = func_801C9380();
+    } else {
+        o = func_801C92F8();
+    }
+    if (func_801C8E30(o)) {
+        return 0;
+    }
+    if (func_801C8E9C(u)) {
+        return 0;
+    }
+    switch ((u32)o->cls) {
+        case 0x09:
+            if ((u32)(u->cls - 0x45) < 8) {
+                return 10;
+            }
+            goto b;
+        case 0x18:
+        case 0x5A:
+            if ((u32)(u->cls - 0x45) < 8) {
+                return 15;
+            }
+        case 0x0A:
+        b:
+            if ((u32)(u->cls - 0x4E) < 3) {
+                return 10;
+            }
+            goto c;
+        case 0x19:
+        case 0x7B:
+            if ((u32)(u->cls - 0x4E) < 3) {
+                return 15;
+            }
+        case 0x0E:
+        c:
+            if ((u32)(u->cls - 0x38) < 13) {
+                return 10;
+            }
+            goto d;
+        case 0x1D:
+            if ((u32)(u->cls - 0x38) < 13) {
+                return 15;
+            }
+        case 0x2B:
+        case 0x36:
+        d:
+            switch ((u32)u->cls) {
+                case 0x31:
+                case 0x34:
+                case 0x35:
+                case 0x37:
+                    return 10;
+            }
+            break;
+        case 0x74:
+            switch ((u32)u->cls) {
+                case 0x31:
+                case 0x34:
+                case 0x35:
+                case 0x37:
+                    return 15;
+            }
+            return 0;
+    }
+    return 0;
+}
 
 #ifdef NON_MATCHING
 /* original keeps &D_801976D9 in s1 across the call; GCC rematerializes it */
