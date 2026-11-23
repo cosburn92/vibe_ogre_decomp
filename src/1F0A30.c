@@ -155,8 +155,6 @@ void *func_801AD60C_ovl_1F0A30(s32 id) {
 }
 
 /* Ages the chunk caches; frees entries whose ttl runs out */
-#ifdef NON_MATCHING
-/* 57/57, 2 words: after HFree the original re-forms the slot address as base + offset, GCC here as offset + base */
 void func_801AD6B0_ovl_1F0A30(void) {
     Slot1F *s;
     u32 i;
@@ -165,8 +163,12 @@ void func_801AD6B0_ovl_1F0A30(void) {
         if ((s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->id != 0) {
             if (--s->ttl == 0) {
                 HFree(s->data);
-                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->data = NULL;
-                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i)->id = 0;
+                {
+                    Slot1F *t = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i;
+
+                    t->data = NULL;
+                    t->id = 0;
+                }
             }
         }
     }
@@ -174,15 +176,16 @@ void func_801AD6B0_ovl_1F0A30(void) {
         if ((s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->data != NULL) {
             if (--s->id == 0) {
                 HFree(s->data);
-                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->data = NULL;
-                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->ttl = 0;
+                {
+                    Slot1F *t = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16;
+
+                    t->data = NULL;
+                    t->ttl = 0;
+                }
             }
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD6B0_ovl_1F0A30);
-#endif
 
 s32 func_801BE978_ovl_1F0A30(s32 a, s32 w, s32 h);
 s32 func_801BE9A8_ovl_1F0A30(s32 a, s32 w);
