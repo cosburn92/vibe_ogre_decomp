@@ -309,46 +309,37 @@ void func_801CA148_ovl_087200(void) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA148_ovl_087200);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-u8 func_801CFA04_ovl_087200(s32);                   /* extern */
+u16 func_801CFA04_ovl_087200(u16 k);
+void func_801CA148_ovl_087200(s32 a);
 
+/* Builds the list of the 8 item categories that have entries (0x1E00, count 0x1DFF), selects
+ * the first and sets the list window up for its entry count */
 void func_801CA328_ovl_087200(void) {
-    s16 temp_a0_2;
-    s32 var_s0;
-    u8 temp_a0;
+    s32 i;
 
-    FIELD(D_80196AF8, u8, 0x9D) = 0U;
-    var_s0 = 0;
-    FIELD(D_80196AF8, u8, 0x1DFF) = 0U;
-    do {
-        FIELD(&D_80196AF8[var_s0], s8, 0x1E00) = 0;
-        FIELD(&D_80196AF8[var_s0], s8, 0x1DF6) = 0;
-        FIELD(&D_80196AF8[var_s0], s8, 0x1DEE) = 0;
-        if (func_801CFA04_ovl_087200(var_s0 & 0xFFFF) & 0xFFFF) {
-            temp_a0 = FIELD(D_80196AF8, u8, 0x1DFF);
-            FIELD(D_80196AF8, u8, 0x1DFF) = (u8) (temp_a0 + 1);
-            FIELD(&D_80196AF8[temp_a0], s8, 0x1E00) = (s8) (var_s0 + 1);
+    D_80196AF8[0x9D] = 0;
+    D_80196AF8[0x1DFF] = 0;
+    for (i = 0; i < 8; i++) {
+        (D_80196AF8 + i)[0x1E00] = 0;
+        (D_80196AF8 + i)[0x1DF6] = 0;
+        (D_80196AF8 + i)[0x1DEE] = 0;
+        if (func_801CFA04_ovl_087200(i)) {
+            u8 *st = D_80196AF8;
+            u8 n = st[0x1DFF];
+
+            st[0x1DFF] = n + 1;
+            st[n + 0x1E00] = i + 1;
         }
-        var_s0 += 1;
-    } while (var_s0 < 8);
-    FIELD(D_80196AF8, s8, 0x1DFE) = 3;
-    FIELD(D_80196AF8, s8, 0x9B) = 0;
-    FIELD(D_80196AF8, s8, 0x9A) = 0;
-    FIELD(D_80196AF8, u8, 0x1DED) = func_801CFA04_ovl_087200((FIELD(&D_80196AF8[FIELD(D_80196AF8, u8, 0x9D)], u8, 0x1E00) - 1) & 0xFFFF);
+    }
+    D_80196AF8[0x1DFE] = 3;
+    D_80196AF8[0x9B] = 0;
+    D_80196AF8[0x9A] = 0;
+    D_80196AF8[0x1DED] = func_801CFA04_ovl_087200((D_80196AF8 + D_80196AF8[0x9D])[0x1E00] - 1);
     FIELD(D_80196AF8, s16, 0x1BDA) = 0;
     FIELD(D_80196AF8, s16, 0x1BDC) = 0;
     FIELD(D_80196AF8, s16, 0x1BDE) = 8;
-    temp_a0_2 = FIELD(D_80196AF8, u8, 0x1DED) - 1;
-    FIELD(D_80196AF8, s16, 0x1BE0) = temp_a0_2;
-    func_801CA148_ovl_087200(temp_a0_2);
+    func_801CA148_ovl_087200(FIELD(D_80196AF8, s16, 0x1BE0) = D_80196AF8[0x1DED] - 1);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA328_ovl_087200);
-#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
