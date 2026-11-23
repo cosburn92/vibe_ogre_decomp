@@ -1124,17 +1124,15 @@ void func_801ECC58_ovl_23B220(void) {
 }
 
 /* Fade-out step; returns 1 when done */
-#ifdef NON_MATCHING
-/* Branch layout of the done path differs. */
+/* Fade-out step; returns 1 when done */
 s32 func_801ECCE0_ovl_23B220(void) {
     Ctx23 *c = D_801EFE48_ovl_23B220;
     s32 r;
-    s16 v = c->fade - 8;
 
-    c->fade = v;
-    if (v > 0) {
+    c->fade -= 8;
+    if ((s16)c->fade > 0) {
         r = 0;
-        D_801CEAAB = v;
+        D_801CEAAB = c->fade;
     } else {
         r = 1;
         D_801CEAAB = 0;
@@ -1142,29 +1140,21 @@ s32 func_801ECCE0_ovl_23B220(void) {
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECCE0_ovl_23B220);
-#endif
 
 /* Fade-in step; returns 1 when done */
-#ifdef NON_MATCHING
-/* Branch layout of the done path differs. */
+/* Fade-in step; returns 1 when done */
 s32 func_801ECD28_ovl_23B220(void) {
     Ctx23 *c = D_801EFE48_ovl_23B220;
-    s16 v = c->fade + 8;
 
-    c->fade = v;
-    if (v < 0xFF) {
-        D_801CEAAB = v;
-        return 0;
+    c->fade += 8;
+    if (c->fade >= 0xFF) {
+        D_801CEAAB = 0xFF;
+        c->fade = 0xFF;
+        return 1;
     }
-    D_801CEAAB = 0xFF;
-    c->fade = 0xFF;
-    return 1;
+    D_801CEAAB = c->fade;
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECD28_ovl_23B220);
-#endif
 
 void func_801ECD80_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
