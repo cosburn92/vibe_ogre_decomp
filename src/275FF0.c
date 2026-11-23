@@ -23,12 +23,107 @@ void func_801F8E50(u8 id, u8 *s);
 void func_801F8E90(u8 id, u8 *s);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/275FF0", func_80221860_ovl_275850);
+void *HMalloc(s32 size);
+void *HFree(void *p);
+void *func_8020D1F8(void *fn);
+void func_8020D280(void *p);
+s32 func_801C8B84(u8 *u);
+u8 *func_801C8FE8(s32 i);
+void func_801F7344(u8 a, f32 *out, u8 b);
+u8 func_802255C8_ovl_275850(f32 *a, f32 *b, s16 *t);
+void func_802215FC_ovl_275850(void *o, s16 *t);
+void func_80221610_ovl_275850(void *o, f32 v);
+void func_8022162C_ovl_275850(void *o, s16 v);
+void func_80221634_ovl_275850(void *o, f32 *a, f32 *b);
+void func_802216AC_ovl_275850(void *o);
+void func_802216BC_ovl_275850(void *o);
+void func_802216D8_ovl_275850(void *o);
+void func_80221720_ovl_275850(void *o);
+s32 func_80221750_ovl_275850(void *o);
+
+s32 func_80221860_ovl_275850(u16 msg, u8 *o) {
+    f32 a[4];
+    f32 b[4];
+
+    switch (msg) {
+        case 0x101:
+            if (FIELD(o, s16 *, 0x20) != NULL) {
+                HFree(FIELD(o, s16 *, 0x20));
+            }
+            func_80221720_ovl_275850(FIELD(o, void *, 0x1C));
+            func_8020D280(FIELD(o, void *, 0x1C));
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, u8, 4) = ((u8 *)&D_80220F6C)[0];
+            FIELD(o, u8, 0x18) = ((u8 *)&D_80220F6C)[1];
+            FIELD(o, s16 *, 0x20) = NULL;
+            FIELD(o, void *, 0x1C) = NULL;
+            func_802216D8_ovl_275850(FIELD(o, void *, 0x1C) = func_8020D1F8(func_80221750_ovl_275850));
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            if (func_801C8B84(func_801C8FE8(*FIELD(o, u8 *, 0))) != 0) {
+                FIELD(o, u8, 0x19) = 1;
+            } else {
+                FIELD(o, u8, 0x19) = 0;
+            }
+            func_801F7644(FIELD(o, u8 *, 0), a, 0x20);
+            {
+                u8 k = FIELD(o, u8, 4);
+
+                if (k < 20) {
+                    func_801F7344(k, b, 0x10);
+                } else {
+                    func_801F7344(k, b, 0);
+                }
+            }
+            a[1] += 20.0f;
+            if (FIELD(o, u8, 0x19) != 0) {
+                b[1] -= 5.0f;
+            } else {
+                b[1] += 5.0f;
+            }
+            FIELD(o, u8, 0x1A) = 1;
+            FIELD(o, s16, 6) = 0xFF;
+            FIELD(o, s16 *, 0x20) = HMalloc(0x9E);
+            FIELD(o, s16 *, 0x20)[0] = 0;
+            FIELD(o, s16 *, 0x20)[1] = 0x10;
+            FIELD(o, s16 *, 0x20)[2] = 0x30;
+            FIELD(o, s16 *, 0x20)[0x28] = 1;
+            FIELD(o, s16 *, 0x20)[0x29] = 0xE;
+            FIELD(o, s16 *, 0x20)[0x2A] = 0x30;
+            FIELD(o, u8, 0x1B) = func_802255C8_ovl_275850(a, b, FIELD(o, s16 *, 0x20));
+            func_802216AC_ovl_275850(FIELD(o, void *, 0x1C));
+            func_802215FC_ovl_275850(FIELD(o, void *, 0x1C), FIELD(o, s16 *, 0x20));
+            func_80221610_ovl_275850(FIELD(o, void *, 0x1C), FIELD(o, s16, 6));
+            func_80221634_ovl_275850(FIELD(o, void *, 0x1C), a, b);
+            func_8020DC80(0x1001);
+            break;
+        case 0x1001:
+            func_8022162C_ovl_275850(FIELD(o, void *, 0x1C), FIELD(o, u8, 0x1A));
+            if (FIELD(o, u8, 0x1A)++ < FIELD(o, u8, 0x1B)) {
+                func_8020DC80(0x1001);
+            } else {
+                func_8020E0B4(5, 0x1002);
+            }
+            break;
+        case 0x1002:
+            func_80221610_ovl_275850(FIELD(o, void *, 0x1C), FIELD(o, s16, 6));
+            if ((FIELD(o, s16, 6) -= 20) < 0) {
+                func_802216BC_ovl_275850(FIELD(o, void *, 0x1C));
+                func_8020E0B4(1, 0x101);
+            }
+            break;
+    }
+    return 0;
+}
 
 void func_801F7644(u8 *s, f32 *out, u8 c);
 u8 *func_801F885C(f32 *pos, u8 *r);
 void func_80218104(f32 x, f32 y, f32 z, s32 n);
-void func_80221860_ovl_275850();
+s32 func_80221860_ovl_275850(u16 msg, u8 *o);
 extern u8 D_802256AC_ovl_275850[];
 extern u8 D_802256B2_ovl_275850[];
 
