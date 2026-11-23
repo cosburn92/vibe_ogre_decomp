@@ -916,8 +916,6 @@ s32 func_801B3C3C_ovl_1F0A30(u8 *o) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B3CB8_ovl_1F0A30);
-
 s32 func_801C8C90_ovl_1F0A30(void *u);
 void BattleDrawUnitSprite(u8 *o);
 void func_801C2E40_ovl_1F0A30(s32 key, u8 *out);
@@ -969,6 +967,17 @@ static inline void AttachPart(u8 *p, u8 *o) {
     }
 }
 
+/* Draws unit sprite o flat (no after-image) between its held parts */
+s32 func_801B3CB8_ovl_1F0A30(u8 *o) {
+    u8 *p = o;
+    u8 *owner = FIELD(o, u8 *, 0x40);
+
+    AttachPart(FIELD(owner, u8 *, 0x1C), o);
+    func_801B0770_ovl_1F0A30(p, 1, 1, 0, 0, 0);
+    AttachPart(FIELD(owner, u8 *, 0x18), o);
+    return 0;
+}
+
 /* Draws unit sprite o with its held parts (0x1C behind, 0x18 in front) */
 s32 func_801B3EE0_ovl_1F0A30(u8 *o) {
     u8 *p = o;
@@ -981,7 +990,7 @@ s32 func_801B3EE0_ovl_1F0A30(u8 *o) {
 }
 
 void func_801C9234_ovl_1F0A30(u8 *t, s32 *prev, s32 *last);
-void func_801B2C08_ovl_1F0A30(u8 *o, void *img, s32 a, u8 b);
+void func_801B2C08_ovl_1F0A30(u8 *o, void *img, s32 a, s32 b);
 
 /* As func_801B3EE0, but draws the sprite with its after-image: on the last frame of the motion
  * (0x44) it draws the previous and the last frame over each other */
@@ -1005,7 +1014,27 @@ s32 func_801B40F4_ovl_1F0A30(u8 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B4398_ovl_1F0A30);
+/* Draws unit sprite o cross-fading between the previous and the last motion frame while its alpha
+ * (0x94) is below 0x100, between its held parts */
+s32 func_801B4398_ovl_1F0A30(u8 *o) {
+    u8 *p = o;
+    u8 *owner = FIELD(o, u8 *, 0x40);
+    u8 *m = o + 0x44;
+    s32 prev, last;
+
+    AttachPart(FIELD(owner, u8 *, 0x1C), o);
+    func_801C9234_ovl_1F0A30(m, &prev, &last);
+    if (FIELD(o, s32, 0x94) < 0x100) {
+        FIELD(m, s16, 0xA) = prev;
+        func_801B2C08_ovl_1F0A30(p, func_801AD60C_ovl_1F0A30(0x32219E), 0, 0xFF - o[0x97]);
+        FIELD(m, s16, 0xA) = last;
+        func_801B2C08_ovl_1F0A30(p, func_801AD60C_ovl_1F0A30(0x32219E), 1, 0xFF - o[0x97]);
+    } else {
+        func_801B0770_ovl_1F0A30(p, 1, 1, 0, 0, 0);
+    }
+    AttachPart(FIELD(owner, u8 *, 0x18), o);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B464C_ovl_1F0A30);
 
