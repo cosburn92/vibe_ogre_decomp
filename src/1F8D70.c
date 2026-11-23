@@ -28,7 +28,24 @@ extern s16 D_801D0808_ovl_1F0A30;
 extern s16 D_801D080A_ovl_1F0A30;
 extern u8 D_801D080C_ovl_1F0A30;
 extern u8 D_801D080D_ovl_1F0A30;
-extern s32 D_801D0770_ovl_1F0A30[];
+/* Battle-screen state block (0xA0 bytes at D_801D0770) */
+typedef struct {
+    /* 0x00 */ u8 *spr;
+    /* 0x04 */ u8 unk04[0x2C];
+    /* 0x30 */ u8 *spr2;
+    /* 0x34 */ u8 unk34[0x2C];
+    /* 0x60 */ u8 *units;   /* 0x64 each */
+    /* 0x64 */ u32 nUnits;
+    /* 0x68 */ u8 *objs;    /* 0xF8 each */
+    /* 0x6C */ void *buf6C;
+    /* 0x70 */ u32 nObjs;
+    /* 0x74 */ s32 unk74;
+    /* 0x78 */ void *buf78;
+    /* 0x7C */ void *buf7C;
+    /* 0x80 */ void *buf80;
+    /* 0x84 */ u8 unk84[0x1C];
+} State1F8; /* size 0xA0 */
+extern State1F8 D_801D0770_ovl_1F0A30;
 extern void *D_801D0748_ovl_1F0A30[];
 extern void *D_801D074C_ovl_1F0A30;
 extern void *D_801D0750_ovl_1F0A30;
@@ -181,7 +198,7 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7914_ovl_1F0A30);
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7A7C_ovl_1F0A30);
 
 /* Frees a 'B5' image bank (and its chained pages) */
-void func_801B7CBC_ovl_1F0A30(u8 *p) {
+inline void func_801B7CBC_ovl_1F0A30(u8 *p) {
     if (p != NULL) {
         if (p[0] == 'B' && p[1] == '5') {
             u8 *bank = p;
@@ -215,7 +232,7 @@ typedef struct SprPart1F8 {
 
 /* Current sprite header: "64" sprites are one centred w x h image (u16 at +4/+6), the others a
  * list of [3] parts starting at +8 */
-#define CUR_SPR ((u8 *)D_801D0770_ovl_1F0A30[0])
+#define CUR_SPR (D_801D0770_ovl_1F0A30.spr)
 
 /* Bounding box of the current sprite's parts */
 static inline void Spr1F8_PartsBox(s32 *r) {
@@ -327,7 +344,30 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BB58C_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BB87C_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BBC78_ovl_1F0A30);
+void func_801ADB00_ovl_1F0A30(s32 o);
+void func_801C24F8_ovl_1F0A30(s32 a, u16 b);
+
+/* Frees everything the battle screen allocated and clears its state */
+void func_801BBC78_ovl_1F0A30(void) {
+    u32 i;
+
+    func_801BD1F4_ovl_1F0A30();
+    func_801B7CBC_ovl_1F0A30(D_801D0770_ovl_1F0A30.spr);
+    func_801B7CBC_ovl_1F0A30(D_801D0770_ovl_1F0A30.spr2);
+    HFree(D_801D0770_ovl_1F0A30.buf78);
+    HFree(D_801D0770_ovl_1F0A30.buf7C);
+    HFree(D_801D0770_ovl_1F0A30.buf80);
+    for (i = 0; i < D_801D0770_ovl_1F0A30.nObjs; i++) {
+        func_801ADB00_ovl_1F0A30(*(s32 *)(D_801D0770_ovl_1F0A30.objs + i * 0xF8));
+    }
+    HFree(D_801D0770_ovl_1F0A30.objs);
+    HFree(D_801D0770_ovl_1F0A30.buf6C);
+    for (i = 0; i < D_801D0770_ovl_1F0A30.nUnits; i++) {
+        func_801C24F8_ovl_1F0A30(FIELD(D_801D0770_ovl_1F0A30.units + i * 0x64, s32, 0x14), FIELD(D_801D0770_ovl_1F0A30.units + i * 0x64, u16, 6));
+    }
+    HFree(D_801D0770_ovl_1F0A30.units);
+    bzero(&D_801D0770_ovl_1F0A30, sizeof(State1F8));
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BBE60_ovl_1F0A30);
 
@@ -376,7 +416,7 @@ void func_801BC450_ovl_1F0A30(void) {
 }
 
 void func_801BC5FC_ovl_1F0A30(void) {
-    bzero(D_801D0770_ovl_1F0A30, 0xA0);
+    bzero(&D_801D0770_ovl_1F0A30, 0xA0);
     bzero(D_801D0748_ovl_1F0A30, 0x1C);
     bzero(D_801D0828_ovl_1F0A30, 5);
 }
@@ -481,7 +521,7 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC9F0_ovl_1F0A30);
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BCD0C_ovl_1F0A30);
 
 s32 func_801BCFE4_ovl_1F0A30(void) {
-    return D_801D0770_ovl_1F0A30[0];
+    return (s32)D_801D0770_ovl_1F0A30.spr;
 }
 
 /* 16 zero bytes in rodata (emitted from asm: gcc loses track of the section after INCLUDE_ASM) */
