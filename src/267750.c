@@ -177,8 +177,6 @@ void func_802131E8_ovl_25EE90(f32 *srt, f32 m[4][4]) {
     m[3][2] = srt[8];
 }
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_802132D0_ovl_25EE90);
-
 /* Effect transform tracks (same code as 1CE070 func_80199968; shapes from OB64-Decomp's
  * E06TransformInput/Output, MIT, (c) 2026 rempred) */
 typedef struct {
@@ -212,7 +210,8 @@ static inline void Track267_ApplyValues(f32 *v, f32 m[4][4]) {
     m[3][2] = v[8];
 }
 
-static inline void Track267_ApplyCurves(f32 t, void **curves, TrackOut267 *out, f32 *v) {
+/* Evaluates the ten curves at t into v (null curves keep their value) and builds out from them */
+inline void func_802132D0_ovl_25EE90(f32 t, void **curves, TrackOut267 *out, f32 *v) {
     s32 i;
 
     for (i = 0; i < 10; i++) {
@@ -223,6 +222,7 @@ static inline void Track267_ApplyCurves(f32 t, void **curves, TrackOut267 *out, 
     Track267_ApplyValues(v, out->m);
     out->alpha = v[9];
 }
+
 
 /* Evaluates frame `frame` (30 fps) of an effect's transform tracks into matrices */
 void func_80213420_ovl_25EE90(s32 frame, TrackIn267 *in, TrackOut267 *out) {
@@ -237,7 +237,7 @@ void func_80213420_ovl_25EE90(s32 frame, TrackIn267 *in, TrackOut267 *out) {
         }
         values[9] = 1.0f;
         if (in->curves[item] != NULL) {
-            Track267_ApplyCurves(t, in->curves[item], &out[item], values);
+            func_802132D0_ovl_25EE90(t, in->curves[item], &out[item], values);
         } else {
             Track267_ApplyValues(values, out[item].m);
             out[item].alpha = 1.0f;
