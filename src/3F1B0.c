@@ -78,7 +78,75 @@ void func_800E9C20_ovl_03F1B0(void) {
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9C20_ovl_03F1B0);
 #endif
 
+/* libmus initialisation parameters (field names from libmus's musConfig) */
+typedef struct {
+    /* 0x00 */ u32 control_flag;
+    /* 0x04 */ s32 channels;
+    /* 0x08 */ void *sched;
+    /* 0x0C */ s32 thread_priority;
+    /* 0x10 */ u8 *heap;
+    /* 0x14 */ s32 heap_length;
+    /* 0x18 */ u8 *ptr;
+    /* 0x1C */ u8 *wbk;
+    /* 0x20 */ void *default_fxbank;
+    /* 0x24 */ s32 fifo_length;
+    /* 0x28 */ s32 syn_updates;
+    /* 0x2C */ s32 syn_output_rate;
+    /* 0x30 */ s32 syn_rsp_cmds;
+    /* 0x34 */ s32 syn_retraceCount;
+    /* 0x38 */ s32 syn_num_dma_bufs;
+    /* 0x3C */ s32 syn_dma_buf_size;
+} MusConfig3F1;
+extern MusConfig3F1 D_8010A710_ovl_03F1B0;
+extern u8 D_800EBB00_ovl_03F1B0[];
+extern u8 *D_8016AF70_ovl_03F1B0;
+extern u8 *D_80104700_ovl_03F1B0;
+extern u8 *D_800EB148_ovl_03F1B0;
+extern u8 *D_800EB198_ovl_03F1B0;
+extern s32 D_800EB268_ovl_03F1B0;
+extern s32 D_800EB2B8_ovl_03F1B0;
+extern u8 *D_800EB0F8_ovl_03F1B0;
+extern u8 *D_8016AF74_ovl_03F1B0;
+extern u8 D_80118760_ovl_03F1B0[];
+void func_80080DC0(MusConfig3F1 *cfg, s32 heapSize);
+void func_80081040(void *fn);
+void func_80081080();
+
+/* Sets up the sound buffers and starts the music library */
+#ifdef NON_MATCHING
+/* original loads the buffer base into a register first and adds 0xA800 with ori/addu; GCC here folds it into one relocated address (84 vs 82 instructions) */
+void func_800E9CEC_ovl_03F1B0(void) {
+    D_8016AF70_ovl_03F1B0 = D_800EBB00_ovl_03F1B0 + 0xA800;
+    D_80104700_ovl_03F1B0 = D_800EBB00_ovl_03F1B0 + 0xA800;
+    D_800EB148_ovl_03F1B0 = D_800EBB00_ovl_03F1B0 + 0xA800;
+    D_800EB198_ovl_03F1B0 = D_800EBB00_ovl_03F1B0 + 0xA800;
+    D_800EB268_ovl_03F1B0 = -1;
+    D_800EB2B8_ovl_03F1B0 = -1;
+    D_800EB0F8_ovl_03F1B0 = D_800EBB00_ovl_03F1B0;
+    D_8010A710_ovl_03F1B0.control_flag = 0;
+    D_8010A710_ovl_03F1B0.channels = 32;
+    D_8010A710_ovl_03F1B0.thread_priority = 70;
+    D_8010A710_ovl_03F1B0.heap = D_80118760_ovl_03F1B0;
+    D_8010A710_ovl_03F1B0.ptr = D_80164770_ovl_03F1B0;
+    D_8010A710_ovl_03F1B0.wbk = D_2BF250;
+    D_8010A710_ovl_03F1B0.fifo_length = 64;
+    D_8010A710_ovl_03F1B0.syn_updates = 256;
+    D_8010A710_ovl_03F1B0.syn_output_rate = 32000;
+    D_8010A710_ovl_03F1B0.syn_rsp_cmds = 0x1000;
+    D_8010A710_ovl_03F1B0.syn_retraceCount = 1;
+    D_8010A710_ovl_03F1B0.syn_num_dma_bufs = 72;
+    D_8016AF74_ovl_03F1B0 = D_800EBB00_ovl_03F1B0;
+    D_80164760_ovl_03F1B0 = 0;
+    D_8010A710_ovl_03F1B0.sched = NULL;
+    D_8010A710_ovl_03F1B0.heap_length = 0x4C000;
+    D_8010A710_ovl_03F1B0.default_fxbank = NULL;
+    D_8010A710_ovl_03F1B0.syn_dma_buf_size = 0x3C0;
+    func_80080DC0(&D_8010A710_ovl_03F1B0, 0x4C000);
+    func_80081040(func_80081080);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9CEC_ovl_03F1B0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9E34_ovl_03F1B0);
 
