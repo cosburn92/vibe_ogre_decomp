@@ -951,7 +951,68 @@ void func_8023D7A8_ovl_2A8D20(void) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023D878_ovl_2A8D20);
 
+s32 func_80231B94(s32 i);
+void func_8023B998_ovl_2A8D20(u8 *o, u8 *u);
+void func_80239C04_ovl_2A8D20(s32 i, s32 a, s32 b, s16 c, s32 d, s32 e, s32 f, s32 g);
+
+/* Steps the 28 members' hit sequences (state per member at ctx+0x1CA8; 4 = done): waits for each
+ * stage, then plays the hit (with 50 extra when the target is a guarded unit, 8 more for state 2) */
+#ifdef NON_MATCHING
+/* 126 vs 127: the original hoists the -1 argument into a saved register and spills the busy flag to the stack */
+void func_8023DAC4_ovl_2A8D20(void) {
+    u8 *st = FIELD(D_8022A974, u8 *, 0x1CA8);
+    u8 busy = 0;
+
+    if (st != NULL) {
+        s16 i;
+
+        for (i = 0; i < 28; i++) {
+            u8 *s = &st[i];
+
+            if (*s != 4) {
+                u8 *o = ((u8 **)(D_8022A974 + 0x18))[i];
+                s16 off = 0;
+                u8 *u;
+
+                busy = 1;
+                u = D_801CE8BC + o[0x147] * 0xF8 + 0x1C4;
+                if (func_801C8C90(u) == 1) {
+                    off = -(o[0x149] == 1) & 50;
+                }
+                switch (*s) {
+                    case 5:
+                        if (func_8023A164_ovl_2A8D20(i) == 0) {
+                            goto hit;
+                        }
+                        break;
+                    case 1:
+                        if (func_8023A164_ovl_2A8D20(i) == 0) {
+                            *s = 2;
+                            func_8023B998_ovl_2A8D20(o, u);
+                        }
+                        break;
+                    case 2:
+                        if (func_80231B94(i) == 0) {
+                            if (st[0x1C] == 0) {
+                                off += 8;
+                            }
+                        hit:
+                            func_80239C04_ovl_2A8D20(i, -1, -1, off, -1, -1, 0, 1);
+                            *s = 4;
+                        }
+                        break;
+                }
+            }
+        }
+        if (!busy) {
+            HFree(st);
+            FIELD(D_8022A974, void *, 0x1CA8) = NULL;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DAC4_ovl_2A8D20);
+#endif
 
 s32 func_8023DCC0_ovl_2A8D20(void) {
     return FIELD(D_8022A974, s32, 0x1CA8) != 0;
