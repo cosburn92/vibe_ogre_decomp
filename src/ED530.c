@@ -393,7 +393,59 @@ void func_801A499C_ovl_0EBBB0(void) {
     D_8018F546 = (D_8018F481 * 20) % 5400;
 }
 
+s32 func_8009C7CC(void); /* rand */
+extern s32 D_801ABA90_ovl_0EBBB0; /* 16.16, high half read as u16 */
+extern u16 D_801ABA92_ovl_0EBBB0;
+extern s32 D_801ABA94_ovl_0EBBB0;
+extern u16 D_801ABA96_ovl_0EBBB0;
+extern u8 D_800E7A90[];
+extern s32 D_8018F818[][3];
+
+static inline u32 Rand30_0E(void) {
+    u32 a = func_8009C7CC();
+    u32 b = func_8009C7CC();
+
+    return ((a << 18) & 0xC000000) | (b << 15) | func_8009C7CC();
+}
+
+/* Sky colour drift (maps flagged 0x400): every 5400 ticks a new random target pair (7 is rare);
+ * the current pair (D_8018F542 / D_8018F544, 16.16 steps of 0x2321) moves toward it, the first
+ * kept at most 20 below the second */
+#ifdef NON_MATCHING
+/* 170/170, 12 words: in the retry loop the original hoists the constant 7 before the 0xC000000 mask (s2/s1 set in the other order) */
+void func_801A4A38_ovl_0EBBB0(void) {
+    if (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x139) == 0 && (D_8018F818[D_800E7A90[0x28]][0] & 0x400)) {
+        D_8018F540 &= 7;
+        D_8018F546 %= 5400;
+        if (D_8018F546 == 0) {
+            D_8018F546 = Rand30_0E() % 5400 + 1;
+            do {
+                D_8018F540 = Rand30_0E() & 7;
+            } while (D_8018F540 == 7 && (Rand30_0E() & 6));
+        }
+        D_801ABA90_ovl_0EBBB0 = D_801ABA92_ovl_0EBBB0 | (D_8018F542 << 16);
+        D_801ABA94_ovl_0EBBB0 = D_801ABA96_ovl_0EBBB0 | (D_8018F544 << 16);
+        if (D_8018F542 < D_801ABA70_ovl_0EBBB0[D_8018F540].a) {
+            D_801ABA90_ovl_0EBBB0 += 0x2321;
+        } else if (D_801ABA70_ovl_0EBBB0[D_8018F540].a < D_8018F542) {
+            D_801ABA90_ovl_0EBBB0 -= 0x2321;
+        }
+        if (D_8018F544 < D_801ABA70_ovl_0EBBB0[D_8018F540].b) {
+            D_801ABA94_ovl_0EBBB0 += 0x2321;
+        } else if (D_801ABA70_ovl_0EBBB0[D_8018F540].b < D_8018F544) {
+            D_801ABA94_ovl_0EBBB0 -= 0x2321;
+        }
+        D_8018F542 = *(u16 *)&D_801ABA90_ovl_0EBBB0;
+        D_8018F544 = *(u16 *)&D_801ABA94_ovl_0EBBB0;
+        if (*(u16 *)&D_801ABA94_ovl_0EBBB0 - 20 < *(u16 *)&D_801ABA90_ovl_0EBBB0) {
+            D_8018F542 = *(u16 *)&D_801ABA94_ovl_0EBBB0 - 20;
+        }
+        D_8018F546--;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4A38_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4CE0_ovl_0EBBB0);
 
