@@ -1171,7 +1171,97 @@ s32 func_801F46DC_ovl_22A280(s32 effect, BattleUnit *u) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F4828_ovl_22A280);
+typedef struct {
+    /* 0x0 */ u8 cls;
+    /* 0x1 */ u8 to;
+    /* 0x2 */ u8 str;
+    /* 0x3 */ u8 vit;
+    /* 0x4 */ u8 kind;
+} ClassChange22;
+
+typedef struct {
+    /* 0x0 */ u16 id;
+    /* 0x2 */ u8 equipped;
+    /* 0x3 */ u8 count;
+} Stock22;
+
+extern ClassChange22 D_801F6A78_ovl_22A280[5];
+extern Stock22 D_80196B00[];
+extern u8 D_801936E0;
+u16 func_8016DFDC(u8 a, u8 cls);
+u16 func_8016E030(u8 a, u8 cls);
+u16 func_8016E084(u8 a, u8 cls);
+u16 func_8016B6FC(u16 id);
+
+/* Battle class change of kind k: the first table entry for u's class whose str/vit minimums u meets.
+ * For the player side, each item of the new class's default equipment that u doesn't already carry
+ * must have an unequipped copy in stock; 0 when none applies */
+s32 func_801F4828_ovl_22A280(BattleUnit *u, s32 k) {
+    u32 j;
+    u16 eq[4];
+    u16 i;
+    u16 s;
+
+    if (func_801C8AEC() != 0) {
+        return 0;
+    }
+    if (func_801C8AFC() != 0) {
+        return 0;
+    }
+    if (D_801936E0 != 0) {
+        return 0;
+    }
+    for (j = 0; j < 5; j++) {
+        if (D_801F6A78_ovl_22A280[j].cls != u->cls) {
+            continue;
+        }
+        if (D_801F6A78_ovl_22A280[j].kind != k) {
+            continue;
+        }
+        if (D_801F6A78_ovl_22A280[j].str > u->str) {
+            continue;
+        }
+        if (D_801F6A78_ovl_22A280[j].vit > u->vit) {
+            continue;
+        }
+        if (func_801C8B84(u)) {
+            eq[0] = func_8016DF88(D_801F6A78_ovl_22A280[j].to, D_801F6A78_ovl_22A280[j].to);
+            eq[1] = func_8016DFDC(D_801F6A78_ovl_22A280[j].to, D_801F6A78_ovl_22A280[j].to);
+            eq[2] = func_8016E030(D_801F6A78_ovl_22A280[j].to, D_801F6A78_ovl_22A280[j].to);
+            eq[3] = func_8016E084(D_801F6A78_ovl_22A280[j].to, D_801F6A78_ovl_22A280[j].to);
+            for (i = 0; i < 4; i++) {
+                if (eq[i] == 0) {
+                    continue;
+                }
+                s = func_8016B6FC(eq[i]);
+                if (s >= 0x117) {
+                    return 0;
+                }
+                if (eq[i] == func_8016DF88(u->cls, u->cls)) {
+                    continue;
+                }
+                if (eq[i] == func_8016DFDC(u->cls, u->cls)) {
+                    continue;
+                }
+                if (eq[i] == func_8016E030(u->cls, u->cls)) {
+                    continue;
+                }
+                if (eq[i] == func_8016E084(u->cls, u->cls)) {
+                    continue;
+                }
+                if (eq[i] == u->items[0] || eq[i] == u->items[1] || eq[i] == u->items[2] ||
+                    eq[i] == u->items[3]) {
+                    continue;
+                }
+                if (D_80196B00[s].count <= D_80196B00[s].equipped) {
+                    return 0;
+                }
+            }
+        }
+        return D_801F6A78_ovl_22A280[j].to;
+    }
+    return 0;
+}
 
 /* Battle grid position of slot i: units 0-19 from the unit, 20-46 a 3-wide grid, 47-86 a 4-wide grid */
 void func_801F4A8C_ovl_22A280(s32 i, s32 *x, s32 *y) {
