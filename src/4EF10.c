@@ -159,7 +159,72 @@ void func_8017A714_ovl_040E80(void) {
     D_80190F6E_ovl_040E80 = 0;
 }
 
+extern void *D_80190F40_ovl_040E80;
+extern u32 D_80190F44_ovl_040E80;
+extern u16 *D_80190F54_ovl_040E80;
+extern u8 D_8018FC78_ovl_040E80;
+void *func_8009DD28(s32 id);
+
+/* Reads the next character from *pp: a two-byte kanji becomes 0x200 + its index in the font table
+ * (-1 when not found or a full-width space); a single byte becomes its glyph number (+0x100 for the
+ * alternate font). Switches the loaded font to match. */
+#ifdef NON_MATCHING
+/* 106/114 instructions: the original keeps the high-byte key masked and threads the font-select branches separately */
+s16 func_8017A720_ovl_040E80(u8 **pp) {
+    s16 g;
+    s32 id;
+
+    if (func_8017B550_ovl_040E80(**pp) != 0) {
+        u16 c;
+        s32 k;
+        s32 r;
+
+        if (D_8018FC6C_ovl_040E80 == 0) {
+            D_8018FC6C_ovl_040E80 = 1;
+            D_80190F40_ovl_040E80 = func_8009DD28(0x0216E296);
+        }
+        k = *(*pp)++ << 8;
+        k = *(*pp)++ | k;
+        c = k;
+        r = -1;
+        if (c != 0x8140) {
+            s32 lo = 0;
+            s32 hi = D_80190F44_ovl_040E80 >> 1;
+
+            while (lo < hi) {
+                s32 mid = (lo + hi) >> 1;
+                if (D_80190F54_ovl_040E80[mid] < c) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            r = -1;
+            if (D_80190F54_ovl_040E80[lo] == k) {
+                r = lo + 0x200;
+            }
+        }
+        return r;
+    }
+    if (D_8018FC6C_ovl_040E80 == 1) {
+        D_8018FC6C_ovl_040E80 = 0;
+    }
+    D_80190F40_ovl_040E80 = func_8009DD28(D_8018FC78_ovl_040E80 ? 0x0218DEF2 : 0x0218C4FA);
+    if (D_80190F74_ovl_040E80 != -1) {
+        g = D_80190F74_ovl_040E80;
+        D_80190F74_ovl_040E80 = -1;
+    } else {
+        u8 b = *(*pp)++;
+        g = (b < 0x80) ? b + 0x10 : b;
+    }
+    if (D_8018FC78_ovl_040E80) {
+        g += 0x100;
+    }
+    return g;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A720_ovl_040E80);
+#endif
 
 s32 func_8017A8E8_ovl_040E80(s32 id) {
     if (id >= 0x1000) {

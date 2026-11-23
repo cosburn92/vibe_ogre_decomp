@@ -809,7 +809,34 @@ INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B15BC_ovl_0FA5E0);
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B18AC_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1AF0_ovl_0FA5E0);
+/* Evaluates the piecewise cubic through knots t[] with values y[] and slopes m[] at x */
+static inline f32 SplineFA5(f32 x, f32 *t, f32 *y, f32 *m, s16 n) {
+    s32 lo = 0;
+    s32 hi = n - 1;
+    s32 mid;
+    f32 d;
+    f32 h;
+
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        if (t[mid] < x) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    lo -= lo > 0;
+    d = x - t[lo];
+    h = t[lo + 1] - t[lo];
+    return ((((m[lo + 1] - m[lo]) * d) / h + m[lo] * 3.0f) * d +
+            ((y[lo + 1] - y[lo]) / h - (2.0f * m[lo] + m[lo + 1]) * h)) * d + y[lo];
+}
+
+/* Evaluates two splines sharing the knots t[] at x */
+void func_801B1AF0_ovl_0FA5E0(f32 x, f32 *outA, f32 *outB, f32 *t, f32 *yA, f32 *yB, f32 *mA, f32 *mB, s16 n) {
+    *outA = SplineFA5(x, t, yA, mA, n);
+    *outB = SplineFA5(x, t, yB, mB, n);
+}
 
 #ifdef NON_MATCHING
 /* m2c draft, 167 words from the target; queued for the permuter */
