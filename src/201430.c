@@ -745,6 +745,29 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801BF9B4_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFBA0_ovl_1F0A30);
 
+#ifdef NON_MATCHING
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+/* Bytes per row of a w-pixel texture in format fmt (3: 32-bit, 2: 16-bit, 1: 8-bit, 0: 4-bit,
+ * else 1-bit), padded to 8 bytes */
+static inline s32 RowBytes201(s32 fmt, u32 w) {
+    if (fmt == 3) {
+        return ((u32)(w + 3) >> 2) * 16;
+    }
+    if (fmt == 2) {
+        return ((u32)(w + 3) >> 2) * 8;
+    }
+    if (fmt == 1) {
+        return ((u32)(w + 7) >> 3) * 8;
+    }
+    if (fmt == 0) {
+        return ((u32)(w + 15) >> 4) * 8;
+    }
+    return ((u32)(w + 31) >> 5) * 8;
+}
+
+#endif
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFE28_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFF84_ovl_1F0A30);
