@@ -903,7 +903,30 @@ s16 func_80231BBC_ovl_29A4C0(s32 id, s32 a, s32 b, s32 flag) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231C54_ovl_29A4C0);
+/* Projects point p through fixed-point matrix m and camera cam (fov at 0, eye/at/up at 0x14) to
+ * 320x240 screen coordinates */
+void func_80231C54_ovl_29A4C0(f32 *p, f32 *out, Mtx29 *m, f32 *cam) {
+    f32 mf[4][4];
+    f32 cf[4][4];
+    f32 v[3];
+    f32 fov;
+    f32 t;
+
+    guMtxL2F(mf, m);
+    fov = cam[0];
+    guLookAtF(cf, cam[5], cam[6], cam[7], cam[8], cam[9], cam[10], cam[11], cam[12], cam[13]);
+    guMtxCatF(mf, cf, cf);
+    func_80233AE0_ovl_29A4C0(p[0], p[1], p[2], v, cf);
+    t = fov * 3.141592653589793 / 360.0;
+    t = v[2] * sinf(t) / cosf(t);
+    if (t != 0.0f) {
+        out[0] = 160.0 - v[0] * 160.0f / (t * 1.333);
+        out[1] = 120.0f - v[1] * 120.0f / t;
+    } else {
+        out[0] = v[0];
+        out[1] = v[1];
+    }
+}
 
 #ifdef NON_MATCHING
 /* s16 range-loop register flow differs */
