@@ -43,7 +43,97 @@ void func_8021A998_ovl_25EE90(s32 a, s32 b) {
     func_8020DF00_ovl_25EE90(func_8021A630_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021A9C8_ovl_25EE90);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    s32 flags;
+    void *task;
+} Slot26F;
+typedef struct {
+    /* 0x00 */ s16 id;
+    /* 0x02 */ u8 side;
+    /* 0x04 */ u8 *list;
+    /* 0x08 */ void *(*spawn)(s16 id, u8 side, u8 kind, s32 n);
+    /* 0x0C */ s32 n;
+    /* 0x10 */ s32 pos;
+    /* 0x14 */ s32 slot;
+    /* 0x18 */ s32 pending;
+    /* 0x1C */ Slot26F slots[8];
+} Spawner26F;
+void bzero(void *p, s32 n);
+typedef struct {
+    s32 w[3];
+} Args26F;
+s32 func_8020DCAC_ovl_25EE90(void *t, u16 a);
+
+/* Spawns the effects of a 0xFF-terminated kind list one after another (each once the last has
+ * started), keeping up to 8 running; done (0x1002) when all have finished */
+s32 func_8021A9C8_ovl_25EE90(u16 msg, Spawner26F *o) {
+    s32 r = 0;
+    s32 i;
+    s32 live;
+    Slot26F *s;
+    s32 kind;
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            bzero(o, 0x5C);
+            *(Args26F *)o = *(Args26F *)&D_80220F68_ovl_25EE90;
+            o->pending = 1;
+            func_8020DC80_ovl_25EE90(0x1000);
+            break;
+        case 0x1000:
+            kind = o->list[o->pos];
+            if (kind != 0xFF) {
+                o->pos++;
+                s = &o->slots[o->slot];
+                if (s->task != NULL) {
+                    for (;;) {
+                    }
+                }
+                s->task = o->spawn(o->id, o->side, kind, o->n++);
+                if (++o->slot >= 8) {
+                    o->slot = 0;
+                }
+                o->pending--;
+            } else {
+                o->pending = 0;
+            }
+            func_8020DC80_ovl_25EE90(0x1001);
+        case 0x1001:
+            for (i = 0, live = 0; i < 8; i++) {
+                s = &o->slots[i];
+                if (s->task != NULL) {
+                    live++;
+                    if (!(s->flags & 1) && func_8020DCAC_ovl_25EE90(s->task, 0x1000) != 0) {
+                        s->flags |= 1;
+                        o->pending++;
+                        func_8020DC80_ovl_25EE90(0x1000);
+                    }
+                    if (func_8020DCAC_ovl_25EE90(s->task, 0x1001) != 0) {
+                        func_8020DCAC_ovl_25EE90(s->task, 0x101);
+                        bzero(s, 8);
+                    }
+                }
+            }
+            if (live == 0 && o->pending == 0 && o->list[o->pos] == 0xFF) {
+                func_8020DC80_ovl_25EE90(0x1002);
+            }
+            break;
+        case 0x1002:
+            break;
+        case 0x1003:
+            if (FIELD(o, u16, -0x1C) == 0x1002) {
+                r = 1;
+            }
+            break;
+    }
+    return r;
+}
 
 void func_8020FFA0_ovl_25EE90();
 void func_8020C074_ovl_25EE90(s32 a);
