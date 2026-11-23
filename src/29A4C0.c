@@ -9,8 +9,11 @@ typedef struct {
     /* 0x4 */ s16 h4;
 } Grid29;
 
+/* Colour fade of a unit: from -> to over h8 frames (hA counts up); h6 = also set the env colour */
 typedef struct {
-    /* 0x0 */ u8 unk0[8];
+    /* 0x0 */ u8 from[3];
+    /* 0x3 */ u8 to[3];
+    /* 0x6 */ s16 h6;
     /* 0x8 */ s16 h8;
     /* 0xA */ s16 hA;
 } Pair29;
@@ -449,7 +452,55 @@ void func_8022C250_ovl_29A4C0(s32 i, s32 r, s32 g, s32 b, s32 a0, s32 a1, s32 a2
     }
 }
 
+/* Steps unit u's colour fade and writes the colour to u + 0x142 (and the env colour) */
+#ifdef NON_MATCHING
+/* 123/123 instructions, 18 words differ: the pipe-sync and fade pointer loads are scheduled differently and the loop counters use other registers */
+void func_8022C3A8_ovl_29A4C0(u8 *u) {
+    Pair29 *p;
+    s16 c[3];
+    s16 i;
+
+    D_800E9BA0->w0 = 0xE7000000;
+    D_800E9BA0->w1 = 0;
+    D_800E9BA0++;
+    p = D_8022A974->p248[FIELD(u, s32, 0xE4)];
+    if (p != NULL) {
+        Pair29 *q = p;
+
+        if (q->hA >= q->h8) {
+            q->hA = q->h8;
+            for (i = 0; i < 3; i++) {
+                c[i] = q->to[i];
+            }
+        } else {
+            q->hA++;
+            for (i = 0; i < 3; i++) {
+                c[i] = q->to[i] - q->from[i];
+                c[i] = q->from[i] + (s32)((f32)q->hA / (f32)q->h8 * c[i]);
+            }
+        }
+        if (q->h6 != 0) {
+            {
+                Gfx29 *_g = D_800E9BA0++;
+
+                _g->w0 = 0xFC62FEC3;
+                _g->w1 = 0x200D723D;
+            }
+            {
+                Gfx29 *_g = D_800E9BA0++;
+
+                _g->w0 = 0xFB000000;
+                _g->w1 = ((u8)c[0] << 24) | ((u8)c[1] << 16) | ((u8)c[2] << 8) | 1;
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            (u + i)[0x142] = c[i];
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C3A8_ovl_29A4C0);
+#endif
 
 s32 func_8022C594_ovl_29A4C0(s32 i) {
     Pair29 *p = D_8022A974->p248[i];
