@@ -349,88 +349,48 @@ void func_801E104C_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e) {
     func_801E0D34_ovl_213B10(a, b, c, d, e, 0, 0, 0, 0);
 }
 
+s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32);
+extern u8 *D_801CE8BC; /* battle message units: 20 of 0xF8 bytes from +0x1C4 */
+
+/* Message line pos for m: the end of every message unit still running (flag 0x2000) */
 #ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32); /* extern */
-extern s32 D_801CE8BC;
+/* 88/87 instructions: the original keeps pos in a2 up to the func_801E0D34 call (here it gets s0) and its frame is 8 bytes smaller */
+void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
+    u8 *busy[8];
+    s32 n = 0;
+    s32 i;
+    u8 *u;
+    s32 line;
+    u8 *base;
 
-void func_801E107C_ovl_213B10(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    void *sp28;
-    s32 temp_s0;
-    s32 temp_s0_2;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_a0_3;
-    s32 var_a2;
-    s32 var_s1;
-    s32 var_s1_2;
-    s32 var_s1_3;
-    s32 var_t0;
-    s32 var_t1;
-    void **var_a0;
-    void **var_a0_2;
-    void *temp_v1;
-    void *temp_v1_4;
-
-    var_a2 = arg2;
-    var_t1 = 0;
-    var_s1 = 0;
-    var_t0 = 0x1C4;
-    var_a0 = &sp28;
-    FIELD(arg0, s32, 0x94) = var_a2;
-    do {
-        temp_v1 = D_801CE8BC + var_t0;
-        var_s1 += 1;
-        if (FIELD(temp_v1, s32, 0x40) & 0x2000) {
-            *var_a0 = temp_v1;
-            var_a0 += 4;
-            var_t1 += 1;
+    FIELD(m, s32, 0x94) = pos;
+    for (i = 0; i < 20; i++) {
+        u = D_801CE8BC + 0x1C4 + i * 0xF8;
+        if (FIELD(u, s32, 0x40) & 0x2000) {
+            busy[n++] = u;
         }
-        var_t0 += 0xF8;
-    } while (var_s1 < 0x14);
-    var_s1_2 = 0;
-    if (var_t1 > 0) {
-        var_a0_2 = &sp28;
-        do {
-            temp_v1_2 = FIELD(*var_a0_2, s32, 0x94);
-            if (FIELD(arg0, s32, 0x94) < temp_v1_2) {
-                FIELD(arg0, s32, 0x94) = temp_v1_2;
-            }
-            var_s1_2 += 1;
-            var_a0_2 += 4;
-        } while (var_s1_2 < var_t1);
     }
-    temp_v1_3 = FIELD(arg0, s32, 0x94);
-    if (var_a2 < temp_v1_3) {
-        var_a2 = temp_v1_3;
-    }
-    func_801E0D34_ovl_213B10((s32) arg0, arg1, var_a2, arg3, arg4, 0, 1, 0, 0);
-    temp_s0 = FIELD(arg0, s32, 0x94);
-    var_s1_3 = 0;
-    var_a0_3 = 0x1C4;
-loop_12:
-    temp_v1_4 = D_801CE8BC + var_a0_3;
-    if (FIELD(temp_v1_4, s32, 0x48) != 0) {
-        var_s1_3 += 1;
-        goto block_19;
-    }
-    if (FIELD(temp_v1_4, s32, 0x4C) != 0) {
-        var_s1_3 += 1;
-block_19:
-        var_a0_3 += 0xF8;
-        if (var_s1_3 < 0x14) {
-            goto loop_12;
+    for (i = 0; i < n; i++) {
+        if (FIELD(m, s32, 0x94) < FIELD(busy[i], s32, 0x94)) {
+            FIELD(m, s32, 0x94) = FIELD(busy[i], s32, 0x94);
         }
-    } else {
-        FIELD(temp_v1_4, s32, 0x4C) = 1;
     }
-    func_801D9F8C_ovl_213B10(0x39, temp_s0, arg0, arg5, var_s1_3);
-    temp_s0_2 = temp_s0 + 0x23;
-    func_801D9F60_ovl_213B10(0x3A, temp_s0_2, (s32) arg0, var_s1_3);
-    FIELD(arg0, s32, 0x94) = temp_s0_2;
+    if (pos < FIELD(m, s32, 0x94)) {
+        line = FIELD(m, s32, 0x94);
+    }
+    func_801E0D34_ovl_213B10((s32)m, a, line, c, d, 0, 1, 0, 0);
+    line = FIELD(m, s32, 0x94);
+    base = D_801CE8BC;
+    for (i = 0; i < 20; i++) {
+        u = base + 0x1C4 + i * 0xF8;
+        if (FIELD(u, s32, 0x48) == 0 && FIELD(u, s32, 0x4C) == 0) {
+            FIELD(u, s32, 0x4C) = 1;
+            break;
+        }
+    }
+    func_801D9F8C_ovl_213B10(0x39, line, m, e, i);
+    func_801D9F60_ovl_213B10(0x3A, line + 0x23, (s32)m, i);
+    FIELD(m, s32, 0x94) = line + 0x23;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E107C_ovl_213B10);
