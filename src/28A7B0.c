@@ -750,7 +750,67 @@ void func_802300A8_ovl_286BD0(void) {
     g->w1 = (u32)D_8023DF48_ovl_286BD0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802300D4_ovl_286BD0);
+static inline u8 Lookup28(u8 id) {
+    s16 i;
+    u8 v;
+
+    for (i = 0; D_8023DF18_ovl_286BD0[i] != 0xFF; i++) {
+        if (D_8023DF18_ovl_286BD0[i] == id) {
+            v = D_8023E5D0_ovl_286BD0[i];
+            if (v == 0) {
+                return 0;
+            }
+            return D_8023E5A0_ovl_286BD0[i] + (u8)(v - 1);
+        }
+    }
+    return 0;
+}
+
+/* Frees every model whose id (0x2D) is no longer registered, along with the parts it and any
+ * model referencing it (0x14 list) own in the second table */
+void func_802300D4_ovl_286BD0(void) {
+    u8 gone[50];
+    u8 *m;
+    s32 i;
+    s32 j;
+    s32 k;
+    u16 r;
+
+    bzero(gone, 50);
+    for (i = 0; i < 50; i++) {
+        m = ((u8 **)D_8023DE30_ovl_286BD0)[i];
+        if (m != NULL && Lookup28(m[0x2D]) == 0) {
+            gone[i] = FIELD(m, u16, 0x2C);
+        }
+    }
+    for (i = 0; i < 50; i++) {
+        m = ((u8 **)D_8023DE30_ovl_286BD0)[i];
+        if (m == NULL) {
+            continue;
+        }
+        for (j = 0; j < m[7]; j++) {
+            if (gone[i]) {
+                HFree(((void **)D_8023DE30_ovl_286BD0)[m[8 + j] + 50]);
+                ((void **)D_8023DE30_ovl_286BD0)[m[8 + j] + 50] = NULL;
+            }
+            r = FIELD(m, u16, 0x14 + j * 2);
+            if (r & 0xFF) {
+                u8 t = r;
+
+                for (k = 0; k < 50; k++) {
+                    if (gone[k] == t) {
+                        HFree(((void **)D_8023DE30_ovl_286BD0)[m[8 + j] + 50]);
+                        ((void **)D_8023DE30_ovl_286BD0)[m[8 + j] + 50] = NULL;
+                    }
+                }
+            }
+        }
+        if (gone[i]) {
+            HFree(((void **)D_8023DE30_ovl_286BD0)[i]);
+            ((void **)D_8023DE30_ovl_286BD0)[i] = NULL;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80230360_ovl_286BD0);
 
