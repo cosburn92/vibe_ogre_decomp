@@ -9,7 +9,75 @@ extern u8 *D_801F0CB0_ovl_101CE0[];
 s32 func_801DA228_ovl_101CE0(u8 *u);
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DE5F0_ovl_101CE0);
+#include "tables.h"
+typedef struct {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 flags;
+    /* 0x02 */ u8 members[5];
+    /* 0x07 */ u8 pos[5];
+    /* 0x0C */ u8 harmony;
+    /* 0x0D */ u8 items[10];
+    /* 0x17 */ u8 strategy;
+    /* 0x18 */ u8 legion;
+} Squad132; /* size 0x19 */
+typedef struct {
+    /* 0x00 */ Character c;
+    /* 0x34 */ u8 unk34[4];
+} Player132; /* size 0x38 */
+extern Squad132 gSquads[];
+extern Player132 D_80193BC0[];
+extern Character D_80195560[];
+
+/* Whether unit u's squad (or, with flag 0x40, any squad of its legion) has a member at fatigue 10+ */
+s32 func_801DE5F0_ovl_101CE0(u8 *u) {
+    u8 max = 0;
+    s32 i;
+    s32 k;
+    s32 id;
+    u8 *l;
+
+    if (!(FIELD(u, u32, 0) & 0x40)) {
+        for (i = 0; i < 5; i++) {
+            id = gSquads[u[4]].members[i];
+            if (id != 0) {
+                if (id < 100) {
+                    if (u[4] < 30) {
+                        if (D_80193BC0[id].c.hp != 0 && max < D_80193BC0[id].c.fatigue) {
+                            max = D_80193BC0[id].c.fatigue;
+                        }
+                    } else {
+                        if (D_80195560[id].hp != 0 && max < D_80195560[id].fatigue) {
+                            max = D_80195560[id].fatigue;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        l = &D_801969BA[func_801DA228_ovl_101CE0(u) * 11];
+        for (k = 0; k < 5; k++) {
+            if (l[k] != 0xFF) {
+                for (i = 0; i < 5; i++) {
+                    id = gSquads[l[k]].members[i];
+                    if (id != 0) {
+                        if (id < 100) {
+                            if (u[4] < 30) {
+                                if (D_80193BC0[id].c.hp != 0 && max < D_80193BC0[id].c.fatigue) {
+                                    max = D_80193BC0[id].c.fatigue;
+                                }
+                            } else {
+                                if (D_80195560[id].hp != 0 && max < D_80195560[id].fatigue) {
+                                    max = D_80195560[id].fatigue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return !(max < 10);
+}
 
 /* Whether unit u (or, with flag 0x40, the unit it is linked to) has record flag 2 set */
 s32 func_801DE800_ovl_101CE0(u8 *u) {
