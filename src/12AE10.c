@@ -579,15 +579,13 @@ s32 func_801DC054_ovl_101CE0(void) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC094_ovl_101CE0);
 
 /* Index of the location the player's leader stands on (-1 if none); fixed 0 or 6 on some maps */
-#ifdef NON_MATCHING
-/* 84 vs 78 instructions: the original keeps the stage-id || chain as branches (with 0x2F-0x30 and 0x3C-0x3D range-folded); GCC here ORs set-on-equal results */
+/* Index of the location the player's leader stands on (-1 if none); fixed 0 or 6 on some maps */
 s32 func_801DC4EC_ovl_101CE0(void) {
     MapUnit *u;
     Vec3f p;
     s32 i;
 
-    if (D_8018F481 == 0x27 || D_8018F481 == 0x2F || D_8018F481 == 0x30 || D_8018F481 == 0x3C || D_8018F481 == 0x3D ||
-        D_8018F481 == 0x33) {
+    if (D_8018F481 == 0x27 || (D_8018F481 >= 0x2F && D_8018F481 <= 0x30) || (D_8018F481 >= 0x3C && D_8018F481 <= 0x3D) || D_8018F481 == 0x33) {
         return 0;
     }
     if (D_8018F481 == 8) {
@@ -612,14 +610,11 @@ s32 func_801DC4EC_ovl_101CE0(void) {
             }
         }
     }
-    if (i == D_801F1070_ovl_101CE0) {
-        return -1;
+    if (i != D_801F1070_ovl_101CE0) {
+        return i;
     }
-    return i;
+    return -1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC4EC_ovl_101CE0);
-#endif
 
 void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
     u16 fl = D_801951CC[loc].flags;
