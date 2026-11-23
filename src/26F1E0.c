@@ -785,7 +785,50 @@ void func_8021C4C0_ovl_25EE90(s32 a) {
     func_8020DF00_ovl_25EE90(func_8021D168_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021C4EC_ovl_25EE90);
+u8 *func_80214BE8_ovl_25EE90(s32 id);
+u8 *func_80216018_ovl_25EE90(s32 id);
+extern u8 D_80220EE0_ovl_25EE90[];
+void func_801C893C();
+
+/* Spawns the hit effects (0x5A, 0x5B, 0x5C) at unit 0x1C's position and plays the hit sound */
+void func_8021C4EC_ovl_25EE90(u8 *o) {
+    u8 m[0x40];
+    f32 pos[3];
+    u8 *e;
+    u8 *d;
+    s32 c;
+
+    func_80217C84_ovl_25EE90(FIELD(o, s32, 0x1C), pos);
+    func_801C8FE8(FIELD(o, s32, 0x1C));
+    func_8020A4A8_ovl_25EE90(D_80220EE0_ovl_25EE90, m);
+    e = func_80214BE8_ovl_25EE90(0x5A);
+    d = e + 0x1C;
+    FIELD(e, s32, 0xC) = -1000;
+    FIELD(e, u16, 0xA) |= 0x9000;
+    func_8020A4A8_ovl_25EE90(m, d);
+    func_8020A5A0_ovl_25EE90(d, pos);
+    e = func_80214BE8_ovl_25EE90(0x5B);
+    d = e + 0x1C;
+    FIELD(e, u16, 0xA) |= 0x8000;
+    func_8020A4A8_ovl_25EE90(m, d);
+    func_8020A5A0_ovl_25EE90(d, pos);
+    e = func_80216018_ovl_25EE90(0x5C);
+    FIELD(e, u16, 0xA) |= 0x8000;
+    FIELD(e, f32, 0x1C) = pos[0];
+    FIELD(e, f32, 0x20) = pos[1];
+    FIELD(e, f32, 0x24) = pos[2];
+    func_801C893C(FIELD(o, s16, 0x1E), 10);
+    c = 0xF9;
+    switch (FIELD(o, s32, 0x24)) {
+        case 0x25:
+            c = 0xFC;
+            break;
+        case 0x26:
+            c = 0xFF;
+            break;
+    }
+    func_801F9DFC(D_800EB240, o[0x1B], c);
+}
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021C62C_ovl_25EE90);
 
