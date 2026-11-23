@@ -639,7 +639,30 @@ void func_801A8E64_ovl_0EBBB0(s32 i) {
     G0E(0xE7000000, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A906C_ovl_0EBBB0);
+extern u16 D_801AC624_ovl_0EBBB0[];
+
+/* While flag bit (i * 2 + 6) is set, draws frame D_8018F568 (clamped to 65) of a 32x32 intensity
+ * animation in pale yellow faded by f15C; clears bit (i * 2 + 5) from frame 34 on and its own bit
+ * (and D_8018F56C/D) at the end */
+void func_801A906C_ovl_0EBBB0(s32 i) {
+    s32 f = D_8018F568;
+
+    if ((D_8018F520[(i * 2 + 6) / 8] >> ((i * 2 + 6) & 7)) & 1) {
+        if (f >= 34) {
+            D_8018F520[(i * 2 + 5) / 8] &= ~(1 << ((i * 2 + 5) & 7));
+        }
+        if (f >= 66) {
+            f = 65;
+            D_8018F520[(i * 2 + 6) / 8] &= ~(1 << ((i * 2 + 6) & 7));
+            D_8018F56D = 0;
+            D_8018F56C = 0;
+        }
+        gDPPipeSync(D_800E9BA0++);
+        gDPLoadTextureBlock(D_800E9BA0++, LoadAsset(0x0203C53E, D_801AC624_ovl_0EBBB0[f], -0xA), G_IM_FMT_I,
+                            G_IM_SIZ_8b, 32, 32, 0, G_TX_CLAMP, G_TX_CLAMP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+        gDPSetPrimColor(D_800E9BA0++, 0, 0, 0xFF, 0xFF, 0x97, (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
+    }
+}
 
 void func_801A9304_ovl_0EBBB0(void) {
     Gfx *g;
