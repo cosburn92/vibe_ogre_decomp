@@ -570,28 +570,25 @@ INCLUDE_ASM("asm/nonmatchings/205220", func_801C45E0_ovl_1F0A30);
 void bzero(void *p, s32 n);
 
 /* Frees and clears every cache entry with key a */
-#ifdef NON_MATCHING
-/* same length; the entry offset and the item index swap s1/s2 (as func_801C45E0) */
 void func_801C4778_ovl_1F0A30(s32 a) {
     s32 off;
-    u32 i;
     s32 j;
 
     if (D_801D0728_ovl_1F0A30 != NULL) {
         for (off = 0; off < 0xDC0; off += 0xB0) {
             if (FIELD(CE205D(off), s32, 0) == a) {
-                for (i = 0; i < FIELD(CE205D(off), u32, 0x18); i++) {
-                    if (FIELD(CE205D(off), void **, 0x38)[i] != NULL) {
-                        HFree(FIELD(CE205D(off), void **, 0x38)[i]);
-                        FIELD(CE205D(off), void **, 0x38)[i] = NULL;
+                for (j = 0; j < FIELD(CE205D(off), u32, 0x18); j++) {
+                    if (FIELD(CE205D(off), void **, 0x38)[j] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x38)[j]);
+                        FIELD(CE205D(off), void **, 0x38)[j] = NULL;
                     }
-                    if (FIELD(CE205D(off), void **, 0x3C)[i] != NULL) {
-                        HFree(FIELD(CE205D(off), void **, 0x3C)[i]);
-                        FIELD(CE205D(off), void **, 0x3C)[i] = NULL;
+                    if (FIELD(CE205D(off), void **, 0x3C)[j] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x3C)[j]);
+                        FIELD(CE205D(off), void **, 0x3C)[j] = NULL;
                     }
-                    if (FIELD(CE205D(off), void **, 0x40)[i] != NULL) {
-                        HFree(FIELD(CE205D(off), void **, 0x40)[i]);
-                        FIELD(CE205D(off), void **, 0x40)[i] = NULL;
+                    if (FIELD(CE205D(off), void **, 0x40)[j] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x40)[j]);
+                        FIELD(CE205D(off), void **, 0x40)[j] = NULL;
                     }
                 }
                 j = 0;
@@ -615,9 +612,6 @@ void func_801C4778_ovl_1F0A30(s32 a) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C4778_ovl_1F0A30);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C49A0_ovl_1F0A30);
 
