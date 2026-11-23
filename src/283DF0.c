@@ -139,10 +139,7 @@ s32 func_8022A1F8_ovl_281860(s32 *depth, s32 pc, s32 *code, s32 val, s32 skip, s
 }
 
 /* the switch table above is the overlay's last rodata; the section ends 8-byte aligned */
-__asm__(".section .rodata
-.word 0, 0
-.section .text
-");
+__asm__(".section .rodata\n.word 0, 0\n.section .text\n");
 
 /* Script marker search from start: dir 1 finds the next 0x80000002; otherwise goes to the 0x80000000
  * end marker and walks back to the n-th 0x80000002. -1 when not found */
