@@ -69,7 +69,47 @@ s32 func_80222DD8_ovl_275850(u16 msg, u8 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/276FE0", func_80222F84_ovl_275850);
+void func_801F8E90(u8 id, u8 *s);
+extern u8 D_80225748_ovl_275850[];
+
+s32 func_80222F84_ovl_275850(u16 msg, u8 *o) {
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, s32, 4) = D_80220F6C;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 0));
+            func_8020E0B4(-1, 0x1002);
+            break;
+        case 0x1002:
+            D_80220F68 = FIELD(o, s32, 0);
+            D_80220F6C = FIELD(o, s32, 4);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x3D);
+            if (*FIELD(o, u8 *, 0) != *FIELD(o, u8 *, 4)) {
+                func_8020DF00(func_80222850_ovl_275850);
+                func_8020E0B4(-1, 0x1003);
+            } else {
+                func_8020DC80(0x101);
+            }
+            break;
+        case 0x1003:
+            func_801F8E90(*FIELD(o, u8 *, 4), D_80225748_ovl_275850);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x3E);
+            func_80207F30(*FIELD(o, u8 *, 4), 5, 0x2D);
+            func_80207FA0(FIELD(o, u8 *, 4) + 1, 0x14, 0x1E);
+            func_8020E0B4(0x3C, 0x1004);
+            break;
+        case 0x1004:
+            func_8020DD34(0x101);
+            break;
+    }
+    return 0;
+}
 
 s32 func_80223144_ovl_275850(u16 msg, u8 *o) {
     switch (msg) {
