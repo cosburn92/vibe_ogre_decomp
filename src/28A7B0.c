@@ -1761,70 +1761,53 @@ s16 func_802390AC_ovl_286BD0(s32 n) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_8009C550(void *, s32 *);           /* extern */
-s32 sprintf(s32 *, s32 *, s32 *, u16); /* extern */
-extern s32 D_8023E0A0_ovl_286BD0;
-extern s32 D_8023E338_ovl_286BD0;
+extern char D_8023E0A0_ovl_286BD0[];
+extern char D_8023E338_ovl_286BD0[];
+s32 sprintf(char *buf, const char *fmt, ...);
+void func_8009C550(char *dst, char *src);
 
-void *func_80239394_ovl_286BD0(void *arg0, s32 arg1) {
-    s32 sp10;
-    TimeStamp *temp_s0;
-    TimeStamp *temp_v0;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_v0;
-    u16 temp_v1;
-    u16 var_s3;
-    u8 temp_v0_2;
-    u8 var_s2;
+/* Index of the first entry of group n (a new year or month starts a group); past the end the
+ * group count */
+static inline s32 GroupFirst(s32 n) {
+    s32 k = 0;
+    u8 lastB = 0;
+    u16 lastH = 0;
+    s32 i;
+    TimeStamp *e;
 
-    bzero(arg0, 0x500);
-    var_s1 = 0;
-    var_s2 = 0;
-    var_s3 = 0;
-    var_s0 = 0;
-loop_1:
-    temp_v0 = func_8022EC34_ovl_286BD0(var_s0 & 0xFF);
-    if (temp_v0 != NULL) {
-        temp_v1 = temp_v0->hi;
-        if (var_s3 != temp_v1) {
-            var_s3 = temp_v1;
-            var_s2 = temp_v0->mid;
-            var_s1 += 1;
-        } else {
-            temp_v0_2 = temp_v0->mid;
-            if (var_s2 != temp_v0_2) {
-                var_s1 += 1;
-                var_s2 = temp_v0_2;
-            }
+    for (i = 0; i < 121; i++) {
+        e = func_8022EC34_ovl_286BD0(i);
+        if (e == NULL) {
+            break;
         }
-        if (arg1 != (var_s1 - 1)) {
-            var_s0 += 1;
-            if (var_s0 >= 0x79) {
-                goto block_11;
-            }
-            goto loop_1;
+        if (lastH != e->hi) {
+            lastH = e->hi;
+            lastB = e->mid;
+            k++;
+        } else if (lastB != e->mid) {
+            k++;
+            lastB = e->mid;
         }
-        var_v0 = var_s0;
-    } else {
-block_11:
-        var_v0 = var_s1;
+        if (n == k - 1) {
+            return i;
+        }
     }
-    temp_s0 = func_8022EC34_ovl_286BD0(var_v0 & 0xFF);
-    bzero(&sp10, 0x64);
-    sprintf(&sp10, &D_8023E338_ovl_286BD0, &D_8023E0A0_ovl_286BD0, temp_s0->hi);
-    FIELD(arg0, void *, 0x530) = arg0;
-    func_8009C550(arg0, &sp10);
-    return arg0;
+    return k;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239394_ovl_286BD0);
-#endif
+
+/* Writes the heading of group n (its first entry's year) into text window buffer w */
+u8 *func_80239394_ovl_286BD0(u8 *w, s32 n) {
+    char buf[0x64];
+    TimeStamp *e;
+
+    bzero(w, 0x500);
+    e = func_8022EC34_ovl_286BD0(GroupFirst(n));
+    bzero(buf, 0x64);
+    sprintf(buf, D_8023E338_ovl_286BD0, D_8023E0A0_ovl_286BD0, e->hi);
+    FIELD(w, u8 *, 0x530) = w;
+    func_8009C550((char *)w, buf);
+    return w;
+}
 
 /* Item index shown on display line `line` (a new group or subgroup adds an extra line);
  * past the end returns the line count */
