@@ -428,7 +428,54 @@ INCLUDE_ASM("asm/nonmatchings/205220", func_801C33F8_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C3750_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C3D64_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Ages the cache: every loaded part's use count drops by one and parts reaching 0 are freed */
+void func_801C3D64_ovl_1F0A30(void) {
+    u32 n;
+    s32 off;
+    u32 i;
+
+    if (D_801D0728_ovl_1F0A30 != NULL) {
+        for (n = 0, off = 0; n < 20; n++, off += 0xB0) {
+            u8 *e = (u8 *)D_801D0728_ovl_1F0A30 + off;
+
+            if (FIELD(e, s32, 0) == 0) {
+                continue;
+            }
+            for (i = 0; i < FIELD(e, u32, 0x18); i++) {
+                if (FIELD(e, void **, 0x38)[i] != NULL) {
+                    if (--FIELD(e, u8 *, 0x60)[i] == 0) {
+                        HFree(FIELD(e, void **, 0x38)[i]);
+                        FIELD(e, void **, 0x38)[i] = NULL;
+                    }
+                }
+                if (FIELD(e, void **, 0x3C)[i] != NULL) {
+                    if (--FIELD(e, u8 *, 0x64)[i] == 0) {
+                        HFree(FIELD(e, void **, 0x3C)[i]);
+                        FIELD(e, void **, 0x3C)[i] = NULL;
+                    }
+                }
+                if (FIELD(e, void **, 0x40)[i] != NULL) {
+                    if (--FIELD(e, u8 *, 0x68)[i] == 0) {
+                        HFree(FIELD(e, void **, 0x40)[i]);
+                        FIELD(e, void **, 0x40)[i] = NULL;
+                    }
+                }
+            }
+            for (i = 0; i < 10; i++) {
+                if (FIELD(e + i * 4, void *, 0x70) != NULL) {
+                    if (--FIELD(e + i, u8, 0x98) == 0) {
+                        HFree(FIELD(e + i * 4, void *, 0x70));
+                        FIELD(e + i * 4, void *, 0x70) = NULL;
+                    }
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C3F3C_ovl_1F0A30);
 
