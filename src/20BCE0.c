@@ -514,7 +514,58 @@ BattleUnit *func_801C940C_ovl_1F0A30(void) {
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9478_ovl_1F0A30);
+typedef struct {
+    /* 0x00 */ Character c;
+    /* 0x34 */ u8 unk34;
+    /* 0x35 */ u8 morale;
+    /* 0x36 */ u8 unk36[2];
+} PlayerChar20B; /* size 0x38 */
+extern PlayerChar20B D_80193BC0[];
+extern Character D_80195560[];
+
+static inline s32 IsLord20B(u8 *u) {
+    if (u == NULL) {
+        return 0;
+    }
+    return FIELD(u, s32, 0x4C) == 1;
+}
+
+/* Builds battle unit u from enemy character k */
+void func_801C9478_ovl_1F0A30(u8 *u, s32 k) {
+    Character *p = &D_80195560[k];
+
+    bzero(u, 0xF8);
+    FIELD(u, s32, 0x48) = p->cls;
+    FIELD(u, s32, 0x4C) = p->baseCls;
+    u[0xF6] = k;
+    u[0x31] = p->level;
+    u[0x33] = p->element;
+    FIELD(u, u16, 0x22) = p->maxHp;
+    FIELD(u, u16, 0x20) = p->hp;
+    FIELD(u, u16, 0x24) = p->str;
+    FIELD(u, u16, 0x26) = p->vit;
+    FIELD(u, u16, 0x28) = p->intl;
+    FIELD(u, u16, 0x2A) = p->men;
+    FIELD(u, u16, 0x2C) = p->agi;
+    FIELD(u, u16, 0x2E) = p->dex;
+    u[0x30] = p->luck;
+    u[0x34] = u[0x3F] = p->alignment;
+    FIELD(u, u16, 0x36) = p->items[0];
+    FIELD(u, u16, 0x38) = p->items[1];
+    FIELD(u, u16, 0x3A) = p->items[2];
+    FIELD(u, u16, 0x3C) = p->items[3];
+    u[0x3E] = p->fatigue;
+    if (IsLord20B(u)) {
+        u[0x3E] = 0;
+    }
+    if (p->status & 2) {
+        FIELD(u, s32, 0x40) |= 0x200;
+    }
+    if (p->status & 4) {
+        FIELD(u, s32, 0x40) |= 2;
+    }
+    FIELD(u, s32, 0x40) |= 0x500;
+}
 
 typedef struct Fx20B {
     /* 0x00 */ void (*fn)();
@@ -725,21 +776,6 @@ s32 func_801CA384_ovl_1F0A30(BattleUnit *u) {
         return *(s32 *)(D_801CE8BC_ovl_1F0A30 + 0x1C0);
     }
     return gSquads[D_801976DC[1].b[0]].unk17[0];
-}
-
-typedef struct {
-    /* 0x00 */ Character c;
-    /* 0x34 */ u8 unk34;
-    /* 0x35 */ u8 morale;
-    /* 0x36 */ u8 unk36[2];
-} PlayerChar20B; /* size 0x38 */
-extern PlayerChar20B D_80193BC0[];
-
-static inline s32 IsLord20B(u8 *u) {
-    if (u == NULL) {
-        return 0;
-    }
-    return FIELD(u, s32, 0x4C) == 1;
 }
 
 /* Builds battle unit u from player character k */
