@@ -470,7 +470,49 @@ u8 *func_8023B494_ovl_2A8D20(void) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023B500_ovl_2A8D20);
 
+f32 func_801BE1E0(s32 cls, s32 base);
+f32 func_801BE264(s32 cls, s32 base);
+void func_802312E4(s32 o, f32 a, f32 b, f32 x, f32 z, s32 c, s32 t);
+void func_80239C04_ovl_2A8D20(s32 o, s32 cls, s32 base, s16 anim, s32 a, s32 b, s32 c, s32 d);
+
+/* Turns battle object o to face its target part on unit u, moving it there at the unit's speed,
+ * and starts the advance animation (5 or 11; +50 for the leader in slot 1) */
+#ifdef NON_MATCHING
+/* 106/106 instructions, 6 words differ: f * 555 and the target z swap f0/f2 */
+s32 func_8023B998_ovl_2A8D20(u8 *o, u8 *u) {
+    u8 side = func_801C8B68(u) != 0;
+    u8 *p = FIELD(u + o[0x149] * 4, u8 *, 0);
+    s32 px = FIELD(p, s16, 0x28);
+    s32 pz = FIELD(p, s16, 0x2C);
+    s16 anim;
+    f32 f;
+
+    if (side == 1) {
+        anim = 11;
+        if (FIELD(o, f32, 0x11C) < px) {
+            anim = 5;
+        }
+    } else {
+        anim = 11;
+        if (px < FIELD(o, f32, 0x11C)) {
+            anim = 5;
+        }
+    }
+    if (anim == 5) {
+        f = func_801BE1E0(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C));
+    } else {
+        f = func_801BE264(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C));
+    }
+    func_802312E4(FIELD(o, s32, 0xE4), -1.0f, -1.0f, px, pz, 0, f * 555.0f);
+    if (func_801C8C90(u) == 1 && o[0x149] == 1) {
+        anim += 50;
+    }
+    func_80239C04_ovl_2A8D20(FIELD(o, s32, 0xE4), FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), anim, side, side, 0, 1);
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023B998_ovl_2A8D20);
+#endif
 
 /* Battle camera zoom state (D_8022A974 + 0x19F0) */
 typedef struct {
