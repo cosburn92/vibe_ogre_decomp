@@ -82,7 +82,75 @@ void func_801C1924_ovl_087200(void) {
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C1990_ovl_087200);
 
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C1EA8_ovl_087200);
+void nuGfxTaskAllEndWait(void);
+extern u8 D_801939D8;
+extern u8 D_801939D0;
+extern u8 D_801936E0;
+void func_80199E00(void *p);
+void func_80197DB8(void);
+void func_801D5308_ovl_087200(void);
+void func_80221CB8(void);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#define M87P(off) FIELD(D_80196AF8, void *, off)
+
+/* Organize screen teardown: waits for the GPU, frees every buffer of the screen state and the
+ * state itself, then resumes the field */
+void func_801C1EA8_ovl_087200(void) {
+    nuGfxTaskAllEndWait();
+    D_801939D8 = 0;
+    *(s16 *)&D_80196AF8->cur.v[0] = -1;
+    HFree(M87P(0x58));
+    HFree(M87P(0x4C));
+    HFree(M87P(0x48));
+    HFree(M87P(0x28));
+    HFree(M87P(0x24));
+    HFree(M87P(0x20));
+    HFree(M87P(0x60));
+    HFree(M87P(0x5C));
+    HFree(M87P(0x1C));
+    HFree(M87P(0x18));
+    HFree(M87P(0x14));
+    HFree(M87P(0x10));
+    HFree(M87P(0x2C));
+    HFree(M87P(0xC));
+    HFree(M87P(0x30));
+    if (M87P(0x34) != NULL) {
+        HFree(M87P(0x34));
+    }
+    if (M87P(0x38) != NULL) {
+        HFree(M87P(0x38));
+    }
+    HFree(M87P(0x3C));
+    if (M87P(0x40) != NULL) {
+        HFree(M87P(0x40));
+    }
+    if (M87P(0x44) != NULL) {
+        HFree(M87P(0x44));
+    }
+    if (M87P(0x50) != NULL) {
+        HFree(M87P(0x50));
+    }
+    if (M87P(0x54) != NULL) {
+        HFree(M87P(0x54));
+    }
+    HFree(M87P(0x8));
+    HFree(M87P(0x4));
+    HFree(M87P(0x68));
+    HFree(M87P(0x6C));
+    func_80199E00(M87P(0x24F0));
+    func_80199E00(M87P(0x24F4));
+    func_80197DB8();
+    func_801D5308_ovl_087200();
+    HFree(M87P(0x0));
+    HFree(D_80196AF8);
+    D_80196AF8 = NULL;
+    D_801939D0 = 0;
+    if (D_801936E0 != 0) {
+        func_80221CB8();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C212C_ovl_087200);
 
