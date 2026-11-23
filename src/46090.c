@@ -628,7 +628,7 @@ void func_801725B4_ovl_040E80(u16 v) {
     D_80197B08_ovl_040E80 = v;
 }
 
-s32 func_801725C0_ovl_040E80(u8 c) {
+inline s32 func_801725C0_ovl_040E80(u8 c) {
     s32 r = 0;
 
     if ((u8)(c - 0x2D) < 2 || c == 0x2F || (u8)(c - 0x24) < 2 || c == 0x30) {
@@ -846,45 +846,24 @@ void func_80172BF0_ovl_040E80(u8 n, u8 v)
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172C44_ovl_040E80);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern s32 D_80193BC0_ovl_040E80;
+extern u8 D_80193BC0_ovl_040E80[][0x38];
+void func_80172C44_ovl_040E80(u8 *c);
 
-void func_801730BC_ovl_040E80(s32 arg0, u8 arg1, u8 arg2) {
-    s32 temp_a1;
-    s32 temp_v0;
-    s32 var_a2;
-    s32 var_s1;
-    s32 var_v1;
-    u8 temp_a0;
+/* Turns every player character (1-99) whose class matches v (and is not a lord class) into class
+ * cls / base class base, then refreshes it */
+void func_801730BC_ovl_040E80(u8 v, u8 cls, u8 base) {
+    u8 i;
 
-    var_s1 = 1;
-    var_v1 = 1 & 0xFF;
-    do {
-        temp_a0 = D_80193BD2_ovl_040E80[var_v1].v;
-        temp_a1 = temp_a0 & 0xFF;
-        var_a2 = 0;
-        if (((((u32) (temp_a0 - 0x2D) < 2U) | (temp_a1 == 0x2F)) != 0) || ((((u32) (temp_a0 - 0x24) < 2U) | (temp_a1 == 0x30)) != 0)) {
-            var_a2 = 1;
-        }
-        if (var_a2 == 0) {
-            temp_v0 = var_s1 & 0xFF;
-            if ((func_8016FF5C_ovl_040E80(D_80193BD1_ovl_040E80[temp_v0].v, arg0 & 0xFF) & 0xFF) == 1) {
-                D_80193BD2_ovl_040E80[temp_v0].v = arg1;
-                D_80193BD1_ovl_040E80[temp_v0].v = arg2;
-                func_80172C44_ovl_040E80((temp_v0 * 0x38) + &D_80193BC0_ovl_040E80);
+    for (i = 1; i < 100; i++) {
+        if (func_801725C0_ovl_040E80(D_80193BD2_ovl_040E80[i].v) == 0) {
+            if (func_8016FF5C_ovl_040E80(D_80193BD1_ovl_040E80[i].v, v) == 1) {
+                D_80193BD2_ovl_040E80[i].v = cls;
+                D_80193BD1_ovl_040E80[i].v = base;
+                func_80172C44_ovl_040E80(D_80193BC0_ovl_040E80[i]);
             }
         }
-        var_s1 += 1;
-        var_v1 = var_s1 & 0xFF;
-    } while ((u32) (var_s1 & 0xFF) < 0x64U);
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/46090", func_801730BC_ovl_040E80);
-#endif
 
 /* Default 11-byte record using the legion of the first squad found with member 1 (the member test
  * only ever looks at squad 0) */
