@@ -865,115 +865,48 @@ void func_801B1AF0_ovl_0FA5E0(f32 x, f32 *outA, f32 *outB, f32 *t, f32 *yA, f32 
     *outB = SplineFA5(x, t, yB, mB, n);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 167 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801B1CC0_ovl_0FA5E0(f32 *arg0, f32 *arg1, s16 arg2, s16 arg3, void *arg4, void *arg5) {
-    s16 sp2E;
-    s16 sp36;
-    void *sp3C;
-    f32 *temp_a1;
-    f32 *temp_a2;
-    f32 *var_a0;
-    f32 *var_s5;
-    f32 *var_s6;
-    f32 temp_ft0;
-    f32 temp_ft1;
-    f32 temp_fv0;
-    f32 temp_fv1;
-    f32 temp_fv1_2;
-    s16 temp_v0;
-    s16 temp_v0_3;
-    s16 var_s1;
-    s16 var_s1_3;
-    s32 *temp_s4;
-    s32 temp_s0;
-    s32 temp_v1;
-    s32 var_s0;
-    s32 var_s0_2;
-    void *temp_fp;
-    void *temp_v0_2;
-    void *temp_v1_2;
-    void *var_s1_2;
-    void *var_s2;
-    void *var_s3;
+f32 sqrtf(f32 x);
 
-    var_s5 = arg0;
-    var_s6 = arg1;
-    sp36 = arg3;
-    sp2E = arg2;
-    if (arg3 == 2) {
-        temp_fv1 = FIELD(arg4, f32, 0);
-        temp_ft1 = (f32) arg2;
-        var_s1 = 1;
-        *var_s5 = temp_fv1;
-        *var_s6 = FIELD(arg5, f32, 0);
-        if (arg2 > 1) {
-            do {
-                temp_v1 = (s32) (var_s1 << 0x10) >> 0xE;
-                temp_v0_2 = temp_v1 + var_s5;
-                temp_v1_2 = temp_v1 + var_s6;
-                FIELD(temp_v0_2, f32, 0) = (f32) (FIELD(temp_v0_2, f32, -4) + ((FIELD(arg4, f32, 4) - temp_fv1) / temp_ft1));
-                temp_v0 = var_s1 + 1;
-                var_s1 = temp_v0;
-                FIELD(temp_v1_2, f32, 0) = (f32) (FIELD(temp_v1_2, f32, -4) + ((FIELD(arg5, f32, 4) - FIELD(arg5, f32, 0)) / temp_ft1));
-            } while (temp_v0 < arg2);
+/* Resamples the path (x[i], y[i]), i < n, at m evenly spaced points into outX/outY: a straight line
+ * for two points, otherwise a spline over the normalised arc length */
+void func_801B1CC0_ovl_0FA5E0(f32 *outX, f32 *outY, s16 m, s16 n, f32 *x, f32 *y) {
+    s16 i;
+
+    if (n == 2) {
+        f32 dx = (x[1] - x[0]) / m;
+        f32 dy = (y[1] - y[0]) / m;
+
+        outX[0] = x[0];
+        outY[0] = y[0];
+        for (i = 1; i < m; i++) {
+            outX[i] = outX[i - 1] + dx;
+            outY[i] = outY[i - 1] + dy;
         }
     } else {
-        temp_s0 = arg3 * 4;
-        temp_s4 = HMalloc(temp_s0);
-        sp3C = HMalloc(temp_s0);
-        var_s0 = 1;
-        temp_fp = HMalloc(temp_s0);
-        *temp_s4 = 0;
-        if (arg3 > 1) {
-            var_s2 = arg5 + 4;
-            var_s3 = temp_s4 + 4;
-            var_s1_2 = arg4 + 4;
-            do {
-                temp_fv1_2 = FIELD(var_s1_2, f32, 0) - FIELD(var_s1_2, f32, -4);
-                temp_fv0 = FIELD(var_s2, f32, 0) - FIELD(var_s2, f32, -4);
-                temp_ft0 = sqrtf((temp_fv1_2 * temp_fv1_2) + (temp_fv0 * temp_fv0));
-                var_s2 += 4;
-                var_s1_2 += 4;
-                var_s0 += 1;
-                FIELD(var_s3, f32, 0) = (f32) (FIELD(var_s3, f32, -4) + temp_ft0);
-                var_s3 += 4;
-            } while (var_s0 < arg3);
+        f32 *t = HMalloc(n * 4);
+        f32 *mx = HMalloc(n * 4);
+        f32 *my = HMalloc(n * 4);
+        s32 k;
+
+        t[0] = 0.0f;
+        for (k = 1; k < n; k++) {
+            f32 dx = x[k] - x[k - 1];
+            f32 dy = y[k] - y[k - 1];
+            t[k] = t[k - 1] + sqrtf(dx * dx + dy * dy);
         }
-        var_s0_2 = 1;
-        var_a0 = temp_s4 + 4;
-        if ((s16) (u16) sp36 > 1) {
-            do {
-                var_s0_2 += 1;
-                *var_a0 /= FIELD((((s16) (u16) sp36 * 4) + temp_s4), f32, -4);
-                var_a0 += 4;
-            } while (var_s0_2 < (s16) (u16) sp36);
+        for (k = 1; k < n; k++) {
+            t[k] /= t[n - 1];
         }
-        func_801B18AC_ovl_0FA5E0(temp_s4, arg4, sp3C, (s16) (u16) sp36);
-        func_801B18AC_ovl_0FA5E0(temp_s4, arg5, temp_fp, (s16) (u16) sp36);
-        var_s1_3 = 0;
-        if (((u16) sp2E << 0x10) > 0) {
-            do {
-                temp_a1 = var_s5;
-                temp_a2 = var_s6;
-                var_s5 += 4;
-                var_s6 += 4;
-                func_801B1AF0_ovl_0FA5E0((f32) ((1.0 / (f64) (s16) (u16) sp2E) * (f64) var_s1_3), temp_a1, temp_a2, temp_s4, arg4, arg5, sp3C, temp_fp, (s32) (s16) (u16) sp36);
-                temp_v0_3 = var_s1_3 + 1;
-                var_s1_3 = temp_v0_3;
-            } while (temp_v0_3 < (s16) (u16) sp2E);
+        func_801B18AC_ovl_0FA5E0(t, x, mx, n);
+        func_801B18AC_ovl_0FA5E0(t, y, my, n);
+        for (i = 0; i < m; i++, outX++, outY++) {
+            func_801B1AF0_ovl_0FA5E0((1.0 / m) * i, outX, outY, t, x, y, mx, my, n);
         }
-        HFree(temp_s4);
-        HFree(sp3C);
-        HFree(temp_fp);
+        HFree(t);
+        HFree(mx);
+        HFree(my);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1CC0_ovl_0FA5E0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1FD8_ovl_0FA5E0);
 
