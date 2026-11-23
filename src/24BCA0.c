@@ -245,7 +245,7 @@ void func_801F79BC_ovl_24BCA0(u8 c, f32 (*out)[3], u8 dir) {
     }
 }
 
-void func_801F7BE4_ovl_24BCA0(f32 *d, f32 *a, f32 *b) {
+inline void func_801F7BE4_ovl_24BCA0(f32 *d, f32 *a, f32 *b) {
     d[0] = a[0] - b[0];
     d[1] = a[1] - b[1];
     d[2] = a[2] - b[2];
@@ -278,13 +278,40 @@ f32 sqrtf(f32 x);
 f32 func_8009CF00(f32 x); /* acosf */
 
 /* Heading (degrees, 0-360) of the horizontal direction v (x at 0, z at 8) */
-f32 func_801F7CF4_ovl_24BCA0(f32 *v) {
+inline f32 func_801F7CF4_ovl_24BCA0(f32 *v) {
     f32 a = func_8009CF00(v[2] / sqrtf(v[0] * v[0] + v[2] * v[2])) * 180.0 / 3.14159265358979312;
 
     return v[0] < 0.0f ? 360.0f - a : a;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7DA4_ovl_24BCA0);
+/* Where heading ang (degrees) from pos falls against character c's span (its position pushed 10
+ * units either side along z, toward pos's side of x = 0): 1 inside, 2 past it, 0 before it */
+s32 func_801F7DA4_ovl_24BCA0(f32 *pos, s32 c, f32 ang) {
+    f32 d[3];
+    f32 p[3];
+    f32 side;
+    f32 a0;
+    f32 a1;
+
+    func_801F7344_ovl_24BCA0(c, p, 0);
+    side = -1.0f;
+    if (pos[0] > 0.0f) {
+        side = 1.0f;
+    }
+    p[2] -= side * 10.0f;
+    func_801F7BE4_ovl_24BCA0(d, p, pos);
+    a0 = func_801F7CF4_ovl_24BCA0(d);
+    p[2] += side * 20.0f;
+    func_801F7BE4_ovl_24BCA0(d, p, pos);
+    a1 = func_801F7CF4_ovl_24BCA0(d);
+    if ((a0 <= ang) & (ang <= a1)) {
+        return 1;
+    }
+    if (a1 < ang) {
+        return 2;
+    }
+    return 0;
+}
 
 typedef struct {
     /* 0x00 */ u8 unk00[8];
