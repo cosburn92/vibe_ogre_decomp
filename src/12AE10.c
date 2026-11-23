@@ -415,7 +415,44 @@ s32 func_801DA52C_ovl_101CE0(MapUnit *u) {
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA59C_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA8D0_ovl_101CE0);
+extern u16 D_80190EBC[];
+extern u8 D_80191010[];
+extern u16 D_8019532C[];
+extern u8 D_80195480[];
+
+/* Whether squad sq is wiped out: no member that is alive and not petrified (members 100+ are
+ * the special units, kept in separate hp/status tables) */
+s32 func_801DA8D0_ovl_101CE0(s32 sq) {
+    s32 i;
+
+    for (i = 0; i < 5; i++) {
+        s32 m = gSquads[sq].members[i];
+
+        if (m == 0) {
+            continue;
+        }
+        if (m >= 100) {
+            if (sq >= 30) {
+                if (D_8019532C[m] != 0 && !(D_80195480[m] & 4)) {
+                    return 0;
+                }
+            } else {
+                if (D_80190EBC[m] != 0 && !(D_80191010[m] & 4)) {
+                    return 0;
+                }
+            }
+        } else if (sq >= 30) {
+            if (D_80195560[m].hp != 0 && !(D_80195560[m].status & 4)) {
+                return 0;
+            }
+        } else {
+            if (D_80193BC0[m].c.hp != 0 && !(D_80193BC0[m].c.status & 4)) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DAA00_ovl_101CE0);
 
