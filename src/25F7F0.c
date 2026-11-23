@@ -126,16 +126,16 @@ s32 func_8020B150_ovl_25EE90(s32 a) {
 }
 
 /* dst[k] = from[k] + (to[k] - from[k]) * t / len, or to[k] once t reaches len */
-void func_8020B1E0_ovl_25EE90(s16 t, s16 *src, s16 *dst) {
+inline void func_8020B1E0_ovl_25EE90(s16 t, s16 *src, s16 *dst) {
     s32 k;
 
     if (t < src[0]) {
         for (k = 0; k < 4; k++) {
-            *dst++ = src[5 + k] + (src[1 + k] - src[5 + k]) * t / src[0];
+            dst[k] = src[5 + k] + (src[1 + k] - src[5 + k]) * t / src[0];
         }
     } else {
         for (k = 0; k < 4; k++) {
-            *dst++ = src[1 + k];
+            dst[k] = src[1 + k];
         }
     }
 }
@@ -148,7 +148,51 @@ void func_8020B29C_ovl_25EE90(void) {
     D_80220E70_ovl_25EE90.head[3] = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/25F7F0", func_8020B304_ovl_25EE90);
+extern u8 D_801CEAA8;
+extern u8 D_801CEAA9;
+extern u8 D_801CEAAA;
+extern u8 D_801CEAAB;
+extern s8 D_801CEAAC;
+extern s8 D_801CEAAD;
+extern s8 D_801CEAAE;
+
+/* Steps the running 4-value interpolation: into the header (mode 1) or the fog colour and one of
+ * four fog parameters (modes 2-5) */
+void func_8020B304_ovl_25EE90(void) {
+    Interp4 *s = &D_80220E70_ovl_25EE90;
+    s16 v[4];
+
+    if (D_80220E78_ovl_25EE90 != 0) {
+        func_8020B1E0_ovl_25EE90(++D_80220E7A_ovl_25EE90, (s16 *)s->data, v);
+        if (s->active == 1) {
+            s->head[0] = v[0];
+            s->head[1] = v[1];
+            s->head[2] = v[2];
+            s->head[3] = v[3];
+        } else {
+            D_801CEAAC = v[0];
+            D_801CEAAD = v[1];
+            D_801CEAAE = v[2];
+            switch (s->active) {
+                case 2:
+                    D_801CEAA8 = v[3];
+                    break;
+                case 3:
+                    D_801CEAA9 = v[3];
+                    break;
+                case 4:
+                    D_801CEAAA = v[3];
+                    break;
+                case 5:
+                    D_801CEAAB = v[3];
+                    break;
+            }
+        }
+        if ((s16)s->timer >= (s16)s->data[0]) {
+            s->active = 0;
+        }
+    }
+}
 
 void func_8020B4E4_ovl_25EE90(u16 active, u16 *src) {
     s32 k;
