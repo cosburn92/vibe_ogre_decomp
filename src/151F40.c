@@ -458,7 +458,32 @@ u16 func_80201E4C_ovl_14EBE0(u8 side, u8 n, u8 kind) {
     return r * m.v[kind];
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202140_ovl_14EBE0);
+/* As func_80201E4C with str in place of dex and dex in place of vit */
+u16 func_80202140_ovl_14EBE0(u8 side, u8 n, u8 kind) {
+    Mult151 m = D_80214CC4_ovl_14EBE0;
+    Character *c;
+    u8 idx;
+    u8 cls;
+    u8 base;
+    f32 str;
+    f32 dex;
+    f32 bonus;
+    u16 r;
+
+    idx = n < 100 ? n : 0;
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    cls = c->cls;
+    base = c->baseCls;
+    str = c->str;
+    dex = c->dex + ItemBonus151(side, idx, 5);
+    bonus = ItemBonus151(side, idx, 0);
+    r = (func_8016D2FC(cls, base) + bonus) / 20.0f * (str + 50.0f) / 50.0f * (dex + 100.0f) / 100.0f;
+    return r * m.v[kind];
+}
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80202434_ovl_14EBE0);
 
