@@ -293,7 +293,49 @@ void func_80199088_ovl_1CE070(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019915C_ovl_1CE070);
+extern void *D_800E8210;
+extern u8 D_80186380[];
+u32 osVirtualToPhysical(void *p);
+#define G1CE(w0_, w1_)                 \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;     \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (u32)(w1_);           \
+    }
+
+/* When video is up: sets the VI features, full-screen scissor, clears the z buffer and (once) the
+ * frame buffer, then sets the frame buffer as the colour image */
+void func_8019915C_ovl_1CE070(void) {
+    if (func_8016CD30()) {
+        osViSetSpecialFeatures(0x9A);
+        G1CE(0xE7000000, 0);
+        G1CE(0xE7000000, 0);
+        G1CE(0xE3000A01, 0x300000);
+        G1CE(0xE7000000, 0);
+        G1CE(0xE200001C, 0);
+        G1CE(0xE7000000, 0);
+        G1CE(0xED000000, 0xA00780);
+        G1CE(0xE7000000, 0);
+        if (D_800C4B20 != 0) {
+            G1CE(0xFE000000, D_800C4B20 - 0x80000000);
+            G1CE(0xFF10027F, D_800C4B20 - 0x80000000);
+            G1CE(0xF7000000, 0xFFFCFFFC);
+            G1CE(0xDE000000, D_80186380);
+            G1CE(0xE7000000, 0);
+        }
+        G1CE(0xFF10027F, osVirtualToPhysical(D_800E8210));
+        if (D_801B8090_ovl_1CE070 != 0) {
+            G1CE(0xF7000000, 0x10001);
+            G1CE(0xDE000000, D_80186380);
+        }
+        D_801B8090_ovl_1CE070 = 1;
+        G1CE(0xE7000000, 0);
+        G1CE(0xE7000000, 0);
+        G1CE(0xE3000A01, 0);
+        G1CE(0xE7000000, 0);
+    }
+}
 
 void func_801993F0_ovl_1CE070(void) {
     if (func_8016CD30()) {
