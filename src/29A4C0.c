@@ -400,7 +400,57 @@ void func_8022BFFC_ovl_29A4C0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022C04C_ovl_29A4C0);
+typedef struct {
+    /* 0x0 */ u8 kind;
+    /* 0x1 */ u8 r;
+    /* 0x2 */ u8 g;
+    /* 0x3 */ u8 b;
+    /* 0x4 */ u8 c[3];
+} Tint29;
+
+#define G29(a, b)                    \
+    {                                \
+        Gfx29 *_g = D_800E9BA0++;    \
+                                     \
+        _g->w0 = (a);                \
+        _g->w1 = (b);                \
+    }
+
+/* Sets up the tinted combiner for unit u from its tint record (u+0xE7), and copies the tint's
+ * colour to u+0x142 */
+void func_8022C04C_ovl_29A4C0(u8 *u) {
+    Tint29 *p = D_8022A974->p1944[u[0xE7]];
+
+    if (p != NULL) {
+        Tint29 *t = p;
+
+        G29(0xE7000000, 0);
+        G29(0xE7000000, 0);
+        G29(0xE3000A01, 0x100000);
+        G29(0xE7000000, 0);
+        if (t->kind == 1) {
+            G29(0xE200001C, 0x104240);
+            {
+                Gfx29 *_g = D_800E9BA0++;
+
+                ((u32 *)_g)[0] = 0xFC629603;
+                ((u32 *)_g)[1] = 0x2F2D7BFD;
+            }
+        } else {
+            G29(0xE200001C, 0x104240);
+            {
+                Gfx29 *_g = D_800E9BA0++;
+
+                ((u32 *)_g)[0] = 0xFC2296C3;
+                ((u32 *)_g)[1] = 0xF22FFA3D;
+            }
+        }
+        G29(0xFB000000, (t->r << 24) | (t->g << 16) | (t->b << 8) | 1);
+        u[0x142] = t->c[0];
+        u[0x143] = t->c[1];
+        u[0x144] = t->c[2];
+    }
+}
 
 void func_8022C1B0_ovl_29A4C0(s32 i) {
     if (D_8022A974->p1944[i] != NULL) {
