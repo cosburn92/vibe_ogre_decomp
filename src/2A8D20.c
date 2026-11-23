@@ -769,7 +769,72 @@ void func_8023DF70_ovl_2A8D20(s32 w, s32 h, s32 x, s32 y, s32 a, s32 b) {
     }
 }
 
+s32 func_80227DC4(s32 from, s32 to, s32 t, s32 n);
+
+/* Pipe sync and a full-width scissor from line y0 down to 0xEF - y1 */
+static inline void Scissor2A8(s32 y0, s32 y1) {
+    s32 y;
+
+    {
+        Gfx2A8 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    {
+        Gfx2A8 *g = D_800E9BA0++;
+
+        if (y0 >= 0) {
+            g->w0 = ((s32)(y0 * 4.0f) & 0xFFF) | 0xED000000;
+        } else {
+            g->w0 = 0xED000000;
+        }
+        y = 0xEF - y1;
+        if (y != 0xF0) {
+            g->w1 = ((s32)(y * 4.0f) & 0xFFF) | 0x4FC000;
+        } else {
+            g->w1 = 0x4FC3BC;
+        }
+    }
+}
+
+/* Steps the letterbox (D_8022A978: from top/bottom, to top/bottom, t, n, keep) and sets its
+ * scissor; frees it once finished unless kept. Returns 0 when there is none */
+#ifdef NON_MATCHING
+/* 148/156 instructions: logic as in the original, which writes the pipe sync and scissor of each branch through D_800E9BA0 directly and advances it once in the shared tail */
+s32 func_8023E050_ovl_2A8D20(void) {
+    s32 top;
+    s32 bot;
+
+    if (D_8022A978 == NULL) {
+        return 0;
+    }
+    if (FIELD(D_8022A978, s16, 8) == FIELD(D_8022A978, s16, 0xA)) {
+        if (FIELD(D_8022A978, s16, 0xC) == 0) {
+            HFree(D_8022A978);
+            D_8022A978 = NULL;
+            return 0;
+        }
+        Scissor2A8(FIELD(D_8022A978, s16, 0), FIELD(D_8022A978, s16, 2));
+    } else {
+        FIELD(D_8022A978, s16, 8)++;
+        top = func_80227DC4(FIELD(D_8022A978, s16, 0), FIELD(D_8022A978, s16, 4), FIELD(D_8022A978, s16, 8),
+                            FIELD(D_8022A978, s16, 0xA));
+        bot = func_80227DC4(FIELD(D_8022A978, s16, 2), FIELD(D_8022A978, s16, 6), FIELD(D_8022A978, s16, 8),
+                            FIELD(D_8022A978, s16, 0xA));
+        Scissor2A8(top, bot);
+    }
+    {
+        Gfx2A8 *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    return 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023E050_ovl_2A8D20);
+#endif
 
 s32 func_8023E2C0_ovl_2A8D20(void) {
     u8 *p = D_8022A978;
