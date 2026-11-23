@@ -1081,68 +1081,51 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F554_ovl_040E80);
 
+void *LoadChunk(s32 id);
+
+/* Copies line `line` (0-based, CR LF separated) of Shift-JIS text chunk id to dst, ending it with
+ * CR LF; returns the end of the copied text */
 #ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void *LoadChunk(s32);                           /* extern */
+/* 74 vs 76: the original zero-extends each character to u16 (andi 0xFFFF) and shares the CR test through a branch-likely delay slot */
+u8 *func_8017FAF8_ovl_040E80(u8 *dst, s32 id, s32 line) {
+    u8 *buf = LoadChunk(id);
+    u8 *p = buf;
 
-void *func_8017FAF8_ovl_040E80(void *arg0, s32 arg1, s32 arg2) {
-    s32 temp_v1_2;
-    s32 var_s1;
-    u32 temp_a2;
-    u32 temp_a2_2;
-    u8 temp_a3;
-    u8 temp_v0_2;
-    u8 temp_v1;
-    void *temp_v0;
-    void *var_a1;
-    void *var_s0;
+    while (line != 0) {
+        u8 c = p[0];
+        u8 d = p[1];
 
-    var_s0 = arg0;
-    var_s1 = arg2;
-    temp_v0 = LoadChunk(arg1);
-    var_a1 = temp_v0;
-    if (var_s1 != 0) {
-        do {
-            temp_v1 = FIELD(var_a1, u8, 0);
-            temp_a2 = temp_v1 & 0xFFFF;
-            if ((temp_a2 < 0x81U) || ((((u32) (temp_v1 - 0xA0) < 0x40U) | (temp_a2 >= 0xFDU)) != 0)) {
-                if (!((temp_a2 == 0xD) & (FIELD(var_a1, u8, 1) == 0xA))) {
-                    var_a1 += 1;
-                } else {
-                    var_s1 -= 1;
-                    goto block_7;
-                }
+        if ((u16)c < 0x81 || (((u32)((u16)c - 0xA0) < 0x40) | ((u16)c >= 0xFD))) {
+            if (((u16)c == 0xD) & (d == 0xA)) {
+                line--;
+                p += 2;
             } else {
-block_7:
-                var_a1 += 2;
+                p++;
             }
-        } while (var_s1 != 0);
+        } else {
+            p += 2;
+        }
     }
-loop_9:
-    temp_a3 = FIELD(var_a1, u8, 0);
-    temp_v1_2 = temp_a3 & 0xFF;
-    temp_a2_2 = temp_v1_2 & 0xFFFF;
-    if ((temp_a2_2 >= 0x81U) && ((((u32) (temp_v1_2 - 0xA0) < 0x40U) | (temp_a2_2 >= 0xFDU)) == 0)) {
-        FIELD(var_s0, u8, 0) = temp_a3;
-        temp_v0_2 = FIELD(var_a1, u8, 1);
-        var_a1 = var_a1 + 1 + 1;
-        FIELD(var_s0, u8, 1) = temp_v0_2;
-        var_s0 = var_s0 + 1 + 1;
-        goto loop_9;
+    for (;;) {
+        u8 c = p[0];
+        u8 d = p[1];
+
+        if ((u16)c < 0x81 || (((u32)((u16)c - 0xA0) < 0x40) | ((u16)c >= 0xFD))) {
+            p++;
+            if (((u16)c == 0xD) & (d == 0xA)) {
+                break;
+            }
+            *dst++ = c;
+        } else {
+            p++;
+            *dst++ = c;
+            *dst++ = *p++;
+        }
     }
-    var_a1 += 1;
-    if (!((temp_a2_2 == 0xD) & (FIELD(var_a1, u8, 1) == 0xA))) {
-        FIELD(var_s0, u8, 0) = temp_a3;
-        var_s0 += 1;
-        goto loop_9;
-    }
-    FIELD(var_s0, u8, 0) = 0xDU;
-    FIELD(var_s0, u8, 1) = 0xAU;
-    HFree(temp_v0);
-    return var_s0;
+    dst[0] = 0xD;
+    dst[1] = 0xA;
+    HFree(buf);
+    return dst;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017FAF8_ovl_040E80);
