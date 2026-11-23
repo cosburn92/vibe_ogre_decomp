@@ -175,4 +175,98 @@ s32 func_80216FF4_ovl_18F100(s32 i, s32 lvl) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/18F100", func_80217068_ovl_18F100);
+extern s32 D_801F0DE0[]; /* indexed here: a plain s32 store is scheduled later */
+extern s32 D_801F3618;
+extern u8 D_801F0FE1;
+u8 func_801DADF0(u8 *u);
+extern u8 *D_801F0CB0[];
+extern u8 D_801F0FDF;
+extern u8 D_801F0FE0;
+extern u16 *D_801F0CA0;
+extern u16 *D_800C4BDC;
+extern u16 *D_800C4C4C;
+void *func_8017F36C(u16 id);
+void func_8017EF24(s32 a, u16 kind, s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
+void func_8020CDA0(s32 se);
+s32 func_801E00F0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2);
+void func_80215438_ovl_18F100(void);
+
+/* Per-frame handler of the 3x3 node grid: closes the screen once state -100 is reached, opens
+ * the help box on its button, and otherwise moves the cursor (D_801ED5B0) with the d-pad, sets
+ * the state to 1 / -1 on confirm / cancel, and redraws */
+void func_80217068_ovl_18F100(void) {
+    s32 c;
+    s32 old;
+    s32 r;
+    s32 pad[3];
+
+    if (D_8021B2A4_ovl_18F100 == -100) {
+        if (D_8021B170_ovl_18F100 != NULL) {
+            func_8017C384(D_8021B170_ovl_18F100);
+        }
+        if (D_8021B2AC_ovl_18F100 != -1) {
+            func_8017C384(D_8021B174_ovl_18F100);
+        }
+        D_801F0DE0[0] = 4;
+        D_8021B2A4_ovl_18F100 = 0;
+        D_801F3618 = -1;
+        D_80210219 = 0x11;
+        D_801F0FE1 = func_801DADF0(D_801F0CB0[D_801F3658]);
+        D_801F0FDF = 2;
+        D_801F0FE0 = 1;
+        return;
+    }
+    if ((*D_800C4BDC & D_801F0CA0[3]) && func_8017F36C(0x300) == NULL) {
+        func_8017EF24(0x3100B, 0x200, 0x98, 0x70, 0xA8, 0x80, 0x18, 0x64, 0x128, 0x8C);
+        func_8020CDA0(0x10);
+        return;
+    }
+    if (func_8017F36C(0x300) != NULL) {
+        return;
+    }
+    if (D_8021B2B8_ovl_18F100 == 0) {
+        c = D_801ED5B0;
+        old = c;
+        if (*D_800C4C4C & 0x800) {
+            if (c >= 3) {
+                c -= 3;
+            }
+        } else if (*D_800C4C4C & 0x400) {
+            if (c < 6) {
+                c += 3;
+            }
+        }
+        if (*D_800C4C4C & 0x200) {
+            if (c < 3) {
+                c += c < 2;
+            } else if (c < 6) {
+                c += c < 5;
+            } else {
+                c += c < 8;
+            }
+        } else if (*D_800C4C4C & 0x100) {
+            if (c < 3) {
+                c -= c > 0;
+            } else if (c < 6) {
+                c -= !(c < 4);
+            } else {
+                c -= !(c < 7);
+            }
+        }
+        if (c != old) {
+            func_8020CDA0(2);
+        }
+        D_801ED5B0 = c;
+        if (*D_800C4BDC & D_801F0CA0[0]) {
+            D_8021B2A4_ovl_18F100 = 1;
+        } else if (*D_800C4BDC & D_801F0CA0[1]) {
+            D_8021B2A4_ovl_18F100 = -1;
+        }
+    } else {
+        r = func_801E00F0(D_8021B2B8_ovl_18F100, 0, 0, 0, 1, -1);
+        if (r == 1 || r == 3) {
+            D_8021B2B8_ovl_18F100 = 0;
+        }
+    }
+    func_80215438_ovl_18F100();
+}
