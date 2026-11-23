@@ -3,3 +3,4 @@
 jpegTextStart = D_8009ED80; /* rspboot text end = JPEG microcode text start */
 D_8022A921_head_ovl_281860 = D_8022A921_ovl_281860;
 D_80220EE0_b_ovl_25EE90 = D_80220EE0_ovl_25EE90; /* base matrix, second name used by the spell-bolt handlers */
+D_8022A720_rects_ovl_1BA050 = D_8022A720_ovl_1BA050; /* rectangle list (count + 8-byte rects) viewed as one struct by func_802296B0 */
