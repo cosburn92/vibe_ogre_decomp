@@ -807,7 +807,34 @@ INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1330_ovl_0FA5E0);
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B15BC_ovl_0FA5E0);
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B18AC_ovl_0FA5E0);
+extern f64 D_801B4CA0_ovl_0FA5E0[]; /* knot spacing h[i] */
+extern f64 D_801B4CF8_ovl_0FA5E0[]; /* d[i + 1]: slopes, then the eliminated diagonal */
+#define SPL_H D_801B4CA0_ovl_0FA5E0
+#define SPL_D(i) D_801B4CF8_ovl_0FA5E0[(i) - 1]
+
+/* Solves for the second-derivative terms z[] of the natural spline through (x[i], y[i]), i < n */
+void func_801B18AC_ovl_0FA5E0(f32 *x, f32 *y, f32 *z, s16 n) {
+    s32 i;
+    f64 t;
+
+    z[0] = 0.0f;
+    z[n - 1] = 0.0f;
+    for (i = 0; i < n - 1; i++) {
+        SPL_H[i] = x[i + 1] - x[i];
+        SPL_D(i + 1) = (y[i + 1] - y[i]) / SPL_H[i];
+    }
+    z[1] = SPL_D(2) - SPL_D(1) - SPL_H[0] * z[0];
+    SPL_D(1) = 2.0f * (x[2] - x[0]);
+    for (i = 1; i < n - 2; i++) {
+        t = SPL_H[i] / SPL_D(i);
+        z[i + 1] = SPL_D(i + 2) - SPL_D(i + 1) - z[i] * t;
+        SPL_D(i + 1) = 2.0f * (x[i + 2] - x[i]) - SPL_H[i] * t;
+    }
+    z[n - 2] -= SPL_H[n - 2] * z[n - 1];
+    for (i = n - 2; i > 0; i--) {
+        z[i] = (z[i] - SPL_H[i] * z[i + 1]) / SPL_D(i);
+    }
+}
 
 /* Evaluates the piecewise cubic through knots t[] with values y[] and slopes m[] at x */
 static inline f32 SplineFA5(f32 x, f32 *t, f32 *y, f32 *m, s16 n) {
