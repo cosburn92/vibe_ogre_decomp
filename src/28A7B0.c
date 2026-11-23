@@ -874,128 +874,110 @@ void func_80231EAC_ovl_286BD0(u8 k, u8 *a, u8 *b) {
     }
 }
 
+/* Joins frame pieces a and b (1-8): sets their mirroring flags and returns which side they share
+ * (1-3 for the masks 2/4/8, 0 for none) */
 #ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_80231F04_ovl_286BD0(s32 arg0, s32 arg1, s8 *arg2, s8 *arg3, s8 *arg4, s8 *arg5) {
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 temp_v0_3;
-    s32 temp_v0_4;
-    s32 temp_v1;
-    s32 var_v0;
-    s32 var_v1;
+/* 111/111, 5 words: bx and by (stack arguments) are loaded into t1/t2 the other way round */
+s32 func_80231F04_ovl_286BD0(s32 a, s32 b, s8 *ax, s8 *ay, s8 *bx, s8 *by) {
+    u8 m = 0xF;
 
-    temp_v0 = arg1 & 0xFF;
-    var_v1 = 0xF;
-    switch (temp_v0) {                              /* switch 1 */
-    case 3:                                         /* switch 1 */
-block_6:
-        *arg5 = 1;
-        break;
-    case 6:                                         /* switch 1 */
-        goto block_6;
-    case 2:                                         /* switch 1 */
-    case 7:                                         /* switch 1 */
-        *arg4 = 1;
-        break;
-    case 1:                                         /* switch 1 */
-    case 8:                                         /* switch 1 */
-        *arg4 = 1;
-        goto block_6;
+    switch ((u8)b) {
+        case 3:
+            *by = 1;
+            break;
+        case 6:
+            *by = 1;
+            break;
+        case 2:
+        case 7:
+            *bx = 1;
+            break;
+        case 1:
+        case 8:
+            *bx = 1;
+            *by = 1;
+            break;
     }
-    temp_v0_2 = arg0 & 0xFF;
-    switch (temp_v0_2) {                            /* switch 2 */
-    case 3:                                         /* switch 2 */
-block_13:
-        *arg3 = 1;
-        break;
-    case 6:                                         /* switch 2 */
-        goto block_13;
-    case 2:                                         /* switch 2 */
-    case 7:                                         /* switch 2 */
-        *arg2 = 1;
-        break;
-    case 1:                                         /* switch 2 */
-    case 8:                                         /* switch 2 */
-        *arg2 = 1;
-        goto block_13;
+    switch ((u8)a) {
+        case 3:
+            *ay = 1;
+            break;
+        case 6:
+            *ay = 1;
+            break;
+        case 2:
+        case 7:
+            *ax = 1;
+            break;
+        case 1:
+        case 8:
+            *ax = 1;
+            *ay = 1;
+            break;
     }
-    temp_v0_3 = arg0 & 0xFF;
-    switch (temp_v0_3) {                            /* switch 3 */
-    case 1:                                         /* switch 3 */
-        var_v1 = 0xF & 0xF5;
-        break;
-    case 2:                                         /* switch 3 */
-        var_v1 = 0xF & 0xF9;
-        break;
-    case 3:                                         /* switch 3 */
-        var_v1 = 0xF & 0xF6;
-        break;
-    case 4:                                         /* switch 3 */
-        var_v1 = 0xF & 0xFA;
-        break;
-    case 5:                                         /* switch 3 */
-        var_v1 = 0xF & 8;
-        break;
-    case 6:                                         /* switch 3 */
-        var_v1 = 0xF & 2;
-        break;
-    case 7:                                         /* switch 3 */
-        var_v1 = 0xF & 1;
-        break;
-    case 8:                                         /* switch 3 */
-        var_v1 = 0xF & 4;
-        break;
+    switch ((u8)a) {
+        case 1:
+            m &= 0xF5;
+            break;
+        case 2:
+            m &= 0xF9;
+            break;
+        case 3:
+            m &= 0xF6;
+            break;
+        case 4:
+            m &= 0xFA;
+            break;
+        case 5:
+            m &= 8;
+            break;
+        case 6:
+            m &= 2;
+            break;
+        case 7:
+            m &= 1;
+            break;
+        case 8:
+            m &= 4;
+            break;
     }
-    temp_v0_4 = arg1 & 0xFF;
-    switch (temp_v0_4) {                            /* switch 4 */
-    case 1:                                         /* switch 4 */
-        var_v1 &= 0xF5;
-        break;
-    case 2:                                         /* switch 4 */
-        var_v1 &= 0xF9;
-        break;
-    case 3:                                         /* switch 4 */
-        var_v1 &= 0xF6;
-        break;
-    case 4:                                         /* switch 4 */
-        var_v1 &= 0xFA;
-        break;
-    case 5:                                         /* switch 4 */
-        var_v1 &= 2;
-        break;
-    case 6:                                         /* switch 4 */
-        var_v1 &= 4;
-        break;
-    case 7:                                         /* switch 4 */
-        var_v1 &= 8;
-        break;
-    case 8:                                         /* switch 4 */
-        var_v1 &= 1;
-        break;
+    switch ((u8)b) {
+        case 1:
+            m &= 0xF5;
+            break;
+        case 2:
+            m &= 0xF9;
+            break;
+        case 3:
+            m &= 0xF6;
+            break;
+        case 4:
+            m &= 0xFA;
+            break;
+        case 5:
+            m &= 2;
+            break;
+        case 6:
+            m &= 4;
+            break;
+        case 7:
+            m &= 8;
+            break;
+        case 8:
+            m &= 1;
+            break;
     }
-    temp_v1 = var_v1 & 0xFF;
-    if (temp_v1 != 2) {
-        var_v0 = 0;
-        if (temp_v1 >= 3) {
-            if (temp_v1 != 4) {
-                var_v0 = 3;
-                if (temp_v1 != 8) {
-                    return 0;
-                }
-                /* Duplicate return node #41. Try simplifying control flow for better match */
-                return var_v0;
-            }
-            var_v0 = 2;
-            /* Duplicate return node #41. Try simplifying control flow for better match */
-            return var_v0;
-        }
-        return var_v0;
+    switch (m) {
+        case 2:
+            return 1;
+        case 4:
+            return 2;
+        case 8:
+            return 3;
+        case 1:
+            break;
     }
-    return 1;
+    return 0;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231F04_ovl_286BD0);
