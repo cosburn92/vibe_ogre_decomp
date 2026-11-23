@@ -93,7 +93,30 @@ s32 func_801DF074_ovl_213B10(u8 *o, s32 x1, s32 z1, s32 x2, s32 z2) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801DF074_ovl_213B10);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801DF110_ovl_213B10);
+s32 func_801C8AC0(u8 *u);
+s32 func_801C8AA4(u8 *u);
+u8 func_801BE3A8(s32 cls, s32 base);
+u8 func_801BE410(s32 cls, s32 base);
+
+/* Frames for unit a (at x, z) to reach unit tu: ground distance less both units' reach, over a's
+ * speed */
+s32 func_801DF110_ovl_213B10(u8 *a, u8 *b, u8 *ua, u8 *ub, s32 x, s32 z) {
+    f32 p[3];
+    f32 q[3];
+    s32 qx = func_801C8AC0(ub);
+    s32 qz = func_801C8AA4(ua);
+    f32 d;
+
+    q[0] = qx;
+    p[1] = 0.0f;
+    q[1] = 0.0f;
+    q[2] = qz;
+    p[0] = x;
+    p[2] = z;
+    d = func_8007FE70(p, q) - (func_801BE3A8(FIELD(a, s32, 0x48), FIELD(a, s32, 0x4C)) +
+                               func_801BE410(FIELD(b, s32, 0x48), FIELD(b, s32, 0x4C)));
+    return d / func_801BE264(FIELD(a, s32, 0x48), FIELD(a, s32, 0x4C));
+}
 
 s32 func_801DF224_ovl_213B10(void) {
     s32 r;
