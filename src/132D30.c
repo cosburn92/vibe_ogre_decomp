@@ -393,73 +393,52 @@ block_5:
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DF204_ovl_101CE0);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
 extern u8 D_8018F481;
-extern s32 D_80193BD8;
-extern s32 D_80193BF2;
-extern s32 D_80193BF3;
-extern s32 D_80195578;
-extern s32 D_80195592;
-extern s32 D_80195593;
-extern s32 D_801971F2;
 
-u8 func_801DF34C_ovl_101CE0(void *arg0) {
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_a3;
-    u16 *var_v0;
-    u32 var_a1;
-    u8 *var_a2;
-    u8 temp_a1;
-    u8 temp_v1;
-    u8 temp_v1_4;
-    u8 var_t0;
+/* Raises the fatigue of every living, unpetrified member of unit u's squad by one (capped at 100,
+ * 50 on maps 0x3F-0x40); returns the highest fatigue */
+u8 func_801DF34C_ovl_101CE0(u8 *u) {
+    u8 max = 0;
+    s32 i;
 
-    var_t0 = 0;
-    var_a3 = 0;
-    do {
-        temp_a1 = FIELD(arg0, u8, 4);
-        temp_v1 = *((temp_a1 * 0x19) + &D_801971F2 + var_a3);
-        if ((temp_v1 != 0) && ((s32) temp_v1 < 0x64)) {
-            if (temp_a1 < 0x1EU) {
-                temp_v1_2 = temp_v1 * 0x38;
-                if ((*(&D_80193BD8 + temp_v1_2) != 0) && !(*(&D_80193BF3 + temp_v1_2) & 4)) {
-                    var_a2 = temp_v1_2 + &D_80193BF2;
-                    var_v0 = temp_v1_2 + (&D_80193BF2 - 0x1A);
-                    goto block_10;
-                }
-            } else {
-                temp_v1_3 = temp_v1 * 0x34;
-                if ((*(&D_80195578 + temp_v1_3) != 0) && !(*(&D_80195593 + temp_v1_3) & 4)) {
-                    var_a2 = temp_v1_3 + &D_80195592;
-                    var_v0 = temp_v1_3 + (&D_80195592 - 0x1A);
-block_10:
-                    if (*var_v0 != 0) {
-                        var_a1 = 0x64;
-                        if ((u32) (D_8018F481 - 0x3F) < 2U) {
-                            var_a1 = 0x32;
-                        }
-                        temp_v1_4 = *var_a2;
-                        if (temp_v1_4 < var_a1) {
-                            *var_a2 = temp_v1_4 + 1;
-                        }
-                        if (var_t0 < *var_a2) {
-                            var_t0 = *var_a2;
+    for (i = 0; i < 5; i++) {
+        s32 id = gSquads[u[4]].members[i];
+
+        if (id != 0) {
+            if (id < 100) {
+                u8 *f;
+                u16 *hp;
+
+                if (u[4] < 30) {
+                    if (D_80193BC0[id].c.hp != 0 && !(D_80193BC0[id].c.status & 4)) {
+                        f = &D_80193BC0[id].c.fatigue;
+                        hp = &D_80193BC0[id].c.hp;
+                        goto tire;
+                    }
+                } else {
+                    if (D_80195560[id].hp != 0 && !(D_80195560[id].status & 4)) {
+                        f = &D_80195560[id].fatigue;
+                        hp = &D_80195560[id].hp;
+                    tire:
+                        if (*hp != 0) {
+                            u32 cap = 100;
+
+                            if ((u32)(D_8018F481 - 0x3F) < 2) {
+                                cap = 50;
+                            }
+                            if (*f < cap) {
+                                (*f)++;
+                            }
+                            if (max < *f) {
+                                max = *f;
+                            }
                         }
                     }
                 }
             }
         }
-        var_a3 += 1;
-    } while (var_a3 < 5);
-    return var_t0;
+    }
+    return max;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DF34C_ovl_101CE0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DF4A0_ovl_101CE0);
