@@ -566,7 +566,58 @@ void func_801C45E0_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C45E0_ovl_1F0A30);
 #endif
 
+#define CE205D(o) ((u8 *)((o) + (u32)D_801D0728_ovl_1F0A30))
+void bzero(void *p, s32 n);
+
+/* Frees and clears every cache entry with key a */
+#ifdef NON_MATCHING
+/* same length; the entry offset and the item index swap s1/s2 (as func_801C45E0) */
+void func_801C4778_ovl_1F0A30(s32 a) {
+    s32 off;
+    u32 i;
+    s32 j;
+
+    if (D_801D0728_ovl_1F0A30 != NULL) {
+        for (off = 0; off < 0xDC0; off += 0xB0) {
+            if (FIELD(CE205D(off), s32, 0) == a) {
+                for (i = 0; i < FIELD(CE205D(off), u32, 0x18); i++) {
+                    if (FIELD(CE205D(off), void **, 0x38)[i] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x38)[i]);
+                        FIELD(CE205D(off), void **, 0x38)[i] = NULL;
+                    }
+                    if (FIELD(CE205D(off), void **, 0x3C)[i] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x3C)[i]);
+                        FIELD(CE205D(off), void **, 0x3C)[i] = NULL;
+                    }
+                    if (FIELD(CE205D(off), void **, 0x40)[i] != NULL) {
+                        HFree(FIELD(CE205D(off), void **, 0x40)[i]);
+                        FIELD(CE205D(off), void **, 0x40)[i] = NULL;
+                    }
+                }
+                j = 0;
+                {
+                    s32 o = off;
+
+                    for (; j < 10; j++) {
+                        if (FIELD(CE205D(o) + j * 4, void *, 0x70) != NULL) {
+                            HFree(FIELD(CE205D(o) + j * 4, void *, 0x70));
+                            FIELD(CE205D(o) + j * 4, void *, 0x70) = NULL;
+                        }
+                    }
+                }
+                HFree(FIELD(CE205D(off), void *, 0x8));
+                HFree(FIELD(CE205D(off), void *, 0x48));
+                HFree(FIELD(CE205D(off), void *, 0x44));
+                HFree(FIELD(CE205D(off), void *, 0x6C));
+                HFree(FIELD(CE205D(off), void *, 0x2C));
+                bzero((u8 *)D_801D0728_ovl_1F0A30 + off, 0xB0);
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C4778_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C49A0_ovl_1F0A30);
 
