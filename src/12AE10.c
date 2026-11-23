@@ -792,88 +792,53 @@ s32 func_801DCD40_ovl_101CE0(MapUnit *u, u8 item) {
     return 0;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 70 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern s32 D_80187C14;
-extern s32 D_80187C59;
-extern s32 D_801971F2;
+/* Whether any living member (1-99) of unit u's squad carries item id, equipped or as its class
+ * default */
+s32 func_801DCD90_ovl_101CE0(MapUnit *u, u16 id) {
+    u8 sq;
+    s32 player;
+    u8 *m;
+    u8 *end;
 
-s32 func_801DCD90_ovl_101CE0(void *arg0, s32 arg1) {
-    PlayerChar *var_a0;
-    s32 temp_a1;
-    s32 temp_v1;
-    s32 var_v0;
-    u8 *var_a2;
-    u8 temp_a0;
-    u8 temp_v0;
-    void *temp_t0;
-    void *var_v1;
-
-    temp_a1 = arg1 & 0xFFFF;
-    if (temp_a1 == 0) {
+    if (id == 0) {
         return 0;
+    found:
+        return 1;
     }
-    temp_v0 = FIELD(arg0, u8, 4);
-    var_a2 = (temp_v0 * 0x19) + &D_801971F2;
-    temp_t0 = var_a2 + 5;
-loop_4:
-    temp_a0 = *var_a2;
-    if ((((s32) temp_a0 >= 0x64) | (temp_a0 == 0)) == 0) {
-        if (temp_v0 < 0x1EU) {
-            var_a0 = &D_80193BC0[temp_a0];
+    sq = u->squad;
+    player = sq < 30;
+    m = gSquads[sq].members;
+    end = m + 5;
+    do {
+        s32 k = *m;
+        Character *c;
+        ClassData *cls;
+
+        if ((k >= 100) | (k == 0)) {
+            goto next;
+        }
+        if (player) {
+            c = &D_80193BC0[k].c;
         } else {
-            var_a0 = (PlayerChar *) &D_80195560[temp_a0];
+            c = &D_80195560[k];
         }
-        var_v0 = 1;
-        if (var_a0->c.items[0] != temp_a1) {
-            var_v0 = 1;
-            if (var_a0->c.items[1] != temp_a1) {
-                var_v0 = 1;
-                if (var_a0->c.items[2] != temp_a1) {
-                    var_v0 = 1;
-                    if (var_a0->c.items[3] != temp_a1) {
-                        temp_v1 = var_a0->c.cls * 0x48;
-                        if (*(&D_80187C59 + temp_v1) == 0) {
-                            var_v1 = temp_v1 + &D_80187C14;
-                        } else {
-                            var_v1 = (var_a0->c.baseCls * 0x48) + &D_80187C14;
-                        }
-                        var_v0 = 1;
-                        if (FIELD(var_v1, u16, 0x2E) != temp_a1) {
-                            var_v0 = 1;
-                            if (FIELD(var_v1, u16, 0x30) != temp_a1) {
-                                var_v0 = 1;
-                                if (FIELD(var_v1, u16, 0x32) != temp_a1) {
-                                    if (FIELD(var_v1, u16, 0x34) != temp_a1) {
-                                        goto block_22;
-                                    }
-                                    return 1;
-                                }
-                            }
-                        }
-                        /* Duplicate return node #23. Try simplifying control flow for better match */
-                        return var_v0;
-                    }
-                }
-            }
+        if (c->items[0] == id || c->items[1] == id || c->items[2] == id || c->items[3] == id) {
+            goto found;
         }
-        /* Duplicate return node #23. Try simplifying control flow for better match */
-        return var_v0;
-    }
-block_22:
-    var_a2 += 1;
-    var_v0 = 0;
-    if ((s32) var_a2 >= (s32) temp_t0) {
-        return var_v0;
-    }
-    goto loop_4;
+        if (gClassTable[c->cls].baseClass != 0) {
+            cls = &gClassTable[c->baseCls];
+        } else {
+            cls = &gClassTable[c->cls];
+        }
+        if (cls->defaultItems[0] == id || cls->defaultItems[1] == id || cls->defaultItems[2] == id ||
+            cls->defaultItems[3] == id) {
+            goto found;
+        }
+    next:
+        m++;
+    } while ((s32)m < (s32)end);
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DCD90_ovl_101CE0);
-#endif
 
 s32 func_801DCEE4_ovl_101CE0(void) {
     s32 r = D_801F0DE0_ovl_101CE0 == 0;
