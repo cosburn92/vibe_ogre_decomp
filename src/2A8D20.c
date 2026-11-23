@@ -46,13 +46,14 @@ extern f32 D_801CE8D8;
 extern f32 D_801CE8DC;
 extern f32 D_801CE8E0;
 extern f32 D_801CE8E8;
-extern f32 D_8022A720;
-extern f32 D_8022A734;
-extern f32 D_8022A738;
-extern f32 D_8022A73C;
-extern f32 D_8022A740;
-extern f32 D_8022A744;
-extern f32 D_8022A748;
+/* Battle camera: field of view, then eye and look-at points */
+typedef struct {
+    /* 0x00 */ f32 fovy;
+    /* 0x04 */ f32 unk04[4];
+    /* 0x14 */ f32 eye[3];
+    /* 0x20 */ f32 at[3];
+} BattleCam2A8;
+extern BattleCam2A8 D_8022A720;
 /* --- end decls --- */
 
 /* Battle overlay init */
@@ -144,19 +145,52 @@ inline void func_8023977C_ovl_2A8D20(u8 a, u8 b) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_802397C4_ovl_2A8D20);
+void guPerspective(void *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guMtxCatL(void *a, void *b, void *out);
+void func_80098AA0(void *m, f32 x, f32 y, f32 z);
+void func_80098C20(void *m, f32 x, f32 y, f32 z);
+typedef struct { s32 m[16]; } Mtx2A8;
+extern Mtx2A8 *D_801969B0;
+typedef struct { u32 w0; u32 w1; } Gfx2A8;
+extern Gfx2A8 *D_800E9BA0;
+
+/* Builds the battle camera's projection (perspective x look-at x zoom) and loads it */
+void func_802397C4_ovl_2A8D20(void) {
+    u8 *z = FIELD(D_8022A974, u8 *, 0x19F0);
+    Mtx2A8 s;
+    Mtx2A8 t;
+    u16 pn;
+    Gfx2A8 *g;
+
+    guPerspective(D_801969B0, &pn, D_8022A720.fovy, 1.33333f, 1.0f, 4000.0f, 1.0f);
+    guLookAt(D_801969B0 + 1, D_8022A720.eye[0], D_8022A720.eye[1], D_8022A720.eye[2], D_8022A720.at[0], D_8022A720.at[1], D_8022A720.at[2], 0.0f, 1.0f, 0.0f);
+    func_80098AA0(&s, FIELD(z, f32, 0x24), FIELD(z, f32, 0x28), 1.0f);
+    func_80098C20(&t, FIELD(z, f32, 0x30) / 160.0, FIELD(z, f32, 0x34) / 120.0, 0.0f);
+    guMtxCatL(&s, &t, &t);
+    guMtxCatL(D_801969B0, &t, D_801969B0);
+    g = D_800E9BA0++;
+    g->w0 = 0xDB0E0000;
+    g->w1 = pn;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380007;
+    g->w1 = (u32)D_801969B0++;
+    g = D_800E9BA0++;
+    g->w0 = 0xDA380005;
+    g->w1 = (u32)D_801969B0++;
+}
 
 /* Copies the saved field camera into the battle camera and allocates the transform (cur/target: scale 1, offset (0,0,-50)) */
 void func_8023998C_ovl_2A8D20(void) {
     f32 *t;
 
-    D_8022A720 = D_801CE8E8;
-    D_8022A734 = D_801CE8CC;
-    D_8022A738 = D_801CE8D0;
-    D_8022A73C = D_801CE8D4;
-    D_8022A740 = D_801CE8D8;
-    D_8022A744 = D_801CE8DC;
-    D_8022A748 = D_801CE8E0;
+    D_8022A720.fovy = D_801CE8E8;
+    D_8022A720.eye[0] = D_801CE8CC;
+    D_8022A720.eye[1] = D_801CE8D0;
+    D_8022A720.eye[2] = D_801CE8D4;
+    D_8022A720.at[0] = D_801CE8D8;
+    D_8022A720.at[1] = D_801CE8DC;
+    D_8022A720.at[2] = D_801CE8E0;
     t = HMalloc(0x4C);
     FIELD(D_8022A974, f32 *, 0x19F0) = t;
     t[0] = t[9] = 1.0f;
