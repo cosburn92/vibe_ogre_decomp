@@ -154,7 +154,70 @@ s32 func_801DE8E8_ovl_101CE0(u8 *u) {
     return max < 90;
 }
 
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DEAF4_ovl_101CE0);
+extern s32 D_801EB2E0_ovl_101CE0; /* next character to recover */
+extern u8 D_801F0C3C_ovl_101CE0[]; /* per enemy character: busy */
+extern s32 D_801F367C_ovl_101CE0;  /* map unit count */
+void func_801DED50_ovl_101CE0(u8 *u, s32 r);
+s32 func_801DEFC0_ovl_101CE0(u8 *u);
+s32 func_801DF204_ovl_101CE0(void *u);
+
+/* Rests ten more characters (fatigue -4, HP +4) each call, then lets every idle unit pick its
+ * next action */
+void func_801DEAF4_ovl_101CE0(void) {
+    s32 i;
+    u8 *u;
+    s32 r;
+
+    for (i = D_801EB2E0_ovl_101CE0; i < D_801EB2E0_ovl_101CE0 + 10; i++) {
+        if (i >= 200) {
+            break;
+        }
+        if (D_801F0C3C_ovl_101CE0[i - 100] == 0) {
+            if (i < 100) {
+                if (D_80193BC0[i].c.fatigue >= 4) {
+                    D_80193BC0[i].c.fatigue -= 4;
+                } else {
+                    D_80193BC0[i].c.fatigue = 0;
+                }
+                if (D_80193BC0[i].c.maxHp >= D_80193BC0[i].c.hp + 4) {
+                    D_80193BC0[i].c.hp += 4;
+                } else {
+                    D_80193BC0[i].c.hp = D_80193BC0[i].c.maxHp;
+                }
+            } else {
+                if (D_80195560[i - 100].fatigue >= 4) {
+                    D_80195560[i - 100].fatigue -= 4;
+                } else {
+                    D_80195560[i - 100].fatigue = 0;
+                }
+                if (D_80195560[i - 100].maxHp >= D_80195560[i - 100].hp + 4) {
+                    D_80195560[i - 100].hp += 4;
+                } else {
+                    D_80195560[i - 100].hp = D_80195560[i - 100].maxHp;
+                }
+            }
+        }
+    }
+    D_801EB2E0_ovl_101CE0 += 10;
+    if (D_801EB2E0_ovl_101CE0 >= 200) {
+        D_801EB2E0_ovl_101CE0 = 0;
+    }
+    for (i = 0; i < D_801F367C_ovl_101CE0; i++) {
+        u = D_801F0CB0_ovl_101CE0[i];
+        if (FIELD(u, s32, 0) & 0x10) {
+            if (!(FIELD(u, s32, 0) & 0x1000)) {
+                r = func_801DF204_ovl_101CE0(u);
+                if (r == -1) {
+                    r = func_801DEFC0_ovl_101CE0(u);
+                    if (r == -1) {
+                        continue;
+                    }
+                }
+                func_801DED50_ovl_101CE0(u, r);
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DED50_ovl_101CE0);
 
