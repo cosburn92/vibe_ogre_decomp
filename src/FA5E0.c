@@ -465,7 +465,7 @@ typedef struct {
 /* Draws the cursor model (D_801B3E20's model at 0x19C) at the object's position, scaled by
  * 0x14 and faded by its alpha */
 #ifdef NON_MATCHING
-/* 97/97 instructions, 24 words differ: the original stores the matrix index and list pointer after the matrix word and loads the model pointer first */
+/* 97/97 instructions, 6 words differ: v0/v1 swapped between the matrix command word and D_800E9BE0 */
 void func_801B02C0_ovl_0FA5E0(CursorFA5 *o) {
     f32 mf[4][4];
 
@@ -505,9 +505,10 @@ void func_801B02C0_ovl_0FA5E0(CursorFA5 *o) {
         mf[3][2] = o->z;
         guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
         D_800E9BA0->w0 = 0xDA380003;
-        D_800E9BA0->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++];
+        D_800E9BA0->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4];
+        D_800C4BE4++;
         D_800E9BA0++;
-        func_801AFD30_ovl_0FA5E0(FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x19C), 0, 0);
+        func_801AFD30_ovl_0FA5E0(((void **)D_801B3E20_ovl_0FA5E0)[0x67], 0, 0);
     }
 }
 #else
