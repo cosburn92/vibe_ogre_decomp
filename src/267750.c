@@ -497,8 +497,6 @@ s32 func_8020EC2C_ovl_25EE90(s32 kind, s32 val);
 
 /* Applies frame `frame` of model mdl's keyed tracks (record flag 0x8000) to the slots: each slot
  * gets the value of the last key at or before the frame */
-#ifdef NON_MATCHING
-/* 78/78 instructions, 13 words differ: frame, record offset and slot pointer rotate through s2-s5 */
 void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
     u32 i;
 
@@ -508,6 +506,7 @@ void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 u16 f = FIELD(&mdl->recs[i], u16, 2);
                 u8 *o = (u8 *)slots[i] + 0x18;
 
+                do {
                 if (f & 0x8000) {
                     Key26 *k = FIELD(mdl, Key26 **, 0x14)[f & 0x7FFF];
                     s32 j = 0;
@@ -515,13 +514,17 @@ void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 loop:
                     if (k[j].frame == -1 && k[j].val == 0) {
                         j--;
-                    } else if (frame == k[j].frame) {
-                        goto found;
-                    } else if (frame < k[j].frame) {
-                        j--;
                     } else {
-                        j++;
-                        goto loop;
+                        s32 c = j;
+
+                        if (frame == k[c].frame) {
+                            goto found;
+                        } else if (frame < k[j].frame) {
+                        j--;
+                        } else {
+                            j++;
+                            goto loop;
+                        }
                     }
                     if (j < 0) {
                         j = 0;
@@ -529,13 +532,11 @@ void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 found:
                     FIELD(o, s32, 0xC) = func_8020EC2C_ovl_25EE90(7, k[j].val);
                 }
+                } while (0);
             }
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/267750", func_802143B4_ovl_25EE90);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/267750", func_802144EC_ovl_25EE90);
 
