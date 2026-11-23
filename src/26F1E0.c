@@ -293,7 +293,148 @@ void func_8021AC40_ovl_25EE90(u16 msg, u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021ADE0_ovl_25EE90);
 
+extern void *D_80220F70_ovl_25EE90;
+extern s32 D_80220F74_ovl_25EE90;
+extern s32 D_80220F78_ovl_25EE90;
+extern void *D_801D0770;
+void *func_801BCFE4(void);
+void *HFree(void *p);
+void func_8020E51C_ovl_25EE90(void *p);
+void func_8020D280_ovl_25EE90(void *p);
+void func_80218104_ovl_25EE90(f32 x, f32 y, f32 z, s32 a);
+void func_8020A980_ovl_25EE90(void *a, void *b, u8 *out);
+void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
+void func_8021ADE0_ovl_25EE90(u8 *o);
+
+#ifdef NON_MATCHING
+/* same length; in the 0x1003/0x1004 cases the original loads the counter before the duration (two swapped load pairs) */
+s32 func_8021B040_ovl_25EE90(u16 msg, u8 *o) {
+    s32 r = 0;
+    s32 dur;
+    u8 *m;
+    struct {
+        f32 x, y, z;
+    } v;
+
+    switch (msg) {
+        case 0x101:
+            if (FIELD(o, s32, 0xC) != 0) {
+                func_8020D814_ovl_25EE90(FIELD(o, void *, 0x38));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x28));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x2C));
+                func_8020E51C_ovl_25EE90(FIELD(o, void *, 0x30));
+                func_8020D280_ovl_25EE90(FIELD(o, void *, 0x34));
+            }
+            if (D_801D0770 != FIELD(o, void *, 0x50)) {
+                HFree(FIELD(o, void *, 0x50));
+            }
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            FIELD(o, s32, 8) = D_80220F68_ovl_25EE90;
+            FIELD(o, f32, 0x1C) = *(f32 *)&D_80220F6C_ovl_25EE90;
+            FIELD(o, f32, 0x20) = *(f32 *)&D_80220F70_ovl_25EE90;
+            FIELD(o, f32, 0x24) = *(f32 *)&D_80220F74_ovl_25EE90;
+            FIELD(o, s32, 0x4C) = D_80220F78_ovl_25EE90;
+            FIELD(o, void *, 0x30) = NULL;
+            FIELD(o, void *, 0x2C) = NULL;
+            FIELD(o, void *, 0x28) = NULL;
+            FIELD(o, void *, 0x34) = NULL;
+            FIELD(o, s32, 0xC) = 0;
+            FIELD(o, s32, 0) = 0;
+            FIELD(o, s32, 4) = 0x40;
+            FIELD(o, void *, 0x50) = func_801BCFE4();
+            func_8020DC80_ovl_25EE90(0x1000);
+            break;
+        case 0x1003:
+            if (++FIELD(o, s32, 0) >= (dur = FIELD(o, s32, 4) - 30)) {
+                FIELD(o, s32, 0) = dur;
+                func_8020DC80_ovl_25EE90(0x1001);
+            }
+            FIELD(o, f32, 0x3C) = -(FIELD(o, s32, 0) * 180) / dur + 200;
+            FIELD(o, f32, 0x48) = FIELD(o, f32, 0x40) = (f32)FIELD(o, s32, 0) / 64.0f;
+            FIELD(o, f32, 0x44) = FIELD(o, f32, 0x3C) / 120.0f;
+            func_80218104_ovl_25EE90(FIELD(o, f32, 0x1C), FIELD(o, f32, 0x20), FIELD(o, f32, 0x24), FIELD(o, s32, 0) * 255 / dur);
+            m = FIELD(o, u8 *, 0x38) + 0x1C;
+            if (FIELD(o, s32, 8) == 0) {
+                v.x = 0.0f;
+                v.y = 7.071f;
+                v.z = -7.071f;
+            } else {
+                v.x = 0.0f;
+                v.z = 0.0f;
+                v.y = 10.0f;
+            }
+            func_8020A980_ovl_25EE90(&v, o + 0x10, m);
+            func_8020A4D0_ovl_25EE90(o + 0x40, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 0x1C);
+            if (FIELD(o, s32, 8) == 0) {
+                u8 *p = FIELD(o, u8 *, 0x28);
+
+                FIELD(FIELD(o, u8 *, 0x2C), s16, 0x5C) = FIELD(o, s32, 0) + 2;
+                FIELD(p, s16, 0x56) = FIELD(o, s32, 0);
+            } else {
+                FIELD(FIELD(o, u8 *, 0x34), s16, 0x60) = FIELD(o, s32, 0);
+            }
+            break;
+        case 0x1004:
+            if (--FIELD(o, s32, 0) <= (dur = FIELD(o, s32, 4) - 30, 0)) {
+                FIELD(o, s32, 0) = 0;
+                func_8020DC80_ovl_25EE90(0x1002);
+            }
+            FIELD(o, f32, 0x48) = FIELD(o, f32, 0x40) = (f32)FIELD(o, s32, 0) / 64.0f;
+            FIELD(o, f32, 0x44) = FIELD(o, f32, 0x3C) / 120.0f;
+            func_80218104_ovl_25EE90(FIELD(o, f32, 0x1C), FIELD(o, f32, 0x20), FIELD(o, f32, 0x24), FIELD(o, s32, 0) * 255 / dur);
+            m = FIELD(o, u8 *, 0x38) + 0x1C;
+            if (FIELD(o, s32, 8) == 0) {
+                v.x = 0.0f;
+                v.y = 7.071f;
+                v.z = -7.071f;
+            } else {
+                v.x = 0.0f;
+                v.z = 0.0f;
+                v.y = 10.0f;
+            }
+            func_8020A980_ovl_25EE90(&v, o + 0x10, m);
+            func_8020A4D0_ovl_25EE90(o + 0x40, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 0x1C);
+            if (FIELD(o, s32, 8) == 0) {
+                u8 *p = FIELD(o, u8 *, 0x28);
+
+                FIELD(FIELD(o, u8 *, 0x2C), s16, 0x5C) = FIELD(o, s32, 0) + 2;
+                FIELD(p, s16, 0x56) = FIELD(o, s32, 0);
+            } else {
+                FIELD(FIELD(o, u8 *, 0x34), s16, 0x60) = FIELD(o, s32, 0);
+            }
+            break;
+        case 0x1001:
+        case 0x1002:
+            break;
+        case 0x1005:
+            if (FIELD(o, u16, -0x1C) == 0x1001) {
+                r = 1;
+            }
+            break;
+        case 0x1006:
+            if (FIELD(o, u16, -0x1C) == 0x1002) {
+                r = 1;
+            }
+            break;
+        case 0x1007:
+        case 0x1008:
+            if (FIELD(o, s32, 0xC) == 0) {
+                func_8021ADE0_ovl_25EE90(o);
+                FIELD(o, s32, 0xC) = 1;
+            }
+            func_8020DC80_ovl_25EE90(msg == 0x1007 ? 0x1003 : 0x1004);
+            break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021B040_ovl_25EE90);
+#endif
 
 /* Common effect message handler: 0x100 spawns effect 0x54, 0x1000/0x1001 run a 12-frame colour fade */
 #ifdef NON_MATCHING
@@ -431,7 +572,7 @@ void func_801F9DFC(void *a, u8 b, s32 c);
 extern u8 D_800EB240[];
 extern u8 D_80220F6A_ovl_25EE90;
 extern void *D_80220F70_ovl_25EE90;
-s32 func_8021B040_ovl_25EE90();
+s32 func_8021B040_ovl_25EE90(u16 msg, u8 *o);
 s32 func_8021A9C8_ovl_25EE90();
 u8 *func_8021C440_ovl_25EE90(s16 a, s32 c, s32 b, s32 d);
 void func_8020DC80_ovl_25EE90(u16 state);
@@ -580,7 +721,7 @@ void func_801F9DFC(void *a, u8 b, s32 c);
 extern u8 D_800EB240[];
 extern u8 D_80220F6A_ovl_25EE90;
 extern void *D_80220F70_ovl_25EE90;
-s32 func_8021B040_ovl_25EE90();
+s32 func_8021B040_ovl_25EE90(u16 msg, u8 *o);
 s32 func_8021A9C8_ovl_25EE90();
 void func_8021D20C_ovl_25EE90(s16 a, s32 b, s32 c, s32 d);
 
