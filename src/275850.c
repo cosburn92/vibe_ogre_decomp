@@ -45,7 +45,7 @@ INCLUDE_ASM("asm/nonmatchings/275850", func_802210C0_ovl_275850);
 INCLUDE_ASM("asm/nonmatchings/275850", func_80221368_ovl_275850);
 
 /* Draws the two parts of o under an untranslated matrix, after the setup list */
-void func_80221508_ovl_275850(u8 *o) {
+inline void func_80221508_ovl_275850(u8 *o) {
     f32 m[4][4];
     Gfx *g;
 
@@ -118,4 +118,13 @@ void func_80221720_ovl_275850(Obj27 *o) {
 void func_80221748_ovl_275850(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/275850", func_80221750_ovl_275850);
+/* Draws object o's model (at o + 0x18) when flag 1 is set */
+s32 func_80221750_ovl_275850(Obj27 *o) {
+    u8 *m = (u8 *)o + 0x18;
+
+    if (!(o->flags & 1)) {
+        return 0;
+    }
+    func_80221508_ovl_275850(m);
+    return 0;
+}
