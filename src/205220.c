@@ -246,7 +246,7 @@ void func_801C2310_ovl_1F0A30(void) {
 
 /* Frees the cache and everything its 20 entries own */
 #ifdef NON_MATCHING
-/* same length; only v0/v1 swap in the 0x70 slot loop's address computation */
+/* 107/107, 4 words: v0/v1 naming swaps in the 0x70 slot loop's address computation */
 void func_801C234C_ovl_1F0A30(void) {
     u32 off;
     u32 i;
@@ -264,12 +264,15 @@ void func_801C234C_ovl_1F0A30(void) {
                     HFree(FIELD(CE205A(off), void **, 0x40)[i]);
                 }
             }
+            i = 0;
             {
                 u32 o = off;
 
-                for (i = 0; i < 10; i++) {
-                    if (FIELD(CE205A(o) + i * 4, void *, 0x70) != NULL) {
-                        HFree(FIELD(CE205A(o) + i * 4, void *, 0x70));
+                for (; i < 10; i++) {
+                    void **q = (void **)(i * 4 + CE205A(o));
+
+                    if (q[0x1C] != NULL) {
+                        HFree(q[0x1C]);
                     }
                 }
             }
