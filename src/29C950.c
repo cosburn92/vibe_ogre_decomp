@@ -73,8 +73,10 @@ typedef struct {
     s32 key2;
     s32 unk08;
     s32 key1;
-    u8 unk10[4];
+    s16 kind;
+    s16 idx;
 } Sort29C; /* size 0x14 */
+extern u8 *D_801CE8BC;
 void BattleAnimStep2(void *a);
 void func_8022EFB0_ovl_29A4C0(void *a);
 f32 func_8009CFE0(f32 y, f32 x);
@@ -299,7 +301,52 @@ s32 func_8022DCC0_ovl_29A4C0(s32 n) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DCC0_ovl_29A4C0);
 #endif
 
+/* Fills the draw-sort list with the active map objects (kinds 1-3, kind 1 stored as 0) and then
+ * the battle units, sorts it by depth and returns the count */
+#ifdef NON_MATCHING
+/* 87/87 instructions, 6 words differ: the unit loop's list entry lands in v0 instead of v1 */
+s16 func_8022DE04_ovl_29A4C0(void) {
+    s32 i;
+    s32 n = 0;
+
+    for (i = 0; i < FIELD(D_801CE8BC, u32, 0x56C0); i++) {
+        u8 *o = ((u8 **)(D_801CE8BC + 0x52C0))[i];
+
+        if (o != NULL && ((o[0x14] != 0) & ((u32)o[0x14] < 4))) {
+            Sort29C *e = (Sort29C *)((u8 *)D_8022A974 + 0x328) + n;
+
+            e->unk00 = FIELD(o, s32, 4);
+            e->key2 = FIELD(o, s32, 8);
+            e->unk08 = FIELD(o, s32, 0xC);
+            if (o[0x14] == 1) {
+                e->kind = 0;
+            } else {
+                e->kind = o[0x14];
+            }
+            e->idx = i;
+            n++;
+        }
+    }
+    for (i = 0; i < 28; i++) {
+        BUnit *u = D_8022A974->units[i];
+
+        if (u != NULL) {
+            Sort29C *e = (Sort29C *)((u8 *)D_8022A974 + 0x328) + n;
+
+            e->unk00 = FIELD(u, f32, 0x11C) * 30.0f;
+            e->key2 = FIELD(u, f32, 0x120) * 30.0f;
+            e->unk08 = FIELD(u, f32, 0x124) * 30.0f;
+            e->kind = 1;
+            e->idx = i;
+            n++;
+        }
+    }
+    func_8022DCC0_ovl_29A4C0(n);
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DE04_ovl_29A4C0);
+#endif
 
 extern s32 D_801CE8FC;
 void func_8022E3DC_ovl_29A4C0(BUnit **pu, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, s32 d, s32 e, s32 f, s32 k, s32 g);
