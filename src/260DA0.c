@@ -190,7 +190,7 @@ void *func_8020C704_ovl_25EE90(s32 id) {
     return r;
 }
 
-void *func_8020C7B8_ovl_25EE90(s32 id) {
+inline void *func_8020C7B8_ovl_25EE90(s32 id) {
     void *r = NULL;
     CacheEnt *e;
 
@@ -215,7 +215,7 @@ void *func_8020C7B8_ovl_25EE90(s32 id) {
     return r;
 }
 
-void *func_8020C860_ovl_25EE90(s32 id) {
+inline void *func_8020C860_ovl_25EE90(s32 id) {
     void *r = NULL;
     CacheEnt *e;
 
@@ -312,7 +312,26 @@ void func_8020CDF4_ovl_25EE90(RecSet *s) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CE94_ovl_25EE90);
+/* Loads the resources of each record of s (kind-6 h6 and kind-5 h0 by id) and starts its
+ * animation h2 + b on channel a; 1 if any record is flagged 0x8000 instead */
+s32 func_8020CE94_ovl_25EE90(RecSet *s, u16 a, s32 b) {
+    s32 r = 0;
+    Rec10b *rec = s->recs;
+    s32 n;
+
+    for (n = s->n; n > 0; n--, rec++) {
+        if (rec->h6 != 0) {
+            func_8020C860_ovl_25EE90(rec->h6);
+            func_8020C7B8_ovl_25EE90(rec->h0);
+            if (rec->h2 & 0x8000) {
+                r = 1;
+            } else {
+                func_8020CA58_ovl_25EE90(a, rec->h2 + b);
+            }
+        }
+    }
+    return r;
+}
 
 /* Issues the load requests for every entry of a sprite list (kinds 6/5, then `kind` for id + base) */
 #ifdef NON_MATCHING
