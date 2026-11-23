@@ -52,29 +52,36 @@ extern u8 D_801976DA;
 
 /* Result of stage k's script: its last word, 0xFF0000nn for an ending code (some codes also set
  * D_801976DA = 24); 0 otherwise */
-#ifdef NON_MATCHING
-/* 100 vs 101 instructions: the original copies the size before the rounding of size / 4 (GCC here rounds it in place) */
-s32 func_80227E44_ovl_281860(s32 k) {
-    s32 *index = func_80071C04(ChunkSize(0x019A8804));
-    s32 id;
-    u8 *raw;
-    s32 size;
-    s32 *data;
-    s32 last;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void *func_80071C04(s32 size);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+extern u8 D_801976DA;
 
-    LoadChunkRaw(index, 0x019A8804);
-    id = index[k];
-    HFree(index);
-    raw = func_80071C04(ChunkSize(id));
-    LoadChunkRaw(raw, id);
-    size = ReadU32BE(raw);
-    data = func_80071C04(size);
-    DecodeLZ(data, raw);
-    last = data[size / 4 - 1];
-    HFree(raw);
+/* Result of stage k's script: its last word, 0xFF0000nn for an ending code (some codes also set
+ * D_801976DA = 24); 0 otherwise */
+s32 func_80227E44_ovl_281860(s32 k) {
+    s32 *buf = func_80071C04(ChunkSize(0x019A8804));
+    s32 *data;
+    s32 n;
+
+    LoadChunkRaw(buf, 0x019A8804);
+    k *= 4;
+    k += (s32)buf;
+    k = *(s32 *)k;
+    HFree(buf);
+    buf = func_80071C04(ChunkSize(k));
+    LoadChunkRaw(buf, k);
+    k = ReadU32BE(buf);
+    data = func_80071C04(k);
+    DecodeLZ(data, buf);
+    n = k / 4;
+    k = data[n - 1];
+    HFree(buf);
     HFree(data);
-    if ((last & 0xFF000000) == 0xFF000000) {
-        switch (last & 0xFF) {
+    if ((k & 0xFF000000) == 0xFF000000) {
+        switch (k & 0xFF) {
         case 1:
             D_801976DA = 24;
             return -3;
@@ -100,9 +107,6 @@ s32 func_80227E44_ovl_281860(s32 k) {
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227E44_ovl_281860);
-#endif
 
 void *HMalloc(s32 size);
 s32 ChunkSize(s32 id);
