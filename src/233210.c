@@ -759,17 +759,25 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2340_ovl_22A280);
 
 /* Physical attack power: (class power + weapon) / 6 * (str + item str + 50) / 50
  * * (stat 0x2E + item bonus + 100) / 100 * (100 + func_801F1884) / 100 */
-#ifdef NON_MATCHING
-/* formula right; inlined item-sum helper's register flow differs */
-s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
-    u8 base = func_8016D2FC(a->unk48, a->cls);
-    f32 p;
+/* Bonus of the unit's weapon (func_801C8FB8), 0 without one */
+static inline s16 WeaponBonus2(BattleUnit *u) {
+    u16 id;
+
+    if (u == NULL) {
+        return 0;
+    }
+    id = func_801C8FB8(u);
+    return id != 0 ? func_8016F65C(id) : 0;
+}
+
+/* func_8016F65C bonus summed over the equipment slots func_8016F9F0 does not exclude */
+static inline s16 ArmorSum65C(BattleUnit *a) {
     s16 s;
 
-    p = (f32)(base + BattleUnitWeaponBonus(a)) / 6.0f;
-    s = 0;
     if (!func_8016F9F0(a->items[0])) {
         s = func_8016F65C(a->items[0]);
+    } else {
+        s = 0;
     }
     if (!func_8016F9F0(a->items[1])) {
         s += func_8016F65C(a->items[1]);
@@ -777,17 +785,19 @@ s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     if (!func_8016F9F0(a->items[2])) {
         s += func_8016F65C(a->items[2]);
     }
-    if (!func_8016F9F0(a->items[3])) {
-        s += func_8016F65C(a->items[3]);
-    }
-    p *= (f32)(a->str + s + 50) / 50.0f;
+    return !func_8016F9F0(a->items[3]) ? s + func_8016F65C(a->items[3]) : s;
+}
+
+s32 func_801F2484_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 base = func_8016D2FC(a->unk48, a->cls);
+    f32 p;
+
+    p = (f32)(base + WeaponBonus2(a)) / 6.0f;
+    p *= (f32)(a->str + ArmorSum65C(a) + 50) / 50.0f;
     p *= (f32)(a->dex + BattleUnitItemSum7EC(a) + 100) / 100.0f;
     p *= (func_801F1884_ovl_22A280(a, b) + 100.0f) / 100.0f;
     return p;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F2484_ovl_22A280);
-#endif
 
 /* Physical defence of b against a: class defence / 20 * (0x26 + item bonus + 25) / 25
  * * (0x24 + item bonus + 100) / 100 * (100 + func_801F1B98) / 100 */
