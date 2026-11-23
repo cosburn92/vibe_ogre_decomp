@@ -259,7 +259,21 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DCC0_ovl_29A4C0);
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DE04_ovl_29A4C0);
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DF60_ovl_29A4C0);
+extern s32 D_801CE8FC;
+void func_8022E3DC_ovl_29A4C0(BUnit **pu, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, s32 d, s32 e, s32 f, s32 k, s32 g);
+
+/* Allocates (if needed) and clears battle unit k, then initialises it */
+void func_8022DF60_ovl_29A4C0(s32 k, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, u8 d, u8 e) {
+    BUnit *u;
+
+    if (D_8022A974->units[k] == NULL) {
+        D_8022A974->units[k] = HMalloc(0x150);
+    }
+    bzero(u = D_8022A974->units[k], 0x150);
+    FIELD(u, u8, 0x13C) = D_801CE8FC;
+    func_8022E3DC_ovl_29A4C0(&u, a, b, c, x, y, z, d, e, 0, k & 0xFF, 1);
+    BattleAnimStep2(u);
+}
 
 #define BLIST(b, off) ((void **)((u8 *)(b) + (off)))
 
