@@ -291,7 +291,103 @@ void func_8021AC40_ovl_25EE90(u16 msg, u8 *o) {
     }
 }
 
+void func_8020A980_ovl_25EE90(void *a, void *b, u8 *out);
+void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
+s32 func_8020AB8C_ovl_25EE90(s32 a);
+u8 *func_802151CC_ovl_25EE90(s32 id, s32 a, s32 b, s32 c, s32 d, void *fn);
+u8 *func_80214F5C_ovl_25EE90(s32 id, s32 a, s32 b, s32 c, s32 d, void *fn);
+u8 *func_8020D1F8_ovl_25EE90(void *fn);
+u8 *func_8020E570_ovl_25EE90(void *fn, s32 a);
+void func_80210410_ovl_25EE90(s32 id, u8 *out);
+void func_80212468_ovl_25EE90();
+void func_802118D4_ovl_25EE90();
+void func_80212200_ovl_25EE90();
+void func_80212488_ovl_25EE90();
+void func_8021C360_ovl_25EE90(u16 msg, u8 *o);
+extern u8 D_802209C8_ovl_25EE90[];
+extern u8 D_802209D4_ovl_25EE90[];
+extern u8 D_80220910_ovl_25EE90[];
+
+/* Sets up the parts of aura o: facing (0x10, by side 0x8), the aura sprite (0x38), and either a
+ * light (0x34, enemy side) or the shadow sprite + ring (0x28 / 0x2C), then the ground marker (0x30) */
+#ifdef NON_MATCHING
+/* 152/152, 1 instruction placed differently (the s + 0x14 argument before the half-size loads) */
+void func_8021ADE0_ovl_25EE90(u8 *o) {
+    u8 m[0x40];
+    s32 n;
+    u8 *p;
+
+    if (FIELD(o, s32, 8) != 0) {
+        FIELD(o, f32, 0x10) = -1.0f;
+    } else {
+        FIELD(o, f32, 0x10) = 1.0f;
+    }
+    FIELD(o, f32, 0x14) = FIELD(o, f32, 0x18) = 0.0f;
+    func_8020A980_ovl_25EE90(o + 0x10, D_802209C8_ovl_25EE90, m);
+    func_8020A5A0_ovl_25EE90(m, o + 0x1C);
+    n = func_8020AB8C_ovl_25EE90(FIELD(o, s32, 0x4C));
+    if (FIELD(o, s32, 8) != 0) {
+        FIELD(o, u8 *, 0x38) = func_802151CC_ovl_25EE90(0x27, 8, n, 8, n, func_8021AC40_ovl_25EE90);
+    } else {
+        FIELD(o, u8 *, 0x38) = func_80214F5C_ovl_25EE90(0x27, 8, n, 8, n, func_8021C360_ovl_25EE90);
+    }
+    FIELD(FIELD(o, u8 *, 0x38), u16, 0xA) |= 0x4000;
+    if (FIELD(o, s32, 8) != 0) {
+        FIELD(o, u8 *, 0x34) = func_8020D1F8_ovl_25EE90(func_80212468_ovl_25EE90);
+        FIELD(FIELD(o, u8 *, 0x34), s32, 4) = FIELD(FIELD(o, u8 *, 0x34), s32, 8) = FIELD(FIELD(o, u8 *, 0x34), s32, 0xC) = 100000;
+        p = FIELD(o, u8 *, 0x34);
+        p[0x5B] = 0xFF;
+        FIELD(p, s16, 0x5E) = 0;
+        p[0x5A] = 0;
+        p[0x59] = 0;
+        p[0x58] = 0;
+        p[0x5C] = 0;
+        FIELD(p, s16, 0x60) = 0;
+        FIELD(p, s16, 0x62) = 0x20;
+        func_8020A4A8_ovl_25EE90(m, p + 0x18);
+    }
+    if (FIELD(o, s32, 8) == 0) {
+        u8 *s;
+
+        FIELD(o, u8 *, 0x28) = func_8020E570_ovl_25EE90(func_802118D4_ovl_25EE90, 1);
+        FIELD(FIELD(o, u8 *, 0x28), f32, 8) = 1000.0f;
+        s = FIELD(o, u8 *, 0x28);
+        func_80210410_ovl_25EE90(FIELD(o, s32, 0x50), s + 0x64);
+        FIELD(s, s16, 0x5A) = 0x20;
+        FIELD(s, s16, 0x5C) = 2;
+        FIELD(s, s16, 0x56) = 0;
+        FIELD(s, s16, 0x58) = 0x40;
+        FIELD(s, s16, 0x62) = 0;
+        FIELD(s, s16, 0x5E) = FIELD(s, u16, 0x68) >> 1;
+        FIELD(s, s16, 0x60) = FIELD(s, u16, 0x6A) >> 1;
+        func_8020A4A8_ovl_25EE90(m, s + 0x14);
+        {
+            u8 *q = func_8020E570_ovl_25EE90(func_80212200_ovl_25EE90, 1);
+
+            FIELD(o, u8 *, 0x2C) = q;
+            FIELD(q, s16, 0x58) = 0;
+            FIELD(q, s16, 0x5A) = 0;
+            FIELD(q, s16, 0x5C) = 0;
+            FIELD(q, s16, 0x5E) = 0x20;
+            q[0x56] = 0;
+            q[0x55] = 0;
+            q[0x54] = 0;
+            q[0x57] = 0xFF;
+            func_8020A4A8_ovl_25EE90(m, q + 0x14);
+        }
+    }
+    {
+        u8 *q = func_8020E570_ovl_25EE90(func_80212488_ovl_25EE90, 0);
+
+        FIELD(o, u8 *, 0x30) = q;
+        FIELD(q, u8 *, 0x54) = D_80220910_ovl_25EE90;
+        func_8020A4D0_ovl_25EE90(D_802209D4_ovl_25EE90, m, q + 0x14);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021ADE0_ovl_25EE90);
+#endif
 
 extern void *D_80220F70_ovl_25EE90;
 extern s32 D_80220F74_ovl_25EE90;
