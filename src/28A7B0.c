@@ -1759,13 +1759,6 @@ s16 func_802390AC_ovl_286BD0(s32 n) {
     return g;
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
-
-extern char D_8023E0A0_ovl_286BD0[];
-extern char D_8023E338_ovl_286BD0[];
-s32 sprintf(char *buf, const char *fmt, ...);
-void func_8009C550(char *dst, char *src);
-
 /* Index of the first entry of group n (a new year or month starts a group); past the end the
  * group count */
 static inline s32 GroupFirst(s32 n) {
@@ -1794,6 +1787,75 @@ static inline s32 GroupFirst(s32 n) {
     }
     return k;
 }
+
+extern char *D_8023E060_ovl_286BD0[];
+extern char D_8023E304_ovl_286BD0[];
+extern char D_8023E320_ovl_286BD0[];
+s32 sprintf(char *buf, const char *fmt, ...);
+void func_8009C550(char *dst, char *src);
+
+/* Fills window w with up to five headings (month and year changes) starting at group a: text
+ * goes to src's buffer (0x8), line pointers to its list (0x4); returns the line count */
+#ifdef NON_MATCHING
+/* 145 vs 141: the group start is sign-extended once up front and the month/year trackers need no masking in the original */
+s16 func_80239160_ovl_286BD0(u8 *w, s32 a, u8 *src) {
+    u16 lastH = 0;
+    u8 lastB = 1;
+    s32 off = 0;
+    u8 *text = FIELD(src, u8 *, 8);
+    s16 start;
+    s32 j;
+    s16 n;
+    u8 *p;
+    TimeStamp *e;
+
+    bzero(text, 0x500);
+    bzero(w, 0x500);
+    start = GroupFirst(a);
+    j = 0;
+    if (start > 0) {
+        lastH = func_8022EC34_ovl_286BD0(start - 1)->hi;
+        j = 0;
+    }
+    n = 0;
+    p = w;
+    do {
+        char buf[0x64];
+
+        bzero(buf, 0x64);
+        e = func_8022EC34_ovl_286BD0(start + j);
+        if (e == NULL) {
+            break;
+        }
+        if (lastH != e->hi) {
+            lastB = e->mid;
+            lastH = e->hi;
+            sprintf(buf, D_8023E304_ovl_286BD0, D_8023E060_ovl_286BD0[lastB], lastB, lastH);
+        } else if (lastB != e->mid) {
+            sprintf(buf, D_8023E320_ovl_286BD0, D_8023E060_ovl_286BD0[e->mid], e->mid);
+            lastB = e->mid;
+        } else {
+            goto next;
+        }
+        FIELD(src, u8 **, 4)[n++] = text + off;
+        FIELD(p, u8 *, 0x530) = w + off;
+        func_8009C550((char *)(text + off), buf);
+        off += strlen(buf) + 2;
+        p += 4;
+    next:
+        j++;
+    } while (n < 5);
+    func_80080998(w, text, off);
+    return n;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239160_ovl_286BD0);
+#endif
+
+extern char D_8023E0A0_ovl_286BD0[];
+extern char D_8023E338_ovl_286BD0[];
+s32 sprintf(char *buf, const char *fmt, ...);
+void func_8009C550(char *dst, char *src);
 
 /* Writes the heading of group n (its first entry's year) into text window buffer w */
 u8 *func_80239394_ovl_286BD0(u8 *w, s32 n) {
@@ -2258,7 +2320,7 @@ u8 *func_8023AA70_ovl_286BD0(u8 *o, s32 kind, u8 *src) {
     return p;
 }
 
-void func_80239160_ovl_286BD0(u8 *w, s32 a, u8 *src);
+s16 func_80239160_ovl_286BD0(u8 *w, s32 a, u8 *src);
 void func_802397B8_ovl_286BD0(u8 *w, s32 a, u8 *src);
 
 /* Gives window o its text block for page kind k (6: built list, 11: copied table with 7 line
