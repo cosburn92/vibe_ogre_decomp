@@ -2,7 +2,7 @@
 
 /* 2664B0 */
 
-void func_80211C10_ovl_25EE90(void *p);
+void func_80211C10_ovl_25EE90(u8 *p);
 void func_80211E80_ovl_25EE90(void *p);
 void func_80212220_ovl_25EE90(void *p);
 void func_80212558_ovl_25EE90(void *p);
@@ -23,7 +23,65 @@ typedef struct {
 
 INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211900_ovl_25EE90);
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#define GFX266(w0_, w1_)               \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;        \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (w1_);                \
+    }
+typedef struct {
+    s16 x;
+    s16 y;
+    u8 a;
+    u8 pad;
+} RingPt266;
+extern Gfx D_80220410_ovl_25EE90[];
+extern Gfx D_80220460_ovl_25EE90[];
+f32 cosf(f32 x);
+f32 sinf(f32 x);
+void func_80211900_ovl_25EE90(Gfx *dl, RingPt266 *pts, s32 n, u16 w);
+
+/* Draws a ring (radius 0x48, 0x4A segments, colour 0x40) under matrix p */
+#ifdef NON_MATCHING
+/* same length; the point counter's zeroing is scheduled before the hoisted 0.01745 constant instead of after */
+void func_80211C10_ovl_25EE90(u8 *p) {
+    RingPt266 pts[128];
+
+    if (FIELD(p, s16, 0x4A) <= 128) {
+        GFX266(0xDE000000, (u32)D_80220410_ovl_25EE90);
+        guMtxF2L(p, D_801969B0);
+        GFX266(0xDA380000, (u32)D_801969B0);
+        GFX266(0xFA000000, (p[0x40] << 24) | (p[0x41] << 16) | (p[0x42] << 8) | p[0x43]);
+        if (FIELD(p, u16, 0x44) == 0) {
+            RingPt266 *q = pts;
+            s32 n = 0;
+            f32 ang = 0.0f;
+            f32 r = FIELD(p, s16, 0x48);
+            f32 step = 360.0f / FIELD(p, s16, 0x4A);
+
+            do {
+                f32 rad = ang * 0.017453292f;
+
+                q->x = r * cosf(rad);
+                q->y = r * sinf(rad);
+                q->a = 0xFF;
+                ang += step;
+                n++;
+                q++;
+            } while (ang < 360.0f);
+            func_80211900_ovl_25EE90(D_80220460_ovl_25EE90, pts, n, FIELD(p, u16, 0x46));
+        }
+        GFX266(0xD8380002, 0x40);
+        D_801969B0 += 0x40;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211C10_ovl_25EE90);
+#endif
 
 s32 func_80211E40_ovl_25EE90(u8 *p) {
     func_80211C10_ovl_25EE90(p + 0x18);
