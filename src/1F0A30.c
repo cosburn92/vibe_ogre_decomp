@@ -184,7 +184,59 @@ void func_801AD6B0_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD6B0_ovl_1F0A30);
 #endif
 
+s32 func_801BE978_ovl_1F0A30(s32 a, s32 w, s32 h);
+s32 func_801BE9A8_ovl_1F0A30(s32 a, s32 w);
+
+/* Returns portrait k as a 2bpp-unpacked 90x15 image, building and caching it (16 slots at 0xC0:
+ * {data, key, ttl}) from row block k of chunk 0x391270 */
+#ifdef NON_MATCHING
+/* 120/120, 8 words: the original computes k * 15 before zeroing the slot offset, and sets up the row-pitch call argument in the loop branch delay slot */
+void *func_801AD794_ovl_1F0A30(s32 k) {
+    u32 i;
+    u32 off;
+
+    for (i = 0; i < 16; i++) {
+        if (((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0))[i].data != NULL && ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0))[i].ttl == k) {
+            ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0))[i].id = 15;
+            return ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0))[i].data;
+        }
+    }
+    for (off = 0; off < 0xC0; off += 0xC) {
+        if (FIELD(D_801CE8BC_ovl_1F0A30, void *, off + 0xC0) == NULL) {
+            u8 *src = func_801AD60C_ovl_1F0A30(0x391270);
+            u8 *dst = HMalloc(func_801BE978_ovl_1F0A30(0, 90, 15) + 8);
+            u32 y;
+            u8 *e;
+
+            dst[0] = '6';
+            dst[1] = '4';
+            dst[2] = 2;
+            FIELD(dst, u16, 4) = 90;
+            dst[3] = 0;
+            FIELD(dst, u16, 6) = 15;
+            for (y = 0; y < 15; y++) {
+                u8 *sp = src + func_801BE9A8_ovl_1F0A30(4, 90) * (y + k * 15) + 8;
+                u8 *dp = dst + func_801BE9A8_ovl_1F0A30(0, 90) * y + 8;
+                u32 x;
+
+                for (x = 0; x < 90; x += 4) {
+                    *dp++ = ((*sp >> 2) & 0x30) | ((*sp >> 4) & 3);
+                    *dp++ = ((*sp << 2) & 0x30) | (*sp & 3);
+                    sp++;
+                }
+            }
+            e = (u8 *)D_801CE8BC_ovl_1F0A30 + off;
+            FIELD(e, void *, 0xC0) = dst;
+            FIELD(e, s32, 0xC4) = k;
+            FIELD(e, s32, 0xC8) = 15;
+            return FIELD(e, void *, 0xC0);
+        }
+    }
+    return NULL;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD794_ovl_1F0A30);
+#endif
 
 inline void func_801AD974_ovl_1F0A30(Panel1F *p, s16 a) {
     p->h4 = a;
