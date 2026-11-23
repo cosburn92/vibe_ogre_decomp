@@ -7,7 +7,7 @@ s32 func_801C8AC0(s32 a);
 s32 func_801C8AA4(s32 a);
 s32 func_801CA1C4(s32 lane, s32 row);
 u8 *func_801C8FE8(s32 i);
-void func_801F7344_ovl_24BCA0(s32 c, f32 *p, u8 b);
+void func_801F7344_ovl_24BCA0(u8 c, f32 *p, u8 b);
 u8 *func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
 u8 *func_801F885C_ovl_24BCA0(u8 *a, u8 *b);
 u8 *func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c);
@@ -55,25 +55,24 @@ void func_8020A348(f32 *a, f32 *b, f32 *out);
 void guMtxIdentF(f32 (*m)[4]);
 /* --- end decls --- */
 
-#ifdef NON_MATCHING
-/* range chain: the original branches where GCC uses set-compares for the last test */
-s32 func_801F7128_ovl_24BCA0(u8 c) {
-    s32 k;
-
+/* Kind of formation cell character c: 0 below 20, 1 for 20-46, 2 for 47-86, else 0xFF */
+static inline u8 CellKind(u8 c) {
     if (c < 20) {
-        k = 0;
-    } else if ((u8)(c - 20) < 27) {
-        k = 1;
-    } else if ((u8)(c - 47) < 40) {
-        k = 2;
-    } else {
-        k = 0xFF;
+        return 0;
     }
-    return D_80209700_ovl_24BCA0[k](c) >= 0;
+    if ((u8)(c - 20) < 27) {
+        return 1;
+    }
+    if ((u8)(c - 47) < 40) {
+        return 2;
+    }
+    return -1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7128_ovl_24BCA0);
-#endif
+
+/* Whether the cell handler for character c accepts it */
+s32 func_801F7128_ovl_24BCA0(u8 c) {
+    return D_80209700_ovl_24BCA0[CellKind(c)](c) >= 0;
+}
 
 s32 func_801F71A0_ovl_24BCA0(u8 c) {
     return (c - 20) / 3;
@@ -114,28 +113,18 @@ s32 func_801CA100(u8 *u);
 
 /* World position of map cell c into p (x, y, z); flag 0x20 / 0x10 raise y by a full / half unit
  * height (cells 0-19 are units: by their own height) */
-#ifdef NON_MATCHING
-/* same length; the last range test of the cell-kind chain becomes a store-flag sequence (xori/negu/ori) instead of the original's branch, as in func_801F751C */
-void func_801F7344_ovl_24BCA0(s32 c, f32 *p, u8 b) {
-    u8 k;
+void func_801F7344_ovl_24BCA0(u8 c, f32 *p, u8 b) {
+    u16 k;
 
-    if ((u8)c < 20) {
-        k = 0;
-    } else if ((u8)(c - 20) < 27) {
-        k = 1;
-    } else if ((u8)(c - 47) < 40) {
-        k = 2;
-    } else {
-        k = 0xFF;
-    }
+    k = CellKind(c);
     p[0] = D_80209700_ovl_24BCA0[k]((u8)c);
     p[2] = D_8020970C_ovl_24BCA0[k]((u8)c);
     if (k == 0) {
         p[1] = func_8020ABF0((u8)c);
         if (b & 0x20) {
-            p[1] = func_801CA100(func_801C8FE8((u8)c)) + p[1];
+            p[1] += func_801CA100(func_801C8FE8((u8)c));
         } else if (b & 0x10) {
-            p[1] = func_801CA100(func_801C8FE8((u8)c)) / 2 + p[1];
+            p[1] += func_801CA100(func_801C8FE8((u8)c)) / 2;
         }
     } else {
         p[1] = func_801BC35C(p[0], p[2]);
@@ -146,34 +135,18 @@ void func_801F7344_ovl_24BCA0(s32 c, f32 *p, u8 b) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7344_ovl_24BCA0);
-#endif
 
 extern s32 (*D_8020970C_ovl_24BCA0[])(u8 c);
 f32 func_801BC35C(s16 x, s16 z);
 
 /* World position of map cell c: table x/z plus offsets, y from the ground height */
-#ifdef NON_MATCHING
-/* range chain: presetting k = 0xFF avoids the set-compare, but c is not copied to s0 up front and the 0xFF lands in a bnezl slot */
-void func_801F751C_ovl_24BCA0(s32 c, f32 *p, f32 ox, f32 oy, f32 oz) {
-    s32 k;
+void func_801F751C_ovl_24BCA0(u8 c, f32 *p, f32 ox, f32 oy, f32 oz) {
+    u8 k = CellKind(c);
 
-    k = 0xFF;
-    if ((u8)c < 20) {
-        k = 0;
-    } else if ((u8)(c - 20) < 27) {
-        k = 1;
-    } else if ((u8)(c - 47) < 40) {
-        k = 2;
-    }
     p[0] = D_80209700_ovl_24BCA0[k]((u8)c) + ox;
     p[2] = D_8020970C_ovl_24BCA0[k]((u8)c) + oz;
     p[1] = func_801BC35C(p[0], p[2]) + oy;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F751C_ovl_24BCA0);
-#endif
 
 /* Position for string str (0xFF-terminated): x of the last character, y and z averaged */
 void func_801F7644_ovl_24BCA0(u8 *str, f32 *out, u8 c) {
