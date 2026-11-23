@@ -230,7 +230,49 @@ f32 func_801F7CF4_ovl_24BCA0(f32 *v) {
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7DA4_ovl_24BCA0);
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F8008_ovl_24BCA0);
+typedef struct {
+    /* 0x00 */ u8 unk00[8];
+    /* 0x08 */ f32 from[3];
+    /* 0x14 */ f32 to[3];
+    /* 0x20 */ f32 dir[3];
+    /* 0x2C */ f32 len;
+    /* 0x30 */ s32 t;
+    /* 0x34 */ u8 unk34[4];
+    /* 0x38 */ f32 *a;
+    /* 0x3C */ f32 *b;
+    /* 0x40 */ f32 *out;
+} Curve24B;
+f32 func_8020A3C8(f32 *v);
+void func_8020A418(f32 *v);
+void func_80217E1C(s32 n, f32 *a, f32 *b, f32 *out);
+void *HMalloc(s32 size);
+
+/* Sets up curve c from `from` to `to` with n samples: unit direction, length, and the distance and
+ * height keys (height arc * h, rising to 20 at the end when flag 0x10) */
+void func_801F8008_ovl_24BCA0(Curve24B *c, s16 n, f32 h, s32 flags) {
+    c->dir[0] = c->to[0] - c->from[0];
+    c->dir[1] = c->to[1] - c->from[1];
+    c->dir[2] = c->to[2] - c->from[2];
+    c->len = func_8020A3C8(c->dir);
+    func_8020A418(c->dir);
+    c->a = HMalloc(n * 4);
+    c->b = HMalloc(n * 4);
+    c->out = HMalloc(n * 4);
+    c->t = 0;
+    c->a[0] = 0.0f;
+    c->a[1] = c->len / 3.0f;
+    c->a[2] = 2.0f * c->len / 3.0f;
+    c->a[3] = c->len;
+    c->b[0] = 0.0f;
+    c->b[1] = c->len * h * 0.25f;
+    c->b[2] = c->b[1];
+    if (flags & 0x10) {
+        c->b[3] = 20.0f;
+    } else {
+        c->b[3] = 0.0f;
+    }
+    func_80217E1C(n, c->a, c->b, c->out);
+}
 
 void func_801F8180_ovl_24BCA0(u8 *p) {
     HFree(FIELD(p, void *, 0x38));
