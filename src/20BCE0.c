@@ -357,14 +357,14 @@ s32 func_801C8E48_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 5) & 1;
 }
 
-s32 func_801C8E64_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8E64_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
     return (u->flags >> 3) & 1;
 }
 
-s32 func_801C8E80_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8E80_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -378,7 +378,7 @@ inline s32 func_801C8E9C_ovl_1F0A30(BattleUnit *u) {
     return (u->flags >> 1) & 1;
 }
 
-s32 func_801C8EB8_ovl_1F0A30(BattleUnit *u) {
+inline s32 func_801C8EB8_ovl_1F0A30(BattleUnit *u) {
     if (u == NULL) {
         return 0;
     }
@@ -1357,6 +1357,32 @@ loop_12:
 INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC574_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC7EC_ovl_1F0A30);
+/* Shows the status icon of unit u's members: petrified (9, colour 0x20), else poisoned (5, 0x22),
+ * else paralysed (1, 0) */
+void func_801CC7EC_ovl_1F0A30(BattleUnit *u) {
+    s32 col = 0;
+    s32 kind = 0;
+
+    if (func_801C8E64_ovl_1F0A30(u)) {
+        kind = 9;
+        col = 0x20;
+    } else if (!func_801C8E64_ovl_1F0A30(u) && func_801C8E80_ovl_1F0A30(u)) {
+        kind = 5;
+        col = 0x22;
+    } else if (!func_801C8E64_ovl_1F0A30(u) && !func_801C8E80_ovl_1F0A30(u) && func_801C8EB8_ovl_1F0A30(u)) {
+        kind = 1;
+        col = 0;
+    }
+    if (kind != 0) {
+        u32 i;
+
+        func_801CC574_ovl_1F0A30(u, kind);
+        for (i = 0; i < 3; i++) {
+            if (((s32 *)u)[i] != 0) {
+                func_801AD9D4_ovl_1F0A30((u8 *)((s32 *)u)[i] + 0x44, col);
+            }
+        }
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/20BCE0", D_801D0640_ovl_1F0A30);
