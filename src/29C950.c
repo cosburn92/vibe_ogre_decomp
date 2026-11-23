@@ -349,7 +349,7 @@ INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DE04_ovl_29A4C0);
 #endif
 
 extern s32 D_801CE8FC;
-void func_8022E3DC_ovl_29A4C0(BUnit **pu, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, s32 d, s32 e, s32 f, s32 k, s32 g);
+void func_8022E3DC_ovl_29A4C0(BUnit **pu, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, u8 d, u16 e, u8 f, u8 k, u8 g);
 
 /* Allocates (if needed) and clears battle unit k, then initialises it */
 void func_8022DF60_ovl_29A4C0(s32 k, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, u8 d, u8 e) {
@@ -473,7 +473,78 @@ void func_8022E214_ovl_29A4C0(void) {
     D_8018F1A0 = 0;
 }
 
+f32 func_801BC35C(s16 x, s16 z);
+f32 func_8023D178(f32 x, f32 z);
+s16 func_80231BBC_ovl_29A4C0(s32 id, s32 a, s32 b, s32 flag);
+void func_8022F2CC_ovl_29A4C0();
+void *memset(void *p, s32 c, s32 n);
+
+/* (Re)initialises battle unit *pu: animation a (-1 keeps), frame set b (-1 keeps), palette c, part
+ * d, facing e (-1 keeps), slot k and flags g (0xFF keeps; bit 0 drops it to the ground); f skips
+ * the part scales; a position given with y = -1 is placed on the ground */
+#ifdef NON_MATCHING
+/* 171/171, 15 words: the f and g byte parameters swap s2/s3 and the first two stores are scheduled earlier in the original (it also tests y twice, as written) */
+void func_8022E3DC_ovl_29A4C0(BUnit **pu, s32 a, s32 b, s32 c, f32 x, f32 y, f32 z, u8 d, u16 e, u8 f, u8 k, u8 g) {
+    BUnit *u = *pu;
+    u8 i;
+
+    FIELD(u, s32, 0xE4) = (u8)k;
+    if (a != -1) {
+        u->wE8 = a;
+    }
+    if (b != -1) {
+        FIELD(u, s16, 0x138) = b;
+    }
+    u->h134 = func_80231BBC_ovl_29A4C0(u->wE8, FIELD(u, s16, 0x138), c, 0);
+    u->wF0 = -1;
+    u->wF4 = 0;
+    FIELD(u, s32, 0xF8) = 0;
+    FIELD(u, s32, 0x12C) = 0;
+    FIELD(u, f32, 0x130) = 1.0f;
+    for (i = 0; i < 3; i++) {
+        if ((u8)f == 0) {
+            FIELD(u, f32, 0x104 + i * 4) = 1.0f;
+        }
+        u->unk000[i + 0x142] = 0xFF;
+        FIELD(u, s32, 0x110 + i * 4) = 0;
+    }
+    if ((s16)e != -1) {
+        u->b146 = e;
+    }
+    if ((x != -1.0f) | (y != -1.0f) || y != -1.0f) {
+        FIELD(u, f32, 0x11C) = x;
+        FIELD(u, f32, 0x120) = y;
+        FIELD(u, f32, 0x124) = z;
+    }
+    FIELD(u, void *, 0xE0) = func_8022F2CC_ovl_29A4C0;
+    u->unk13E[1] = c;
+    u->unk13E[2] = c;
+    u->unk13E[3] = d;
+    u->b13D = 0;
+    u->h13A = 0;
+    if ((u8)g != 0xFF) {
+        u->b145 = g;
+    }
+    if (D_8018FC19 == 2 && ((u8)g & 1)) {
+        if (FIELD(u, f32, 0x120) == -1.0f) {
+            FIELD(u, f32, 0x120) = func_801BC35C(FIELD(u, f32, 0x11C), FIELD(u, f32, 0x124));
+        } else {
+            u->b145 &= ~1;
+        }
+    } else if (D_8018FC19 == 0 && ((u8)g & 1)) {
+        if (FIELD(u, f32, 0x120) == -1.0f) {
+            FIELD(u, f32, 0x120) = func_8023D178(FIELD(u, f32, 0x11C), FIELD(u, f32, 0x124));
+        } else {
+            u->b145 &= ~1;
+        }
+    }
+    u->unk000[0x147] = 0xFF;
+    memset(u, 0xFF, 0x10);
+    bzero(u->unk000 + 0x10, 0x10);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E3DC_ovl_29A4C0);
+#endif
 
 void func_8022E698_ovl_29A4C0(s32 i, s32 v, s32 flag) {
     BUnit *u = D_8022A974->units[i];
