@@ -224,7 +224,46 @@ void func_80225CA8_ovl_281860(void) {
     func_80234DB8();
 }
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_80225D14_ovl_281860);
+u8 func_8016CD30();
+extern u8 D_8022A7E0_ovl_281860[];
+void func_8022F024();
+void func_80234E10();
+
+void func_80225D14_ovl_281860(void) {
+    if (!func_8016CD30()) {
+        GFX(0xDC080008, (u32)D_8022A7D0_ovl_281860);
+    } else {
+        GFX(0xDC080008, (u32)D_8022A7E0_ovl_281860);
+    }
+    if (!func_8016CD30()) {
+        GFX(0xE7000000, 0);
+        GFX(0xED000000, 0x4FC3BC);
+        GFX(0xE7000000, 0);
+    } else {
+        GFX(0xE7000000, 0);
+        GFX(0xED000000, 0xA00780);
+        GFX(0xE7000000, 0);
+    }
+    GFX(0xE7000000, 0);
+    func_8022F024();
+    if (((func_802276EC_ovl_281860() ^ 0xD7) & 0xFF) == 0) {
+        u8 *flags = &D_800E7A32;
+
+        *flags |= 2;
+    }
+    GFX(0xE7000000, 0);
+    if (!func_8016CD30()) {
+        GFX(0xE7000000, 0);
+        GFX(0xED000000, 0x4FC3BC);
+        GFX(0xE7000000, 0);
+    } else {
+        GFX(0xE7000000, 0);
+        GFX(0xED000000, 0xA00780);
+        GFX(0xE7000000, 0);
+    }
+    GFX(0xE7000000, 0);
+    func_80234E10();
+}
 
 void func_80225F00_ovl_281860(void) {
     nuGfxTaskAllEndWait();
