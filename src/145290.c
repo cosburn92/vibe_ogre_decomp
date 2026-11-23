@@ -604,7 +604,80 @@ INCLUDE_RODATA("asm/nonmatchings/145290", D_801FD958_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F5E94_ovl_145210);
 
+static inline f32 Wrap360_145(f32 a) {
+    while (a < 0.0f) {
+        a += 360.0f;
+    }
+    while (a >= 360.0f) {
+        a -= 360.0f;
+    }
+    return a;
+}
+
+/* Steps map marker m's flip animation (angle at +0x88): opens, turns to 270, refreshes its unit
+ * info, turns back to 0 and finishes */
+#ifdef NON_MATCHING
+/* 119/119 instructions, 6 words differ: in case 4 the unit pointer and the result swap a0/a1 */
+void func_801F632C_ovl_145210(MapMarker *m) {
+    u8 *s = (u8 *)m + 0x30;
+    u8 *a = (u8 *)m + 0x68;
+    f32 r;
+    s32 v;
+
+    switch (m->b7) {
+        case 0:
+            m->flags |= 0x4000;
+        case 1:
+        case 2:
+        case 5:
+        case 6:
+            m->b7++;
+            break;
+        case 3:
+            FIELD(a, f32, 0x20) -= 16.0f;
+            FIELD(a, f32, 0x20) = Wrap360_145(FIELD(a, f32, 0x20));
+            if (FIELD(a, f32, 0x20) <= 270.0f) {
+                FIELD(a, f32, 0x20) = 270.0f;
+                m->b7 = 4;
+            }
+            break;
+        case 4:
+            v = 0;
+            if (m->u->unk70 == 1) {
+                u32 t = m->u->flags & 0x40;
+
+                v = t == 0;
+            }
+            s[3] = v;
+            s[2] = func_801F4ED8_ovl_145210(m->u);
+            m->b7++;
+            break;
+        case 7:
+            FIELD(a, f32, 0x20) = 90.0f;
+            m->b7++;
+        case 8:
+            r = FIELD(a, f32, 0x20) - 16.0f;
+            FIELD(a, f32, 0x20) = r;
+            if (r <= 0.0f) {
+                FIELD(a, f32, 0x20) = 0.0f;
+                m->b7 = 9;
+            } else {
+                while (r >= 360.0f) {
+                    r -= 360.0f;
+                }
+                FIELD(a, f32, 0x20) = r;
+            }
+            break;
+        case 9:
+            m->b6 = 0;
+            m->flags &= 0xB7FF;
+            break;
+    }
+    s[1] |= 2;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F632C_ovl_145210);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F6540_ovl_145210);
 
