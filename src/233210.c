@@ -755,7 +755,35 @@ inline f32 func_801F22CC_ovl_22A280(BattleUnit *u) {
     return base - b;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F2340_ovl_22A280);
+u8 func_8016DBD8(u8 a, u8 cls);
+extern s8 D_801F6910_ovl_22A280[7][27];
+
+/* Base value from the (element - 1, battle mode) table plus func_801F14E8, minus the 0x3E penalty */
+f32 func_801F2340_ovl_22A280(BattleUnit *u) {
+    u32 k = func_8016DBD8(u->unk48, u->cls);
+    u32 m;
+    f32 p;
+    s32 b;
+
+    k = (k - 1) % 7;
+    m = 15;
+    if (!(D_801976D9.mode & 0x80)) {
+        m = D_801976D9.mode;
+    }
+    m %= 27;
+    p = D_801F6910_ovl_22A280[k][m];
+    p += func_801F14E8_ovl_22A280(u);
+    if (u == NULL || u->unk3E < 70) {
+        b = 0;
+    } else if (u->unk3E < 80) {
+        b = 5;
+    } else if (u->unk3E < 90) {
+        b = 18;
+    } else {
+        b = 40;
+    }
+    return p - b;
+}
 
 /* Physical attack power: (class power + weapon) / 6 * (str + item str + 50) / 50
  * * (stat 0x2E + item bonus + 100) / 100 * (100 + func_801F1884) / 100 */
