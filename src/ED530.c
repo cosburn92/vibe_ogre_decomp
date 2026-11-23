@@ -25,7 +25,8 @@ typedef struct {
     /* 0x10C */ f32 f10C;
     /* 0x110 */ u8 unk110[0xC];
     /* 0x11C */ void *sky; /* 32x64 RGBA16 sky texture */
-    /* 0x120 */ u8 unk120[0x2E];
+    /* 0x120 */ void *tex120; /* 32x32 I4 haze texture */
+    /* 0x124 */ u8 unk124[0x2A];
     /* 0x14E */ u8 r;
     /* 0x14F */ u8 g;
     /* 0x150 */ u8 b;
@@ -393,7 +394,48 @@ void func_801A4FF4_ovl_0EBBB0(DynE *d) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5184_ovl_0EBBB0);
 
+extern u32 D_8018F530; /* light level */
+extern u8 D_801ABD58_ovl_0EBBB0[];
+void func_80098C20(void *m, f32 x, f32 y, f32 z); /* guTranslate */
+
+/* Ground shadow/haze: translated to (x, 0, z), the scene's 32x32 I4 texture (+0x120) tinted by
+ * the light level (each channel at least 0x20), alpha 0xBE */
+#ifdef NON_MATCHING
+/* 153/153 instructions, 114 words differ in scheduling: the original batches the display-list stores after computing the tint and matrix pointer */
+void func_801A5718_ovl_0EBBB0(DynE *d, f32 x, f32 z) {
+    u32 r;
+    u32 g;
+    u32 b;
+
+    func_80098C20(&d->mtx[D_800C4BE4], x, 0.0f, z);
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380003;
+        _g->w1 = (u32)&d->mtx[D_800C4BE4++] - 0x80000000;
+    }
+    gDPLoadTextureBlock_4b(D_800E9BA0++, D_801ABA58_ovl_0EBBB0->tex120, G_IM_FMT_I, 32, 32, 0,
+                           G_TX_CLAMP, G_TX_CLAMP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    r = D_8018F530 * 0xB9 >> 16;
+    if ((u8)r < 0x20) {
+        r = 0x20;
+    }
+    g = D_8018F530 * 0x4B >> 15;
+    if ((u8)g < 0x20) {
+        g = 0x20;
+    }
+    b = D_8018F530 * 0x23 >> 16;
+    if ((u8)b < 0x20) {
+        b = 0x20;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, r, g, b, 0xBE);
+    gSPDisplayList(D_800E9BA0++, D_801ABD58_ovl_0EBBB0);
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5718_ovl_0EBBB0);
+#endif
 
 void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
 void guMtxXFMF(f32 mf[4][4], f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
@@ -715,8 +757,8 @@ void func_801A886C_ovl_0EBBB0(void) {
     gDPPipeSync(D_800E9BA0++);
     gDPLoadTextureBlock(D_800E9BA0++, tex, G_IM_FMT_I, G_IM_SIZ_8b, 64, 64, 0, G_TX_CLAMP, G_TX_CLAMP, 6, 6,
                         G_TX_NOLOD, G_TX_NOLOD);
-    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801ABA58_ovl_0EBBB0->unk120[0x28], D_801ABA58_ovl_0EBBB0->unk120[0x29],
-                    D_801ABA58_ovl_0EBBB0->unk120[0x2A], (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801ABA58_ovl_0EBBB0->unk124[0x24], D_801ABA58_ovl_0EBBB0->unk124[0x25],
+                    D_801ABA58_ovl_0EBBB0->unk124[0x26], (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A886C_ovl_0EBBB0);
@@ -734,8 +776,8 @@ void func_801A8A64_ovl_0EBBB0(void) {
     gDPPipeSync(D_800E9BA0++);
     gDPLoadTextureBlock(D_800E9BA0++, tex, G_IM_FMT_I, G_IM_SIZ_8b, 64, 64, 0, G_TX_CLAMP, G_TX_CLAMP, 6, 6,
                         G_TX_NOLOD, G_TX_NOLOD);
-    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801ABA58_ovl_0EBBB0->unk120[0x2B], D_801ABA58_ovl_0EBBB0->unk120[0x2C],
-                    D_801ABA58_ovl_0EBBB0->unk120[0x2D], (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, D_801ABA58_ovl_0EBBB0->unk124[0x27], D_801ABA58_ovl_0EBBB0->unk124[0x28],
+                    D_801ABA58_ovl_0EBBB0->unk124[0x29], (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8A64_ovl_0EBBB0);
