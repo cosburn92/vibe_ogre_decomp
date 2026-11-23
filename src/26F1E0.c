@@ -504,7 +504,83 @@ void func_8021B6C4_ovl_25EE90(s32 a) {
     func_8020DF00_ovl_25EE90(func_8021B500_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021B6F0_ovl_25EE90);
+s16 func_801F782C(u8 c);
+extern u8 D_80220A10_ovl_25EE90[];
+extern u8 D_80220A14_ovl_25EE90[];
+extern u8 D_80220A16_ovl_25EE90[];
+extern u8 D_80220A1C_ovl_25EE90[];
+extern u8 D_80220A22_ovl_25EE90[];
+extern u8 D_80220A28_ovl_25EE90[];
+extern u8 D_80220A2E_ovl_25EE90[];
+extern u8 D_80220A3A_ovl_25EE90[];
+extern u8 D_80220A40_ovl_25EE90[];
+extern u8 D_80220A46_ovl_25EE90[];
+extern u8 D_80220A4C_ovl_25EE90[];
+extern s32 D_80220A58_ovl_25EE90[6];
+extern s32 D_80220A70_ovl_25EE90[6];
+
+/* Picks the motion sequence (o+0x74) for a strike from unit 0x1B at unit 0x1F: by the target's
+ * class group (D_80220A58 / D_80220A70 / other), the attacker's side and flag 0x20 bit 0 */
+void func_8021B6F0_ovl_25EE90(u8 *o) {
+    s32 side = func_801F7128(o[0x1B]);
+    s32 cls;
+    u32 i;
+
+    if (side == func_801F7128(o[0x1F])) {
+        FIELD(o, u8 *, 0x74) = D_80220A14_ovl_25EE90;
+        return;
+    }
+    cls = func_801F782C(o[0x1F]);
+    for (i = 0; i < 6; i++) {
+        if (D_80220A58_ovl_25EE90[i] == cls) {
+            if (side != 0) {
+                if (FIELD(o, s32, 0x20) & 1) {
+                    FIELD(o, u8 *, 0x74) = D_80220A16_ovl_25EE90;
+                } else {
+                    FIELD(o, u8 *, 0x74) = D_80220A10_ovl_25EE90;
+                }
+            } else {
+                if (FIELD(o, s32, 0x20) & 1) {
+                    FIELD(o, u8 *, 0x74) = D_80220A3A_ovl_25EE90;
+                } else {
+                    FIELD(o, u8 *, 0x74) = D_80220A10_ovl_25EE90 + 0x24;
+                }
+            }
+            return;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        if (D_80220A70_ovl_25EE90[i] == cls) {
+            if (side != 0) {
+                if (FIELD(o, s32, 0x20) & 1) {
+                    FIELD(o, u8 *, 0x74) = D_80220A28_ovl_25EE90;
+                } else {
+                    FIELD(o, u8 *, 0x74) = D_80220A2E_ovl_25EE90;
+                }
+            } else {
+                if (FIELD(o, s32, 0x20) & 1) {
+                    FIELD(o, u8 *, 0x74) = D_80220A4C_ovl_25EE90;
+                } else {
+                    FIELD(o, u8 *, 0x74) = D_80220A2E_ovl_25EE90 + 0x24;
+                }
+            }
+            return;
+        }
+    }
+    if (side != 0) {
+        if (FIELD(o, s32, 0x20) & 1) {
+            FIELD(o, u8 *, 0x74) = D_80220A1C_ovl_25EE90;
+        } else {
+            FIELD(o, u8 *, 0x74) = D_80220A22_ovl_25EE90;
+        }
+    } else {
+        if (FIELD(o, s32, 0x20) & 1) {
+            FIELD(o, u8 *, 0x74) = D_80220A40_ovl_25EE90;
+        } else {
+            FIELD(o, u8 *, 0x74) = D_80220A46_ovl_25EE90;
+        }
+    }
+}
 
 typedef struct {
     /* 0x00 */ f32 pos[3];
