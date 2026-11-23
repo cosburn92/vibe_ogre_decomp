@@ -49,7 +49,8 @@ for ($i = 1; $i -le $Runs; $i++) {
     $stamp  = Get-Date -Format "yyyyMMdd-HHmmss"
     Write-Host "[$i/$Runs] $stamp starting..."
 
-    claude -p $prompt --model $Model --permission-mode acceptEdits |
+    # prompt goes in on stdin: PowerShell 5.1 mangles embedded quotes in native arguments
+    $prompt | claude -p --model $Model --permission-mode acceptEdits |
         Tee-Object -FilePath "$logDir/$stamp.log"
 
     if ($LASTEXITCODE -ne 0) { Write-Host "claude exited $LASTEXITCODE, stopping."; break }
