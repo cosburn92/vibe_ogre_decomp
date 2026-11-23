@@ -643,119 +643,91 @@ u8 *func_801E1660_ovl_213B10(u8 *arg0, s32 arg1, s32 arg2) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E1660_ovl_213B10);
 #endif
 
+s32 guRandom(s32 a);
+extern s32 D_801E5E20_ovl_213B10[][2];
+
+/* Places the parts of unit u (count 0xA6) around its position for the direction of the current
+ * enemy formation (mirrored on the player's side) and the unit's pose (0xA8 bit 0); directions 0
+ * and 8 add up to 14 of random horizontal jitter */
 #ifdef NON_MATCHING
-/* m2c draft, 41 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 guRandom(s32);                              /* extern */
-extern s32 D_801E5E20_ovl_213B10;
+/* 142/142, 29 words: the formation lookup keeps the side in a0 and the entry in v0 in the original (different registers here) */
+void func_801E1810_ovl_213B10(u8 *u) {
+    u8 *f;
+    u8 n;
+    u8 *e;
+    u8 d;
+    u8 side;
+    s32 dir;
+    s32 idx;
+    s32 rnd;
+    s32 k;
 
-void func_801E1810_ovl_213B10(void *arg0) {
-    s16 temp_v0_2;
-    s16 temp_v1;
-    s32 temp_fp;
-    s32 temp_s6;
-    s32 temp_v0_4;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_a0_2;
-    s32 var_a1;
-    s32 var_s5;
-    u16 temp_v0_3;
-    u8 *var_v0;
-    u8 *var_v1;
-    u8 temp_s7;
-    u8 temp_v0;
-    u8 var_a0;
-    void *temp_s0;
-    void *temp_s1;
-    void *temp_s2;
-    void *var_s4;
-
-    temp_v0 = FIELD(arg0, u8, 0xA7);
-    var_v1 = D_801976E8;
-    temp_s7 = FIELD(arg0, u8, 0xA6);
-    if (temp_v0 == 0) {
-        var_v1 = D_801976E8 - 0xC;
+    side = u[0xA7];
+    f = D_801976E8;
+    n = u[0xA6];
+    if (side == 0) {
+        f -= 0xC;
     }
-    var_v0 = NULL;
-    if (FIELD(var_v1, u8, 1) & 1) {
-        var_v0 = func_801E14FC_ovl_213B10((s32) temp_v0);
+    e = NULL;
+    if (f[1] & 1) {
+        e = func_801E14FC_ovl_213B10(side);
     }
-    var_a0 = 0xFF;
-    if (var_v0 != NULL) {
-        var_a0 = FIELD(var_v0, u8, 8);
+    d = 0xFF;
+    if (e != NULL) {
+        d = e[8];
     }
-    var_a1 = var_a0 & 0xFF;
-    if (FIELD(arg0, u8, 0xA7) == 0) {
-        if (var_a1 != 6) {
-            if (var_a1 < 7) {
-                if (var_a1 == 5) {
-                    var_a1 = 7;
-                    goto block_20;
-                }
-                var_s5 = 0;
-            } else {
-                switch (var_a1) {                   /* irregular */
-                case 8:
-                    var_a1 = 6;
-                    goto block_20;
-                default:
-                    var_s5 = 0;
-                    break;
-                case 7:
-                    var_a1 = 5;
-                    goto block_20;
-                }
-            }
-        } else {
-            var_a1 = 8;
-            goto block_20;
+    dir = d;
+    if (u[0xA7] == 0) {
+        switch (dir) {
+            case 6:
+                dir = 8;
+                break;
+            case 5:
+                dir = 7;
+                break;
+            case 7:
+                dir = 5;
+                break;
+            case 8:
+                dir = 6;
+                break;
         }
-    } else {
-block_20:
-        var_s5 = 0;
     }
-    temp_s6 = (var_a1 * 6) + ((FIELD(arg0, u8, 0xA8) & 1) * 3);
-    if (temp_s7 != 0) {
-        temp_fp = (temp_s6 == 0) | (temp_s6 == 0x18);
-        var_s4 = arg0;
-        do {
-            var_a0_2 = 0;
-            temp_s1 = FIELD(var_s4, void *, 0);
-            temp_s0 = FIELD(var_s4, void *, 0xC);
-            temp_s2 = ((temp_s6 + var_s5) * 8) + &D_801E5E20_ovl_213B10;
-            if (temp_fp != 0) {
-                var_a0_2 = guRandom(0) % 15;
-            }
-            temp_v0_2 = FIELD(arg0, s32, 0x5C) + FIELD(temp_s2, s32, 0) + var_a0_2;
-            FIELD(temp_s0, s16, 0x28) = temp_v0_2;
-            FIELD(temp_s0, s16, 0x1C) = temp_v0_2;
-            FIELD(temp_s1, s16, 0x28) = temp_v0_2;
-            FIELD(temp_s1, s16, 0x1C) = temp_v0_2;
-            temp_v1 = FIELD(arg0, s32, 0x64) + FIELD(temp_s2, s32, 4);
-            FIELD(temp_s0, s16, 0x2C) = temp_v1;
-            FIELD(temp_s0, s16, 0x20) = temp_v1;
-            FIELD(temp_s1, s16, 0x2C) = temp_v1;
-            FIELD(temp_s1, s16, 0x20) = temp_v1;
-            temp_v0_3 = FIELD(arg0, u16, 0x62);
-            FIELD(temp_s0, u16, 0x2A) = temp_v0_3;
-            FIELD(temp_s0, u16, 0x1E) = temp_v0_3;
-            FIELD(temp_s1, u16, 0x2A) = temp_v0_3;
-            FIELD(temp_s1, u16, 0x1E) = temp_v0_3;
-            temp_v1_2 = FIELD(arg0, s32, 0x5C) + (FIELD(temp_s2, s32, 0) * 0x1E);
-            FIELD(temp_s0, s32, 4) = temp_v1_2;
-            FIELD(temp_s1, s32, 4) = temp_v1_2;
-            temp_v1_3 = FIELD(arg0, s32, 0x64) + (FIELD(temp_s2, s32, 4) * 0x1E);
-            FIELD(temp_s0, s32, 0xC) = temp_v1_3;
-            FIELD(temp_s1, s32, 0xC) = temp_v1_3;
-            temp_v0_4 = FIELD(arg0, s32, 0x60);
-            var_s5 += 1;
-            FIELD(temp_s0, s32, 8) = temp_v0_4;
-            FIELD(temp_s1, s32, 8) = temp_v0_4;
-            var_s4 += 4;
-        } while (var_s5 < (s32) temp_s7);
+    idx = dir * 6 + (u[0xA8] & 1) * 3;
+    for (k = 0; k < n; k++) {
+        s32 j;
+        s32 *o;
+        s16 v;
+        u8 *p;
+        u8 *q;
+
+        j = 0;
+        o = D_801E5E20_ovl_213B10[idx + k];
+        p = FIELD(u + k * 4, u8 *, 0);
+        q = FIELD(u + k * 4, u8 *, 0xC);
+
+        rnd = idx == 0 || idx == 24;
+        if (rnd) {
+            j = guRandom(0) % 15;
+        }
+        v = FIELD(u, s32, 0x5C) + o[0] + j;
+        FIELD(q, s16, 0x28) = v;
+        FIELD(q, s16, 0x1C) = v;
+        FIELD(p, s16, 0x28) = v;
+        FIELD(p, s16, 0x1C) = v;
+        v = FIELD(u, s32, 0x64) + o[1];
+        FIELD(q, s16, 0x2C) = v;
+        FIELD(q, s16, 0x20) = v;
+        FIELD(p, s16, 0x2C) = v;
+        FIELD(p, s16, 0x20) = v;
+        v = FIELD(u, u16, 0x62);
+        FIELD(q, s16, 0x2A) = v;
+        FIELD(q, s16, 0x1E) = v;
+        FIELD(p, s16, 0x2A) = v;
+        FIELD(p, s16, 0x1E) = v;
+        FIELD(q, s32, 4) = FIELD(p, s32, 4) = FIELD(u, s32, 0x5C) + o[0] * 30;
+        FIELD(q, s32, 0xC) = FIELD(p, s32, 0xC) = FIELD(u, s32, 0x64) + o[1] * 30;
+        FIELD(q, s32, 8) = FIELD(p, s32, 8) = FIELD(u, s32, 0x60);
     }
 }
 #else
