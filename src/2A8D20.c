@@ -856,7 +856,43 @@ s32 func_8023DCC0_ovl_2A8D20(void) {
     return FIELD(D_8022A974, s32, 0x1CA8) != 0;
 }
 
+extern u8 D_801971F2[][25];
+
+/* Puts member m of the current enemy squad into battle slot k: finds its map unit, then swaps that
+ * unit's battle object into slot k */
+#ifdef NON_MATCHING
+/* 80/80 instructions, 37 words differ: the original hoists &slot[k] out of the inner loop and keeps the member byte in s4 */
+void func_8023DCD4_ovl_2A8D20(u8 k, s32 m) {
+    u8 c = D_801971F2[D_801976E8][m];
+    u8 i;
+    u8 j;
+
+    for (i = 0; i < 20; i++) {
+        u8 *u = D_801CE8BC + 0x1C4 + i * 0xF8;
+
+        if (func_801C8B68(u) && u[0xF6] == c && FIELD(u, s32, 0x48) != 0) {
+            for (j = 0; j < 28; j++) {
+                u8 *o = SLOT(j);
+
+                if (o != NULL && o[0x147] == i) {
+                    u8 *t = SLOT(k);
+
+                    SLOT(j) = t;
+                    SLOT(k) = o;
+                    FIELD(o, s32, 0xE4) = k;
+                    if (t != NULL) {
+                        FIELD(t, s32, 0xE4) = j;
+                    }
+                    return;
+                }
+            }
+            return;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DCD4_ovl_2A8D20);
+#endif
 
 s32 func_801C8B84(u8 *u);
 extern u8 D_801976DC;
