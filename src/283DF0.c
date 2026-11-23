@@ -104,7 +104,57 @@ s32 func_80227E44_ovl_281860(s32 k) {
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227E44_ovl_281860);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227FD8_ovl_281860);
+void *HMalloc(s32 size);
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+extern u16 D_80196F60[];
+
+/* Loads script k of the stage set (b = 0) or of the event set (b != 0, keeping the current script
+ * as the return point), then substitutes its variable references (0x088800nn -> D_80196F60[nn]) */
+void func_80227FD8_ovl_281860(s32 k, s32 b) {
+    s32 *index;
+    s32 id;
+    u8 *raw;
+    u32 size;
+    u32 n;
+    u32 i;
+
+    if (b == 0) {
+        index = LoadChunkRaw(NULL, 0x019A8804);
+        if (D_8022A958_ovl_281860 != NULL) {
+            HFree(D_8022A958_ovl_281860);
+        }
+        if (D_8022A95C_ovl_281860 != NULL) {
+            HFree(D_8022A95C_ovl_281860);
+        }
+        D_8022A95C_ovl_281860 = NULL;
+    } else {
+        if (D_8022A95C_ovl_281860 != NULL && D_8022A958_ovl_281860 != NULL) {
+            HFree(D_8022A958_ovl_281860);
+        } else {
+            D_8022A954_ovl_281860 = D_8022A950_ovl_281860;
+            D_8022A95C_ovl_281860 = D_8022A958_ovl_281860;
+        }
+        index = LoadChunkRaw(NULL, 0x0189099E);
+    }
+    id = index[k];
+    raw = HMalloc(ChunkSize(id));
+    LoadChunkRaw(raw, id);
+    size = ReadU32BE(raw);
+    D_8022A958_ovl_281860 = HMalloc(size);
+    DecodeLZ(D_8022A958_ovl_281860, raw);
+    HFree(raw);
+    HFree(index);
+    n = size >> 2;
+    for (i = 0; i < n; i++) {
+        if ((((s32 *)D_8022A958_ovl_281860)[i] & ~0xFF) == 0x08880000) {
+            ((s32 *)D_8022A958_ovl_281860)[i] = D_80196F60[((s32 *)D_8022A958_ovl_281860)[i] & 0xFF];
+        }
+    }
+    D_8022A950_ovl_281860 = 0;
+}
 
 void func_80228180_ovl_281860(void) {
     HFree(D_8022A958_ovl_281860);
