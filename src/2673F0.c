@@ -14,7 +14,7 @@ extern u8 D_802205B0_ovl_25EE90[];
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 extern u8 D_802205D0_ovl_25EE90[];
-void func_80212840_ovl_25EE90(void *p);
+void func_80212840_ovl_25EE90(u8 *p);
 typedef struct {
     /* 0x00 */ u8 unk00[0x40];
     /* 0x40 */ f32 fade;
@@ -33,7 +33,55 @@ typedef struct {
 extern u8 D_802205F0_ovl_25EE90[];
 /* --- end decls --- */
 
+typedef struct {
+    u8 b[0x40];
+} Mtx267;
+extern Mtx267 *D_801969B0;
+void guMtxF2L(f32 *mf, Mtx267 *m);
+
+/* Draws part p: its matrix (p+4), then its own display list (p+8) with segment 6 = p+0xC when
+ * present, then the shared list in segment 0xE (p+0x14) */
+#ifdef NON_MATCHING
+/* 95/95 instructions, 67 words differ: the original writes each block's command words before advancing D_800E9BA0 (pointer stores sunk to the end of the block) */
+void func_80212840_ovl_25EE90(u8 *p) {
+    guMtxF2L(FIELD(p, f32 *, 4), D_801969B0);
+    D_800E9BA0->w0 = 0xDA380000;
+    D_800E9BA0->w1 = (u32)D_801969B0;
+    D_800E9BA0++;
+    if (FIELD(p, u32, 0xC) != 0) {
+        D_800E9BA0->w0 = 0xE7000000;
+        D_800E9BA0->w1 = 0;
+        D_800E9BA0++;
+        D_800E9BA0->w0 = 0xDB06003C;
+        D_800E9BA0->w1 = FIELD(p, u32, 0xC) - 0x80000000;
+        D_800E9BA0++;
+        D_800E9BA0->w0 = 0xE7000000;
+        D_800E9BA0->w1 = 0;
+        D_800E9BA0++;
+        D_800E9BA0->w0 = 0xDE000000;
+        D_800E9BA0->w1 = FIELD(p, u32, 8);
+        D_800E9BA0++;
+    }
+    D_800E9BA0->w0 = 0xE7000000;
+    D_800E9BA0->w1 = 0;
+    D_800E9BA0++;
+    D_800E9BA0->w0 = 0xDB060038;
+    D_800E9BA0->w1 = FIELD(p, u32, 0x14) - 0x80000000;
+    D_800E9BA0++;
+    D_800E9BA0->w0 = 0xE7000000;
+    D_800E9BA0->w1 = 0;
+    D_800E9BA0++;
+    D_800E9BA0->w0 = 0xDE000000;
+    D_800E9BA0->w1 = 0x0E000000;
+    D_800E9BA0++;
+    D_800E9BA0->w0 = 0xD8380002;
+    D_800E9BA0->w1 = 0x40;
+    D_800E9BA0++;
+    D_801969B0++;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2673F0", func_80212840_ovl_25EE90);
+#endif
 
 s32 func_802129BC_ovl_25EE90(u8 *o) {
     Gfx *g = D_800E9BA0++;
