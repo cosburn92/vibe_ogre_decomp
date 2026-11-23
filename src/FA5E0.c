@@ -1083,7 +1083,81 @@ void func_801B3038_ovl_0FA5E0(u8 *p, s32 v) {
     FIELD(p, s32, 0x50) = v;
 }
 
+/* Ribbon: a spline strip drawn through up to n control points */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x50];
+    /* 0x50 */ s32 percent;
+    /* 0x54 */ s32 unk54;
+    /* 0x58 */ s32 count;
+    /* 0x5C */ u8 unk5C[0xC];
+    /* 0x68 */ s32 shown;
+    /* 0x6C */ u16 unk6C;
+    /* 0x6E */ s16 x0;
+    /* 0x70 */ s16 y0;
+    /* 0x72 */ s16 x1;
+    /* 0x74 */ s16 y1;
+    /* 0x76 */ u8 unk76[0xE];
+    /* 0x84 */ u8 width;
+    /* 0x85 */ u8 fade;
+    /* 0x86 */ u8 growing;
+    /* 0x87 */ u8 unk87;
+    /* 0x88 */ s16 unk88;
+    /* 0x8A */ s16 unk8A;
+    /* 0x8C */ u16 color[8];
+    /* 0x9C */ u16 color2[4];
+} RibbonFA5; /* size 0xA4 */
+
+typedef struct { s16 v[5]; } RibbonStepsFA5;
+extern RibbonStepsFA5 D_801B4C78_ovl_0FA5E0;
+void func_801B1FD8_ovl_0FA5E0(f32 *x, f32 *y, s32 n, RibbonFA5 *r, s32 w, s32 b);
+
+/* Creates a ribbon through the n points (x[i], y[i]) */
+#ifdef NON_MATCHING
+/* 134/134 instructions, 18 words differ: register numbering in the colour copy and the grow limit */
+RibbonFA5 *func_801B3040_ovl_0FA5E0(f32 *x, f32 *y, s32 n, s32 percent, s32 width, s32 grow, s32 fade, u16 arg7,
+                                    u16 *color) {
+    RibbonFA5 *r = HMalloc(sizeof(RibbonFA5));
+    u32 i;
+
+    bzero(r, sizeof(RibbonFA5));
+    r->x0 = x[0];
+    r->y0 = y[0];
+    r->x1 = x[n - 1];
+    r->y1 = y[n - 1];
+    r->unk54 = -1;
+    r->width = width;
+    r->fade = fade;
+    r->percent = percent;
+    r->growing = 1;
+    r->unk6C = arg7;
+    r->unk8A = 0;
+    r->unk88 = 0;
+    for (i = 0; i < 4; i++) {
+        r->color[i] = color[i];
+        r->color2[i] = color[i];
+    }
+    func_801B1FD8_ovl_0FA5E0(x, y, n, r, width + 3, 1);
+    if (grow == 0) {
+        r->shown = 5;
+    } else {
+        s32 lim = r->count * 2;
+        RibbonStepsFA5 steps = D_801B4C78_ovl_0FA5E0;
+
+        r->shown = 0;
+        lim = (lim - 2) * r->percent / 100;
+        while (1) {
+            if ((r->shown + steps.v[width - 1]) * 2 >= lim) {
+                break;
+            }
+            r->shown += 2;
+        }
+        r->growing = 0;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B3040_ovl_0FA5E0);
+#endif
 
 s32 func_801B3258_ovl_0FA5E0(void) {
     u8 *q = D_801B3E20_ovl_0FA5E0;
