@@ -447,7 +447,82 @@ static inline BattleUnit *BattleGetUnit(u32 i) {
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801C9028_ovl_1F0A30);
+extern s32 D_801CE8EC_ovl_1F0A30;
+extern s32 D_801CE8F0_ovl_1F0A30;
+extern s32 D_801CE8F4_ovl_1F0A30;
+extern f32 D_801D06FC_ovl_1F0A30;
+extern f32 D_801D0700_ovl_1F0A30;
+extern f32 D_801D0704_ovl_1F0A30;
+extern f32 D_801D0710_ovl_1F0A30;
+extern f32 D_801D0720_ovl_1F0A30;
+extern f32 D_801D072C_ovl_1F0A30;
+extern f32 D_801D0730_ovl_1F0A30;
+extern f32 D_801D083C_ovl_1F0A30;
+void func_80098C20(void *m, f32 x, f32 y, f32 z);
+void func_80098AA0(void *m, f32 x, f32 y, f32 z);
+void guMtxCatL(void *a, void *b, void *out);
+void guRotateRPY(void *m, s32 r, s32 p, s32 y);
+void guMtxL2F(f32 mf[4][4], void *m);
+void func_801CCD70_ovl_1F0A30(f32 *scr, f32 *v, f32 mf[4][4], f32 *eye, f32 *at, f32 *up, f32 fov);
+
+/* Screen position (x, 240 - y) of map point (x, y, z) through the field camera */
+extern s32 D_801CE8EC_ovl_1F0A30;
+extern s32 D_801CE8F0_ovl_1F0A30;
+extern s32 D_801CE8F4_ovl_1F0A30;
+extern f32 D_801D06FC_ovl_1F0A30;
+extern f32 D_801D0700_ovl_1F0A30;
+extern f32 D_801D0704_ovl_1F0A30;
+extern f32 D_801D0710_ovl_1F0A30;
+extern f32 D_801D0720_ovl_1F0A30;
+extern f32 D_801D072C_ovl_1F0A30;
+extern f32 D_801D0730_ovl_1F0A30;
+extern f32 D_801D083C_ovl_1F0A30;
+void func_80098C20(void *m, f32 x, f32 y, f32 z);
+void func_80098AA0(void *m, f32 x, f32 y, f32 z);
+void guMtxCatL(void *a, void *b, void *out);
+void guRotateRPY(void *m, s32 r, s32 p, s32 y);
+void guMtxL2F(f32 mf[4][4], void *m);
+void func_801CCD70_ovl_1F0A30(f32 *scr, f32 *v, f32 mf[4][4], f32 *eye, f32 *at, f32 *up, f32 fov);
+
+/* Screen position (x, 240 - y) of map point (x, y, z) through the field camera */
+void func_801C9028_ovl_1F0A30(s32 x, s32 y, s32 z, s32 *sx, s32 *sy) {
+    f32 scr[2];
+    f32 v[3];
+    f32 mf[4][4];
+    f32 eye[3];
+    f32 at[3];
+    f32 up[3];
+    u8 a[0x40];
+    u8 b[0x40];
+    u8 c[0x40];
+
+    func_80098C20(b, x, y, z);
+    func_80098AA0(a, 0.63f, 0.63f, 0.63f);
+    guMtxCatL(a, b, b);
+    guRotateRPY(c, D_801CE8EC_ovl_1F0A30, D_801CE8F0_ovl_1F0A30, D_801CE8F4_ovl_1F0A30);
+    guMtxCatL(c, b, a);
+    func_80098AA0(b, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30, D_801D06FC_ovl_1F0A30);
+    guMtxCatL(a, b, c);
+    v[0] = v[2] = scr[0] = scr[1] = 0.0f;
+    v[1] = 30.0f;
+    guMtxL2F(mf, c);
+    up[0] = 0.0f;
+    up[2] = 0.0f;
+    eye[0] = D_801D0730_ovl_1F0A30;
+    eye[1] = D_801D083C_ovl_1F0A30;
+    eye[2] = D_801D0700_ovl_1F0A30;
+    at[0] = D_801D0720_ovl_1F0A30;
+    at[1] = D_801D072C_ovl_1F0A30;
+    at[2] = D_801D0704_ovl_1F0A30;
+    up[1] = 1.0f;
+    func_801CCD70_ovl_1F0A30(scr, v, mf, eye, at, up, D_801D0710_ovl_1F0A30);
+    if (sx != NULL) {
+        *sx = scr[0];
+    }
+    if (sy != NULL) {
+        *sy = 240 - (s32)scr[1];
+    }
+}
 
 /* Scans the text of t, returning the last two line values */
 void func_801C9234_ovl_1F0A30(u8 *t, s32 *prev, s32 *last) {
