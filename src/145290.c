@@ -613,7 +613,7 @@ inline s32 func_801F4FF4_ovl_145210(MapUnit *u) {
     }
 }
 
-void func_801F503C_ovl_145210(u8 *a, u8 *b, u8 *t) {
+inline void func_801F503C_ovl_145210(u8 *a, u8 *b, u8 *t) {
     s32 size;
 
     if (t[0xC] != t[0x12]) {
@@ -650,7 +650,86 @@ void func_801F5504_ovl_145210(u32 i) {
     D_801FDA60_ovl_145210 = t.v[i];
 }
 
+s8 func_801F40A0_ovl_145210(u8 cls);
+#define IsLarge145(c) (((s32 (*)(u8))func_801F40A0_ovl_145210)(c)) /* returns c == 0x87 */
+extern u8 *D_801FCD2C_ovl_145210[];
+void func_801F9EC8_ovl_145210();
+
+/* Sets map entry a up for class d (c: palette, e: palette table, f: second class byte): builds
+ * both of its sprite parts (texture and palette buffers sized by the class's sprite size) and
+ * installs its draw callback with data b */
+#ifdef NON_MATCHING
+/* 164 vs 160: func_801F503C inlined; the original keeps 1 and 0x87 in s8/s7, walks the parts with an unbiased pointer and shares one hang loop */
+void func_801F5550_ovl_145210(u8 *a, void *b, s32 c, s32 d, s32 e, s32 f) {
+    u32 k;
+    u8 *p;
+    u8 *q;
+
+    bzero(a, 4);
+    a[2] = d;
+    a[8] = d;
+    a[4] = c;
+    a[0xA] = c;
+    a[3] = f;
+    a[9] = f;
+    a[5] = e;
+    a[0xB] = e;
+    for (k = 0, q = a; k < 2; k++, q += 0x14) {
+        u32 size;
+        s32 t;
+        u8 *s3;
+        u8 *s2;
+        u8 pal;
+        u8 b8;
+
+        t = IsLarge145(a[2]);
+        size = 0x400;
+        if (t != 0) {
+            size = 0x780;
+            if (t != 1) {
+                for (;;) {
+                }
+            }
+        }
+        FIELD(q, u16 *, 0x10) = HMalloc(size * 2);
+        FIELD(q, u8 *, 0x14) = HMalloc(size >> 1);
+        p = q + 0x10;
+        pal = 8;
+        if (a[2] != 0x87) {
+            pal = a[5];
+        }
+        p[0xA] = D_801FCD2C_ovl_145210[pal][a[6] * 2 + 1] & 0xF;
+        FIELD(p, u16, 8) = func_801F4030_ovl_145210(a[2]);
+        b8 = 0;
+        if (a[2] != 0x87) {
+            b8 = a[4];
+        }
+        p[0xB] = b8;
+        p[0xC] = IsLarge145(a[2]);
+        FIELD(q, u16, 0x1E) = FIELD(q, u16, 0x18);
+        q[0x20] = q[0x1A];
+        q[0x21] = q[0x1B];
+        q[0x22] = q[0x1C];
+        s3 = ((u8 *(*)(u16))func_801F477C_ovl_145210)(FIELD(q, u16, 0x18));
+        s2 = ((u8 *(*)(u16))func_801F4734_ovl_145210)(FIELD(q, u16, 0x18) + q[0x1A]);
+        func_801F503C_ovl_145210(s2, s3, q + 0x10);
+        func_801F40B0_ovl_145210((s32)s3);
+        func_801F40B0_ovl_145210((s32)s2);
+    }
+    func_801F4BE8_ovl_145210((s32 *)(a + 0x38), (s32)func_801F9EC8_ovl_145210);
+    func_801F4BF0_ovl_145210((s32 *)(a + 0x38), (s32)b);
+    a[0x4E] = 0xFF;
+    a[0x4D] = 0xFF;
+    a[0x4C] = 0xFF;
+    a[0x4B] = 0xFF;
+    FIELD(a, s32, 0x58) = 0;
+    a[0] = 3;
+    FIELD(a, f32, 0x54) = 1.0f;
+    FIELD(a, f32, 0x50) = 1.0f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F5550_ovl_145210);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F57D0_ovl_145210);
 
@@ -858,7 +937,7 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F6540_ovl_145210);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 void func_801FB3BC_ovl_145210();
-void func_801F5550_ovl_145210(void *a, void *b, s32 c, s32 d, s32 e, s32 f);
+void func_801F5550_ovl_145210(u8 *a, void *b, s32 c, s32 d, s32 e, s32 f);
 
 /* Creates the map entry of unit u in the first free slot and links it to the unit's battle index */
 #ifdef NON_MATCHING
