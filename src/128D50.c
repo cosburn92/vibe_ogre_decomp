@@ -102,6 +102,40 @@ INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5A60_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5E34_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D60E8_ovl_101CE0);
+void bzero(void *p, s32 n);
+extern s16 D_8019532C[];
+extern u8 D_80195480[];
+extern u8 D_80195560[][0x34];
+extern u32 *D_801F0CB0_ovl_101CE0[];
+void func_801B2D2C_ovl_101CE0(u32 *o);
+
+/* Disbands squad k: frees its members (generic ids 100+, else clears the character), clears the
+ * record and hides its map unit */
+void func_801D60E8_ovl_101CE0(s32 k) {
+    SquadRec *s = &gSquads[k];
+    u32 *o = D_801F0CB0_ovl_101CE0[k];
+    s32 i;
+
+    if (s->flags & 1) {
+        for (i = 0; i < 5; i++) {
+            s32 c = s->rest[i];
+
+            if (c != 0) {
+                if (c >= 100) {
+                    D_8019532C[c] = 0;
+                    D_80195480[c] = 0;
+                } else {
+                    bzero(D_80195560[c], 0x34);
+                }
+            }
+        }
+        bzero(s, 0x19);
+    }
+    s->flags = 0x80;
+    func_801B2D2C_ovl_101CE0(o);
+    *o &= ~1;
+    *o &= ~0x10;
+    *o &= ~8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D6218_ovl_101CE0);
