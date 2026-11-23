@@ -73,7 +73,29 @@ s32 func_801DEEC0_ovl_213B10(u8 *o, s32 x1, s32 z1, s32 x2, s32 z2) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801DEEC0_ovl_213B10);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801DEF5C_ovl_213B10);
+s32 func_801C8AC0(u8 *u);
+s32 func_801C8AA4(u8 *u);
+u8 func_801BE3A8(s32 cls, s32 base);
+u8 func_801BE410(s32 cls, s32 base);
+
+/* As func_801DF110 against unit b's own position (b + 0x54/0x58), over a's other speed */
+s32 func_801DEF5C_ovl_213B10(u8 *a, u8 *b, s32 x, s32 z) {
+    f32 p[3];
+    f32 q[3];
+    s32 qx = func_801C8AC0(FIELD(b, u8 *, 0x58));
+    s32 qz = func_801C8AA4(FIELD(b, u8 *, 0x54));
+    s32 r = func_801BE3A8(FIELD(a, s32, 0x48), FIELD(a, s32, 0x4C)) + func_801BE410(FIELD(b, s32, 0x48), FIELD(b, s32, 0x4C));
+    f32 d;
+
+    p[0] = x;
+    p[1] = 0.0f;
+    p[2] = z;
+    q[0] = qx;
+    q[1] = 0.0f;
+    q[2] = qz;
+    d = func_8007FE70(p, q) - r;
+    return d / func_801BE1E0(FIELD(a, s32, 0x48), FIELD(a, s32, 0x4C));
+}
 
 #ifdef NON_MATCHING
 /* stack argument is loaded into a GPR up front in the original */
@@ -93,10 +115,6 @@ s32 func_801DF074_ovl_213B10(u8 *o, s32 x1, s32 z1, s32 x2, s32 z2) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801DF074_ovl_213B10);
 #endif
 
-s32 func_801C8AC0(u8 *u);
-s32 func_801C8AA4(u8 *u);
-u8 func_801BE3A8(s32 cls, s32 base);
-u8 func_801BE410(s32 cls, s32 base);
 
 /* Frames for unit a (at x, z) to reach unit tu: ground distance less both units' reach, over a's
  * speed */
