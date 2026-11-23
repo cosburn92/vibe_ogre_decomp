@@ -186,7 +186,7 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD6B0_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD794_ovl_1F0A30);
 
-void func_801AD974_ovl_1F0A30(Panel1F *p, s16 a) {
+inline void func_801AD974_ovl_1F0A30(Panel1F *p, s16 a) {
     p->h4 = a;
     p->h6 = -1;
     p->h8 = 0;
@@ -199,7 +199,24 @@ void func_801AD974_ovl_1F0A30(Panel1F *p, s16 a) {
     bzero(p->zero, 0x10);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AD9D4_ovl_1F0A30);
+s32 func_8009C7CC(void); /* rand */
+
+/* Resets panel p to animation a (0xFF: leave it); a = 0 with flag 2 picks one of the first five
+ * at random, flag 1 selects the second set (+50) */
+void func_801AD9D4_ovl_1F0A30(Panel1F *p, s32 a) {
+    if ((u8)a != 0xFF) {
+        if (a == 0 && (FIELD(p, u8, 0x48) & 2)) {
+            u32 x = func_8009C7CC();
+            u32 y = func_8009C7CC();
+
+            a += (((x << 18) & 0xC000000) | (y << 15) | func_8009C7CC()) % 5;
+        }
+        if (FIELD(p, u8, 0x48) & 1) {
+            a += 50;
+        }
+        func_801AD974_ovl_1F0A30(p, a);
+    }
+}
 
 s32 func_801ADACC_ovl_1F0A30(u8 *a, u8 *b) {
     return *a - *b;
