@@ -840,7 +840,19 @@ s32 func_801F2D10_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return p;
 }
 
+/* (dex + item bonus + 50) * (int + item bonus + 100) / 55 * (100 + func_801F22CC) / 100 */
+#ifdef NON_MATCHING
+/* same length; the unit pointer and the first item sum swap s0/s1 */
+s32 func_801F2F1C_ovl_22A280(BattleUnit *u) {
+    f32 p = u->dex + BattleUnitItemSum7EC(u) + 50;
+
+    p *= (f32)(u->intel + BattleUnitItemSum79C(u) + 100) / 55.0f;
+    p *= (func_801F22CC_ovl_22A280(u) + 100.0f) / 100.0f;
+    return p;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2F1C_ovl_22A280);
+#endif
 
 f32 func_801F2340_ovl_22A280(BattleUnit *u);
 
