@@ -904,7 +904,103 @@ void func_801B129C_ovl_0FA5E0(u8 *p) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1330_ovl_0FA5E0);
+typedef struct {
+    /* 0x0 */ s16 model; /* 0-4: D_801B3E20 model at 0x1D0 + model * 4 */
+    /* 0x2 */ u16 frames;
+    /* 0x4 */ s16 arg;
+    /* 0x6 */ s16 dx;
+} SparkFrameFA5;
+extern SparkFrameFA5 D_801B4994_ovl_0FA5E0[7];
+
+typedef struct {
+    /* 0x00 */ u16 state;
+    /* 0x02 */ u8 unk02[2];
+    /* 0x04 */ f32 x;
+    /* 0x08 */ f32 y;
+    /* 0x0C */ u8 unk0C;
+    /* 0x0D */ u8 alpha;
+    /* 0x0E */ u8 unk0E[8];
+    /* 0x16 */ s16 timer;
+    /* 0x18 */ u16 frame;
+} SparkFA5;
+void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
+
+/* Steps and draws an animated sprite through the 7-frame table D_801B4994 */
+void func_801B1330_ovl_0FA5E0(SparkFA5 *o) {
+    f32 mf[4][4];
+    void *model;
+
+    if (o->state != 0) {
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE7000000;
+            _g->w1 = 0;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE200001C;
+            _g->w1 = 0x4041C8;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFCFF97FF;
+            _g->w1 = 0xFF2CFE7F;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xFA000000;
+            _g->w1 = o->alpha;
+        }
+        if (--o->timer == 0) {
+            if (++o->frame >= 7) {
+                o->frame = 0;
+            }
+            o->timer = D_801B4994_ovl_0FA5E0[(s16)o->frame].frames;
+        }
+        func_80098D00(mf, o->x + D_801B4994_ovl_0FA5E0[(s16)o->frame].dx, o->y, 0.0f);
+        guMtxF2L(mf, D_800E9BE0->mtx[D_800C4BE4]);
+        D_800E9BA0->w0 = 0xDA380000;
+        D_800E9BA0->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++];
+        D_800E9BA0++;
+        switch (D_801B4994_ovl_0FA5E0[(s16)o->frame].model) {
+            case 0:
+                model = FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x1D0);
+                break;
+            case 1:
+                model = FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x1D4);
+                break;
+            case 2:
+                model = FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x1D8);
+                break;
+            case 3:
+                model = FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x1DC);
+                break;
+            case 4:
+                model = FIELD(D_801B3E20_ovl_0FA5E0, void *, 0x1E0);
+                break;
+            default:
+                for (;;) {
+                }
+        }
+        func_801AFD30_ovl_0FA5E0(model, D_801B4994_ovl_0FA5E0[(s16)o->frame].arg, 0);
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xD8380002;
+            _g->w1 = 0x40;
+        }
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xE7000000;
+            _g->w1 = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B15BC_ovl_0FA5E0);
 
