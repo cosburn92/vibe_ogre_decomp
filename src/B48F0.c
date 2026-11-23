@@ -122,7 +122,7 @@ void func_801C7FF0_ovl_087200(s32 a, u8 b) {
     func_801C7E90_ovl_087200(a, b, 1);
 }
 
-void func_801C8010_ovl_087200(s32 a) {
+inline void func_801C8010_ovl_087200(s32 a) {
     u8 *st = D_80196AF8;
     s32 f;
 
@@ -188,76 +188,48 @@ void func_801C97A0_ovl_087200(void) {
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C9828_ovl_087200);
 
-#ifdef NON_MATCHING
-/* m2c draft, 38 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801CF190_ovl_087200(u8 *);                 /* extern */
-u8 func_801CF7F8_ovl_087200();                      /* extern */
+u16 func_801CF190_ovl_087200(u8 *st);
+u8 func_801CF7F8_ovl_087200();
 extern s32 D_801939DC;
 
+/* Organize-screen auto-arrange step (state 0x122): counts the free slots, warns when nothing can
+ * be arranged, otherwise picks the arrangement and confirms; state 99 closes */
 void func_801C9D4C_ovl_087200(void) {
-    s16 temp_s0;
-    s32 var_a0;
-    s32 var_a1;
-
-    temp_s0 = FIELD(D_80196AF8, s16, 0x122);
-    switch (temp_s0) {                              /* irregular */
-    case 0x0:
-        bzero(D_80196AF8 + 0x1BEE, 0x1FE);
-        FIELD(D_80196AF8, u8, 0x1DED) = func_801CF7F8_ovl_087200();
-        if (D_80190F81 == 0) {
-            FIELD(D_80196AF8, s16, 0x122) = 0x63;
-            if ((FIELD(D_80196AF8, u8, 0x98) == 0) || (var_a1 = 0, (FIELD(D_80196AF8, u8, 0x99) == 1))) {
-                var_a1 = 1;
+    switch (FIELD(D_80196AF8, s16, 0x122)) {
+        case 0:
+            bzero(D_80196AF8 + 0x1BEE, 0x1FE);
+            D_80196AF8[0x1DED] = func_801CF7F8_ovl_087200();
+            if (D_80190F81 == 0) {
+                FIELD(D_80196AF8, s16, 0x122) = 99;
+                func_801C8010_ovl_087200(0x40009);
+            } else if (D_80196AF8[0x1DED] == 0) {
+                FIELD(D_80196AF8, s16, 0x122) = 99;
+                func_801C8010_ovl_087200(0x4000E);
+            } else {
+                FIELD(D_80196AF8, s16, 0x122)++;
             }
-            var_a0 = 0x40009;
-            goto block_29;
-        }
-        if (FIELD(D_80196AF8, u8, 0x1DED) == 0) {
-            FIELD(D_80196AF8, s16, 0x122) = 0x63;
-            if ((FIELD(D_80196AF8, u8, 0x98) == 0) || (var_a1 = 0, (FIELD(D_80196AF8, u8, 0x99) == 1))) {
-                var_a1 = 1;
+            break;
+        case 1:
+            if (D_80196AF8[0x1DED] > D_80190F81) {
+                D_801939DC = func_801CF190_ovl_087200(D_80196AF8);
+                FIELD(D_80196AF8, s16, 0x122)++;
+                func_801C8010_ovl_087200(0x4001A);
+            } else {
+                D_801939DC = func_801CF190_ovl_087200(D_80196AF8);
+                FIELD(D_80196AF8, s16, 0x122)++;
+                func_801C8010_ovl_087200(0x40031);
             }
-            var_a0 = 0x4000E;
-block_29:
-            func_801C7E90_ovl_087200(var_a0, var_a1, 1);
-            return;
-        }
-        FIELD(D_80196AF8, s16, 0x122) = (s16) ((u16) FIELD(D_80196AF8, s16, 0x122) + 1);
-        return;
-    case 0x1:
-        if ((u8) D_80190F81 < (u8) FIELD(D_80196AF8, u8, 0x1DED)) {
-            D_801939DC = func_801CF190_ovl_087200(D_80196AF8) & 0xFFFF;
-            FIELD(D_80196AF8, s16, 0x122) = (s16) ((u16) FIELD(D_80196AF8, s16, 0x122) + 1);
-            if ((FIELD(D_80196AF8, u8, 0x98) == 0) || (var_a1 = 0, (FIELD(D_80196AF8, u8, 0x99) == temp_s0))) {
-                var_a1 = 1;
+            break;
+        case 2:
+            if (func_801CC410_ovl_087200(0x100) == NULL) {
+                FIELD(D_80196AF8, s16, 0x122) = 99;
             }
-            var_a0 = 0x4001A;
-        } else {
-            D_801939DC = func_801CF190_ovl_087200(D_80196AF8) & 0xFFFF;
-            FIELD(D_80196AF8, s16, 0x122) = (s16) ((u16) FIELD(D_80196AF8, s16, 0x122) + 1);
-            if ((FIELD(D_80196AF8, u8, 0x98) == 0) || (var_a1 = 0, (FIELD(D_80196AF8, u8, 0x99) == temp_s0))) {
-                var_a1 = 1;
-            }
-            var_a0 = 0x40031;
-        }
-        goto block_29;
-    case 0x2:
-        if (func_801CC410_ovl_087200(0x100) == NULL) {
-            FIELD(D_80196AF8, s16, 0x122) = 0x63;
-            return;
-        }
-        return;
-    case 0x63:
-        func_801C8158_ovl_087200(D_80196AF8);
-        break;
+            break;
+        case 99:
+            func_801C8158_ovl_087200(D_80196AF8);
+            break;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C9D4C_ovl_087200);
-#endif
 
 void func_801C9F44_ovl_087200(void) {
     if (func_801D8B58_ovl_087200()) {
