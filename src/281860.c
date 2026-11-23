@@ -393,7 +393,35 @@ void func_80226538_ovl_281860(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/281860", func_802265EC_ovl_281860);
+extern s16 D_800E7A36;
+extern s16 D_800E7A38;
+extern s16 D_800E7A3A;
+extern s16 D_800E7A3C;
+void func_80078674(s32 a, s32 b, s32 c, s32 d);
+
+/* Draws the screen fade: a full-screen rectangle in the fade colour (bytes 4-6) with alpha +8 */
+void func_802265EC_ovl_281860(void) {
+    u8 *f = D_8018FC10;
+
+    if (f != NULL) {
+        func_80078674(D_800E7A36, D_800E7A38, D_800E7A3A, D_800E7A3C);
+        GFX(0xE7000000, 0);
+        GFX(0xE7000000, 0);
+        GFX(0xE3000A01, 0);
+        GFX(0xE7000000, 0);
+        GFX(0xD9C0F9FA, 0);
+        GFX(0xFA000000, (f[4] << 24) | (f[5] << 16) | (f[6] << 8) | f[8]);
+        GFX(0xFCFFFFFF, 0xFFFDF6FB);
+        GFX(0xE200001C, 0x5041C8);
+        GFX(0xE7000000, 0);
+        GFX(0xE7000000, 0);
+        GFX(0xE44FC3BC, 0);
+        GFX(0xE1000000, 0);
+        GFX(0xF1000000, 0);
+        GFX(0xE7000000, 0);
+        GFX(0xE7000000, 0);
+    }
+}
 
 void func_802267DC_ovl_281860(void) {
     u8 *p = D_8018FC10;
