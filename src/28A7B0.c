@@ -1001,77 +1001,72 @@ block_13:
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231F04_ovl_286BD0);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_802320C0_ovl_286BD0(s16 arg0, s8 *arg1, s8 *arg2, s32 *arg3, s32 *arg4) {
-    s16 temp_v0_2;
-    s32 temp_v0;
-
-    temp_v0 = arg0 & 0xFF;
-    switch (temp_v0) {                              /* switch 1 */
-    case 3:                                         /* switch 1 */
-block_6:
-        *arg2 = 1;
-        break;
-    case 6:                                         /* switch 1 */
-        goto block_6;
-    case 2:                                         /* switch 1 */
-    case 7:                                         /* switch 1 */
-        *arg1 = 1;
-        break;
-    case 1:                                         /* switch 1 */
-    case 8:                                         /* switch 1 */
-        *arg1 = 1;
-        goto block_6;
+/* Mirroring (flip x / flip y) and texture offsets (x, y; +16 y for the lower-half pieces 5-8) of
+ * frame piece d (1-8) */
+void func_802320C0_ovl_286BD0(s32 d, s8 *fx, s8 *fy, s32 *x, s32 *y) {
+    switch ((u8)d) {
+        case 3:
+            *fy = 1;
+            break;
+        case 6:
+            *fy = 1;
+            break;
+        case 2:
+        case 7:
+            *fx = 1;
+            break;
+        case 1:
+        case 8:
+            *fx = 1;
+            *fy = 1;
+            break;
     }
-    temp_v0_2 = arg0 - 1;
-    switch (temp_v0_2) {                            /* switch 2 */
-    case 0:                                         /* switch 2 */
-        *arg1 = 1;
-block_15:
-        *arg2 = 1;
-        *arg3 = 0;
-        *arg4 = 0;
-        break;
-    case 1:                                         /* switch 2 */
-        *arg1 = 1;
-    case 4:                                         /* switch 2 */
-        *arg3 = 8;
-        *arg4 = 0;
-        break;
-    case 2:                                         /* switch 2 */
-        *arg2 = 1;
-        *arg3 = 0;
-        *arg4 = 8;
-        break;
-    case 3:                                         /* switch 2 */
-        *arg3 = 8;
-        *arg4 = 8;
-        break;
-    case 5:                                         /* switch 2 */
-        goto block_15;
-    case 6:                                         /* switch 2 */
-        *arg3 = 8;
-        *arg4 = 8;
-        *arg1 = 1;
-        break;
-    case 7:                                         /* switch 2 */
-        *arg3 = 0;
-        *arg4 = 8;
-        *arg1 = 1;
-        *arg2 = 1;
-        break;
+    switch ((s16)d) {
+        case 1:
+            *fx = 1;
+            *fy = 1;
+            *x = 0;
+            *y = 0;
+            break;
+        case 2:
+            *fx = 1;
+            *x = 8;
+            *y = 0;
+            break;
+        case 3:
+            *fy = 1;
+            *x = 0;
+            *y = 8;
+            break;
+        case 4:
+            *x = 8;
+            *y = 8;
+            break;
+        case 5:
+            *x = 8;
+            *y = 0;
+            break;
+        case 6:
+            *fy = 1;
+            *x = 0;
+            *y = 0;
+            break;
+        case 7:
+            *x = 8;
+            *y = 8;
+            *fx = 1;
+            break;
+        case 8:
+            *x = 0;
+            *y = 8;
+            *fx = 1;
+            *fy = 1;
+            break;
     }
-    if (arg0 >= 5) {
-        *arg4 += 0x10;
+    if ((s16)d >= 5) {
+        *y += 16;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802320C0_ovl_286BD0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802321FC_ovl_286BD0);
 
