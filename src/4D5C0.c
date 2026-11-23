@@ -854,6 +854,54 @@ void func_80178E30_ovl_040E80(void) {
     D_8018FC18_ovl_040E80 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/4D5C0", func_80178E60_ovl_040E80);
+/* Reads stage script id's ending code (last word 0xFF0000nn -> nn) and its first 0x80000006 /
+ * 0x80000007 arguments and 0x80000008 flag, stopping at 0x80000001 */
+void func_80178E60_ovl_040E80(s32 id, Rec8_4D *out) {
+    s32 found = 0;
+    s32 *buf = func_80071C04(ChunkSize(0x019A8804));
+    s32 *data;
+    s32 n;
+    s32 last;
+    s32 i;
+    s32 *p;
+
+    LoadChunkRaw(buf, 0x019A8804);
+    id *= 4;
+    id += (s32)buf;
+    id = *(s32 *)id;
+    HFree(buf);
+    buf = func_80071C04(ChunkSize(id));
+    LoadChunkRaw(buf, id);
+    id = ReadU32BE(buf);
+    data = func_80071C04(id);
+    DecodeLZ(data, buf);
+    HFree(buf);
+    n = id / 4;
+    id = data[n - 1];
+    if ((id & 0xFF000000) == 0xFF000000) {
+        id &= 0xFF;
+    } else {
+        id = 0;
+    }
+    out->h[0] = id;
+    for (id = 0; id < n; id++) {
+        if (data[id] == 0x80000008) {
+            found |= 4;
+            out->h[3] = 1;
+        }
+        if (data[id] == 0x80000007) {
+            found |= 2;
+            out->h[2] = data[id + 1];
+        }
+        if (data[id] == 0x80000006) {
+            found |= 1;
+            out->h[1] = data[id + 1];
+        }
+        if (found == 4 || data[id] == 0x80000001) {
+            break;
+        }
+    }
+    HFree(data);
+}
 
 INCLUDE_RODATA("asm/nonmatchings/4D5C0", D_80190C80_ovl_040E80);
