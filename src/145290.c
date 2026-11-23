@@ -910,78 +910,34 @@ inline MapEntry *func_801F69A0_ovl_145210(s32 id) {
     return r;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801F69FC_ovl_145210(s32 arg0) {
-    MapEntry **var_v1;
-    MapEntry *temp_s4;
-    MapEntry *temp_s6;
-    MapEntry *temp_v0;
-    MapUnit **var_v1_2;
-    s32 var_a0;
-    s32 var_s1;
-    s32 var_s3;
-    u32 var_s2;
-    u8 *temp_v1;
-    void *temp_a0;
-    void *temp_s0;
-    void *temp_s0_2;
+/* Frees unit u's map entry (its two parts' buffers and the entry) and clears its slot's flag 1 */
+void func_801F69FC_ovl_145210(MapUnit *u) {
+    s32 i;
+    u32 k;
+    MapEntry *e;
+    u8 *p;
 
-    var_s3 = 0;
-    if ((s32) D_801FDA32_ovl_145210 > 0) {
-        var_v1 = D_801FDA34_ovl_145210;
-loop_2:
-        temp_v0 = *var_v1;
-        if ((temp_v0 == NULL) || (temp_v0->id != arg0)) {
-            var_s3 += 1;
-            var_v1 += 4;
-            if (var_s3 < (s32) D_801FDA32_ovl_145210) {
-                goto loop_2;
-            }
-        }
-        if (var_s3 < (s32) D_801FDA32_ovl_145210) {
-            temp_s6 = D_801FDA34_ovl_145210[var_s3];
-            var_s2 = 0;
-            var_s1 = 0;
-            temp_s4 = temp_s6 + 0x30;
-            do {
-                temp_s0 = var_s1 + temp_s4;
-                temp_s0_2 = temp_s0 + 0x10;
-                temp_a0 = FIELD(temp_s0, void *, 0x10);
-                var_s1 += 0x14;
-                HFree(temp_a0);
-                var_s2 += 1;
-                HFree(FIELD(temp_s0_2, void *, 4));
-            } while (var_s2 < 2U);
-            HFree(temp_s6);
-            var_a0 = 0;
-            D_801FDA34_ovl_145210[var_s3] = NULL;
-            if (D_801F367C > 0) {
-                var_v1_2 = D_801F0CB0;
-loop_10:
-                if (*var_v1_2 != arg0) {
-                    var_a0 += 1;
-                    var_v1_2 += 4;
-                    if (var_a0 >= D_801F367C) {
-                        goto loop_15;
-                    }
-                    goto loop_10;
-                }
-                temp_v1 = (var_a0 * 4) + D_801FDA3C_ovl_145210;
-                *temp_v1 &= 0xFE;
-            } else {
-loop_15:
-                goto loop_15;
-            }
+    for (i = 0; i < D_801FDA32_ovl_145210; i++) {
+        if (D_801FDA34_ovl_145210[i] != NULL && D_801FDA34_ovl_145210[i]->id == (s32)u) {
+            break;
         }
     }
+    if (i < D_801FDA32_ovl_145210) {
+        e = D_801FDA34_ovl_145210[i];
+        p = (u8 *)e + 0x30;
+        for (k = 0; k < 2; k++) {
+            u8 *q = (u8 *)(k * 0x14 + (s32)p);
+
+            q += 0x10;
+            HFree(((void **)q)[0]);
+            HFree(((void **)q)[1]);
+        }
+        HFree(e);
+        D_801FDA34_ovl_145210[i] = NULL;
+        i = func_801F4FF4_ovl_145210(u);
+        D_801FDA3C_ovl_145210[i * 4] &= ~1;
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F69FC_ovl_145210);
-#endif
 
 u8 func_801F6B64_ovl_145210(s32 id) {
     MapEntry *e = func_801F69A0_ovl_145210(id);
