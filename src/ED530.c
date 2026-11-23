@@ -565,60 +565,52 @@ s32 func_801A63F4_ovl_0EBBB0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
+#include "scene.h"
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-extern s32 D_800E8328;
-extern s32 D_8018F818;
+extern s32 D_8018F818[][3];
+f32 func_801A63FC_ovl_0EBBB0(s32 slot, f32 x, f32 z);
+s32 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row);
 
-f32 func_801A66C8_ovl_0EBBB0(s32 arg0, f32 arg1, f32 arg2) {
-    f32 temp_fs0;
-    f32 temp_fs1;
-    f32 temp_fs2;
-    f32 temp_fs3;
-    f32 temp_ft0;
-    f32 temp_fv1;
-    f32 temp_fv1_2;
-    f32 var_fv1;
-    s32 temp_fv1_3;
-    s32 temp_s0;
-    s32 temp_s3;
-    s32 temp_s4;
-    s32 temp_s5;
-    s32 temp_s6;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 temp_v1;
-    void *temp_s1;
+/* Ground height at (x, z) in scene slot's height grid: the grid cell's two triangles are
+ * interpolated (16-bit heights over 0xC-0x10); maps without flag 0x10 use func_801A63FC */
+#ifdef NON_MATCHING
+/* 180 vs 181: the grid pointer and row index swap s1/s2 and the original copies the incremented index into ix's register */
+f32 func_801A66C8_ovl_0EBBB0(s32 slot, f32 x, f32 z) {
+    u8 *g = (u8 *)D_800E82C8[slot].slotsB[D_800E82C8[slot].unk8D];
+    f32 fx;
+    f32 fz;
+    s32 ix;
+    s32 iz;
+    s32 a;
+    s32 b;
+    s32 c;
+    f32 dx;
+    f32 dz;
+    f32 v;
 
-    temp_v1 = arg0 * 0xA8;
-    temp_s1 = *((*(&D_800E8328 + 0x2D + temp_v1) * 4) + (temp_v1 + &D_800E8328));
-    if (!(*(&D_8018F818 + (*(&D_800E8328 + 0x28 + temp_v1) * 0xC)) & 0x10)) {
-        return func_801A63FC_ovl_0EBBB0(arg0, arg1, arg0);
+    if (!(D_8018F818[D_800E82C8[slot].unk88][0] & 0x10)) {
+        return func_801A63FC_ovl_0EBBB0(slot, x, z);
     }
-    temp_fv1 = FIELD(temp_s1, f32, 4);
-    temp_fv1_2 = FIELD(temp_s1, f32, 0x14);
-    temp_fs0 = ((arg1 - temp_fv1) / (FIELD(temp_s1, f32, 8) - temp_fv1)) * (f32) (FIELD(temp_s1, u16, 0) - 1);
-    temp_fs1 = ((arg2 - temp_fv1_2) / (FIELD(temp_s1, f32, 0x18) - temp_fv1_2)) * (f32) (FIELD(temp_s1, u16, 2) - 1);
-    temp_s0 = (s32) func_8009D3E0(temp_fs0);
-    temp_fv1_3 = (s32) func_8009D3E0(temp_fs1);
-    temp_s4 = temp_s0 + 1;
-    temp_s3 = temp_fv1_3 + 1;
-    temp_s6 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s0, temp_fv1_3);
-    temp_fs3 = temp_fs1 - (f32) temp_fv1_3;
-    temp_fs2 = temp_fs0 - (f32) temp_s0;
-    temp_s5 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s4, temp_s3);
-    if ((temp_fs3 - temp_fs2) >= 0.0f) {
-        temp_v0 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s0, temp_s3);
-        var_fv1 = ((temp_fs2 * (f32) (temp_s5 - temp_v0)) - ((temp_fs1 - (f32) temp_s3) * (f32) (temp_s6 - temp_v0))) + (f32) temp_v0;
+    fx = (x - FIELD(g, f32, 4)) / (FIELD(g, f32, 8) - FIELD(g, f32, 4)) * (f32)(FIELD(g, u16, 0) - 1);
+    fz = (z - FIELD(g, f32, 0x14)) / (FIELD(g, f32, 0x18) - FIELD(g, f32, 0x14)) * (f32)(FIELD(g, u16, 2) - 1);
+    ix = func_8009D3E0(fx);
+    iz = func_8009D3E0(fz);
+    a = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
+    b = func_801A69A4_ovl_0EBBB0((u16 *)g, ix + 1, iz + 1);
+    dz = fz - iz;
+    dx = fx - ix;
+    if (dz - dx >= 0.0f) {
+        iz++;
+        c = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
+        v = dx * (b - c) - (fz - iz) * (a - c) + c;
     } else {
-        temp_v0_2 = func_801A69A4_ovl_0EBBB0(temp_s1, temp_s4, temp_fv1_3);
-        var_fv1 = (-(temp_fs0 - (f32) temp_s4) * (f32) (temp_s6 - temp_v0_2)) + (temp_fs3 * (f32) (temp_s5 - temp_v0_2)) + (f32) temp_v0_2;
+        ix++;
+        c = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
+        v = -(fx - ix) * (a - c) + dz * (b - c) + c;
     }
-    temp_ft0 = FIELD(temp_s1, f32, 0xC);
-    return ((var_fv1 / 65279.0f) * (FIELD(temp_s1, f32, 0x10) - temp_ft0)) + temp_ft0;
+    return v / 65279.0f * (FIELD(g, f32, 0x10) - FIELD(g, f32, 0xC)) + FIELD(g, f32, 0xC);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A66C8_ovl_0EBBB0);
