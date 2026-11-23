@@ -930,7 +930,35 @@ s32 func_801DCF90_ovl_101CE0(MapUnit *u) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD0E8_ovl_101CE0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+extern f32 D_801F3A38_ovl_101CE0;
+s32 func_801DD244_ovl_101CE0();
+
+/* While flag 1 is set, looks for a location within a quarter of D_801F3A38 of the unit; on finding
+ * one, records it at 0x7C and swaps flag 1 for 0x40 */
+void func_801DD0E8_ovl_101CE0(u8 *u) {
+    Vec3f p;
+    s32 i;
+
+    if (FIELD(u, s32, 0x78) & 1) {
+        for (i = 0; i < D_801F1070_ovl_101CE0; i++) {
+            if (func_801DD244_ovl_101CE0() == 0 && !(D_801951CC[i].flags & 2)) {
+                f32 dx, dz;
+
+                func_801DA340_ovl_101CE0(i, &p);
+                dx = FIELD(u, f32, 8) - p.x;
+                dz = FIELD(u, f32, 0x10) - p.z;
+                if (dx * dx + dz * dz < (D_801F3A38_ovl_101CE0 * 0.25) * (D_801F3A38_ovl_101CE0 * 0.25)) {
+                    FIELD(u, s32, 0x7C) = i;
+                    FIELD(u, s32, 0x78) = (FIELD(u, s32, 0x78) & ~1) | 0x40;
+                    return;
+                }
+            }
+        }
+    }
+}
 
 s32 func_801DD208_ovl_101CE0(void) {
     s32 r = 0;
