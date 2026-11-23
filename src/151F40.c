@@ -1094,7 +1094,52 @@ void func_80207068_ovl_14EBE0(s8 kind, u8 *rows, u8 *tab, s32 unused, u8 *slots)
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207068_ovl_14EBE0);
 #endif
 
+/* Target of menu choice `mode` for row recs[mode] shifted by off (10-byte rows, id at +3): 0 a
+ * table entry, 1 the deployed unit (when 0x5F6 is 2), 2 the reserve entry, 3 the first active
+ * squad of the slot's side (or D_801F0BA8 if the slot is taken) */
+#ifdef NON_MATCHING
+/* 92/92: the result and the row id use different registers (a2 vs v1) and the case 1-2 tails are scheduled differently */
+s32 func_80207210_ovl_14EBE0(s8 mode, s32 off, u8 *recs, u8 *tbl, s32 unused, u8 *slots) {
+    s32 r = 0;
+    u8 k = recs[mode * 10 + 3] + off;
+
+    switch (mode) {
+        case 0:
+            r = tbl[k * 12];
+            break;
+        case 1:
+            r = k;
+            if ((s8)D_80213778_ovl_14EBE0[0x5F6] == 2) {
+                k = D_80213778_ovl_14EBE0[(u8)(D_80213778_ovl_14EBE0[0x62D] + slots[k * 8 + 5]) + 0x5D9];
+                r = tbl[k * 12];
+            }
+            break;
+        case 2:
+            k += D_80213778_ovl_14EBE0[0x5F7];
+            r = tbl[k * 12];
+            break;
+        case 3:
+            if (D_800E91D0[k * 8 + 0x3DF] != 0) {
+                r = D_801F0BA8;
+            } else {
+                u8 side = D_80213778_ovl_14EBE0[k * 8 + 0x3DC] & 0x7F;
+                s32 i;
+                u32 n = 50;
+
+                for (i = 0; (u8)i < n; i++) {
+                    if (gSquads[(u8)i].id == side && (gSquads[(u8)i].flags & 1)) {
+                        break;
+                    }
+                }
+                r = (u8)i;
+            }
+            break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80207210_ovl_14EBE0);
+#endif
 
 typedef struct {
     u8 b[12];
