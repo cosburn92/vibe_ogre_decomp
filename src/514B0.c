@@ -147,7 +147,81 @@ void func_8017B774_ovl_040E80(void) {
     D_801977C8_ovl_040E80 = 3;
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017B838_ovl_040E80);
+s32 func_8019AEEC(void);
+s32 func_801C212C(void);
+s32 func_8019B320(void);
+void func_80172394_ovl_040E80(void);
+void func_80172124_ovl_040E80(void);
+void func_801707F4_ovl_040E80(void);
+extern u16 D_8018F1A2_ovl_040E80;
+extern u8 D_801939D1_ovl_040E80;
+
+/* Runs the current mode's update and maps its result to the next game state (D_800C4C26) */
+void func_8017B838_ovl_040E80(void) {
+    s32 m = D_801977C8_ovl_040E80;
+    s32 r;
+
+    switch (m) {
+        case 0:
+            break;
+        case 1:
+            switch (func_8019AEEC()) {
+                case 1:
+                    D_800C4C26 = 0xFFFE;
+                    break;
+                case 2:
+                    D_800C4C26 = 6;
+                    break;
+                case 3:
+                    D_800C4C26 = 8;
+                    break;
+                case 9:
+                case 10:
+                case 11:
+                    D_800C4C26 = 2;
+                    break;
+                case 12:
+                    D_800C4C26 = 1;
+                    break;
+            }
+            break;
+        case 2:
+            r = func_801C212C();
+            switch (r) {
+                case 1:
+                    D_800C4C26 = 0xFFFE;
+                    break;
+                case 3:
+                    func_80172394_ovl_040E80();
+                    func_80172124_ovl_040E80();
+                    func_801707F4_ovl_040E80();
+                    D_800C4C26 = D_8018F1A2_ovl_040E80;
+                    break;
+                case 2:
+                    D_800C4C26 = 7;
+                    break;
+            }
+            break;
+        case 3:
+            r = func_8019B320();
+            switch (r) {
+                case 1:
+                    if (D_801939D1_ovl_040E80 == 3) {
+                        D_800C4C26 = 0xFFFE;
+                    } else {
+                        func_80172394_ovl_040E80();
+                        func_80172124_ovl_040E80();
+                        func_801707F4_ovl_040E80();
+                        D_800C4C26 = D_8018F1A2_ovl_040E80;
+                    }
+                    break;
+                case 2:
+                    D_800C4C26 = 0x8010;
+                    break;
+            }
+            break;
+    }
+}
 
 void func_8017B9A8_ovl_040E80(u8 *p) {
     func_8016C814_ovl_040E80(p);
