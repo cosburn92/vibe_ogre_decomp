@@ -1122,7 +1122,36 @@ void func_801DDDA8_ovl_101CE0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DDDF8_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DE440_ovl_101CE0);
+void *LoadChunk(s32 id);
+void *HMalloc(s32 size);
+void _bcopy(void *src, void *dst, s32 n);
+s32 LoadAsset(u32 handle, ...);
+s32 func_8017BFB0(s32 a, s32 b, void *func, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3);
+void func_8020CDA0(s32 se);
+extern s16 D_801F0B50_ovl_101CE0;
+void func_801DDDF8_ovl_101CE0();
+
+/* Opens the window for page k: with bit 15 set, builds a palette from the shared base and the
+ * page's own 0x100 bytes */
+void func_801DE440_ovl_101CE0(s16 k) {
+    s32 *p = &D_801EB288_ovl_101CE0;
+
+    *p = 0;
+    D_801EB28C_ovl_101CE0 = NULL;
+    if (k & 0x8000) {
+        u8 *src = LoadChunk(0x01DEE82C);
+        u8 *pal = HMalloc(0x300);
+
+        _bcopy(src, pal, 0x200);
+        _bcopy(src + (((k & 0x7FFF) << 8) + 0x100), pal + 0x200, 0x100);
+        HFree(src);
+        D_801EB28C_ovl_101CE0 = pal;
+    }
+    *p = LoadAsset(0x0218E9B4, 0x15, -3, 6);
+    D_801EB284_ovl_101CE0 = func_8017BFB0(0, 0, func_801DDDF8_ovl_101CE0, 0x9E, 0xA4, 0xA2, 0xA8, 0x5A, 0x95, 0xE6, 0xB7);
+    func_8020CDA0(0x2D3);
+    D_801F0B50_ovl_101CE0 = k;
+}
 
 void func_801DE57C_ovl_101CE0(void) {
     s32 *p = &D_801EB288_ovl_101CE0;
