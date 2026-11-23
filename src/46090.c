@@ -799,17 +799,15 @@ void func_80172A28_ovl_040E80(s32 mode, s32 kind, s32 val, u8 extra) {
 }
 
 /* Sets the 2-bit field n (1-based) */
-#ifdef NON_MATCHING
-/* param masking/register order differs */
 void func_80172B10_ovl_040E80(u8 n, u8 v) {
     s32 i = n - 1;
-    s32 sh = (i & 3) * 2;
+    s32 sh;
+    u8 old = D_80196A86_ovl_040E80[i / 4];
 
-    D_80196A86_ovl_040E80[i / 4] = (D_80196A86_ovl_040E80[i / 4] & ~(3 << sh)) | (v << sh);
+    sh = (i & 3) * 2;
+    old &= ~(3 << sh);
+    D_80196A86_ovl_040E80[i / 4] = old | (v << sh);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/46090", func_80172B10_ovl_040E80);
-#endif
 
 /* Sets bit flag n (1-based) */
 /* param masking/register order differs */
