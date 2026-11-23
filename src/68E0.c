@@ -439,7 +439,40 @@ void func_80078164(u8 *p, void *dst) {
     }
 }
 
+/* Rebuilds the draw order of the active scenes (D_800C4C10, D_800C49D0 entries) sorted by depth
+ * (0x0E, deepest first), then renumbers the nonzero depths count + 10 downwards in that order */
+#ifdef NON_MATCHING
+/* 84/84: the depth counter and the order pointer of the renumbering loop swap a0/a1 */
+void func_8007819C(void) {
+    s32 pad[1];
+    s32 i;
+    s32 j;
+    s32 z;
+
+    D_800C49D0 = 0;
+    for (i = 0; i < 6; i++) {
+        if (D_800E82C8[i].flags & 0x8000) {
+            for (j = D_800C49D0 - 1; j >= 0; j--) {
+                if (D_800E82C8[((u16 *)D_800C4C10)[j]].unk0E >= D_800E82C8[i].unk0E) {
+                    break;
+                }
+                ((u16 *)D_800C4C10)[j + 1] = ((u16 *)D_800C4C10)[j];
+            }
+            ((u16 *)D_800C4C10)[j + 1] = i;
+            D_800C49D0++;
+        }
+    }
+    z = D_800C49D0 + 10;
+    for (i = 0; i < D_800C49D0; i++) {
+        if (D_800E82C8[((u16 *)D_800C4C10)[i]].unk0E != 0) {
+            D_800E82C8[((u16 *)D_800C4C10)[i]].unk0E = z;
+            z--;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/68E0", func_8007819C);
+#endif
 
 void func_800782EC(void) {
 }
