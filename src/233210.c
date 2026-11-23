@@ -146,62 +146,72 @@ static inline s16 BattleUnitWeaponBonus(BattleUnit *u) {
     return func_8016F65C(id);
 }
 
-static inline s32 BattleUnitItemSum7EC(BattleUnit *u) {
+/* Item bonus of one equipment slot (0 when empty) */
+static inline s8 ItemBonus7EC(u16 id) {
+    return id != 0 ? func_8016F7EC(id) : 0;
+}
+
+/* Sum of the unit's four equipment slots' func_8016F7EC bonuses */
+static inline s16 BattleUnitItemSum7EC(BattleUnit *u) {
     s16 s;
 
     if (u == NULL) {
         return 0;
     }
-    s = u->items[0] != 0 ? func_8016F7EC(u->items[0]) : 0;
+    s = ItemBonus7EC(u->items[0]);
     if (u->items[1] != 0) {
         s += func_8016F7EC(u->items[1]);
     }
     if (u->items[2] != 0) {
         s += func_8016F7EC(u->items[2]);
     }
-    if (u->items[3] != 0) {
-        return s + func_8016F7EC(u->items[3]);
-    }
-    return s;
+    return u->items[3] != 0 ? s + func_8016F7EC(u->items[3]) : s;
 }
 
-static inline s32 BattleUnitItemSum6AC(BattleUnit *u) {
+/* Item bonus of one equipment slot (0 when empty) */
+static inline s8 ItemBonus6AC(u16 id) {
+    return id != 0 ? func_8016F6AC(id) : 0;
+}
+
+/* Sum of the unit's four equipment slots' func_8016F6AC bonuses */
+static inline s16 BattleUnitItemSum6AC(BattleUnit *u) {
     s16 s;
 
     if (u == NULL) {
         return 0;
     }
-    s = u->items[0] != 0 ? func_8016F6AC(u->items[0]) : 0;
+    s = ItemBonus6AC(u->items[0]);
     if (u->items[1] != 0) {
         s += func_8016F6AC(u->items[1]);
     }
     if (u->items[2] != 0) {
         s += func_8016F6AC(u->items[2]);
     }
-    if (u->items[3] != 0) {
-        return s + func_8016F6AC(u->items[3]);
-    }
-    return s;
+    return u->items[3] != 0 ? s + func_8016F6AC(u->items[3]) : s;
 }
 
-static inline s32 BattleUnitItemSum65C(BattleUnit *u) {
+/* Item bonus of one equipment slot (0 when empty) */
+static inline s8 ItemBonus65C(u16 id) {
+    return id != 0 ? func_8016F65C(id) : 0;
+}
+
+/* Sum of the unit's four equipment slots' func_8016F65C bonuses */
+static inline s16 BattleUnitItemSum65C(BattleUnit *u) {
     s16 s;
 
     if (u == NULL) {
         return 0;
     }
-    s = u->items[0] != 0 ? func_8016F65C(u->items[0]) : 0;
+    s = ItemBonus65C(u->items[0]);
     if (u->items[1] != 0) {
         s += func_8016F65C(u->items[1]);
     }
     if (u->items[2] != 0) {
         s += func_8016F65C(u->items[2]);
     }
-    if (u->items[3] != 0) {
-        return s + func_8016F65C(u->items[3]);
-    }
-    return s;
+    return u->items[3] != 0 ? s + func_8016F65C(u->items[3]) : s;
 }
+
 BattleUnit *func_801CA2E0(s32 lane, s32 row);
 s32 func_801CD19C(s32 a, s32 cls, s32 flag);
 s32 func_801C8B08(BattleUnit *u);
@@ -833,8 +843,6 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2484_ovl_22A280);
 
 /* Physical defence of b against a: class defence / 20 * (0x26 + item bonus + 25) / 25
  * * (0x24 + item bonus + 100) / 100 * (100 + func_801F1B98) / 100 */
-#ifdef NON_MATCHING
-/* formula right; inlined item-sum helper's register flow differs */
 s32 func_801F26D4_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     f32 p = func_8016D3A4(b->unk48, b->cls) / 20.0f;
 
@@ -843,12 +851,7 @@ s32 func_801F26D4_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     p *= (func_801F1B98_ovl_22A280(a, b) + 100.0f) / 100.0f;
     return p;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F26D4_ovl_22A280);
-#endif
 
-#ifdef NON_MATCHING
-/* formula right; inlined item-sum helper's register flow differs */
 s32 func_801F28E0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     u8 base = func_8016D2FC(a->unk48, a->cls);
     f32 p;
@@ -859,9 +862,6 @@ s32 func_801F28E0_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     p *= (func_801F1884_ovl_22A280(a, b) + 100.0f) / 100.0f;
     return p;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F28E0_ovl_22A280);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2AF8_ovl_22A280);
 
@@ -872,65 +872,33 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2F1C_ovl_22A280);
 s8 func_8016F79C(u16 id);
 f32 func_801F2340_ovl_22A280(BattleUnit *u);
 
-static inline s8 Bonus79C(u16 id) {
+static inline s8 ItemBonus79C(u16 id) {
     return id != 0 ? func_8016F79C(id) : 0;
 }
 
-static inline s8 Bonus7EC(u16 id) {
-    return id != 0 ? func_8016F7EC(id) : 0;
-}
-
-
-static inline s32 BattleUnitItemSum79C(BattleUnit *u) {
+static inline s16 BattleUnitItemSum79C(BattleUnit *u) {
     s16 s;
 
     if (u == NULL) {
         return 0;
     }
-    s = Bonus79C(u->items[0]);
+    s = ItemBonus79C(u->items[0]);
     if (u->items[1] != 0) {
         s += func_8016F79C(u->items[1]);
     }
     if (u->items[2] != 0) {
         s += func_8016F79C(u->items[2]);
     }
-    if (u->items[3] != 0) {
-        return s + func_8016F79C(u->items[3]);
-    }
-    return s;
+    return u->items[3] != 0 ? s + func_8016F79C(u->items[3]) : s;
 }
 
-static inline s32 ItemSum7EC_b(BattleUnit *u) {
-    s16 s;
-
-    if (u == NULL) {
-        return 0;
-    }
-    s = Bonus7EC(u->items[0]);
-    if (u->items[1] != 0) {
-        s += func_8016F7EC(u->items[1]);
-    }
-    if (u->items[2] != 0) {
-        s += func_8016F7EC(u->items[2]);
-    }
-    if (u->items[3] != 0) {
-        return s + func_8016F7EC(u->items[3]);
-    }
-    return s;
-}
-
-#ifdef NON_MATCHING
-/* same length; the inlined item sums' last item (if/return vs the original's single truncation at the join) differs */
 s32 func_801F312C_ovl_22A280(BattleUnit *u) {
     f32 p = u->intel + BattleUnitItemSum79C(u) + 50;
 
-    p *= (f32)(u->dex + ItemSum7EC_b(u) + 100) / 50.0f;
+    p *= (f32)(u->dex + BattleUnitItemSum7EC(u) + 100) / 50.0f;
     p *= (func_801F2340_ovl_22A280(u) + 100.0f) / 100.0f;
     return p;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F312C_ovl_22A280);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F32EC_ovl_22A280);
 
