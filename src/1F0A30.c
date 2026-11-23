@@ -918,7 +918,67 @@ s32 func_801B3C3C_ovl_1F0A30(u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B3CB8_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B3EE0_ovl_1F0A30);
+s32 func_801C8C90_ovl_1F0A30(void *u);
+void BattleDrawUnitSprite(u8 *o);
+void func_801C2E40_ovl_1F0A30(s32 key, u8 *out);
+
+/* Moves held part p (weapon / shield model) to unit sprite o and draws it at the hand offset for
+ * its kind, unless o's owner is in its idle pose with o as its current sprite */
+static inline void AttachPart(u8 *p, u8 *o) {
+    s8 hand[6];
+    s32 k;
+
+    if ((p != NULL) & (o != NULL)) {
+        u8 *owner = FIELD(o, u8 *, 0x40);
+
+        if (func_801C8C90_ovl_1F0A30(owner) == 0 || FIELD(owner, u8 *, 4) != o) {
+            func_801C2E40_ovl_1F0A30(FIELD(o, s32, 0x18), (u8 *)hand);
+            switch (FIELD(p, s16, 0x48)) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                    k = 0;
+                    break;
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                    k = 2;
+                    break;
+                default:
+                    k = 4;
+                    break;
+            }
+            FIELD(p, s16, 0x22) = FIELD(o, s16, 0x22);
+            FIELD(p, s16, 0x24) = FIELD(o, s16, 0x24);
+            FIELD(p, s16, 0x26) = FIELD(o, s16, 0x26);
+            FIELD(p, s16, 0x1C) = FIELD(o, s16, 0x1C);
+            FIELD(p, s16, 0x1E) = FIELD(o, s16, 0x1E);
+            FIELD(p, s16, 0x20) = FIELD(o, s16, 0x20);
+            func_801B0770_ovl_1F0A30(p, 1, 1, 0, hand[k], -hand[k + 1]);
+        }
+    }
+}
+
+/* Draws unit sprite o with its held parts (0x1C behind, 0x18 in front) */
+s32 func_801B3EE0_ovl_1F0A30(u8 *o) {
+    u8 *p = o;
+    u8 *owner = FIELD(o, u8 *, 0x40);
+
+    AttachPart(FIELD(owner, u8 *, 0x1C), o);
+    BattleDrawUnitSprite(p);
+    AttachPart(FIELD(owner, u8 *, 0x18), o);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B40F4_ovl_1F0A30);
 
