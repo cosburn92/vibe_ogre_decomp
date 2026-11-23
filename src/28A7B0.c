@@ -769,50 +769,47 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80230360_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80230ADC_ovl_286BD0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-u8 func_8016FEF4(s32, u8);                      /* extern */
+u8 func_8016FEF4(s32, u8);
 extern u8 D_80193C09;
 
+/* Loads the portrait sprite (0x30) of every entry that lacks one, by class: the two lords use
+ * fixed classes, class 0x51 has a variant when D_80193C09 is 0x53, and two classes take their
+ * variant from game flags 0xD / 0xE */
+#ifdef NON_MATCHING
+/* 69 vs 70: the original also keeps the class constant 0x86 in a saved register (s3) across the loop */
 void func_80231098_ovl_286BD0(u8 a, u8 b) {
-    s32 var_s0;
-    s32 var_s2;
-    u16 temp_v0;
-    u8 var_a0;
-    u8 var_a1;
-    void *temp_s1;
+    s32 i;
 
-    var_s2 = 0;
-    do {
-        temp_s1 = *((var_s2 * 4) + D_8023DE30_ovl_286BD0);
-        if ((temp_s1 != NULL) && (FIELD(temp_s1, void *, 0x30) == NULL)) {
-            temp_v0 = FIELD(temp_s1, u16, 0x2C);
-            var_s0 = temp_v0 & 0xFFFF;
-            if (var_s0 == 0xDC) {
-                var_s0 = 0x6D;
+    for (i = 0; i < 50; i++) {
+        u8 *e = ((u8 **)D_8023DE30_ovl_286BD0)[i];
+
+        if (e != NULL && FIELD(e, void *, 0x30) == NULL) {
+            u16 id = FIELD(e, u16, 0x2C);
+            s32 cls = id;
+            u8 v;
+
+            if (cls == 0xDC) {
+                cls = 0x6D;
             }
-            if (var_s0 == 0xDD) {
-                var_s0 = 0x63;
+            if (cls == 0xDD) {
+                cls = 0x63;
             }
-            if ((temp_v0 == 0x51) && (D_80193C09 == 0x53)) {
-                var_s0 = 0x53;
+            if (id == 0x51 && D_80193C09 == 0x53) {
+                cls = 0x53;
             }
-            var_a1 = FIELD(temp_s1, u8, 6);
-            if (var_s0 == 0x86) {
-                var_a1 = func_8016FEF4(0xD, var_a1);
+            v = e[6];
+            if (cls == 0x86) {
+                v = func_8016FEF4(0xD, v);
             }
-            var_a0 = var_s0 & 0xFF;
-            if (var_s0 == 0x71) {
-                var_a1 = func_8016FEF4(0xE, var_a1);
-                var_a0 = var_s0 & 0xFF;
+            if (cls == 0x71) {
+                v = func_8016FEF4(0xE, v);
             }
-            FIELD(temp_s1, void *, 0x30) = func_8016FBE0(var_a0, var_a1 & 0xFF, temp_s1 + 0x34);
+            FIELD(e, void *, 0x30) = func_8016FBE0(cls, v, e + 0x34);
         }
-        var_s2 += 1;
-    } while (var_s2 < 0x32);
+    }
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231098_ovl_286BD0);
