@@ -15,7 +15,7 @@ typedef struct {
 extern s32 D_80220F68_ovl_25EE90;
 
 Task26D *func_8020DF00_ovl_25EE90(void *fn);
-void func_80219140_ovl_25EE90(void);
+s32 func_80219140_ovl_25EE90(u16 msg, u8 *o);
 s32 func_8021A57C_ovl_25EE90(u16 msg, u8 *o);
 void func_80219A9C_ovl_25EE90(void);
 #ifndef FIELD
@@ -195,7 +195,191 @@ s32 func_80218D68_ovl_25EE90(u16 msg, u8 *o) {
 INCLUDE_ASM("asm/nonmatchings/26D770", func_80218D68_ovl_25EE90);
 #endif
 
+s16 func_801F7128(u8 c);
+u8 *func_801C8FE8(s32 i);
+void func_801F9DFC(void *a, u8 b, s32 c);
+extern u8 D_800EB240[];
+extern u8 D_800EB290[];
+u8 *func_802173C4_ovl_25EE90(s32 id);
+u8 *func_80214BE8_ovl_25EE90(s32 id);
+u8 *func_802158AC_ovl_25EE90(s32 id);
+void func_80217C84_ovl_25EE90(s32 id, f32 *out);
+f32 func_8020A3C8_ovl_25EE90(f32 *v);
+void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out);
+void func_80217680_ovl_25EE90(u8 *o, u8 *m);
+void func_8020D86C_ovl_25EE90(u8 *e, s32 a, s32 b);
+void func_80217C14_ovl_25EE90(u8 *u, f32 *out);
+void func_80217AD4_ovl_25EE90(u8 *u, u8 *m);
+void func_80217848_ovl_25EE90(u8 *m);
+void func_801C893C();
+s32 func_80219970_ovl_25EE90(u16 msg, u8 *o);
+void func_8020DC80_ovl_25EE90(u16 state);
+void bzero(void *p, s32 n);
+
+typedef struct {
+    f32 start[3];
+    f32 dir[3];
+    f32 t;
+    f32 len;
+    f32 step;
+} Path26D;
+
+/* Thrown weapon: effect 0x37 turns toward unit 0x28, waits for its wind-up (frame 20), flies along
+ * the path in steps of 6 leaving trails every 5 frames, then hits (0x35 / 0x36) */
+#ifdef NON_MATCHING
+/* 326 vs 325: dispatch and cases line up; GCC keeps one more value in a saved register (the hit position address in 0x1006), costing a register save */
+s32 func_80219140_ovl_25EE90(u16 msg, u8 *o) {
+    s32 r = 0;
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            bzero(o, 0x5C);
+            FIELD(o, u8 *, 0x30) = func_802173C4_ovl_25EE90(0x37);
+            FIELD(o, f32, 4) = FIELD(o, f32, 0) = FIELD(o, f32, 0x18) = FIELD(o, f32, 0x1C) = FIELD(o, f32, 0x20) = 0.0f;
+            FIELD(o, f32, 0xC) = FIELD(o, f32, 0x10) = FIELD(o, f32, 0x14) = FIELD(o, f32, 8) = 1.0f;
+            func_8020DC80_ovl_25EE90(0x1002);
+            break;
+        case 0x1002:
+            func_8020DC80_ovl_25EE90(0x1003);
+        case 0x1003: {
+            Path26D *p = (Path26D *)(o + 0x38);
+            f32 t[3];
+            u8 *m;
+
+            if (func_801F7128(o[0x27]) != 0) {
+                FIELD(o, f32, 0x18) = 75.0f;
+            } else {
+                FIELD(o, f32, 0x18) = -75.0f;
+            }
+            FIELD(o, f32, 0x1C) = FIELD(o, f32, 0x20) = 0.0f;
+            func_80217C84_ovl_25EE90(FIELD(o, s32, 0x28), t);
+            FIELD(o, f32, 0) = t[0] - FIELD(o, f32, 0x18);
+            FIELD(o, f32, 4) = t[1] - FIELD(o, f32, 0x1C);
+            FIELD(o, f32, 8) = t[2] - FIELD(o, f32, 0x20);
+            p->len = func_8020A3C8_ovl_25EE90((f32 *)o);
+            func_8020A2E0_ovl_25EE90((f32 *)o, 1.0f / p->len, p->dir);
+            p->t = 0.0f;
+            p->step = 6.0f;
+            p->len -= 30.0f;
+            p->start[0] = FIELD(o, f32, 0x18);
+            p->start[1] = FIELD(o, f32, 0x1C);
+            p->start[2] = FIELD(o, f32, 0x20);
+            m = FIELD(o, u8 *, 0x30) + 0x1C;
+            func_80217680_ovl_25EE90(o, m);
+            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 0x18);
+            func_8020DC80_ovl_25EE90(0x1004);
+            break;
+        }
+        case 0x1004: {
+            u8 *m;
+
+            if (FIELD(FIELD(o, u8 *, 0x30), s32, 0x10) >= 20) {
+                s32 c;
+
+                func_8020D86C_ovl_25EE90(FIELD(o, u8 *, 0x30), 0x15, 0x24);
+                c = 0xDF;
+                switch (FIELD(o, s32, 0x2C)) {
+                    case 14:
+                        c = 0xE1;
+                        break;
+                    case 15:
+                        c = 0xE3;
+                        break;
+                }
+                func_801F9DFC(D_800EB290, o[0x27], c);
+                func_8020DC80_ovl_25EE90(0x1005);
+            }
+            m = FIELD(o, u8 *, 0x30) + 0x1C;
+            func_80217680_ovl_25EE90(o, m);
+            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 0x18);
+            break;
+        }
+        case 0x1005: {
+            Path26D *p = (Path26D *)(o + 0x38);
+            u8 *m;
+            s32 i;
+
+            if (p->len < (p->t += p->step)) {
+                p->t = p->len;
+                func_8020DC80_ovl_25EE90(0x1006);
+            }
+            for (i = 0; i < 3; i++) {
+                FIELD(o, f32, 0x18 + i * 4) = p->dir[i] * p->t + p->start[i];
+            }
+            m = FIELD(o, u8 *, 0x30) + 0x1C;
+            func_80217680_ovl_25EE90(o, m);
+            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A5A0_ovl_25EE90(m, o + 0x18);
+            if (p->len / 2.0f <= p->t) {
+                FIELD(o, u16, 0x36) = 1;
+            }
+            if (++FIELD(o, s16, 0x34) >= 5) {
+                FIELD(o, s16, 0x34) = 0;
+                D_80220F68_ovl_25EE90 = FIELD(FIELD(o, u8 *, 0x30), s32, 0x10);
+                ((void (*)())func_8020A4A8_ovl_25EE90)(FIELD(o, u8 *, 0x30) + 0x1C, (u8 *)func_8020DF00_ovl_25EE90(func_80219970_ovl_25EE90) + 0x24);
+            }
+            break;
+        }
+        case 0x1006: {
+            u8 *u;
+            u8 *m;
+            f32 v[3];
+            s32 c;
+
+            func_8020D814_ovl_25EE90(FIELD(o, u8 *, 0x30));
+            u = func_801C8FE8(FIELD(o, s32, 0x28));
+            func_80217C14_ovl_25EE90(u, v);
+            {
+                u8 *e = func_80214BE8_ovl_25EE90(0x35);
+
+                m = e + 0x1C;
+                FIELD(e, u16, 0xA) |= 0x8000;
+            }
+            func_80217AD4_ovl_25EE90(u, m);
+            func_8020A5A0_ovl_25EE90(m, v);
+            {
+                u8 *e = func_802158AC_ovl_25EE90(0x36);
+
+                m = e + 0x1C;
+                FIELD(e, u16, 0xA) |= 0x8000;
+            }
+            func_80217848_ovl_25EE90(m);
+            func_8020A5A0_ovl_25EE90(m, v);
+            func_801C893C(FIELD(o, s16, 0x2A), 10);
+            c = 0xE0;
+            switch (FIELD(o, s32, 0x2C)) {
+                case 14:
+                    c = 0xE2;
+                    break;
+                case 15:
+                    c = 0xE4;
+                    break;
+            }
+            func_801F9DFC(D_800EB240, o[0x27], c);
+            func_8020DC80_ovl_25EE90(0x1007);
+            break;
+        }
+        case 0x1000:
+            r = FIELD(o, u16, 0x36);
+            break;
+        case 0x1007:
+            break;
+        case 0x1001:
+            if (FIELD(o, u16, -0x1C) == 0x1007) {
+                r = 1;
+            }
+            break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26D770", func_80219140_ovl_25EE90);
+#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
