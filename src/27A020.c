@@ -369,7 +369,34 @@ s32 func_80226644_ovl_27A020(u8 id, u16 b, u32 x, u32 y, u16 w, u16 col, u32 z, 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80226644_ovl_27A020);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802267F8_ovl_27A020);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    f32 x;
+    f32 y;
+} Scroll27;
+extern Scroll27 D_801D0774;
+extern u8 *D_8022D130_ovl_27A020[];
+
+/* Screen rect (x0, y0, x1, y1) of the info window beside unit k: right of it when the scroll is
+ * positive, else below */
+void func_802267F8_ovl_27A020(s16 k, s16 *r) {
+    u8 *u = D_8022D130_ovl_27A020[k];
+    f32 *sx = &D_801D0774.x;
+
+    if (*sx > 0.0f) {
+        r[0] = FIELD(u, s32, 0x98) + *sx + 5.0f;
+        r[1] = FIELD(u, s32, 0x9C) - D_801D0774.y - 12.0f;
+        r[2] = FIELD(u, s32, 0x98) + *sx + 5.0f;
+        r[3] = FIELD(u, s32, 0x9C) - D_801D0774.y - 60.0f;
+    } else {
+        r[0] = FIELD(u, s32, 0x98) + *sx;
+        r[1] = FIELD(u, s32, 0x9C) - D_801D0774.y + 16.0f;
+        r[2] = FIELD(u, s32, 0x98) + *sx + 55.0f;
+        r[3] = FIELD(u, s32, 0x9C) - D_801D0774.y + 55.0f;
+    }
+}
 
 /* Analog stick Y beyond the dead zone sets the d-pad up/down bits (0x800 / 0x400) */
 void func_80226980_ovl_27A020(void) {
