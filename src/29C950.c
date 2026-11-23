@@ -674,7 +674,72 @@ void func_80230DBC_ovl_29A4C0(s32 i) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230E50_ovl_29A4C0);
+void func_80227694(void);
+void func_802282B8(void);
+void func_8022CBD4_ovl_29A4C0(void);
+void func_8023C71C(void);
+void func_8023EAD0(void);
+void func_8023A7F4(void);
+void func_802401B4(void);
+void func_80241610(void);
+void func_8024049C(void);
+void func_8023BDDC(void);
+void func_8022AE84_ovl_29A4C0(void);
+void func_802316C0_ovl_29A4C0(void);
+void func_8022CF60_ovl_29A4C0(void);
+void func_8023E354(void);
+void func_801C3D64(void);
+void func_80239AF8(void);
+void func_8023DAC4(void);
+void func_802345E0_ovl_29A4C0(void);
+void func_80234770_ovl_29A4C0(void);
+void func_80178E30(void);
+extern s8 D_801CFC70;
+
+/* Battle scene per-frame update (scene modules per mode, then the fade-out counter) */
+void func_80230E50_ovl_29A4C0(void) {
+    if (FIELD(D_8022A974, u8, 0x1CB1) != 0) {
+        func_80227694();
+        func_802282B8();
+        return;
+    }
+    func_8022CBD4_ovl_29A4C0();
+    if (D_8018FC19 == 0) {
+        func_8023C71C();
+        func_8023EAD0();
+        func_8023A7F4();
+        func_802401B4();
+        func_80241610();
+        func_8024049C();
+    }
+    if (D_8018FC19 == 2) {
+        func_8023BDDC();
+    }
+    func_80227694();
+    func_8022AE84_ovl_29A4C0();
+    func_802316C0_ovl_29A4C0();
+    func_8022CF60_ovl_29A4C0();
+    func_80230FD4_ovl_29A4C0();
+    if (D_8018FC19 == 2) {
+        func_8023E354();
+        func_801C3D64();
+        func_80239AF8();
+        func_8023DAC4();
+    }
+    func_802282B8();
+    ((void (*)())func_80230B60_ovl_29A4C0)();
+    func_802345E0_ovl_29A4C0();
+    func_80234770_ovl_29A4C0();
+    if (D_801CFC70 == 0) {
+        D_801CFC70 = 10;
+    }
+    if (D_801CFC70 >= 10) {
+        if (++D_801CFC70 > 40) {
+            func_80178E30();
+            D_801CFC70 = -1;
+        }
+    }
+}
 
 /* Steps unit animations (28) and effect objects (30) unless paused */
 void func_80230FD4_ovl_29A4C0(void) {
