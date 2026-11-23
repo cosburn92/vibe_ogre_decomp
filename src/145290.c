@@ -550,61 +550,50 @@ s32 func_801F4EB4_ovl_145210(MapUnit *u) {
     return u->unk70 == 1 && !(u->flags & 0x40);
 }
 
+s32 func_801F4030_ovl_145210(s32 cls);
+extern u8 D_80187C59[][0x48]; /* gClassTable[].baseClass */
+extern u8 D_80193BD1[][0x38]; /* player characters: class, base class */
+extern u8 D_80193BD2[][0x38];
+extern u8 D_80195571[][0x34]; /* enemy characters */
+extern u8 D_80195572[][0x34];
+extern u8 D_801971F2[][0x19]; /* gSquads[].members[0] */
+
+/* Portrait class of map unit u's squad leader: its base class when the class has none of its own
+ * or differs, falling back to the base class when out of range or without a portrait */
 #ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801F4030_ovl_145210(s32);                  /* extern */
-extern s32 D_80187C59;
-extern s32 D_80193BD1;
-extern s32 D_80193BD2;
-extern s32 D_80195571;
-extern s32 D_80195572;
-extern s32 D_801971F2;
-
+/* 71/71, 5 words: the squad id is kept in a2 in the original, a1 here */
 s32 func_801F4ED8_ovl_145210(MapUnit *u) {
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 temp_v0_3;
-    s32 var_a0;
-    s32 var_s0;
-    u8 temp_a0;
-    u8 temp_a2;
-    u8 temp_v1;
-    u8 var_s1;
+    u8 sq = u->unk04[0];
+    u8 m = D_801971F2[sq][0];
+    u8 base;
+    u8 cls;
+    s32 r;
 
-    temp_a2 = u->unk04[0];
-    temp_a0 = *(&D_801971F2 + (temp_a2 * 0x19));
-    if ((u->flags & 8) && (temp_a2 < 0x1EU)) {
-        temp_v0 = temp_a0 * 0x38;
-        var_s1 = *(&D_80193BD2 + temp_v0);
-        var_a0 = *(&D_80193BD1 + temp_v0) & 0xFF;
+    if (u->flags & 8 ? sq < 30 : 0) {
+        cls = D_80193BD1[m][0];
+        base = D_80193BD2[m][0];
     } else {
-        temp_v0_2 = (temp_a0 & 0xFF) * 0x34;
-        var_s1 = *(&D_80195572 + temp_v0_2);
-        var_a0 = *(&D_80195571 + temp_v0_2) & 0xFF;
+        cls = D_80195571[m][0];
+        base = D_80195572[m][0];
     }
-    temp_v1 = *(&D_80187C59 + (var_a0 * 0x48));
-    temp_v0_3 = var_s1 & 0xFF;
-    if (temp_v1 == 0) {
-        var_s0 = var_a0;
-        if (var_s0 != temp_v0_3) {
-            var_s0 = temp_v0_3;
+    if (D_80187C59[cls][0] == 0) {
+        r = cls;
+        if (r != base) {
+            r = base;
         }
     } else {
-        var_s0 = var_a0;
-        if (temp_v1 != temp_v0_3) {
-            var_s0 = temp_v0_3;
+        r = cls;
+        if (D_80187C59[cls][0] != base) {
+            r = base;
         }
     }
-    if (var_s0 >= 0xAA) {
-        var_s0 = var_s1 & 0xFF;
+    if (r >= 0xAA) {
+        r = base;
     }
-    if (func_801F4030_ovl_145210(var_s0) == -1) {
-        var_s0 = var_s1 & 0xFF;
+    if (func_801F4030_ovl_145210(r) == -1) {
+        r = base;
     }
-    return (u8) var_s0;
+    return (u8)r;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4ED8_ovl_145210);
