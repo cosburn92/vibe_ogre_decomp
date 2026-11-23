@@ -1279,7 +1279,71 @@ void func_80238910_ovl_286BD0(u8 *dst, u8 n, u8 b) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238910_ovl_286BD0);
 #endif
 
+void *func_80071C04(s32 size);
+s32 ChunkSize(u32 id);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+
+/* Loads text id (LZ, from directory chunk 0x018855FE) and splits it at CR LF into lines (o + 4);
+ * lines of pages not yet unlocked (func_8022E8D4, except text 1) are left out; a blank line ends
+ * the text. Returns the text with the line count in *count and the page of each line at o + 0x10 */
+#ifdef NON_MATCHING
+/* 154/147 instructions: control flow as in the original; register use differs (the original reloads o and id from the stack and keeps 0xD/0xA in s-registers) */
+char *func_80238A00_ovl_286BD0(s32 id, s16 *count, u8 *o) {
+    s8 page[0x100];
+    u8 *raw;
+    u8 *txt;
+    s32 size;
+    u32 h;
+    s32 i;
+    s16 n;
+    s8 line;
+    u8 *p;
+
+    raw = func_80071C04(ChunkSize(0x018855FE));
+    LoadChunkRaw(raw, 0x018855FE);
+    h = ((u32 *)raw)[id];
+    n = 1;
+    size = ChunkSize(h);
+    HFree(raw);
+    raw = func_80071C04(size);
+    LoadChunkRaw(raw, h);
+    size = ReadU32BE(raw);
+    txt = HMalloc(size);
+    DecodeLZ(txt, raw);
+    HFree(raw);
+    FIELD(o, u8 **, 4) = HMalloc(0x1F40);
+    line = 1;
+    i = 0;
+    FIELD(o, u8 **, 4)[0] = txt;
+    page[0] = 0;
+    for (p = txt; i < size; i++, p++) {
+        if (p[0] == '\r') {
+            if (p[1] == '\n' && p[2] == '\r' && p[3] == '\n') {
+                p[0] = 0;
+                page[n] = line;
+                break;
+            }
+            if (p[0] == '\r' && p[1] == '\n') {
+                p[0] = 0;
+                if (!(u8)func_8022E8D4_ovl_286BD0(line - 1) && id != 1) {
+                    FIELD(o, u8 **, 4)[n] = NULL;
+                } else {
+                    FIELD(o, u8 **, 4)[n] = txt + i + 2;
+                    page[n++] = line;
+                }
+                line++;
+            }
+        }
+    }
+    *count = n;
+    FIELD(o, u8 *, 0x10) = HMalloc(n + 2);
+    func_80080998(FIELD(o, u8 *, 0x10), page, n);
+    return txt;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238A00_ovl_286BD0);
+#endif
 
 /* Copies block idx (0x500 bytes) into o and rebases its sub-block pointers into o */
 #ifdef NON_MATCHING
