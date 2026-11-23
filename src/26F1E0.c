@@ -121,7 +121,52 @@ void func_8021B6C4_ovl_25EE90(s32 a) {
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021B6F0_ovl_25EE90);
 
-INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021B8D8_ovl_25EE90);
+typedef struct {
+    /* 0x00 */ f32 pos[3];
+    /* 0x0C */ f32 dir[3];
+    /* 0x18 */ s32 t;
+    /* 0x1C */ f32 len;
+    /* 0x20 */ f32 speed;
+} Path26F;
+typedef struct {
+    s16 x;
+    s16 z;
+} Point26F;
+extern Point26F D_802209E0_ovl_25EE90[];
+void func_80217C84_ovl_25EE90(s32 id, f32 *out);
+f32 func_8020A3C8_ovl_25EE90(f32 *v);
+void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out);
+
+/* Aims o's path (at 0x4C) from its position at its next waypoint, or at target 0x1C (stopping 40
+ * short) when the route has ended */
+void func_8021B8D8_ovl_25EE90(u8 *o) {
+    Path26F *p;
+    f32 to[3];
+    s16 k;
+
+    FIELD(o, f32, 0x4C) = FIELD(o, f32, 0xC);
+    FIELD(o, f32, 0x50) = FIELD(o, f32, 0x10);
+    FIELD(o, f32, 0x54) = FIELD(o, f32, 0x14);
+    k = FIELD(o, s16 *, 0x74)[FIELD(o, s32, 0x70)];
+    p = (Path26F *)(o + 0x4C);
+    if (k != -1) {
+        to[0] = D_802209E0_ovl_25EE90[k].x;
+        to[1] = 0.0f;
+        to[2] = D_802209E0_ovl_25EE90[k].z;
+    } else {
+        func_80217C84_ovl_25EE90(FIELD(o, s32, 0x1C), to);
+    }
+    p->dir[0] = to[0] - FIELD(o, f32, 0xC);
+    p->dir[1] = to[1] - FIELD(o, f32, 0x10);
+    p->dir[2] = to[2] - FIELD(o, f32, 0x14);
+    p->len = func_8020A3C8_ovl_25EE90(p->dir);
+    func_8020A2E0_ovl_25EE90(p->dir, 1.0f / p->len, p->dir);
+    p->t = 0;
+    p->speed = p->len * 0.07692308f;
+    if (k == -1) {
+        p->len = p->len - 40.0f;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021BA3C_ovl_25EE90);
 
