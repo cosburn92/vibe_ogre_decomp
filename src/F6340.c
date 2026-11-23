@@ -250,61 +250,54 @@ void func_801AB2A4_ovl_0EBBB0(s16 id) {
     *(s16 *)D_801AD100_ovl_0EBBB0 = id;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 func_8007FA38(u8 *, u8, u8, u8, s32, s32, s32); /* extern */
-u8 func_8007FB10(u8 *);                             /* extern */
-extern u8 D_800E7A32;
+void func_8007FA38(u8 *p, u8 a, u8 b, u8 c, s32 d, s32 e, s32 f);
+u8 func_8007FB10(u8 *p);
+extern u8 D_800E7A32[];
 extern s16 D_800E7A3E;
-extern s32 D_800E7A90;
-extern s32 D_800E82CA;
-extern s32 D_800E82CE;
-extern s32 D_800E82D0;
-extern s32 D_800E82D2;
-extern s32 D_800E82D4;
+extern u8 D_800E7A90[];
 
+/* Per-frame update of the field message window: closes it (D_800E7A32 bit 2) once finished or when
+ * its scene slot is gone; applies a pending restart (flag 8), and on reaching the end (0xFF) marks
+ * it done and optionally flags the scene; copies the scene's rectangle and steps the text */
+#ifdef NON_MATCHING
+/* 136/136, 7 words: identical code but our frame is 64 bytes (24 bytes of unused locals) against 40 */
 void func_801AB33C_ovl_0EBBB0(void) {
-    s32 temp_v0;
-    s32 temp_v1;
-    void *temp_s0;
-
-    if (FIELD(D_801AD100_ovl_0EBBB0, u8, 0x25) == 0) {
-        temp_s0 = &D_800E7A90 + 0x29;
-        if (FIELD(&D_800E7A90, u8, 0x29) & 1) {
-            if (!(D_800E82C8[FIELD(temp_s0, u8, -1)].flags & 0x8000)) {
-                goto block_3;
-            }
-            if (FIELD(&D_800E7A90, u8, 0x29) & 8) {
-                func_8007FA38(D_801AD100_ovl_0EBBB0 + 4, FIELD(&D_800E7A90, u8, 0x2A), FIELD(&D_800E7A90, u8, 0x2B), FIELD(&D_800E7A90, u8, 0x2C), (s32) FIELD(&D_800E7A90, u8, 0x2D), (s32) FIELD(&D_800E7A90, u8, 0x2E), (s32) FIELD(&D_800E7A90, u8, 0x2F));
-                D_800E7A3E = 0xF100;
-                FIELD(&D_800E7A90, u8, 0x29) = (u8) (FIELD(&D_800E7A90, u8, 0x29) & 0xF7);
-                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) & 0xFE);
-            } else if (FIELD(D_801AD100_ovl_0EBBB0, u8, 0x24) == 0xFF) {
-                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) | 1);
-                if (FIELD(&D_800E7A90, u8, 0x29) & 2) {
-                    FIELD(D_801AD100_ovl_0EBBB0, u8, 0x25) = 1U;
-                }
-                if (FIELD(&D_800E7A90, u8, 0x29) & 4) {
-                    temp_v1 = FIELD(temp_s0, u8, -1) * 0xA8;
-                    *(&D_800E82CA + temp_v1) = *(&D_800E82CA + temp_v1) | 2;
-                }
-            } else {
-                FIELD(&D_800E7A90, u8, 0x37) = (u8) (FIELD(&D_800E7A90, u8, 0x37) & 0xFE);
-            }
-            temp_v0 = FIELD(&D_800E7A90, u8, 0x28) * 0xA8;
-            D_800E7A36 = (s16) *(&D_800E82CE + temp_v0);
-            D_800E7A38 = (s16) *(&D_800E82D0 + temp_v0);
-            D_800E7A3A = (s16) *(&D_800E82D2 + temp_v0);
-            D_800E7A3C = (s16) *(&D_800E82D4 + temp_v0);
-            FIELD(D_801AD100_ovl_0EBBB0, u8, 0x24) = func_8007FB10(D_801AD100_ovl_0EBBB0 + 4);
+    if (D_801AD100_ovl_0EBBB0[0x25] != 0) {
+        goto close;
+    }
+    if (!(D_800E7A90[0x29] & 1)) {
+        return;
+    }
+    if (!(D_800E82C8[D_800E7A90[0x28]].flags & 0x8000)) {
+    close:
+        D_800E7A32[0] |= 2;
+        return;
+    }
+    if (D_800E7A90[0x29] & 8) {
+        func_8007FA38(D_801AD100_ovl_0EBBB0 + 4, D_800E7A90[0x2A], D_800E7A90[0x2B], D_800E7A90[0x2C],
+                      D_800E7A90[0x2D], D_800E7A90[0x2E], D_800E7A90[0x2F]);
+        D_800E7A3E = 0xF100;
+        D_800E7A90[0x29] &= ~8;
+        D_800E7A90[0x37] &= ~1;
+    } else if (D_801AD100_ovl_0EBBB0[0x24] == 0xFF) {
+        D_800E7A90[0x37] |= 1;
+        if (D_800E7A90[0x29] & 2) {
+            D_801AD100_ovl_0EBBB0[0x25] = 1;
+        }
+        if (D_800E7A90[0x29] & 4) {
+            D_800E82C8[D_800E7A90[0x28]].flags2 |= 2;
         }
     } else {
-block_3:
-        D_800E7A32 |= 2;
+        D_800E7A90[0x37] &= ~1;
     }
+    D_800E7A36 = FIELD(&D_800E82C8[D_800E7A90[0x28]], s16, 6);
+    D_800E7A38 = FIELD(&D_800E82C8[D_800E7A90[0x28]], s16, 8);
+    D_800E7A3A = FIELD(&D_800E82C8[D_800E7A90[0x28]], s16, 10);
+    D_800E7A3C = FIELD(&D_800E82C8[D_800E7A90[0x28]], s16, 12);
+    D_801AD100_ovl_0EBBB0[0x24] = func_8007FB10(D_801AD100_ovl_0EBBB0 + 4);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AB33C_ovl_0EBBB0);
