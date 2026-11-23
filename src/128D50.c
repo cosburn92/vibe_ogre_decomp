@@ -58,7 +58,83 @@ void func_801D469C_ovl_101CE0(u8 *o) {
 void func_801D4738_ovl_101CE0(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D4740_ovl_101CE0);
+extern u8 D_801F0BD8_ovl_101CE0[];
+extern u8 D_801F0C3C_ovl_101CE0;
+typedef struct {
+    u16 h0;
+    u8 unk2[0x30];
+    u8 b32;
+    u8 unk33[5];
+} Unit38;
+typedef struct {
+    u16 h0;
+    u8 unk2[0x2C];
+    u8 b2E;
+    u8 unk2F[5];
+} Enemy34;
+extern Unit38 D_80193BD8[];
+extern Enemy34 D_80195578[];
+extern u8 D_801971F1[];
+extern u8 D_801971F2[];
+void bzero(void *p, s32 n);
+
+/* Marks the unit ids (1-99) in use on each side: empty roster records and the members of every
+ * deployed squad (squads 0-29 ally, 30-49 enemy) */
+void func_801D4740_ovl_101CE0(void) {
+    s32 i;
+    u8 *sq;
+    s32 j;
+
+    bzero(D_801F0BD8_ovl_101CE0, 0xC8);
+    D_801F0BD8_ovl_101CE0[0] |= 1;
+    D_801F0C3C_ovl_101CE0 |= 1;
+    for (i = 1; i < 100; i++) {
+        if (D_80193BD8[i - 1].b32 == 0) {
+            D_801F0BD8_ovl_101CE0[i] |= 1;
+        }
+        if (D_80193BD8[i].h0 == 0) {
+            D_801F0BD8_ovl_101CE0[i] |= 1;
+        }
+    }
+    for (i = 1; i < 100; i++) {
+        if (D_80195578[i - 1].b2E == 0) {
+            (&D_801F0C3C_ovl_101CE0)[i] |= 1;
+        }
+        if (D_80195578[i].h0 == 0) {
+            (&D_801F0C3C_ovl_101CE0)[i] |= 1;
+        }
+    }
+    j = 0;
+    sq = D_801971F2;
+    for (; j < 50; j++) {
+        if (gSquads[j].flags & 1) {
+            s32 k;
+
+            if (j < 30) {
+                for (k = 0; k < 5; k++) {
+                    s32 id = sq[k];
+
+                    if (id != 0) {
+                        if (id < 100) {
+                            D_801F0BD8_ovl_101CE0[id] |= 1;
+                        }
+                    }
+                }
+            } else {
+                for (k = 0; k < 5; k++) {
+                    s32 id = sq[k];
+
+                    if (id != 0) {
+                        if (id < 100) {
+                            (&D_801F0C3C_ovl_101CE0)[id] |= 1;
+                        }
+                    }
+                }
+            }
+        }
+        sq += 25;
+    }
+}
 
 extern u8 D_8018F481;
 extern u8 D_80193BC0[][0x38];
