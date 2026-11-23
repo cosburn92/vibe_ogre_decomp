@@ -54,7 +54,7 @@ void func_8023998C(void);
 void func_8023A98C(void);
 void func_80227010(void);
 void *HFree(void *p);
-void func_801CCA5C(s32 a, s32 b, s32 c);
+void func_801CCA5C();
 u8 func_80233968_ovl_29A4C0(s32 a, s16 b, s32 c, u8 d, u8 *r, u8 *g, u8 *bl);
 u8 func_8019F174(u8 a);
 u8 func_801C1AA4(s32 a, s32 b, u8 c, s16 d, s16 e, s32 f, u8 *r, u8 *g, u8 *bl);
@@ -73,8 +73,8 @@ typedef struct {
     s32 key2;
     s32 unk08;
     s32 key1;
-    u8 unk10[0x24];
-} Sort29C; /* size 0x34 */
+    u8 unk10[4];
+} Sort29C; /* size 0x14 */
 void BattleAnimStep2(void *a);
 void func_8022EFB0_ovl_29A4C0(void *a);
 f32 func_8009CFE0(f32 y, f32 x);
@@ -255,7 +255,49 @@ void func_8022DC9C_ovl_29A4C0(s32 a, s32 b, s32 c) {
     func_801CCA5C(a, c, b);
 }
 
+extern f32 D_8022A734;
+extern f32 D_8022A73C;
+extern f32 D_8022A740;
+extern f32 D_8022A748;
+extern f32 D_8022A78C;
+extern f32 D_8022A794;
+extern f32 D_8022A798;
+extern f32 D_8022A7A0;
+s32 func_80231FB0_ovl_29A4C0(Sort29C *a, Sort29C *b);
+
+/* Computes the view depth of the first n draw entries and sorts them by it */
+#ifdef NON_MATCHING
+/* 82 vs 81 instructions: the original loads the two eye coordinates straight into a1/a3 with lw; GCC here loads them into FPRs and moves them */
+s32 func_8022DCC0_ovl_29A4C0(s32 n) {
+    f32 mf[4][4];
+    f32 ex, ez, ax, az;
+    s32 i;
+
+    if (D_8018FC19 != 0) {
+        ex = D_8022A734;
+        ez = D_8022A73C;
+        ax = D_8022A740;
+        az = D_8022A748;
+    } else {
+        ex = D_8022A78C;
+        ez = D_8022A794;
+        ax = D_8022A798;
+        az = D_8022A7A0;
+    }
+    guLookAtF(mf, ex, 0.0f, ez, ax, 0.0f, az, 0.0f, 1.0f, 0.0f);
+    for (i = 0; i < n; i++) {
+        Sort29C *e = (Sort29C *)((u8 *)D_8022A974 + 0x328) + i;
+
+        e->key1 = mf[0][2] * e->unk00 + mf[1][2] * e->key2 + mf[2][2] * e->unk08 + mf[3][2];
+    }
+    if (n >= 2) {
+        func_801CCA5C((u8 *)D_8022A974 + 0x328, sizeof(Sort29C), n, func_80231FB0_ovl_29A4C0);
+    }
+    return n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DCC0_ovl_29A4C0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022DE04_ovl_29A4C0);
 
@@ -784,8 +826,7 @@ void func_80231F2C_ovl_29A4C0(s32 i, u8 v)
 }
 
 /* qsort order: key1 ascending, then key2 descending, then original order */
-#ifdef NON_MATCHING
-/* pointer difference: original multiplies via shift-add chain then shifts; GCC uses mult */
+/* qsort order: key1 ascending, then key2 descending, then original order */
 s32 func_80231FB0_ovl_29A4C0(Sort29C *a, Sort29C *b) {
     if (a->key1 < b->key1) {
         return -1;
@@ -801,6 +842,3 @@ s32 func_80231FB0_ovl_29A4C0(Sort29C *a, Sort29C *b) {
     }
     return a - b;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231FB0_ovl_29A4C0);
-#endif
