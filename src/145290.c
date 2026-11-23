@@ -665,15 +665,15 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F5550_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F57D0_ovl_145210);
 
-#ifdef NON_MATCHING
-/* m2c draft, 3 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 s8 func_801F40A0_ovl_145210(u8);                    /* extern */
 extern s32 D_801F3658;
-extern s32 D_801FCD2C_ovl_145210;
+extern u8 *D_801FCD2C_ovl_145210[];
 
+#ifdef NON_MATCHING
+/* 105/105, 2 words: the record address is added as base + index in the original (addu v0,s1,v0) */
 void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
     s32 temp_a0;
     u16 temp_v1;
@@ -700,10 +700,10 @@ void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
             FIELD(temp_s0, u8, 0x15) = (u8) FIELD(arg1, u8, 0xA);
             FIELD(temp_s0, u8, 0x16) = (u8) FIELD(arg1, u8, 0xB);
         }
-        FIELD(temp_s0, s32, 8) = (s32) FIELD((arg0 + (FIELD(arg0, u8, 0xC) * 0x14)), s32, 0x10);
-        FIELD(temp_s0, s32, 0xC) = (s32) FIELD((arg0 + (FIELD(arg0, u8, 0xC) * 0x14)), s32, 0x14);
+        FIELD(temp_s0, s32, 8) = FIELD((u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14, s32, 0x10);
+        FIELD(temp_s0, s32, 0xC) = FIELD((u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14, s32, 0x14);
         FIELD(temp_s0, s8, 0x12) = func_801F40A0_ovl_145210(FIELD(arg0, u8, 2));
-        temp_a0 = *(&D_801FCD2C_ovl_145210 + (FIELD(arg0, u8, 5) * 4));
+        temp_a0 = (s32)D_801FCD2C_ovl_145210[FIELD(arg0, u8, 5)];
         temp_v1_2 = FIELD(temp_s0, u8, 0x11) & 0xF8;
         FIELD(temp_s0, u8, 0x11) = temp_v1_2;
         if (FIELD(((FIELD(arg0, u8, 6) * 2) + temp_a0), u8, 1) & 0x80) {
@@ -712,7 +712,7 @@ void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
         if (FIELD(((FIELD(arg0, u8, 6) * 2) + temp_a0), u8, 1) & 0x40) {
             FIELD(temp_s0, u8, 0x11) = (u8) (FIELD(temp_s0, u8, 0x11) | 2);
         }
-        if ((D_801F3658 != -1) && (FIELD(arg1, s32, 0) == D_801F0CB0[D_801F3658])) {
+        if ((D_801F3658 != -1) && (FIELD(arg1, s32, 0) == ((s32 *)D_801F0CB0)[D_801F3658])) {
             FIELD(temp_s0, u8, 0x11) = (u8) (FIELD(temp_s0, u8, 0x11) | 4);
         }
         func_801F4BBC_ovl_145210((s32) temp_s0);
