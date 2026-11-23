@@ -393,27 +393,21 @@ s32 func_8020CE94_ovl_25EE90(RecSet *s, u16 a, s32 b) {
     return r;
 }
 
-/* Issues the load requests for every entry of a sprite list (kinds 6/5, then `kind` for id + base) */
-#ifdef NON_MATCHING
-/* list ptr and count registers swapped (s1/s2) and prologue order differs */
-void func_8020D024_ovl_25EE90(u8 *spr, s32 kind, s32 base) {
-    u16 *e = FIELD(spr, u16 *, 0xC);
-    s32 n;
+/* Issues the load requests for every record of s (kinds 6/5, then `kind` for h2 + base) */
+void func_8020D024_ovl_25EE90(RecSet *s, u16 kind, s32 base) {
+    Rec10b *r = s->recs;
+    s32 n = s->n;
 
-    for (n = FIELD(spr, s32, 4); n > 0; n--, e += 5) {
-        if (e[3] == 0) {
+    for (; n > 0; n--, r++) {
+        if (r->h6 == 0) {
             continue;
         }
-        func_8020C130_ovl_25EE90(6, e[3], 0);
-        if (e[0] != 0) {
-            func_8020C130_ovl_25EE90(5, e[0], 0);
+        func_8020C130_ovl_25EE90(6, r->h6, 0);
+        if (r->h0 != 0) {
+            func_8020C130_ovl_25EE90(5, r->h0, 0);
         }
-        if (e[1] & 0x8000) {
-            continue;
+        if (!(r->h2 & 0x8000)) {
+            func_8020C130_ovl_25EE90(kind, r->h2 + base, 0);
         }
-        func_8020C130_ovl_25EE90(kind, e[1] + base, 0);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020D024_ovl_25EE90);
-#endif
