@@ -26,3 +26,6 @@ extracted/
 
 # assembler temp files from parallel permuter / ptry builds
 astemp_*.s
+
+# tools/autoloop.ps1 stop flag
+STOP
