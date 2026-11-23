@@ -1171,131 +1171,99 @@ void func_801ECE30_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECE30_ovl_23B220);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 2 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 func_8017A714();                            /* extern */
-extern s32 D_800E9C0A;
+s32 func_8017A714();
 extern u8 D_801976DA;
-extern Ctx23 *D_801EFE4C_ovl_23B220;
 
+/* Tears the title screen down: restores the saved time of day / sound setting, frees every
+ * buffer the context owns (re-reading the context pointer after each free), then the context */
 void func_801ED01C_ovl_23B220(void) {
-    Ctx23 *temp_a0;
-    Ctx23 *temp_a0_10;
-    Ctx23 *temp_a0_11;
-    Ctx23 *temp_a0_2;
-    Ctx23 *temp_a0_3;
-    Ctx23 *temp_a0_4;
-    Ctx23 *temp_a0_5;
-    Ctx23 *temp_a0_6;
-    Ctx23 *temp_a0_7;
-    Ctx23 *temp_a0_8;
-    Ctx23 *temp_a0_9;
-    Ctx23 *temp_s0_2;
-    Ctx23 *temp_s0_3;
-    Ctx23 *temp_s0_4;
-    Ctx23 *var_s0;
-    Ctx23 *var_s0_2;
-    Ctx23 *var_s0_3;
-    s32 var_s1;
-    s32 var_s1_2;
-    s32 var_s2;
-    s32 var_s2_2;
-    u8 *temp_s0;
-    u8 *temp_s0_5;
+    u8 *s;
+    void **pp;
+    s32 i;
+    s32 off;
 
-    FIELD(&D_800E9C0A, u8, 8) = (u8) D_801EFE48_ovl_23B220->unk654[1];
-    var_s2 = 0;
-    var_s1 = 0x1AC;
+    FIELD(&D_800E9C0A, u8, 8) = D_801EFE48_ovl_23B220->unk654[1];
     D_801976DA = D_801EFE48_ovl_23B220->unk654[0];
-    do {
-        temp_s0 = &D_801EFE48_ovl_23B220->ent[0].unk00[var_s1];
-        temp_a0 = *temp_s0;
-        var_s2 += 1;
-        if (temp_a0 != NULL) {
-            HFree(temp_a0);
-            *temp_s0 = NULL;
+    for (i = 0, off = 0x1AC; i < 6; off += 0x18) {
+        pp = (void **)((u8 *)D_801EFE48_ovl_23B220 + off);
+        i++;
+        if (*pp != NULL) {
+            HFree(*pp);
+            *pp = NULL;
         }
-        var_s1 += 0x18;
-    } while (var_s2 < 6);
-    var_s0 = D_801EFE48_ovl_23B220;
-    temp_a0_2 = FIELD(var_s0, Ctx23 *, 0x1A0);
-    if (temp_a0_2 != NULL) {
-        HFree(temp_a0_2);
-        FIELD(var_s0, Ctx23 *, 0x1A0) = NULL;
-        var_s0 = D_801EFE48_ovl_23B220;
     }
-    temp_a0_3 = FIELD(var_s0, Ctx23 *, 0x150);
-    if (temp_a0_3 != NULL) {
-        HFree(temp_a0_3);
-        FIELD(var_s0, Ctx23 *, 0x150) = NULL;
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    if (FIELD(s, void *, 0x1A0) != NULL) {
+        HFree(FIELD(s, void *, 0x1A0));
+        FIELD(s, void *, 0x1A0) = NULL;
+        s = (u8 *)D_801EFE48_ovl_23B220;
     }
-    temp_s0_2 = D_801EFE48_ovl_23B220;
-    temp_a0_4 = FIELD(temp_s0_2, Ctx23 *, 0xE8);
-    if (temp_a0_4 != NULL) {
-        HFree(temp_a0_4);
-        FIELD(temp_s0_2, s32, 0xE8) = 0;
+    if (FIELD(s, void *, 0x150) != NULL) {
+        HFree(FIELD(s, void *, 0x150));
+        FIELD(s, void *, 0x150) = NULL;
+    }
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    if (FIELD(s, void *, 0xE8) != NULL) {
+        HFree(FIELD(s, void *, 0xE8));
+        FIELD(s, s32, 0xE8) = 0;
     }
     HFree(D_801EFE4C_ovl_23B220);
-    temp_s0_3 = D_801EFE48_ovl_23B220;
-    temp_a0_5 = FIELD(temp_s0_3, Ctx23 *, 0x36C);
-    D_801EFE4C_ovl_23B220 = NULL;
-    if (temp_a0_5 != NULL) {
-        HFree(temp_a0_5);
-        FIELD(temp_s0_3, s32, 0x36C) = 0;
-    }
-    var_s0_2 = D_801EFE48_ovl_23B220;
-    temp_a0_6 = FIELD(var_s0_2, Ctx23 *, 0x34C);
-    if (temp_a0_6 != NULL) {
-        HFree(temp_a0_6);
-        FIELD(var_s0_2, Ctx23 *, 0x34C) = NULL;
-        var_s0_2 = D_801EFE48_ovl_23B220;
-    }
-    temp_a0_7 = FIELD(var_s0_2, Ctx23 *, 0x244);
-    if (temp_a0_7 != NULL) {
-        HFree(temp_a0_7);
-        FIELD(var_s0_2, Ctx23 *, 0x244) = NULL;
-        FIELD(var_s0_2, s32, 0x248) = 0;
-    }
-    var_s0_3 = D_801EFE48_ovl_23B220;
-    temp_a0_8 = FIELD(var_s0_3, Ctx23 *, 0x60C);
-    if (temp_a0_8 != NULL) {
-        HFree(temp_a0_8);
-        FIELD(var_s0_3, Ctx23 *, 0x60C) = NULL;
-        var_s0_3 = D_801EFE48_ovl_23B220;
-    }
-    temp_a0_9 = FIELD(var_s0_3, Ctx23 *, 0x5C4);
-    if (temp_a0_9 != NULL) {
-        HFree(temp_a0_9);
-        FIELD(var_s0_3, Ctx23 *, 0x5C4) = NULL;
-    }
-    temp_s0_4 = D_801EFE48_ovl_23B220;
-    temp_a0_10 = FIELD(temp_s0_4, Ctx23 *, 0x5C8);
-    var_s2_2 = 0;
-    if (temp_a0_10 != NULL) {
-        HFree(temp_a0_10);
-        FIELD(temp_s0_4, s32, 0x5C8) = 0;
-    }
-    var_s1_2 = 0x5D4;
-    do {
-        temp_s0_5 = &D_801EFE48_ovl_23B220->ent[0].unk00[var_s1_2];
-        temp_a0_11 = FIELD(temp_s0_5, Ctx23 *, 4);
-        var_s2_2 += 1;
-        if (temp_a0_11 != NULL) {
-            HFree(temp_a0_11);
-            FIELD(temp_s0_5, Ctx23 *, 4) = NULL;
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    {
+        void *p = FIELD(s, void *, 0x36C);
+
+        D_801EFE4C_ovl_23B220 = NULL;
+        if (p != NULL) {
+            HFree(p);
+            FIELD(s, s32, 0x36C) = 0;
         }
-        var_s1_2 += 0x1C;
-    } while (var_s2_2 < 2);
+    }
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    if (FIELD(s, void *, 0x34C) != NULL) {
+        HFree(FIELD(s, void *, 0x34C));
+        FIELD(s, void *, 0x34C) = NULL;
+        s = (u8 *)D_801EFE48_ovl_23B220;
+    }
+    if (FIELD(s, void *, 0x244) != NULL) {
+        HFree(FIELD(s, void *, 0x244));
+        FIELD(s, void *, 0x244) = NULL;
+        FIELD(s, s32, 0x248) = 0;
+    }
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    if (FIELD(s, void *, 0x60C) != NULL) {
+        HFree(FIELD(s, void *, 0x60C));
+        FIELD(s, void *, 0x60C) = NULL;
+        s = (u8 *)D_801EFE48_ovl_23B220;
+    }
+    if (FIELD(s, void *, 0x5C4) != NULL) {
+        HFree(FIELD(s, void *, 0x5C4));
+        FIELD(s, void *, 0x5C4) = NULL;
+    }
+    s = (u8 *)D_801EFE48_ovl_23B220;
+    {
+        void *p = FIELD(s, void *, 0x5C8);
+
+        i = 0;
+        if (p != NULL) {
+            HFree(p);
+            FIELD(s, s32, 0x5C8) = 0;
+        }
+    }
+    for (off = 0x5D4; i < 2; off += 0x1C) {
+        pp = (void **)((u8 *)D_801EFE48_ovl_23B220 + off + 4);
+        i++;
+        if (*pp != NULL) {
+            HFree(*pp);
+            *pp = NULL;
+        }
+    }
     func_8017A714();
     HFree(D_801EFE48_ovl_23B220);
     D_801EFE48_ovl_23B220 = NULL;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801ED01C_ovl_23B220);
-#endif
 
 s32 func_801BEF14(void *img, void *pal, u8 fmt, u8 siz, s32 w, s32 h, s32 x, s32 y, s32 c);
 s32 func_801BF59C(void *img, void *pal, u8 fmt, u8 siz, s32 w, s32 h, s32 x, s32 y);
