@@ -209,53 +209,19 @@ void func_802012D8_ovl_14EBE0(u32 pal) {
     g->w1 = 0;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 31 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_80201384_ovl_14EBE0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    Gfx *temp_a0;
-    Gfx *temp_v0;
-    Gfx *temp_v0_2;
-    s32 var_a1;
-    s32 var_t0;
-    u32 var_v0;
+/* Sets the scissor box (x0, y0) - (x1, y1), clamped to the 320x240 screen, between pipe syncs */
+void func_80201384_ovl_14EBE0(s32 x0, s32 y0, s32 x1, s32 y1) {
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
 
-    temp_a0 = D_800E9BA0 + 8;
-    D_800E9BA0->w0 = 0xE7000000;
-    D_800E9BA0->w1 = 0;
-    temp_v0 = D_800E9BA0 + 0x10;
-    D_800E9BA0 = temp_a0;
-    D_800E9BA0 = temp_v0;
-    if (arg0 < 0) {
-        var_t0 = 0xED000000;
-    } else {
-        var_t0 = (((s32) ((f32) arg0 * 4.0f) & 0xFFF) << 0xC) | 0xED000000;
+        _g->w0 = 0xED000000 | _SHIFTL((s32)((f32)(x0 < 0 ? 0 : x0) * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(y0 < 0 ? 0 : y0) * 4.0f), 0, 12);
+        _g->w1 = _SHIFTL((s32)((f32)(x1 == 320 ? 319 : x1) * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(y1 == 240 ? 239 : y1) * 4.0f), 0, 12);
     }
-    FIELD(D_800E9BA0, s32, 8) = var_t0;
-    if (arg1 >= 0) {
-        FIELD(D_800E9BA0, s32, 8) = (s32) (var_t0 | ((s32) ((f32) arg1 * 4.0f) & 0xFFF));
-    }
-    if (arg2 != 0x140) {
-        var_a1 = ((s32) ((f32) arg2 * 4.0f) & 0xFFF) << 0xC;
-    } else {
-        var_a1 = 0x4FC000;
-    }
-    if (arg3 == 0xF0) {
-        var_v0 = var_a1 | 0x3BC;
-    } else {
-        var_v0 = var_a1 | ((s32) ((f32) arg3 * 4.0f) & 0xFFF);
-    }
-    temp_a0->w1 = var_v0;
-    temp_v0_2 = D_800E9BA0;
-    D_800E9BA0 = temp_v0_2 + 8;
-    temp_v0_2->w0 = 0xE7000000;
-    temp_v0_2->w1 = 0;
+    gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80201384_ovl_14EBE0);
-#endif
 
 /* Rank 1-3 of stat i: how many thirds of the cap (D_80190F82) it reaches */
 #ifdef NON_MATCHING
