@@ -22,15 +22,30 @@ typedef struct {
 
 typedef struct {
     /* 0x000 */ Ent23 ent[4];
-    /* 0x1A0 */ u8 unk1A0[0x1D0];
+    /* 0x1A0 */ u8 *logo;
+    /* 0x1A4 */ u8 unk1A4[0x98];
+    /* 0x23C */ u16 unk23C;
+    /* 0x23E */ u8 unk23E[0x10E];
+    /* 0x34C */ u8 *backdrop;
+    /* 0x350 */ u8 unk350[0x10];
+    /* 0x360 */ s32 backdropSize;
+    /* 0x364 */ u8 unk364[8];
+    /* 0x36C */ u8 unk36C[4]; /* func_801EA770's block starts here */
     /* 0x370 */ s16 x0;
     /* 0x372 */ s16 x1;
     /* 0x374 */ s16 y0;
     /* 0x376 */ s16 y1;
-    /* 0x378 */ u8 unk378[0x2D8];
+    /* 0x378 */ u8 unk378[0x24C];
+    /* 0x5C4 */ u8 *img5C4;
+    /* 0x5C8 */ u8 *img5C8;
+    /* 0x5CC */ u8 unk5CC[0x40];
+    /* 0x60C */ u8 *img60C;
+    /* 0x610 */ s16 unk610;
+    /* 0x612 */ s16 unk612;
+    /* 0x614 */ u8 unk614[0x3C];
     /* 0x650 */ u16 flags;
     /* 0x652 */ s16 h652;
-    /* 0x654 */ u8 unk654[2];
+    /* 0x654 */ u8 unk654[2]; /* saved time of day, sound setting */
     /* 0x656 */ s16 fade;
 } Ctx23;
 
@@ -890,7 +905,64 @@ void func_801ECD80_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags &= ~2;
 }
 
+void func_801EA770_ovl_23B220(void *p);
+void func_8017A704(void *a, void *b, void *c);
+extern s32 D_800E9C0A;
+extern u8 D_801976DA;
+extern u8 D_801CEAAC;
+extern u8 D_801CEAAD;
+extern u8 D_801CEAAE;
+
+/* Title screen init: allocates the context, loads the logo, objects and backdrop, and saves the
+ * time of day and sound setting it overrides */
+#ifdef NON_MATCHING
+/* 121/123 instructions: the original loads D_801EFE48 into saved registers before each loader call and copies the 16-byte archive descriptors with three registers */
+void func_801ECE30_ovl_23B220(void) {
+    Ctx23 *s;
+
+    s = HMalloc(0x658);
+    D_801EFE48_ovl_23B220 = s;
+    bzero(s, 0x658);
+    s = D_801EFE48_ovl_23B220;
+    s->logo = func_801E8E20_ovl_23B220(0x36BC52);
+    func_801EA224_ovl_23B220();
+    {
+        Arc16_23D arc = D_801F0490_ovl_23B220;
+        Arc16_23D req = D_801F0490_ovl_23B220;
+
+        s = D_801EFE48_ovl_23B220;
+        arc.size = ChunkSize(0x36A070);
+        arc.buf = HMalloc(arc.size);
+        LoadChunkRaw(arc.buf, 0x36A070);
+        func_8007ACB0(&arc, &req, 1);
+        HFree(arc.buf);
+        s->backdropSize = req.size;
+        s->backdrop = req.buf;
+    }
+    func_801EA770_ovl_23B220(D_801EFE48_ovl_23B220->unk36C);
+    s = D_801EFE48_ovl_23B220;
+    s->img60C = func_801E8E20_ovl_23B220(0x36AB9C);
+    s->unk610 = 0xC8;
+    s->unk612 = 0;
+    s = D_801EFE48_ovl_23B220;
+    s->img5C4 = func_801E8E20_ovl_23B220(0x36AA92);
+    s = D_801EFE48_ovl_23B220;
+    s->img5C8 = func_801E8E20_ovl_23B220(0x01DD375A);
+    D_801EFE48_ovl_23B220->unk654[0] = D_801976DA;
+    D_801976DA = 0x18;
+    D_801EFE48_ovl_23B220->unk654[1] = FIELD(&D_800E9C0A, u8, 8);
+    FIELD(&D_800E9C0A, u8, 8) = 1;
+    D_801CEAAE = 0;
+    D_801CEAAD = 0;
+    D_801CEAAC = 0;
+    D_801EFE48_ovl_23B220->fade = 0xFF;
+    D_801EFE48_ovl_23B220->unk23C = 0;
+    D_801EFE48_ovl_23B220->flags |= 1;
+    func_8017A704(D_801EFE48_ovl_23B220, &FIELD(&D_800E9C0A, u8, 8), D_801EFE48_ovl_23B220);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801ECE30_ovl_23B220);
+#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, 2 words from the target; queued for the permuter */
