@@ -25,7 +25,63 @@ void func_801F8E90(u8 id, u8 *s);
 
 INCLUDE_ASM("asm/nonmatchings/275FF0", func_80221860_ovl_275850);
 
-INCLUDE_ASM("asm/nonmatchings/275FF0", func_80221B60_ovl_275850);
+void func_801F7644(u8 *s, f32 *out, u8 c);
+u8 *func_801F885C(f32 *pos, u8 *r);
+void func_80218104(f32 x, f32 y, f32 z, s32 n);
+void func_80221860_ovl_275850();
+extern u8 D_802256AC_ovl_275850[];
+extern u8 D_802256B2_ovl_275850[];
+
+s32 func_80221B60_ovl_275850(u16 msg, u8 *o) {
+    f32 p[4];
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, s32, 4) = D_80220F6C;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 0));
+            func_8020E0B4(-1, 0x1002);
+            break;
+        case 0x1002:
+            func_8020DC80(0x1003);
+            break;
+        case 0x1003:
+            func_801F7644(FIELD(o, u8 *, 0), p, 0x20);
+            p[1] += 20.0f;
+            FIELD(func_801F885C(p, D_802256AC_ovl_275850), s32, 0x10) = 10;
+            func_80218104(p[0], p[1], p[2], 200);
+            if (*FIELD(o, u8 *, 0) != *FIELD(o, u8 *, 4)) {
+                func_8020E0B4(10, 0x1004);
+            } else {
+                func_8020E0B4(10, 0x1005);
+            }
+            break;
+        case 0x1004:
+            D_80220F68 = FIELD(o, s32, 0);
+            ((u8 *)&D_80220F6C)[0] = *FIELD(o, u8 *, 4);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x1D);
+            ((u8 *)&D_80220F6C)[1] = 0;
+            func_8020DF00(func_80221860_ovl_275850);
+            func_8020E0B4(2, 0x1005);
+            break;
+        case 0x1005:
+            func_801F9DFC(0, *FIELD(o, u8 *, 4), 0x1E);
+            func_801F8E50(*FIELD(o, u8 *, 4), D_802256B2_ovl_275850);
+            func_80207F30(*FIELD(o, u8 *, 4), 5, 0x19);
+            func_8020E0B4(0x25, 0x1006);
+            break;
+        case 0x1006:
+            func_8020DD34(0x101);
+            break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/275FF0", func_80221D8C_ovl_275850);
 
