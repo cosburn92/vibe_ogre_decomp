@@ -255,7 +255,78 @@ void func_801D5910_ovl_101CE0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5A60_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D5E34_ovl_101CE0);
+s32 func_801DA228_ovl_101CE0(u32 *u);
+s32 func_801DA2B4_ovl_101CE0(u32 *u);
+s32 func_801DA1AC_ovl_101CE0(u32 *u);
+
+/* Takes unit u (flag 0x40: in a legion) out of its legion: a leader (0x80) disbands the legion,
+ * freeing every member; otherwise the unit's slot is emptied (the rear squad moves forward) and
+ * the legion's formation and rank are recomputed */
+void func_801D5E34_ovl_101CE0(u32 *u) {
+    u8 cls[5];
+    s32 lg;
+    s32 pos;
+    s32 i;
+    u8 *l;
+
+    if (!(*u & 0x40)) {
+        return;
+    }
+    lg = func_801DA228_ovl_101CE0(u);
+    pos = func_801DA2B4_ovl_101CE0(u);
+    l = gLegions[lg];
+    if (*u & 0x80) {
+        l[1] &= ~5;
+        gSquads[((u8 *)u)[4]].flags &= ~2;
+        for (i = 0; i < 5; i++) {
+            if ((l + i)[2] != 0xFF) {
+                u32 *m = D_801F0CB0_ovl_101CE0[(l + i)[2]];
+
+                func_801B2D2C_ovl_101CE0(m);
+                *m &= ~0x80;
+                *m &= ~0x40;
+                *m &= ~0x4000;
+                *m &= ~0x8000;
+                *m &= ~0x10000;
+            }
+        }
+    } else {
+        u8 t;
+
+        switch (pos) {
+            case 1:
+                t = l[5];
+                l[5] = 0xFF;
+                l[3] = t;
+                break;
+            case 2:
+                t = l[6];
+                l[6] = 0xFF;
+                l[4] = t;
+                break;
+            case 3:
+                l[5] = 0xFF;
+                break;
+            case 4:
+                l[6] = 0xFF;
+                break;
+        }
+        func_801B2D2C_ovl_101CE0(u);
+        *u &= ~0x40;
+        *u &= ~0x4000;
+        *u &= ~0x8000;
+        *u &= ~0x10000;
+        for (i = 0; i < 5; i++) {
+            if ((l + i)[2] == 0xFF) {
+                cls[i] = 0;
+            } else {
+                cls[i] = func_801D4928_ovl_101CE0(&gSquads[(l + i)[2]]);
+            }
+        }
+        l[9] = func_8016B088(cls[0], cls[1], cls[2], cls[3], cls[4]);
+    }
+    l[10] = 11 - func_801DA1AC_ovl_101CE0(D_801F0CB0_ovl_101CE0[l[2]]);
+}
 
 
 /* Disbands squad k: frees its members (generic ids 100+, else clears the character), clears the
