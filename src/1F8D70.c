@@ -250,13 +250,13 @@ void func_80080998(void *dst, void *src, s32 n);
 /* Copies image src into its own allocation and frees src; a "B5" multi-frame image becomes a chain
  * of separately allocated frames (header link at 0x14, frame links at 0xC) */
 #ifdef NON_MATCHING
-/* 140/140: structure and calls line up; src / header copy / frame pointer get different saved registers */
+/* 140/140, 38 words: src and the frame size swap s1/s2 */
 void *func_801B7A7C_ovl_1F0A30(u8 *src) {
     u8 *out;
     s32 n;
+    u8 *h = src;
 
     if (FIELD(src, u16, 0) == 0x4235) {
-        u8 *h = src;
         u8 *o2;
         u8 *p = h + 8;
         s32 sz;
