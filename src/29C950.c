@@ -565,7 +565,107 @@ u8 func_8022E6D4_ovl_29A4C0(s32 i) {
     return func_80233968_ovl_29A4C0(u->wE8, u->h134, u->wF0, u->b146, &c[0], &c[1], &c[2]);
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E72C_ovl_29A4C0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void func_801C9028(s32 x, s32 y, s32 z, s32 *sx, s32 *sy);
+void func_801C5938(s32 a, s32 b);
+u8 func_8016DE70(u8 a, u8 cls);
+s32 func_801C8B84(void *u);
+extern u8 D_800EB290[];
+extern u8 D_800EB240[];
+extern u16 D_801CEF10[];
+extern u16 D_801CEF12[];
+extern u16 D_801CF3F0[];
+extern u16 D_801CF3F2[];
+extern u16 D_801CF3F4[];
+extern u8 D_801976DC;
+extern u8 D_801976E8;
+extern u8 D_80193BD4[]; /* player characters' gender, stride 0x38 */
+extern u8 D_80195574[]; /* enemy characters' gender, stride 0x34 */
+#define UNIT29(a) FIELD(FIELD(a, u8 *, 0x4C), u8 *, 0x40)
+
+/* Plays sound (hi << 8 | lo) from bank 0x12 or the default bank, panned by the screen x of the
+ * actor's model. For mode 0x1D/0x1E actors the sound is picked by class kind instead: fixed sounds
+ * for 0x33, 0x2F, 0x4E-0x50 and 0x38-0x44, else by func_8016DE70 (9, 7, or a 4/5 voice by gender) */
+void func_8022E72C_ovl_29A4C0(u8 *a, s32 cls, s32 kind, u8 hi, u8 lo, u8 bank) {
+    s32 sx;
+    s32 id;
+    u8 *b;
+    s32 g;
+
+    if (FIELD(a, u8 *, 0x4C) != NULL) {
+        func_801C9028(FIELD(FIELD(a, u8 *, 0x4C), s16, 0x1C), FIELD(FIELD(a, u8 *, 0x4C), s16, 0x1E),
+                      FIELD(FIELD(a, u8 *, 0x4C), s16, 0x20), &sx, NULL);
+        if ((u32)(FIELD(a, u16, 4) - 0x1D) < 2) {
+            hi = 0;
+            if (kind == 0x33) {
+                lo = 6;
+            } else if (kind == 0x2F) {
+                lo = 0xB;
+            } else if ((u32)(kind - 0x4E) < 3) {
+                lo = 0xA;
+            } else if ((u32)(kind - 0x38) < 13) {
+                lo = 8;
+            } else {
+                switch (func_8016DE70(cls, kind)) {
+                    case 0:
+                    case 1:
+                    case 4:
+                        if (func_801C8B84(UNIT29(a))) {
+                            g = (u32)D_801976DC < 30;
+                        } else {
+                            g = (u32)D_801976E8 < 30;
+                        }
+                        if (g) {
+                            g = D_80193BD4[UNIT29(a)[0xF6] * 0x38] != 0;
+                        } else {
+                            g = D_80195574[UNIT29(a)[0xF6] * 0x34] != 0;
+                        }
+                        lo = g ? 5 : 4;
+                        break;
+                    case 2:
+                        lo = 9;
+                        break;
+                    default:
+                        lo = 7;
+                        break;
+                }
+            }
+        }
+        id = (hi << 8) + lo;
+        if ((u32)(id - 0x24E) < 0xAB) {
+            b = D_800EB290;
+            if (bank == 0x12) {
+                b = D_800EB240;
+            }
+            if (sx >= 0xD5) {
+                func_801C5938((s32)b, D_801CF3F0[id]);
+            } else if (sx < 0x6A) {
+                func_801C5938((s32)b, D_801CF3F4[id]);
+            } else {
+                func_801C5938((s32)b, D_801CF3F2[id]);
+            }
+        } else {
+            b = D_800EB290;
+            if (bank == 0x12) {
+                b = D_800EB240;
+            }
+            if (sx >= 0xA0) {
+                func_801C5938((s32)b, D_801CEF12[id * 2]);
+            } else {
+                func_801C5938((s32)b, D_801CEF10[id * 2]);
+            }
+        }
+    } else {
+        id = (hi << 8) + lo;
+        b = D_800EB290;
+        if (bank == 0x12) {
+            b = D_800EB240;
+        }
+        func_801C5938((s32)b, D_801CEF10[id * 2]);
+    }
+}
 
 /* 16 zero bytes (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_80239240_ovl_29A4C0\nD_80239240_ovl_29A4C0:\n.word 0, 0, 0, 0\n.section .text\n");
