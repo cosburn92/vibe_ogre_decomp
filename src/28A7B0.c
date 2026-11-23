@@ -2243,7 +2243,100 @@ u8 *func_8023A42C_ovl_286BD0(u8 *o, s32 mode) {
     return t;
 }
 
+void _bcopy(void *src, void *dst, s32 n);
+
+/* Opens text window o (0xD0, new 0x604-byte buffer) on paragraph arg & 0xFF of the text chunk;
+ * arg >> 16 == 2 selects style 6. Line breaks (0x81 0x97) end lines (up to 48, starts at 0x534),
+ * 0x81 0x8F marks a prompt */
+#ifdef NON_MATCHING
+/* 143/143, 95 words: the original keeps the stack buffer address in s5 and reuses s1 for the chunk; registers shift from there */
+void func_8023A5D8_ovl_286BD0(u8 *o, u32 arg) {
+    char buf[0x500];
+    u16 type = arg >> 16;
+    u16 para;
+    u8 *w;
+    u8 *src;
+    u8 *p;
+    s32 k;
+    s32 start;
+    s32 i;
+    s32 n;
+    s32 j;
+    u8 *q;
+
+    FIELD(o, u8 *, 0xD0) = HMalloc(0x604);
+    bzero(FIELD(o, u8 *, 0xD0), 0x604);
+    bzero(buf, 0x500);
+    para = arg & 0xFF;
+    w = FIELD(o, u8 *, 0xD0);
+    start = 0;
+    w[0x5F3] = 0x3F;
+    FIELD(w, u32, 0x600) = arg;
+    w[0x5F0] = 0;
+    w[0x5FE] = 2;
+    src = func_80227A18(0x018855FE, 0);
+    k = 0;
+    for (i = 0, p = src; i <= 0x0FFFFFFE; i++, p++) {
+        if (p[0] == '\r' && p[1] == '\n' && p[2] == p[0] && p[3] == p[1]) {
+            k++;
+            if (para == k) {
+                goto found;
+            }
+            start = i + 4;
+        }
+    }
+done:
+    HFree(src);
+    if (type == 2) {
+        w[0x5F0] = 6;
+    }
+    goto copy;
+found:
+    bzero(buf, i - start + 2);
+    func_80080998(buf, src + start, i - start);
+    goto done;
+copy:
+    _bcopy(buf, w, 0x500);
+    FIELD(w, u8 *, 0x530) = w;
+    o[0x25] = 1;
+    w[0x5F4] = 1;
+    p = w;
+    n = 1;
+    j = 0;
+    q = w + 4;
+    do {
+        switch ((p[0] << 8) | p[1]) {
+            case 0x818F:
+                p[0] = 0;
+                p += 2;
+                j += 2;
+                w[0x5F7] = 1;
+                o[0x22] = 0;
+            default:
+                p++;
+                j++;
+                break;
+            case 0x8197:
+                p[0] = 0;
+                p += 2;
+                FIELD(q, u8 *, 0x530) = p;
+                q += 4;
+                o[0x25]++;
+                n++;
+                w[0x5F4]++;
+                j += 2;
+                if (n >= 0x30) {
+                    j = 0x500;
+                }
+                break;
+        }
+    } while (j < 0x500);
+    w[0x5F5] = n;
+    w[0x5F6] = 0x11;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A5D8_ovl_286BD0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A814_ovl_286BD0);
 
