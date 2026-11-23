@@ -103,7 +103,56 @@ s32 func_801DE800_ovl_101CE0(u8 *u) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DE8E8_ovl_101CE0);
+/* Whether every member of unit u's squad (or legion) has fatigue below 90 */
+s32 func_801DE8E8_ovl_101CE0(u8 *u) {
+    u8 max = 0;
+    s32 i;
+    s32 k;
+    s32 id;
+    u8 *l;
+
+    if (!(FIELD(u, u32, 0) & 0x40)) {
+        for (i = 0; i < 5; i++) {
+            id = gSquads[u[4]].members[i];
+            if (id != 0) {
+                if (id < 100) {
+                    if (u[4] < 30) {
+                        if (D_80193BC0[id].c.hp != 0 && max < D_80193BC0[id].c.fatigue) {
+                            max = D_80193BC0[id].c.fatigue;
+                        }
+                    } else {
+                        if (D_80195560[id].hp != 0 && max < D_80195560[id].fatigue) {
+                            max = D_80195560[id].fatigue;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        l = &D_801969BA[func_801DA228_ovl_101CE0(u) * 11];
+        for (k = 0; k < 5; k++) {
+            if (l[k] != 0xFF) {
+                for (i = 0; i < 5; i++) {
+                    id = gSquads[l[k]].members[i];
+                    if (id != 0) {
+                        if (id < 100) {
+                            if (u[4] < 30) {
+                                if (D_80193BC0[id].c.hp != 0 && max < D_80193BC0[id].c.fatigue) {
+                                    max = D_80193BC0[id].c.fatigue;
+                                }
+                            } else {
+                                if (D_80195560[id].hp != 0 && max < D_80195560[id].fatigue) {
+                                    max = D_80195560[id].fatigue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return max < 90;
+}
 
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DEAF4_ovl_101CE0);
 
