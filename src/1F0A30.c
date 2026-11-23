@@ -301,8 +301,6 @@ inline void func_801AE8CC_ovl_1F0A30(void) {
     D_801D0820_ovl_1F0A30 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AE988_ovl_1F0A30);
-
 extern f32 D_801CE8CC_ovl_1F0A30; /* eye x, y, z */
 extern f32 D_801CE8D0_ovl_1F0A30;
 extern f32 D_801CE8D4_ovl_1F0A30;
@@ -325,6 +323,21 @@ extern f32 D_801D0730_ovl_1F0A30;
 extern f32 D_801D083C_ovl_1F0A30;
 f32 func_8009CFE0(f32 y, f32 x); /* atan2f */
 s32 func_801BE6A8_ovl_1F0A30(void *p);
+
+/* Pitch and yaw (degrees) of the saved camera */
+void func_801AE988_ovl_1F0A30(void) {
+    f32 dy = D_801D072C_ovl_1F0A30 - D_801D083C_ovl_1F0A30;
+    f32 dx = D_801D0720_ovl_1F0A30 - D_801D0730_ovl_1F0A30;
+    f32 d;
+    f32 dz;
+
+    D_801CE8F4_ovl_1F0A30 = 0.0f;
+    dz = D_801D0704_ovl_1F0A30 - D_801D0700_ovl_1F0A30;
+    d = sqrtf(dy * dy + dx * dx);
+    D_801CE8EC_ovl_1F0A30 = func_8009CFE0(d, dz) * 180.0f / 3.14159265358979312 + -90.0;
+    D_801CE8F0_ovl_1F0A30 = func_8009CFE0(dx, dz) * 180.0f / 3.14159265358979312;
+}
+
 
 /* Saves the field camera, derives its pitch and yaw (degrees) and reloads the map's light */
 void func_801AEA90_ovl_1F0A30(void) {
