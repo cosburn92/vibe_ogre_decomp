@@ -42,7 +42,7 @@ extern s16 D_801EF1BE_ovl_087200[]; /* = D_801EF1BC + 1 */
 
 void func_801C54EC_ovl_087200(s32 a, u8 b, u8 c);
 extern s16 D_801EE38C_ovl_087200[][2];
-void func_801C6DD0_ovl_087200(f32 *x, f32 *y, s32 i);
+void func_801C6DD0_ovl_087200(); /* (x, y, i, slot): the caller passes no slot */
 void func_801C79C8_ovl_087200(); /* (x, y, i, slot): func_801C7944 passes no slot */
 extern s16 D_801EE38C_ovl_087200[][2];
 /* --- end decls --- */
@@ -335,7 +335,66 @@ __asm__(".section .rodata\n"
         ".word 0, 3, 1, 4, 2\n"
         ".section .text\n");
 
+typedef struct {
+    s32 v[5];
+} Slots87;
+extern Slots87 D_801EFAFC_ovl_087200;
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* As func_801C79C8 one row down (base + 3) and 72 higher */
+#ifdef NON_MATCHING
+/* 146/147 instructions: float scheduling as in func_801C79C8; K&R definition because the caller passes no slot */
+void func_801C6DD0_ovl_087200(x, y, i, j)
+    f32 *x;
+    f32 *y;
+    s32 i;
+    s32 j;
+{
+    Slots87 tab = D_801EFAFC_ovl_087200;
+    s32 base;
+    s32 r;
+    s32 k;
+    s32 n;
+    s32 m;
+    f32 c;
+    f32 rr;
+    f32 fy;
+
+    if (FIELD(D_80196AF8, s32, 0x2C0) != 0) {
+        base = (FIELD(D_80196AF8, s32, 0x2C0) + 2) / 3 * 3 + 3;
+    } else {
+        base = 3;
+    }
+    r = FIELD(D_80196AF8, s32, 0x5DC) - i - 1;
+    if (r < 0) {
+        r = 0;
+    }
+    k = tab.v[j];
+    if (k == 0) {
+        n = base + r * 6 + 2;
+        c = n / 3;
+        rr = n % 3;
+        fy = rr * 50.0f - c * 20.0f - 10.0f + 0.5f - 72.0f;
+        *x = c * 72.0f + 36.0f + rr * 30.0f + 0.5f;
+    } else {
+        n = base + r * 6 - (k < 3);
+        m = n + 1;
+        if (!(k & 1)) {
+            m = n - 1;
+        }
+        n = m + k;
+        c = n / 3;
+        rr = n % 3;
+        fy = rr * 50.0f - c * 20.0f + 0.5f - 72.0f;
+        *x = c * 72.0f + rr * 30.0f + 0.5f;
+    }
+    *y = fy;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C6DD0_ovl_087200);
+#endif
 
 void func_801C701C_ovl_087200(f32 *x, f32 *y, s32 i) {
     s16 *off;
@@ -414,10 +473,6 @@ void func_801C7944_ovl_087200(f32 *x, f32 *y, s32 i) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-typedef struct {
-    s32 v[5];
-} Slots87;
-extern Slots87 D_801EFAFC_ovl_087200;
 
 /* Screen position of slot j (D_801EFAFC kind) of squad row i, counted from the last row, in the
  * organize grid of three columns */
