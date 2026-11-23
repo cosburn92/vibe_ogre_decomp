@@ -312,7 +312,43 @@ f32 func_8023A270_ovl_2A8D20(void *arg0, f32 arg1, f32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A370_ovl_2A8D20);
 
+extern f32 D_801CE8EC;
+extern f32 D_801CE8F0;
+extern f32 D_801CE8F4;
+f32 sqrtf(f32 x);
+f32 func_8009CFE0(f32 y, f32 x); /* atan2f */
+
+/* Pitch and yaw (degrees, into D_801CE8EC / D_801CE8F0) of camera o (eye 0x14-0x1C, at 0x20-0x28) */
+#ifdef NON_MATCHING
+/* 111/111: the original copies o to v0 for the second branch and loads 0x28 after the sqrt; the angles are f32 (D_801CE8EC/F0/F4) */
+void func_8023AA8C_ovl_2A8D20(u8 *o) {
+    f32 z = FIELD(o, f32, 0x1C);
+    f32 dy;
+    f32 dx;
+    f32 d;
+    f32 dz;
+
+    D_801CE8F4 = 0.0f;
+    if (z < 0.0f) {
+        dy = FIELD(o, f32, 0x24) - FIELD(o, f32, 0x18);
+        dx = FIELD(o, f32, 0x20) - FIELD(o, f32, 0x14);
+        dz = FIELD(o, f32, 0x28) - z;
+        d = sqrtf(dy * dy + dx * dx);
+        D_801CE8EC = func_8009CFE0(d, dz) * 180.0f / 3.14159265358979312 + -90.0;
+        D_801CE8F0 = (f32)(func_8009CFE0(dx, dz) * 180.0f / 3.14159265358979312) - 180.0f;
+    } else {
+        dy = FIELD(o, f32, 0x18) - FIELD(o, f32, 0x24);
+        dx = FIELD(o, f32, 0x14) - FIELD(o, f32, 0x20);
+        D_801CE8F4 = 0.0f;
+        dz = z - FIELD(o, f32, 0x28);
+        d = sqrtf(dy * dy + dx * dx);
+        D_801CE8EC = func_8009CFE0(d, dz) * 180.0f / 3.14159265358979312 + -90.0;
+        D_801CE8F0 = func_8009CFE0(dx, dz) * 180.0f / 3.14159265358979312;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023AA8C_ovl_2A8D20);
+#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, 500 words from the target; queued for the permuter */
