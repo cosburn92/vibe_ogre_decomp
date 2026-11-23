@@ -151,7 +151,57 @@ void func_801F40B0_ovl_145210(s32 v) {
     }
 }
 
+u8 *func_801F4734_ovl_145210(s16 a);
+u8 *func_801F477C_ovl_145210(s16 a);
+void func_801F4A6C_ovl_145210(u8 *src, u8 *img, u16 alt, u16 *dst, s32 n);
+void func_801F4A34_ovl_145210(u8 *src, u8 *dst, s32 n);
+/* Builds the three palette sets of portrait id: one 0x1E20 block holding 3 colour tables (0x100
+ * entries) then 3 alpha tables (0x40), each filled from messages 0x4F5+i over image 0x4F4 */
+/* Builds the three palette sets of portrait id: one 0x1E20 block holding 3 colour tables (0x100
+ * entries) then 3 alpha tables (0x40), each filled from messages 0x4F5+i over image 0x4F4 */
+#ifdef NON_MATCHING
+/* 85/84: the original keeps 0x100/0x40/3/0x400 in saved registers and computes the table offsets and the size check at run time; ours folds them */
+void *func_801F4208_ovl_145210(u8 id) {
+    s32 n1;
+    s32 n2;
+    s32 count;
+    u8 **t;
+    s32 i;
+    s32 total = 0;
+    s32 off = 0x18;
+    u8 *img;
+    s32 size = 0x400;
+
+    count = 3;
+    n1 = 0x100;
+    n2 = 0x40;
+    t = HMalloc(0x1E20);
+    for (i = 0; i < count; i++) {
+        t[i] = (u8 *)t + off;
+        off += n1 * 8;
+        total += n1;
+        t[i + 3] = (u8 *)t + off;
+        off += n2 * 8;
+        total += n2;
+    }
+    if (total != (n1 + n2) * count) {
+        for (;;) {
+        }
+    }
+    img = func_801F477C_ovl_145210(0x4F4);
+    for (i = 0; i < count; i++) {
+        u8 *p = func_801F4734_ovl_145210(0x4F5 + i);
+
+        func_801F4A6C_ovl_145210(p, img, id, (u16 *)t[i], size);
+        func_801F4A34_ovl_145210(p, t[i + 3], size);
+        func_801F40B0_ovl_145210((s32)p);
+    }
+    func_801F40B0_ovl_145210((s32)img);
+    return t;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4208_ovl_145210);
+#endif
 
 static inline s32 Cmp8_145(u8 *x, u8 *y) {
     s32 n;
@@ -280,7 +330,8 @@ s32 func_801F4638_ovl_145210(s32 a, u8 b, u8 c) {
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4638_ovl_145210);
 #endif
 
-void func_801F4734_ovl_145210(s16 a) {
+/* Sends message 4 for a; returns whatever func_801F4358 left in v0 (no return statement) */
+u8 *func_801F4734_ovl_145210(s16 a) {
     s16 msg[4];
     s16 *p = msg;
 
@@ -289,7 +340,8 @@ void func_801F4734_ovl_145210(s16 a) {
     func_801F4358_ovl_145210(4, p);
 }
 
-void func_801F477C_ovl_145210(s16 a) {
+/* Sends message 5 for a; returns whatever func_801F4358 left in v0 (no return statement) */
+u8 *func_801F477C_ovl_145210(s16 a) {
     s16 msg[4];
     s16 *p = msg;
 
