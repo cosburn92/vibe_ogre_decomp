@@ -616,7 +616,60 @@ ScriptCtx *func_80221A6C_ovl_1BA050(u8 *base, s32 off) {
     return ctx;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BA050", func_80221B5C_ovl_1BA050);
+extern s32 (*D_80229D34_ovl_1BA050[])(ScriptCtx *c);
+void func_80224B5C_ovl_1BA050(void);
+void func_802282D0_ovl_1BA050(void);
+void func_80228CE4_ovl_1BA050(void);
+void func_80229828_ovl_1BA050(void);
+
+/* Runs one frame of every active script: executes opcodes (0x80+ from the extension table at
+ * D_8022A23C) until a handler yields, then the frame hook and the per-frame updates */
+void func_80221B5C_ovl_1BA050(void) {
+    s32 i;
+
+    if (D_801936E0 != 0) {
+        D_8022A828_ovl_1BA050 = 0;
+        D_8022A254_ovl_1BA050 &= 0x7FFF;
+        for (i = 0; i < D_8022A230_ovl_1BA050; i++) {
+            ScriptCtx *c = (ScriptCtx *)(D_8022A234_ovl_1BA050 + i * 0x38);
+
+            if (c->unk00 == 0) {
+                continue;
+            }
+            for (;;) {
+                s32 (**tbl)(ScriptCtx *);
+                u8 t = *c->pc;
+                u8 op;
+
+                if (t & 0x80) {
+                    if (D_8022A23C_ovl_1BA050 == 0) {
+                        for (;;) {
+                        }
+                    }
+                    if (*c->pc >= D_8022A238_ovl_1BA050) {
+                        for (;;) {
+                        }
+                    }
+                    tbl = (s32 (**)(ScriptCtx *))D_8022A23C_ovl_1BA050;
+                    op = *c->pc & 0x7F;
+                } else {
+                    tbl = D_80229D34_ovl_1BA050;
+                    op = t;
+                }
+                if (tbl[op](c) != 0) {
+                    break;
+                }
+            }
+        }
+        if (D_8022A240_ovl_1BA050 != 0) {
+            ((void (*)(void))D_8022A240_ovl_1BA050)();
+        }
+        func_80224B5C_ovl_1BA050();
+        func_802282D0_ovl_1BA050();
+        func_80228CE4_ovl_1BA050();
+        func_80229828_ovl_1BA050();
+    }
+}
 
 void func_80221CB8_ovl_1BA050(void) {
     if (D_801936E0) {
