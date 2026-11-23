@@ -1079,7 +1079,75 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023324C_ovl_286BD0);
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802339D8_ovl_286BD0);
 
+/* Finds the entry under the cursor (0x230/0x234, cells 60x72); 0 if none. Unless mode is 1 or
+ * the list is locked (0x23C), selects it (0x23E) and stores which screen edge it touches (0x23F:
+ * +1 right, +2 bottom, relative to the scroll origin 0x244/0x245) */
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#ifdef NON_MATCHING
+/* 99/100: the mode==1 exit shares the setter's return-1 block in the original (bne over j/li); ours threads it */
+s32 func_80233DA8_ovl_286BD0(s32 mode) {
+    s32 i;
+    s32 x = FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) - 0x34;
+    s32 y = FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) - 0x36;
+    u8 *e;
+
+    for (i = 0; i < 50; i++) {
+        s32 cx, cy;
+        s32 dx, dy;
+        s32 k;
+
+        e = ((u8 **)D_8023DE30_ovl_286BD0)[i];
+        if (e == NULL) {
+            continue;
+        }
+        cx = e[4] * 60;
+        cy = e[5] * 72;
+        if (x < cx) continue;
+        if (x > cx + 60) continue;
+        if (y < cy) continue;
+        if (y > cy + 72) continue;
+        if (mode == 1) {
+            return 1;
+        }
+        if (D_8023DE30_ovl_286BD0[0x23C] == 1) {
+            return 1;
+        }
+        D_8023DE30_ovl_286BD0[0x23E] = i;
+        dx = e[4] - D_8023DE30_ovl_286BD0[0x244];
+        dy = e[5] - D_8023DE30_ovl_286BD0[0x245];
+        k = 0;
+        if (dx == 4 || dy == 2) {
+            s32 sx = FIELD(D_8023DE30_ovl_286BD0, s32, 0x1C4) - FIELD(D_8023DE30_ovl_286BD0, s32, 0x1B8);
+            s32 sy = FIELD(D_8023DE30_ovl_286BD0, s32, 0x1EC) - FIELD(D_8023DE30_ovl_286BD0, s32, 0x1E0);
+
+            sx = dx >= 4 ? sx : 0;
+            if (dx >= 5) {
+                sx = 1;
+            }
+            sy = dy >= 2 ? sy : 0;
+            if (dy >= 3) {
+                sy = 1;
+            }
+            if (sy > 0) {
+                k = 2;
+            }
+            k += sx > 0;
+        } else {
+            if (dy >= 3) {
+                k = 2;
+            }
+            k += dx >= 5;
+        }
+        D_8023DE30_ovl_286BD0[0x23F] = k;
+        return 1;
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80233DA8_ovl_286BD0);
+#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, 13 words from the target; queued for the permuter */
