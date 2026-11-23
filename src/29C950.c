@@ -8,17 +8,25 @@ typedef struct {
     /* 0x0EC */ s32 wEC;
     /* 0x0F0 */ s32 wF0;
     /* 0x0F4 */ s32 wF4;
-    /* 0x0F8 */ u8 unk0F8[0x30];
+    /* 0x0F8 */ s32 wF8;
+    /* 0x0FC */ u8 unk0FC[0x20];
+    /* 0x11C */ f32 f11C;
+    /* 0x120 */ f32 f120;
+    /* 0x124 */ f32 f124;
     /* 0x128 */ s32 w128;
     /* 0x12C */ u8 unk12C[8];
     /* 0x134 */ s16 h134;
-    /* 0x136 */ u8 unk136[4];
+    /* 0x136 */ s16 h136;
+    /* 0x138 */ u8 unk138[2];
     /* 0x13A */ s16 h13A;
     /* 0x13C */ u8 unk13C;
     /* 0x13D */ u8 b13D;
     /* 0x13E */ u8 unk13E[7];
     /* 0x145 */ u8 b145;
     /* 0x146 */ u8 b146;
+    /* 0x147 */ u8 b147;
+    /* 0x148 */ u8 unk148;
+    /* 0x149 */ u8 b149;
 } BUnit;
 
 typedef struct {
@@ -77,7 +85,7 @@ typedef struct {
     s16 idx;
 } Sort29C; /* size 0x14 */
 extern u8 *D_801CE8BC;
-void BattleAnimStep2(void *a);
+u8 BattleAnimStep2(void *a);
 u8 func_8022EFB0_ovl_29A4C0(void *a);
 f32 func_8009CFE0(f32 y, f32 x);
 f32 func_8022F280_ovl_29A4C0(f32 a);
@@ -670,7 +678,168 @@ void func_8022E72C_ovl_29A4C0(u8 *a, s32 cls, s32 kind, u8 hi, u8 lo, u8 bank) {
 /* 16 zero bytes (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_80239240_ovl_29A4C0\nD_80239240_ovl_29A4C0:\n.word 0, 0, 0, 0\n.section .text\n");
 
+typedef struct { s32 v[3]; } Pt29C;
+void func_8022D534_ovl_29A4C0(s32 *a, f32 *out, s32 b, s32 c);
+extern Pt29C D_80239240_ovl_29A4C0;
+
+/* Unit version of the animation script step: runs commands until one sets a positive wait (the
+ * frame comes from the unit's own script, or the class script with a clamped frame set), handling
+ * waits, jumps, moves, colour bytes and panned sounds; then adds the colour deltas to the colour
+ * bytes with clamping and returns the last command */
+static inline s16 AnimKind29C(s16 k) {
+    if (k == 0x87) {
+        k = -1;
+    } else if (k == 0xA1) {
+        k = -1;
+    } else if (k == 0x88) {
+        k = -1;
+    }
+    return k;
+}
+
+#ifdef NON_MATCHING
+/* 7 instructions short: the original keeps the 0x12 bank compare constant in s3 (hoisted out of the
+ * loop), and its case 0x13 recomputes the sound index instead of jumping into case 0x11's copy;
+ * the sound calls share one jal as here */
+u8 BattleAnimStep2(void *pu) {
+    BUnit *u = pu;
+    u8 c0, c1, c2;
+    u8 r = 1;
+    s32 sx;
+    s32 id;
+    u8 *b;
+    u8 i;
+
+    while (u->wF4 <= 0) {
+        u->wF0++;
+        if (u->b13D == 0) {
+            r = func_80233968_ovl_29A4C0(u->wE8, u->h134, u->wF0, u->b146, &c0, &c1, &c2);
+        } else {
+            if (AnimKind29C(u->wE8) == -1) {
+                if (u->h134 >= 0x32) {
+                    u->h134 = 0x32;
+                } else {
+                    u->h134 = 0;
+                }
+            }
+            r = func_801C1AA4(u->wE8, u->wEC, u->b146, u->h13A, u->h134, u->wF0, &c0, &c1, &c2);
+        }
+        switch (r) {
+            case 1:
+                u->wF8 = c0;
+                u->wF4 = c1;
+                break;
+            case 0x15:
+                u->wF8 = c0 + (c1 << 8);
+                u->wF4 = c2;
+                break;
+            case 4:
+                u->wF0 = c0 - 1;
+                break;
+            case 5:
+                u->wF0 = -1;
+                u->h136 = u->h134;
+                u->h134 = c0;
+                break;
+            case 3:
+                u->wF4 = c0;
+                break;
+            case 2:
+                u->f11C -= (s8)c0;
+                u->f124 -= (s8)c1;
+                break;
+            case 0xC:
+                u->f11C += (s8)c0;
+                u->f120 += (s8)c1;
+                u->f124 += (s8)c2;
+                break;
+            case 0x11:
+                b = D_800EB240;
+                sx = D_801CF3F0[(c0 << 8) + c1];
+            play:
+                func_801C5938((s32)b, sx);
+                break;
+            case 0x13:
+                sx = D_801CF3F0[(c0 << 8) + c1];
+                b = D_800EB290;
+                goto play;
+            case 0x12:
+            case 0x14:
+                if (u->b13D == 0) {
+                    Pt29C p;
+                    f32 out[2];
+
+                    p = D_80239240_ovl_29A4C0;
+                    ((void (*)())func_8022D534_ovl_29A4C0)(p.v, out, (s32)u + 0xA0);
+                    sx = *(f32 *)&p.v[0];
+                    id = (c0 << 8) + c1;
+                    if ((u32)(id - 0x24E) < 0xAB) {
+                        b = D_800EB290;
+                        if (r == 0x12) {
+                            b = D_800EB240;
+                        }
+                        if (sx >= 0xD5) {
+                            sx = D_801CF3F0[id];
+                        } else if (sx < 0x6A) {
+                            sx = D_801CF3F4[id];
+                        } else {
+                            sx = D_801CF3F2[id];
+                        }
+                    } else {
+                        b = D_800EB290;
+                        if (r == 0x12) {
+                            b = D_800EB240;
+                        }
+                        if (sx < 0xA0) {
+                            sx = D_801CEF10[id * 2];
+                        } else {
+                            sx = D_801CEF12[id * 2];
+                        }
+                    }
+                    goto play;
+                } else {
+                    u8 *e = D_801CE8BC + (u->b147 * 0xF8 + 0x1C4);
+                    s32 t = ((s32 *)e)[u->b149];
+                    if (t != 0) {
+                        func_8022E72C_ovl_29A4C0((u8 *)t + 0x44, FIELD(e, s32, 0x48), FIELD(e, s32, 0x4C), c0, c1, r);
+                    }
+                }
+                break;
+            case 0xD:
+                if (c0 == 0xFF) {
+                    memset(u->unk000, c1, 0x10);
+                } else {
+                    u->unk000[c0] = c1;
+                }
+                break;
+            case 0x10:
+                if (c0 == 0xFF) {
+                    memset(u->unk000 + 0x10, c1, 0x10);
+                } else {
+                    u->unk000[c0 + 0x10] = c1;
+                }
+                break;
+            case 0:
+                u->wF4 = 2;
+                break;
+        }
+    }
+    for (i = 0; i < 0x10; i++) {
+        s16 v = u->unk000[i] + (s8)u->unk000[i + 0x10];
+        if (v < 0) {
+            u->unk000[i] = 0;
+        } else if (v >= 0x100) {
+            u->unk000[i] = 0xFF;
+        } else {
+            u->unk000[i] = v;
+        }
+    }
+    u->wF4 -= 2;
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", BattleAnimStep2);
+#endif
 
 /* Advances u's frame counter until the colour query reports 4, then steps it back by 2 */
 #ifdef NON_MATCHING
@@ -948,10 +1117,6 @@ void func_80230B44_ovl_29A4C0(u8 a) {
 }
 
 #include "scene.h"
-void func_8022D534_ovl_29A4C0(s32 *a, f32 *out, s32 b, s32 c);
-typedef struct { s32 v[3]; } Pt29C;
-extern Pt29C D_80239240_ovl_29A4C0;
-
 /* Moves each visible unit's name label (scene slot) to its projected screen position */
 void func_80230B60_ovl_29A4C0(s32 a0, s32 a1, s32 a2, s32 arg0) {
     Pt29C p;
