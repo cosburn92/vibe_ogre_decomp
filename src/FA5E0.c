@@ -910,7 +910,50 @@ void func_801B1CC0_ovl_0FA5E0(f32 *outX, f32 *outY, s16 m, s16 n, f32 *x, f32 *y
 
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B1FD8_ovl_0FA5E0);
 
+#ifndef _SHIFTL
+#define _SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+#endif
+#define VTX_FA5(g, v, n, v0)                                                                   \
+    {                                                                                          \
+        Gfx *_g = (g)++;                                                                       \
+        _g->w0 = _SHIFTL(0x01, 24, 8) | _SHIFTL((n), 12, 8) | _SHIFTL((v0) + (n), 1, 7);      \
+        _g->w1 = (u32)(v);                                                                     \
+    }
+#define TRI2_FA5(g, a0, a1, a2, b0, b1, b2)                                                     \
+    {                                                                                          \
+        Gfx *_g = (g)++;                                                                       \
+        _g->w0 = _SHIFTL(0x06, 24, 8) | (_SHIFTL((a0) * 2, 16, 8) | _SHIFTL((a1) * 2, 8, 8) | _SHIFTL((a2) * 2, 0, 8)); \
+        _g->w1 = _SHIFTL((b0) * 2, 16, 8) | _SHIFTL((b1) * 2, 8, 8) | _SHIFTL((b2) * 2, 0, 8); \
+    }
+
+/* Emits the triangle strip of vertex buffer k: batches of 30 vertices (14 quads, sharing an edge
+ * with the next batch), then the remainder */
+#ifdef NON_MATCHING
+/* 123/124 instructions: the original copies the remainder count n into another register for the last loop */
+void func_801B2664_ovl_0FA5E0(u8 *m, Gfx **pg, s32 k) {
+    u8 *v = ((u8 **)m)[k];
+    Gfx *g = *pg;
+    s32 j;
+    s32 i;
+    s32 n;
+
+    for (j = 0; j < FIELD(m, s32, 0x58) / 14; j++) {
+        VTX_FA5(g, v, 30, 0);
+        for (i = 0; i < 28; i += 2) {
+            TRI2_FA5(g, i, i + 2, i + 3, i, i + 3, i + 1);
+        }
+        v += 28 * 16;
+    }
+    n = FIELD(m, s32, 0x58) % 14 * 2;
+    VTX_FA5(g, v, n + 2, 0);
+    for (i = 0; i < n; i += 2) {
+        TRI2_FA5(g, i, i + 2, i + 3, i, i + 3, i + 1);
+    }
+    *pg = g;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B2664_ovl_0FA5E0);
+#endif
 
 INCLUDE_RODATA("asm/nonmatchings/FA5E0", D_801B4C78_ovl_0FA5E0);
 
@@ -944,7 +987,90 @@ void func_801B2CFC_ovl_0FA5E0(u8 *o) {
     }
 }
 
+typedef struct { s32 m[16]; } MtxFA5;
+extern u8 D_801B49D0_ovl_0FA5E0[];
+void func_80098AA0(void *m, f32 x, f32 y, f32 z);
+void func_801B2854_ovl_0FA5E0(u8 *m, s32 k);
+
+/* Draws vertex buffer k: copies the colours from the source buffer, ramps the alpha along the
+ * strip, then emits it at half scale with the model's prim colour */
+#ifdef NON_MATCHING
+/* 141/141 instructions, 13 words differ: the alpha-ramp loop's counter and pointer land in different registers */
+void func_801B2DBC_ovl_0FA5E0(u8 *m, Gfx **pg, MtxFA5 **pmtx, s32 k) {
+    u8 *v = ((u8 **)m)[k];
+    u8 *src = FIELD(m, u8 *, 8);
+    Gfx *g = *pg;
+    MtxFA5 *mtx = *pmtx;
+    u8 *end = v + FIELD(m, s32, 0x68) * 16;
+    s32 i;
+    u8 *p;
+    s32 n;
+
+    if (FIELD(m, u8, 0x85) != 0) {
+    loop1:
+        if (v < end) {
+            u8 c;
+            for (c = 0; c < 4; c++) {
+                v[c + 0xC] = src[c + 0xC];
+            }
+            v += 0x20;
+            src += 0x20;
+            goto loop1;
+        }
+    }
+    func_801B2854_ovl_0FA5E0(m, k);
+    i = 0;
+    n = FIELD(m, s32, 0x68);
+    v = ((u8 **)m)[k];
+    end = v + n * 16;
+    if (FIELD(m, u8, 0x85) != 0) {
+        p = &v[0xF];
+        end = &end[0xF];
+    loop2:
+        if (p < end) {
+            s32 a = *p * i / n;
+            if (a < 0) {
+                a = 0;
+            }
+            if (a >= 0x100) {
+                a = 0xFF;
+            }
+            *p = a;
+            p += 0x10;
+            *p = a;
+            p += 0x10;
+            i += 2;
+            goto loop2;
+        }
+    }
+    func_80098AA0(mtx, 0.5f, 0.5f, 0.5f);
+    {
+        Gfx *_g = g++;
+        _g->w0 = 0xDA380000;
+        _g->w1 = (u32)mtx++;
+    }
+    {
+        Gfx *_g = g++;
+        _g->w0 = 0xDE000000;
+        _g->w1 = (u32)D_801B49D0_ovl_0FA5E0;
+    }
+    {
+        Gfx *_g = g++;
+        _g->w0 = 0xFA000000;
+        _g->w1 = (FIELD(m, u8, 0x8D) << 24) | (FIELD(m, u8, 0x8F) << 16) | (FIELD(m, u8, 0x91) << 8) | FIELD(m, u8, 0x93);
+    }
+    func_801B2664_ovl_0FA5E0(m, &g, k);
+    {
+        Gfx *_g = g++;
+        _g->w0 = 0xD8380002;
+        _g->w1 = 0x40;
+    }
+    *pg = g;
+    *pmtx = mtx;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B2DBC_ovl_0FA5E0);
+#endif
 
 void func_801B2FF8_ovl_0FA5E0(void **p) {
     HFree(p[0]);
