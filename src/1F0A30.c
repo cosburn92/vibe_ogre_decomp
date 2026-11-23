@@ -872,7 +872,104 @@ void func_801B0284_ovl_1F0A30(u8 *o, s32 i) {
     func_80179034(FIELD(FIELD(o, u8 *, 0xD0), s32, 0x530), FIELD(o, s32, 0x2C) + x, FIELD(o, s32, 0x30) + 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0300_ovl_1F0A30);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+#include "gbi_ultra.h"
+#ifndef NON_MATCHING
+extern Gfx *D_800E9BA0;
+#endif
+typedef struct {
+    s32 m[16];
+} Mtx1F;
+void func_80098AA0(Mtx1F *m, f32 x, f32 y, f32 z);
+void guLookAt(Mtx1F *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guPerspective(Mtx1F *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+extern Mtx1F *D_801969B0;
+extern f32 D_801D06FC_ovl_1F0A30;
+extern f32 D_801D0700_ovl_1F0A30;
+extern f32 D_801D0704_ovl_1F0A30;
+extern f32 D_801D0710_ovl_1F0A30;
+extern f32 D_801D0720_ovl_1F0A30;
+extern f32 D_801D072C_ovl_1F0A30;
+extern f32 D_801D0730_ovl_1F0A30;
+extern f32 D_801D083C_ovl_1F0A30;
+
+typedef void (*Draw1F)(u8 *o);
+void guOrtho(Mtx1F *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void guRotateRPY(Mtx1F *m, f32 r, f32 p, f32 h);
+void func_80098C20(Mtx1F *m, f32 x, f32 y, f32 z);
+extern f32 D_801D0774_ovl_1F0A30;
+extern f32 D_801D0778_ovl_1F0A30;
+extern f32 D_801D077C_ovl_1F0A30;
+extern f32 D_801D0780_ovl_1F0A30;
+extern f32 D_801D0784_ovl_1F0A30;
+extern f32 D_801D0788_ovl_1F0A30;
+extern f32 D_801D078C_ovl_1F0A30;
+extern f32 D_801D0790_ovl_1F0A30;
+extern f32 D_801D0794_ovl_1F0A30;
+
+/* Draws every object of list A through its draw hook; kind-3 objects are drawn in a 320x240
+ * orthographic overlay (offset 0x774, scale 0x78C, rotation 0x780) before the camera is restored */
+void func_801B0300_ovl_1F0A30(void) {
+    u32 i;
+
+    for (i = 0; i < 0x100; i++) {
+        u8 *o = (u8 *)D_801CE8BC_ovl_1F0A30->listA[i];
+
+        if (o != NULL) {
+            if (FIELD(o, Draw1F, 0) != NULL) {
+                if (o[0x14] == 3) {
+                    u16 norm;
+                    Gfx *g;
+                    Draw1F fn;
+
+                    gDPPipeSync(D_800E9BA0++);
+                    guOrtho(D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+                    func_80098C20(D_801969B0 + 1, D_801D0774_ovl_1F0A30, D_801D0778_ovl_1F0A30, D_801D077C_ovl_1F0A30);
+                    func_80098AA0(D_801969B0 + 2, D_801D078C_ovl_1F0A30, D_801D0790_ovl_1F0A30, D_801D0794_ovl_1F0A30);
+                    guRotateRPY(D_801969B0 + 3, D_801D0780_ovl_1F0A30, D_801D0784_ovl_1F0A30, D_801D0788_ovl_1F0A30);
+                    D_800E9BA0[0].w0 = 0xDA380007;
+                    D_800E9BA0[0].w1 = (u32)&D_801969B0[0];
+                    D_800E9BA0[1].w0 = 0xDA380002;
+                    D_800E9BA0[1].w1 = (u32)&D_801969B0[1];
+                    D_800E9BA0[2].w0 = 0xDA380001;
+                    D_800E9BA0[2].w1 = (u32)&D_801969B0[2];
+                    D_800E9BA0[3].w0 = 0xDA380001;
+                    D_800E9BA0[3].w1 = (u32)&D_801969B0[3];
+                    fn = FIELD(o, Draw1F, 0);
+                    D_800E9BA0++;
+                    D_801969B0++;
+                    D_800E9BA0++;
+                    D_801969B0++;
+                    D_800E9BA0++;
+                    D_801969B0++;
+                    D_800E9BA0++;
+                    D_801969B0++;
+                    fn(o);
+                    g = D_800E9BA0++;
+                    g->w0 = 0xD8380002;
+                    g->w1 = 0x40;
+                    guPerspective(D_801969B0, &norm, D_801D0710_ovl_1F0A30, 4.0f / 3.0f, 1.0f, 4000.0f, 1.0f);
+                    guLookAt(D_801969B0 + 1, D_801D0720_ovl_1F0A30, D_801D072C_ovl_1F0A30, D_801D0704_ovl_1F0A30,
+                             D_801D0730_ovl_1F0A30, D_801D083C_ovl_1F0A30, D_801D0700_ovl_1F0A30, 0.0f, 1.0f, 0.0f);
+                    g = D_800E9BA0++;
+                    g->w0 = 0xDB0E0000;
+                    g->w1 = norm;
+                    g = D_800E9BA0++;
+                    g->w0 = 0xDA380007;
+                    g->w1 = (u32)D_801969B0++;
+                    g = D_800E9BA0++;
+                    g->w0 = 0xDA380005;
+                    g->w1 = (u32)D_801969B0++;
+                } else {
+                    FIELD(o, Draw1F, 0)(o);
+                }
+            }
+        }
+    }
+}
 
 extern u8 *D_801D06F4_ovl_1F0A30;
 
@@ -1038,14 +1135,6 @@ s32 func_801B4398_ovl_1F0A30(u8 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B464C_ovl_1F0A30);
 
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gfx;
-#include "gbi_ultra.h"
-#ifndef NON_MATCHING
-extern Gfx *D_800E9BA0;
-#endif
 
 s32 func_801B5524_ovl_1F0A30(s32 a) {
     if (D_801D071C_ovl_1F0A30 != 0) {
@@ -1060,21 +1149,6 @@ s32 func_801B5524_ovl_1F0A30(s32 a) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-typedef struct {
-    s32 m[16];
-} Mtx1F;
-void func_80098AA0(Mtx1F *m, f32 x, f32 y, f32 z);
-void guLookAt(Mtx1F *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
-void guPerspective(Mtx1F *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
-extern Mtx1F *D_801969B0;
-extern f32 D_801D06FC_ovl_1F0A30;
-extern f32 D_801D0700_ovl_1F0A30;
-extern f32 D_801D0704_ovl_1F0A30;
-extern f32 D_801D0710_ovl_1F0A30;
-extern f32 D_801D0720_ovl_1F0A30;
-extern f32 D_801D072C_ovl_1F0A30;
-extern f32 D_801D0730_ovl_1F0A30;
-extern f32 D_801D083C_ovl_1F0A30;
 
 /* Loads the battle camera: perspective (fov 0x710), look-at (eye 0x720.., at 0x730..) and the
  * world scale (0x6FC) into the next three matrices of the pool */
