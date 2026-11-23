@@ -195,7 +195,15 @@ void func_801F7C18_ovl_24BCA0(f32 *dir, f32 (*m)[4]) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7CF4_ovl_24BCA0);
+f32 sqrtf(f32 x);
+f32 func_8009CF00(f32 x); /* acosf */
+
+/* Heading (degrees, 0-360) of the horizontal direction v (x at 0, z at 8) */
+f32 func_801F7CF4_ovl_24BCA0(f32 *v) {
+    f32 a = func_8009CF00(v[2] / sqrtf(v[0] * v[0] + v[2] * v[2])) * 180.0 / 3.14159265358979312;
+
+    return v[0] < 0.0f ? 360.0f - a : a;
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7DA4_ovl_24BCA0);
 
