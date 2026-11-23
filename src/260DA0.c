@@ -179,7 +179,7 @@ void *func_8020C644_ovl_25EE90(s32 id) {
     return r;
 }
 
-void *func_8020C704_ovl_25EE90(s32 id) {
+inline void *func_8020C704_ovl_25EE90(s32 id) {
     void *r = NULL;
     CacheEnt *e;
 
@@ -257,7 +257,7 @@ inline void *func_8020C860_ovl_25EE90(s32 id) {
     return r;
 }
 
-void *func_8020C908_ovl_25EE90(s32 id) {
+inline void *func_8020C908_ovl_25EE90(s32 id) {
     void *r = NULL;
     CacheEnt *e;
 
@@ -282,7 +282,7 @@ void *func_8020C908_ovl_25EE90(s32 id) {
     return r;
 }
 
-void *func_8020C9B0_ovl_25EE90(s32 id) {
+inline void *func_8020C9B0_ovl_25EE90(s32 id) {
     void *r = NULL;
     CacheEnt *e;
 
@@ -307,7 +307,31 @@ void *func_8020C9B0_ovl_25EE90(s32 id) {
     return r;
 }
 
+/* Acquires resource id of kind 4, 7 or 8 */
+#ifdef NON_MATCHING
+/* the three inlined acquires (func_8020C704/C908/C9B0) share their tails differently: the original cross-jumps the cache-entry stores and the add-ref path between the cases */
+void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
+    void *r;
+
+    switch (kind) {
+    default:
+        while (1) {
+        }
+    case 4:
+        r = func_8020C704_ovl_25EE90(id);
+        break;
+    case 7:
+        r = func_8020C908_ovl_25EE90(id);
+        break;
+    case 8:
+        r = func_8020C9B0_ovl_25EE90(id);
+        break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CA58_ovl_25EE90);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/260DA0", func_8020CC00_ovl_25EE90);
 
