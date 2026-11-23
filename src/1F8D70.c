@@ -375,8 +375,12 @@ s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
 
 /* Height of the floor at (x, -z): finds the floor plane under the point (clamping it into the
  * field when none is found) and projects the point onto it; 0 when there is no plane */
+s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
+
+/* Height of the floor at (x, -z): finds the floor plane under the point (clamping it into the
+ * field when none is found) and projects the point onto it; 0 when there is no plane */
 #ifdef NON_MATCHING
-/* 128/124 instructions: the original merges the branches' last division (z / n) into one delay slot and reuses the 0.0 register */
+/* 124/124 instructions, 8 words differ: the projected x and y swap float registers */
 f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
     f32 h = 0.0f;
     s16 nz = -z;
@@ -407,8 +411,9 @@ f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
         f64 px;
         f64 py;
         f64 pz;
+        f64 zero = 0.0;
 
-        if (f > 0.0) {
+        if (f > zero) {
             py = f * -pl[1] / n;
             px = f * -pl[0] / n;
             pz = f * -pl[2] / n;
@@ -417,7 +422,7 @@ f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
             px = -f * pl[0] / n;
             pz = -f * pl[2] / n;
         }
-        if (py != 0.0) {
+        if (py != zero) {
             h = (px * px + pz * pz) / py + py;
         }
     }
