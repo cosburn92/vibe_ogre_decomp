@@ -656,14 +656,14 @@ void func_80202F54_ovl_14EBE0(u8 *p, s32 b, u8 pct) {
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80203050_ovl_14EBE0);
 
-#ifdef NON_MATCHING
-/* Constant select laid out differently. */
+/* Draws tile 0x11 when c is 3, else tile 0x10, at (a, b) */
 void func_80203524_ovl_14EBE0(void *a, s32 b, u8 c) {
-    func_80200DD0_ovl_14EBE0(a, b, (c == 3) ? 0x11 : 0x10);
+    if (c == 3) {
+        func_80200DD0_ovl_14EBE0(a, b, 0x11);
+    } else {
+        func_80200DD0_ovl_14EBE0(a, b, 0x10);
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80203524_ovl_14EBE0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80203558_ovl_14EBE0);
 
