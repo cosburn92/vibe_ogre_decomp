@@ -364,4 +364,22 @@ void func_80233448_ovl_29A4C0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/2A21E0", func_80233580_ovl_29A4C0);
+/* Waits for the GPU, then frees the cached records of all 28 battle units and 30 effect objects */
+void func_80233580_ovl_29A4C0(void) {
+    u8 i;
+    u8 *o;
+
+    nuGfxTaskAllEndWait();
+    for (i = 0; i < 28; i++) {
+        o = FIELD(D_8022A974, u8 *, 0x18 + i * 4);
+        if (o != NULL) {
+            Rec2AFree(FIELD(o, s32, 0xE8), o[0x146]);
+        }
+    }
+    for (i = 0; i < 30; i++) {
+        o = FIELD(D_8022A974, u8 *, 0x1AC0 + i * 4);
+        if (o != NULL) {
+            Rec2AFree(FIELD(o, s32, 0x30), o[0x4C]);
+        }
+    }
+}
