@@ -323,7 +323,7 @@ u32 func_8022ED9C_ovl_286BD0(s32 siz, u32 w) {
     return ((w + 15) >> 4) << 4;
 }
 
-void func_8022EDEC_ovl_286BD0(void) {
+inline void func_8022EDEC_ovl_286BD0(void) {
     u8 *raw;
 
     D_8023DE34_ovl_286BD0 = HMalloc(0x68);
@@ -337,7 +337,36 @@ void func_8022EDEC_ovl_286BD0(void) {
     func_800EA6B0(D_800EB0B0, 7, 5);
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022EEB4_ovl_286BD0);
+extern s16 D_8022A994;
+extern s32 D_8018F1A4;
+extern s32 D_8022A990;
+void func_80171FE0(s32 a, s32 b);
+void func_8022EB0C_ovl_286BD0(void);
+void func_80227FD8(s32 a, s32 b);
+void func_8022A650(void);
+void func_802282B8(void);
+
+/* Enters the scene: resets the selection, previews three messages, loads the scene resources and
+ * the battle work area */
+void func_8022EEB4_ovl_286BD0(void) {
+    bzero(D_8023E5D0_ovl_286BD0, 0x2F);
+    D_8023DF10_ovl_286BD0.sel = -1;
+    *(u8 *)&D_8023DF10_ovl_286BD0 = 0;
+    func_80171FE0(0x43, 0);
+    func_80171FE0(0x43, 1);
+    func_80171FE0(0x43, 2);
+    func_8022EB0C_ovl_286BD0();
+    func_8022EDEC_ovl_286BD0();
+    D_8023DE38_ovl_286BD0 = NULL;
+    D_8022A974 = HMalloc(0x1CB8);
+    bzero(D_8022A974, 0x1CB8);
+    func_80227FD8(D_8022A994, 0);
+    if (D_8018F1A4 != 0) {
+        func_8022A650();
+    }
+    D_8022A990 = 0;
+    func_802282B8();
+}
 
 typedef struct {
     u8 b[0x40];
