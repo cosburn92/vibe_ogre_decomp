@@ -200,24 +200,18 @@ s32 func_8020BF5C_ovl_25EE90(u16 a) {
     return r;
 }
 
-#ifdef NON_MATCHING
-/* Loop shape differs. */
 void func_8020BF94_ovl_25EE90(s32 id) {
-    s32 pad;
-    s32 n = D_80220CA0_ovl_25EE90;
+    s32 pad[1];
     Ent260 *e = D_80220CA8_ovl_25EE90;
     s32 i;
 
-    for (i = 0; i < n; i++, e++) {
+    for (i = 0; i < D_80220CA0_ovl_25EE90; i++, e++) {
         if (e->id == id) {
             e->count++;
             return;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020BF94_ovl_25EE90);
-#endif
 
 /* Takes a cache entry from the free list and records it in the recent-use ring */
 Ent260 *func_8020BFE8_ovl_25EE90(void) {
