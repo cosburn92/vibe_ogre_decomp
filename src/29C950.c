@@ -290,7 +290,85 @@ void func_8022E08C_ovl_29A4C0(void) {
     func_8019F3CC();
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E214_ovl_29A4C0);
+void func_80079618();
+void func_8017BED4(void);
+void func_80234E50_ovl_29A4C0(void);
+void func_8022E08C_ovl_29A4C0(void);
+void func_802329E0_ovl_29A4C0(s32 a);
+void func_8022BFFC_ovl_29A4C0(void);
+void func_802281B4(void);
+void func_80179058(void);
+void func_80179018(void);
+void func_80239710(void);
+void func_8022CD00_ovl_29A4C0(void);
+void func_8023D318(void);
+void func_8023AB3C(void);
+void func_8023E904(void);
+void func_8023AA54(void);
+void func_802408A8(s32 a, s32 b);
+void func_8023A7C4(void);
+void func_80227778(s32 a);
+void func_80236470_ovl_29A4C0(void);
+void func_8022BDDC_ovl_29A4C0(void);
+void func_8022B414_ovl_29A4C0(s32 a);
+void func_8023E2E8(void);
+s32 func_802276EC(void);
+void func_8022767C(void);
+extern void *D_80238A90_ovl_29A4C0;
+extern u8 D_8022A980;
+extern u8 *D_8018FDC0;
+extern s16 D_8018F1A0;
+
+/* Battle screen teardown: frees the battle buffers and shuts down the subsystems by mode */
+void func_8022E214_ovl_29A4C0(void) {
+    func_8017BED4();
+    func_80234E50_ovl_29A4C0();
+    func_8022E08C_ovl_29A4C0();
+    func_802329E0_ovl_29A4C0(0);
+    func_8022BFFC_ovl_29A4C0();
+    func_802281B4();
+    HFree(D_80238A90_ovl_29A4C0);
+    D_80238A90_ovl_29A4C0 = NULL;
+    if (D_8018FC19 != 2) {
+        if (FIELD(D_8022A974, void *, 0x1BB0) != NULL) {
+            HFree(FIELD(FIELD(D_8022A974, void *, 0x1BB0), void *, 4));
+            HFree(FIELD(D_8022A974, void *, 0x1BB0));
+        }
+    }
+    HFree(D_8022A97C);
+    D_8022A97C = NULL;
+    func_80079618(0x02093576, 0, -0x11);
+    func_80079618(-0x11);
+    func_80179058();
+    func_80179018();
+    if (D_8018FC19 != 2) {
+        func_80239710();
+    }
+    func_8022CD00_ovl_29A4C0();
+    if (D_8018FC19 == 0) {
+        func_8023D318();
+        func_8023AB3C();
+        func_8023E904();
+        func_8023AA54();
+        func_802408A8(-1, 0);
+        func_8023A7C4();
+    }
+    func_80227778(-1);
+    func_80236470_ovl_29A4C0();
+    func_8022BDDC_ovl_29A4C0();
+    func_8022B414_ovl_29A4C0(-1);
+    if (D_8018FC19 == 2) {
+        func_8023E2E8();
+    }
+    if ((u8)func_802276EC() == 0xD7) {
+        D_8022A980 = 0xFE;
+    }
+    func_8022767C();
+    HFree(D_8022A974);
+    D_8022A974 = NULL;
+    D_8018FDC0[0xD2] = 0;
+    D_8018F1A0 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/29C950", func_8022E3DC_ovl_29A4C0);
 
@@ -377,7 +455,43 @@ void func_80230B44_ovl_29A4C0(u8 a) {
     func_8019F2C0(a);
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80230B60_ovl_29A4C0);
+#include "scene.h"
+void func_8022D534_ovl_29A4C0(s32 *a, f32 *out, s32 b, s32 c);
+typedef struct { s32 v[3]; } Pt29C;
+extern Pt29C D_80239240_ovl_29A4C0;
+
+/* Moves each visible unit's name label (scene slot) to its projected screen position */
+void func_80230B60_ovl_29A4C0(s32 a0, s32 a1, s32 a2, s32 arg0) {
+    Pt29C p;
+    f32 out[2];
+    s16 i;
+
+    p = D_80239240_ovl_29A4C0;
+    for (i = 0; i < 0x1C; i++) {
+        s16 *o = ((s16 **)((u8 *)D_8022A974 + 0x1D8))[i];
+        u32 y;
+        if (o != NULL && (y = (u32)D_8022A974->units[i]) != 0) {
+            s16 n = o[0];
+            if (!(D_800E82C8[n].unk8A & 0x40) && (D_800E82C8[n].flags & 0x8000)) {
+                func_8022D534_ovl_29A4C0(p.v, out, y + 0xA0, arg0);
+                arg0 = out[0];
+                if (out[1] < (s16)(o[2] * 14 + 0x31)) {
+                    y = (s32)out[1] - 0x14;
+                } else {
+                    y = (s32)out[1] - 0x2D;
+                }
+                {
+                    u8 xh = (u32)arg0 >> 8;
+                    u8 yh = y >> 8;
+                    D_800E82C8[n].unk8C = xh;
+                    D_800E82C8[n].unk8D = arg0;
+                    D_800E82C8[n].unk94 = yh;
+                    D_800E82C8[n].unk95 = y;
+                }
+            }
+        }
+    }
+}
 
 void func_80230D0C_ovl_29A4C0(s16 a) {
     D_800E9C0A[1] = a;
