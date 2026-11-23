@@ -239,7 +239,53 @@ void func_801C2310_ovl_1F0A30(void) {
     bzero(D_801D0728_ovl_1F0A30, 0xDC0);
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#define CE205A(o) ((u8 *)((o) + (u32)D_801D0728_ovl_1F0A30))
+
+/* Frees the cache and everything its 20 entries own */
+#ifdef NON_MATCHING
+/* same length; only v0/v1 swap in the 0x70 slot loop's address computation */
+void func_801C234C_ovl_1F0A30(void) {
+    u32 off;
+    u32 i;
+
+    if (D_801D0728_ovl_1F0A30 != NULL) {
+        for (off = 0; off < 0xDC0; off += 0xB0) {
+            for (i = 0; i < FIELD(CE205A(off), u32, 0x18); i++) {
+                if (FIELD(CE205A(off), void **, 0x38)[i] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x38)[i]);
+                }
+                if (FIELD(CE205A(off), void **, 0x3C)[i] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x3C)[i]);
+                }
+                if (FIELD(CE205A(off), void **, 0x40)[i] != NULL) {
+                    HFree(FIELD(CE205A(off), void **, 0x40)[i]);
+                }
+            }
+            {
+                u32 o = off;
+
+                for (i = 0; i < 10; i++) {
+                    if (FIELD(CE205A(o) + i * 4, void *, 0x70) != NULL) {
+                        HFree(FIELD(CE205A(o) + i * 4, void *, 0x70));
+                    }
+                }
+            }
+            HFree(FIELD(CE205A(off), void *, 0x8));
+            HFree(FIELD(CE205A(off), void *, 0x48));
+            HFree(FIELD(CE205A(off), void *, 0x44));
+            HFree(FIELD(CE205A(off), void *, 0x6C));
+            HFree(FIELD(CE205A(off), void *, 0x2C));
+        }
+        HFree(D_801D0728_ovl_1F0A30);
+        D_801D0728_ovl_1F0A30 = NULL;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C234C_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C24F8_ovl_1F0A30);
 
