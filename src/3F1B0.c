@@ -148,7 +148,82 @@ void func_800E9CEC_ovl_03F1B0(void) {
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9CEC_ovl_03F1B0);
 #endif
 
+extern SoundChannel D_800EB100_ovl_03F1B0;
+extern SoundChannel D_800EB150_ovl_03F1B0;
+extern SoundChannel D_800EB1A0_ovl_03F1B0;
+extern SoundChannel D_800EB1F0_ovl_03F1B0;
+extern SoundChannel D_800EB240_ovl_03F1B0;
+extern SoundChannel D_800EB290_ovl_03F1B0;
+void func_800EA0E4_ovl_03F1B0(SoundChannel *ch);
+
+/* Per-frame sound update: steps all seven channels, then runs each channel's delayed command
+ * (0x38 mode, 0x3C delay): channel 0 waits for its voice to stop first, channel 2 restarts when
+ * its voice has ended, channels 4-6 only count down */
+#ifdef NON_MATCHING
+/* 172/172, 7 words: channel 2's mode address and loaded mode swap a1/v1 (needs aliases for D_800EB100..D_800EB290 = D_800EB0B0 + k * 0x50 once it matches) */
+void func_800E9E34_ovl_03F1B0(void) {
+    SoundChannel *p;
+
+    func_800EA0E4_ovl_03F1B0(&D_800EB0B0_ovl_03F1B0[0]);
+    func_800EA0E4_ovl_03F1B0(&D_800EB100_ovl_03F1B0);
+    func_800EA0E4_ovl_03F1B0(&D_800EB150_ovl_03F1B0);
+    func_800EA0E4_ovl_03F1B0(&D_800EB1A0_ovl_03F1B0);
+    func_800EA0E4_ovl_03F1B0(&D_800EB1F0_ovl_03F1B0);
+    func_800EA0E4_ovl_03F1B0(&D_800EB240_ovl_03F1B0);
+    func_800EA0E4_ovl_03F1B0(&D_800EB290_ovl_03F1B0);
+    if (D_800EB0B0_ovl_03F1B0[0].unk38 != 0 && D_800EB0B0_ovl_03F1B0[0].param != 0) {
+        if (--D_800EB0B0_ovl_03F1B0[0].param == 0) {
+            if (func_80081B08(D_800EB0B0_ovl_03F1B0[0].handle) != 0) {
+                func_80081A54(D_800EB0B0_ovl_03F1B0[0].handle, 0);
+                D_800EB0B0_ovl_03F1B0[0].param = 1;
+            } else if (D_800EB0B0_ovl_03F1B0[0].unk38 == 2) {
+                D_800EB0B0_ovl_03F1B0[0].unk38 = 0;
+                D_800EB0B0_ovl_03F1B0[0].saved[0] = *(s32 *)D_800EB0B0_ovl_03F1B0[0].unk40;
+                func_800EA488_ovl_03F1B0(&D_800EB0B0_ovl_03F1B0[0]);
+            }
+        }
+    }
+    if (D_800EB100_ovl_03F1B0.unk38 != 0 && D_800EB100_ovl_03F1B0.param != 0) {
+        if (--D_800EB100_ovl_03F1B0.param == 0 && D_800EB100_ovl_03F1B0.unk38 == 2) {
+            D_800EB100_ovl_03F1B0.unk38 = 0;
+            D_800EB100_ovl_03F1B0.saved[0] = *(s32 *)D_800EB100_ovl_03F1B0.unk40;
+            func_800EA488_ovl_03F1B0(&D_800EB100_ovl_03F1B0);
+        }
+    }
+    if (D_800EB150_ovl_03F1B0.unk38 != 0 && D_800EB150_ovl_03F1B0.param != 0) {
+        if (--D_800EB150_ovl_03F1B0.param == 0) {
+            p = &D_800EB150_ovl_03F1B0;
+            if (D_800EB150_ovl_03F1B0.unk38 == 2) {
+                D_800EB150_ovl_03F1B0.unk38 = 0;
+                D_800EB150_ovl_03F1B0.saved[0] = *(s32 *)D_800EB150_ovl_03F1B0.unk40;
+                goto play2;
+            }
+        }
+    } else if (D_800EB150_ovl_03F1B0.saved[0] != 0 && func_80081B08(D_800EB150_ovl_03F1B0.handle) == 0) {
+        p = &D_800EB150_ovl_03F1B0;
+    play2:
+        func_800EA488_ovl_03F1B0(p);
+    }
+    if (D_800EB1A0_ovl_03F1B0.unk38 != 0 && D_800EB1A0_ovl_03F1B0.param != 0) {
+        if (--D_800EB1A0_ovl_03F1B0.param == 0 && D_800EB1A0_ovl_03F1B0.unk38 == 2) {
+            D_800EB1A0_ovl_03F1B0.unk38 = 0;
+            D_800EB1A0_ovl_03F1B0.saved[0] = *(s32 *)D_800EB1A0_ovl_03F1B0.unk40;
+            func_800EA488_ovl_03F1B0(&D_800EB1A0_ovl_03F1B0);
+        }
+    }
+    if (D_800EB1F0_ovl_03F1B0.unk38 != 0 && D_800EB1F0_ovl_03F1B0.param != 0) {
+        D_800EB1F0_ovl_03F1B0.param--;
+    }
+    if (D_800EB240_ovl_03F1B0.unk38 != 0 && D_800EB240_ovl_03F1B0.param != 0) {
+        D_800EB240_ovl_03F1B0.param--;
+    }
+    if (D_800EB290_ovl_03F1B0.unk38 != 0 && D_800EB290_ovl_03F1B0.param != 0) {
+        D_800EB290_ovl_03F1B0.param--;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800E9E34_ovl_03F1B0);
+#endif
 
 /* Applies a pending request: kinds 1-4 restart, 5/6 stop looping, 7 loops */
 void func_800EA0E4_ovl_03F1B0(SoundChannel *ch) {
