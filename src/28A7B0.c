@@ -191,55 +191,51 @@ void func_8022E978_ovl_286BD0(u8 a) {
     D_8023DF0C_ovl_286BD0 = a;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
+typedef struct {
+    u16 year;
+    u8 month;
+    u8 day;
+} Date28;
 extern u8 D_80196A32;
 extern u8 D_80196A33;
-extern s32 D_80196A72;
-extern s32 D_8023DC9C_ovl_286BD0;
-extern s32 D_8023DCF8_ovl_286BD0;
-extern s32 D_8023DE84_ovl_286BD0;
-extern s32 D_8023DEAC_ovl_286BD0;
-extern s32 D_8023DEF4_ovl_286BD0;
-extern s32 D_8023DF00_ovl_286BD0;
-extern s32 D_8023DF08_ovl_286BD0;
+extern Date28 D_80196A72;
+extern Date28 D_8023DC9C_ovl_286BD0[];
+extern Date28 D_8023DCF8_ovl_286BD0[];
+extern Date28 D_8023DE84_ovl_286BD0;
+extern Date28 D_8023DEAC_ovl_286BD0;
+extern Date28 D_8023DEF4_ovl_286BD0;
+extern Date28 D_8023DF00_ovl_286BD0;
+extern Date28 D_8023DF08_ovl_286BD0;
 extern u16 gDate;
 
-s16 func_8022E984_ovl_286BD0(s16 arg0) {
-    s32 *var_a1;
-    s16 temp_a3;
-    s16 var_a2;
+/* Age in years of character id on the current date, from its birth date record */
+s16 func_8022E984_ovl_286BD0(s16 id) {
+    Date28 *d;
+    s16 age;
 
-    if (arg0 == 0xDC) {
-        var_a1 = &D_8023DEAC_ovl_286BD0;
-    } else if (arg0 == 0xDD) {
-        var_a1 = &D_8023DE84_ovl_286BD0;
-    } else if (arg0 < 0x54) {
-        var_a1 = &D_80196A72;
-    } else if (arg0 == 0xB7) {
-        var_a1 = &D_8023DEF4_ovl_286BD0;
-    } else if ((u32) ((arg0 - 0x99) & 0xFFFF) < 3U) {
-        var_a1 = (arg0 * 4) + &D_8023DC9C_ovl_286BD0;
-    } else if (arg0 == 0x96) {
-        var_a1 = &D_8023DF08_ovl_286BD0;
-    } else if (arg0 < 0xC8) {
-        var_a1 = (arg0 * 4) + &D_8023DCF8_ovl_286BD0;
+    if (id == 0xDC) {
+        d = &D_8023DEAC_ovl_286BD0;
+    } else if (id == 0xDD) {
+        d = &D_8023DE84_ovl_286BD0;
+    } else if (id < 0x54) {
+        d = &D_80196A72;
+    } else if (id == 0xB7) {
+        d = &D_8023DEF4_ovl_286BD0;
+    } else if ((u16)(id - 0x99) < 3) {
+        d = &D_8023DC9C_ovl_286BD0[id];
+    } else if (id == 0x96) {
+        d = &D_8023DF08_ovl_286BD0;
+    } else if (id < 0xC8) {
+        d = &D_8023DCF8_ovl_286BD0[id];
     } else {
-        var_a1 = &D_8023DF00_ovl_286BD0;
+        d = &D_8023DF00_ovl_286BD0;
     }
-    temp_a3 = gDate - FIELD(var_a1, u16, 0);
-    var_a2 = temp_a3;
-    if (((D_80196A32 * 0x1E) + D_80196A33) >= ((FIELD(var_a1, u8, 2) * 0x1E) + FIELD(var_a1, u8, 3))) {
-        var_a2 = temp_a3 + 1;
+    age = gDate - d->year;
+    if (d->month * 30 + d->day <= D_80196A32 * 30 + D_80196A33) {
+        age++;
     }
-    return var_a2;
+    return age;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022E984_ovl_286BD0);
-#endif
 
 /* Whether b is earlier than a */
 inline s32 func_8022EA9C_ovl_286BD0(TimeStamp *a, TimeStamp *b) {
