@@ -52,7 +52,7 @@ typedef struct {
 extern Ctx23 *D_801EFE48_ovl_23B220;
 extern u8 D_801CEAAB;
 
-void func_801E98B4_ovl_23B220(s16 id);
+void func_801E98B4_ovl_23B220(s32 id);
 void func_801EADF8_ovl_23B220(void);
 #include "libultra.h"
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -295,62 +295,47 @@ void func_801E9834_ovl_23B220(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 62 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801E98B4_ovl_23B220(s16 id) {
-    Ctx23 *var_v1;
-    Ent23 *temp_a1;
-    Ent23 *var_v1_2;
-    s32 var_v0;
-    u16 temp_v0;
+/* Spins entry id away (0x64 counts down by 3); when it is gone, brings in its partner: the other
+ * entry of the same pair for even ids, the other pair's odd entry for odd ids */
+void func_801E98B4_ovl_23B220(s32 id) {
+    Ent23 *e = &D_801EFE48_ovl_23B220->ent[id];
+    u8 *m = (u8 *)e + 0x18;
 
-    temp_a1 = &D_801EFE48_ovl_23B220->ent[id];
-    if (temp_a1->flags & 0x20) {
-        temp_v0 = FIELD(temp_a1, u16, 0x64) - 3;
-        FIELD(temp_a1, u16, 0x64) = temp_v0;
-        if ((s16) temp_v0 == 0x42) {
-            FIELD(temp_a1, s32, 4) = (s32) (FIELD(temp_a1, s32, 4) - 0x3E8);
-            FIELD(temp_a1, s32, 8) = (s32) (FIELD(temp_a1, s32, 8) - 0x3E8);
-            FIELD(temp_a1, s32, 0xC) = (s32) (FIELD(temp_a1, s32, 0xC) - 0x3E8);
+    if (e->flags & 0x20) {
+        e->unk64 -= 3;
+        if (e->unk64 == 0x42) {
+            e->sx -= 1000;
+            e->sy -= 1000;
+            e->sz -= 1000;
         }
-        if ((s16) FIELD(temp_a1, u16, 0x64) < -0x56) {
-            FIELD(temp_a1, u16, 0x64) = -0x57U;
-            temp_a1->flags = (temp_a1->flags & 0xFFDF) | 0x10;
+        if (e->unk64 < -0x56) {
+            e->unk64 = -0x57;
+            e->flags = (e->flags & ~0x20) | 0x10;
             if (!(id & 1)) {
-                var_v1 = D_801EFE48_ovl_23B220;
-                if ((id / 2) == 0) {
-                    var_v1 += 0xD0;
+                Ent23 *o = D_801EFE48_ovl_23B220->ent;
+
+                if (id / 2 == 0) {
+                    o += 2;
                 }
-                FIELD(var_v1, s16, 0x64) = 0x5A;
-                FIELD(var_v1, s32, 0xC) = -0x2CEC;
-                FIELD(var_v1, s32, 8) = -0x2CEC;
-                FIELD(var_v1, s32, 4) = -0x2CEC;
-                var_v0 = -0x32C8;
+                o->unk64 = 90;
+                o->sx = o->sy = o->sz = -11500;
+                e->sx = e->sy = e->sz = -13000;
             } else {
-                if (((s32) (id - 1) / 2) != 0) {
-                    var_v1_2 = &D_801EFE48_ovl_23B220->ent[1];
+                Ent23 *o;
+
+                if ((id - 1) / 2 != 0) {
+                    o = &D_801EFE48_ovl_23B220->ent[1];
                 } else {
-                    var_v1_2 = &D_801EFE48_ovl_23B220->ent[3];
+                    o = &D_801EFE48_ovl_23B220->ent[3];
                 }
-                FIELD(var_v1_2, s16, 0x64) = 0x5A;
-                FIELD(temp_a1, u16, 0x64) = 0x5AU;
-                FIELD(var_v1_2, s32, 0xC) = -0x2710;
-                FIELD(var_v1_2, s32, 8) = -0x2710;
-                FIELD(var_v1_2, s32, 4) = -0x2710;
-                var_v0 = -0x2EE0;
+                o->unk64 = 90;
+                FIELD(m, s16, 0x4C) = 90;
+                o->sx = o->sy = o->sz = -10000;
+                e->sx = e->sy = e->sz = -12000;
             }
-            FIELD(temp_a1, s32, 0xC) = var_v0;
-            FIELD(temp_a1, s32, 8) = var_v0;
-            FIELD(temp_a1, s32, 4) = var_v0;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E98B4_ovl_23B220);
-#endif
 
 void func_801E99FC_ovl_23B220(void) {
     s32 i;
