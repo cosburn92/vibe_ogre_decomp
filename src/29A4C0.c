@@ -731,7 +731,43 @@ void func_8022CD70_ovl_29A4C0(s32 i, s32 v) {
 /* small s16 tables (shared rodata splat leaves unmigrated) */
 __asm__(".section .rodata\n.global D_80239190_ovl_29A4C0\nD_80239190_ovl_29A4C0:\n.half 0, 9, 6, 3\n.global D_80239198_ovl_29A4C0\nD_80239198_ovl_29A4C0:\n.half 0, 9, 8, 3, 7, 7, 2, 6, 5, 1, 4, 4\n.section .text\n");
 
+typedef struct {
+    s16 v[4];
+} Dirs29A;
+extern Dirs29A D_80239190_ovl_29A4C0;
+
+/* Starts turning unit i from facing a to facing b (clock positions 0/9/6/3) in direction -dir:
+ * record {start, steps, frames per step for n frames, 0, direction} */
+#ifdef NON_MATCHING
+/* 91/91: the frame count and the turn direction swap s4/s5 */
+void func_8022CDF4_ovl_29A4C0(s32 i, s32 a, s32 b, s32 dir, s32 n) {
+    Dirs29A tab = D_80239190_ovl_29A4C0;
+    s32 sd = -dir;
+    s16 *e;
+    s16 *t = tab.v;
+    s32 d;
+
+    if (D_8022A974->p168[i] == NULL) {
+        D_8022A974->p168[i] = HMalloc(10);
+    }
+    e = D_8022A974->p168[i];
+    if (sd == 1) {
+        d = t[b] - t[a];
+    } else {
+        d = t[a] - t[b];
+    }
+    if (d < 0) {
+        d += 12;
+    }
+    e[1] = d;
+    e[4] = sd;
+    e[0] = tab.v[a];
+    e[3] = 0;
+    e[2] = n / 3 * 3 / d;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022CDF4_ovl_29A4C0);
+#endif
 
 typedef struct {
     s16 v[12];
