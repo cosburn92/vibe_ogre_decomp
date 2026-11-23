@@ -217,7 +217,33 @@ void func_801F7868_ovl_24BCA0(u8 *out, u8 c) {
     out[n] = 0xFF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F79BC_ovl_24BCA0);
+extern s8 D_80209758_ovl_24BCA0[][2];
+extern s8 D_80209768_ovl_24BCA0[][2];
+
+/* World positions of the four sub-cells of map cell c into out: half-cell offsets for kind-2
+ * cells, else full-cell offsets for facing dir; y from the ground height */
+void func_801F79BC_ovl_24BCA0(u8 c, f32 (*out)[3], u8 dir) {
+    s16 i;
+    u16 k = CellKind(c);
+    f32 x = D_80209700_ovl_24BCA0[k](c);
+    f32 z = D_8020970C_ovl_24BCA0[k](c);
+
+    for (i = 0; i < 4; i++) {
+        f32 dx;
+        f32 dz;
+
+        if (k == 2) {
+            dx = D_80209768_ovl_24BCA0[i][0] * 19;
+            dz = D_80209768_ovl_24BCA0[i][1] * 19;
+        } else {
+            dx = D_80209758_ovl_24BCA0[i + dir * 4][0] * 38;
+            dz = D_80209758_ovl_24BCA0[i + dir * 4][1] * 38;
+        }
+        out[i][0] = x + dx;
+        out[i][2] = z + dz;
+        out[i][1] = func_801BC35C(out[i][0], out[i][2]);
+    }
+}
 
 void func_801F7BE4_ovl_24BCA0(f32 *d, f32 *a, f32 *b) {
     d[0] = a[0] - b[0];
