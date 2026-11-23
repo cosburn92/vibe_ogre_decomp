@@ -647,7 +647,56 @@ void func_801EB394_ovl_23B220(void) {
     }
 }
 
+void *func_8016FBE0(u8 cls, u8 variant, void *out);
+
+/* Loads character k's portrait and points the text box at its details message: the text after
+ * "$nnn" (nnn = k) in the details script, or a fallback */
+#ifdef NON_MATCHING
+/* 74/74 instructions, 12 words differ: the script size is loaded into the loop bound register directly instead of via v0, and the text pointer copy is made before the empty check; the fallback string is in this function's rodata */
+void func_801EB3C8_ovl_23B220(u8 k) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    u8 *s;
+    u8 *tb;
+    u8 *text;
+    u8 *r;
+    u32 i;
+    u32 n0;
+    void *pt;
+
+    pt = func_8016FBE0(k, 0, (u8 *)c + 0x248);
+
+    FIELD(c, u8, 0x240) = k;
+    FIELD(c, void *, 0x244) = pt;
+    n0 = D_801EFE48_ovl_23B220->backdropSize;
+    s = D_801EFE48_ovl_23B220->backdrop;
+    tb = (u8 *)D_801EFE48_ovl_23B220 + 0x24C;
+    for (text = s, i = 0; i < n0; i++) {
+        text++;
+        if (*s++ == '$') {
+            s32 n = (s[0] - '0') * 100 + (text[1] - '0') * 10 + (text[2] - '0');
+
+            text += 3;
+            s += 3;
+            i += 3;
+            if (k == n) {
+                r = text;
+                goto found;
+            }
+        }
+    }
+    r = "There is no details message of@nthis charcter.";
+found:
+    FIELD(tb, u8 *, 0x104) = r;
+    FIELD(tb, u8 *, 0x108) = r;
+    FIELD(tb, s32, 0x110) = 0x100;
+    FIELD(tb, s16, 0x11C) = 50;
+    FIELD(tb, s32, 0x10C) = 0;
+    FIELD(tb, s32, 0x118) = 0;
+    FIELD(tb, s16, 0x11E) = 8;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB3C8_ovl_23B220);
+#endif
 
 void func_801EB4F0_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 4;
