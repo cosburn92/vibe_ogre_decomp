@@ -552,49 +552,32 @@ void func_80202B70_ovl_14EBE0(void *a, s32 b, u8 k) {
     func_80200DD0_ovl_14EBE0(a, b, 0xD);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 23 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern s32 D_80210AD0_ovl_14EBE0;
-extern s32 D_80214E80_ovl_14EBE0;
+extern u8 D_80210AD0_ovl_14EBE0[];
+extern u8 *D_80214E80_ovl_14EBE0;
 
-void func_80202E10_ovl_14EBE0(void *arg0, s32 arg1, s32 arg2) {
-    Gfx *temp_v1;
-    Gfx *temp_v1_2;
-    f32 temp_fv1;
-    s32 var_a1;
-    u32 var_v0;
+/* Draws the 32x16 gauge icon at (x, y) for value v (0-100 in 7 steps) */
+void func_80202E10_ovl_14EBE0(void *x, s32 y, u8 v) {
+    u16 k = v / 14.285714f;
 
-    temp_fv1 = (f32) (arg2 & 0xFF) / 14.285714f;
-    if (!(temp_fv1 >= 2.1474836e9f)) {
-        var_a1 = (s32) temp_fv1;
-        var_v0 = var_a1 & 0xFFFF;
-    } else {
-        var_a1 = (s32) (temp_fv1 - 2.1474836e9f) | 0x80000000;
-        var_v0 = var_a1 & 0xFFFF;
+    if (k > 6) {
+        k = 6;
     }
-    if (var_v0 >= 7U) {
-        var_a1 = 6;
+    gSPDisplayList(D_800E9BA0++, D_80213648_ovl_14EBE0);
+    {
+        Gfx *_g = D_800E9BA0++; /* gDPSetTexturePersp(G_TP_NONE) */
+
+        _g->w0 = 0xE3000C00;
+        _g->w1 = 0;
     }
-    temp_v1 = D_800E9BA0;
-    D_800E9BA0 = temp_v1 + 8;
-    temp_v1->w0 = 0xDE000000;
-    temp_v1->w1 = (u32) D_80213648_ovl_14EBE0;
-    D_800E9BA0 = temp_v1 + 0x10;
-    FIELD(temp_v1, s32, 8) = 0xE3000C00;
-    FIELD(temp_v1, s32, 0xC) = 0;
-    func_80200F70_ovl_14EBE0(&D_80210AD0_ovl_14EBE0, D_80214E80_ovl_14EBE0 + ((var_a1 & 0xFFFF) << 8), 0x20, 0x10, 2);
-    func_80200DD0_ovl_14EBE0(arg0, arg1, 9);
-    temp_v1_2 = D_800E9BA0;
-    D_800E9BA0 = temp_v1_2 + 8;
-    temp_v1_2->w0 = 0xD7000000;
-    temp_v1_2->w1 = 0x80008000;
+    func_80200F70_ovl_14EBE0(D_80210AD0_ovl_14EBE0, D_80214E80_ovl_14EBE0 + (k << 8), 32, 16, 2);
+    func_80200DD0_ovl_14EBE0(x, y, 9);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xD7000000;
+        _g->w1 = 0x80008000;
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202E10_ovl_14EBE0);
-#endif
 
 /* Draws gauge cap: tiles 10/11/12 by fill level (pct / 14.29, 0-6) */
 void func_80202F54_ovl_14EBE0(u8 *p, s32 b, u8 pct) {
