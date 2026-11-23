@@ -129,7 +129,39 @@ u16 func_80079028(f32 mf[4][4], f32 *pos, f32 range) {
     return ~(u32)(sqrtf(dx * dx + dy * dy + dz * dz) / range * 65534.0f);
 }
 
+typedef struct {
+    u8 unk0[8];
+    u8 (*mtx)[0x40];
+} FbSet87;
+extern FbSet87 *D_800E9BE0;
+extern u16 D_800C4C24; /* modelview matrix index */
+extern u16 D_800E7A0E; /* projection matrix index */
+
+/* out = (x, y, z, 1) transformed by frame matrix idx */
+static inline void Xform87(u16 idx, f32 x, f32 y, f32 z, f32 *out) {
+    f32 mf[4][4];
+
+    guMtxL2F(mf, D_800E9BE0->mtx[idx]);
+    out[0] = mf[0][0] * x + mf[1][0] * y + mf[2][0] * z + mf[3][0];
+    out[1] = mf[0][1] * x + mf[1][1] * y + mf[2][1] * z + mf[3][1];
+    out[2] = mf[0][2] * x + mf[1][2] * y + mf[2][2] * z + mf[3][2];
+    out[3] = mf[0][3] * x + mf[1][3] * y + mf[2][3] * z + mf[3][3];
+}
+
+/* Screen depth (z buffer value) of point (x, y, z) through the current modelview and projection */
+#ifdef NON_MATCHING
+/* 135/135 instructions, 73 words differ: the original frame is a[4] (0x10), matrix (0x20), b[4] (0x60), with the first result kept in fs0-fs2 and the matrix address rematerialised for each guMtxL2F */
+s32 func_8007913C(f32 x, f32 y, f32 z) {
+    f32 a[4];
+    f32 b[4];
+
+    Xform87(D_800C4C24, x, y, z, a);
+    Xform87(D_800E7A0E, a[0], a[1], a[2], b);
+    return (s32)(b[2] * 16352.0f / b[3]) + 0x3FE0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/8700", func_8007913C);
+#endif
 
 u32 func_80079358(u32 *p) {
     u32 sum = 0;
