@@ -1183,114 +1183,118 @@ void func_80233F38_ovl_286BD0(u8 dir) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80234078_ovl_286BD0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 199 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern void *D_800C47F0;
+extern u8 *D_800C47F0;
 extern u16 D_800E79B0;
+void func_80234078_ovl_286BD0(void);
 
+/* Moves the grid cursor (0x230/0x234) by 15 per held d-pad direction, or by a third of the analog
+ * stick outside its dead zone; clamps it to the visible cells, records it in the trails
+ * (0x1B4/0x1DC) and, once it rests, selects the entry under it */
+#ifdef NON_MATCHING
+/* 247 vs 246: the trail loop ends in bnezl in the original, and the 0x1E0 store is scheduled before bc1t there */
 void func_802344D0_ovl_286BD0(void) {
-    f32 var_ft0;
-    f32 var_ft1;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 var_a1;
-    s32 var_a1_2;
-    s32 var_a3;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v1;
-    s32 var_v1_2;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    void *temp_v0;
+    f32 fy = 0.0f;
+    s32 moved = 0;
+    f32 fx = 0.0f;
+    u8 *pad = D_800C47F0;
+    s32 x;
+    s32 lim;
+    u8 k;
+    s32 rest;
+    s32 ok;
+    u16 *btn;
 
-    var_ft0 = 0.0f;
-    var_a3 = 0;
-    var_ft1 = 0.0f;
-    if (D_8023DE30_ovl_286BD0 != NULL) {
-        FIELD(D_8023DE30_ovl_286BD0, u8, 0x239) = (u8) (FIELD(D_8023DE30_ovl_286BD0, u8, 0x239) + 1);
-        if ((u32) ((u8) FIELD(D_8023DE30_ovl_286BD0, u8, 0x239) >> 2) >= 4U) {
-            FIELD(D_8023DE30_ovl_286BD0, u8, 0x239) = 0U;
+    if (D_8023DE30_ovl_286BD0 == NULL) {
+        return;
+    }
+    D_8023DE30_ovl_286BD0[0x239]++;
+    if ((D_8023DE30_ovl_286BD0[0x239] >> 2) >= 4) {
+        D_8023DE30_ovl_286BD0[0x239] = 0;
+    }
+    if (D_8023DE30_ovl_286BD0[0x23B] == 1) {
+        return;
+    }
+    btn = &D_800E79B0;
+    if (*btn & 0x800) {
+        moved = 1;
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) -= 15;
+    }
+    if (*btn & 0x400) {
+        moved = 1;
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) += 15;
+    }
+    if (*btn & 0x100) {
+        moved = 1;
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) += 15;
+    }
+    if (*btn & 0x200) {
+        moved = 1;
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) -= 15;
+    }
+    ok = pad != NULL;
+    if (ok & (moved ^ 1)) {
+        if ((u8)(pad[2] + 4) >= 9) {
+            fx = (s8)pad[2] / 3.0f;
         }
-        if (FIELD(D_8023DE30_ovl_286BD0, u8, 0x23B) != 1) {
-            if (D_800E79B0 & 0x800) {
-                var_a3 = 1;
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) - 0xF);
-            }
-            if (D_800E79B0 & 0x400) {
-                var_a3 = 1;
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) + 0xF);
-            }
-            if (D_800E79B0 & 0x100) {
-                var_a3 = 1;
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) + 0xF);
-            }
-            var_v0 = D_800C47F0 != NULL;
-            if (D_800E79B0 & 0x200) {
-                var_a3 = 1;
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) - 0xF);
-                var_v0 = D_800C47F0 != NULL;
-            }
-            if (var_v0 & (var_a3 ^ 1)) {
-                temp_v1 = FIELD(D_800C47F0, u8, 2);
-                if ((u32) ((temp_v1 + 4) & 0xFF) >= 9U) {
-                    var_ft1 = (f32) (s8) temp_v1 / 3.0f;
-                }
-                temp_v1_2 = FIELD(D_800C47F0, u8, 3);
-                if ((u32) ((temp_v1_2 + 4) & 0xFF) >= 9U) {
-                    var_ft0 = (f32) (s8) temp_v1_2 / 3.0f;
-                }
-                if (var_ft1 > 0.0f) {
-                    FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) + (s16) (s32) var_ft1);
-                }
-                if (var_ft1 < 0.0f) {
-                    FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) + (s16) (s32) var_ft1);
-                }
-                if (var_ft0 < 0.0f) {
-                    FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) - (s16) (s32) var_ft0);
-                }
-                if (var_ft0 > 0.0f) {
-                    FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = (s32) (FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) - (s16) (s32) var_ft0);
-                }
-            }
-            temp_a1 = FIELD(D_8023DE30_ovl_286BD0, s32, 0x230);
-            var_v1 = (FIELD(D_8023DE30_ovl_286BD0, u8, 0x240) * 0x3C) + 0x34;
-            if ((var_v1 >= temp_a1) || (var_v1 = ((FIELD(D_8023DE30_ovl_286BD0, u8, 0x242) + 1) * 0x3C) + 0x34, ((var_v1 < temp_a1) != 0))) {
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = var_v1;
-            }
-            temp_a1_2 = FIELD(D_8023DE30_ovl_286BD0, s32, 0x234);
-            var_v1_2 = (FIELD(D_8023DE30_ovl_286BD0, u8, 0x241) * 0x48) + 0x36;
-            if ((var_v1_2 >= temp_a1_2) || (var_v1_2 = ((FIELD(D_8023DE30_ovl_286BD0, u8, 0x243) + 1) * 0x48) + 0x36, var_a1 = 7, ((var_v1_2 < temp_a1_2) != 0))) {
-                FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = var_v1_2;
-                var_a1 = 7;
-            }
-            var_v0_2 = 7 & 0xFF;
-            do {
-                temp_v0 = D_8023DE30_ovl_286BD0 + (var_v0_2 * 4);
-                var_a1 -= 1;
-                FIELD(temp_v0, s32, 0x1B4) = (s32) FIELD(temp_v0, s32, 0x1B0);
-                FIELD(temp_v0, s32, 0x1DC) = (s32) FIELD(temp_v0, s32, 0x1D8);
-                var_v0_2 = var_a1 & 0xFF;
-            } while (var_v0_2 != 0);
-            var_a1_2 = 1;
-            FIELD(D_8023DE30_ovl_286BD0, s32, 0x1B8) = (s32) FIELD(D_8023DE30_ovl_286BD0, s32, 0x230);
-            FIELD(D_8023DE30_ovl_286BD0, s32, 0x1E0) = (s32) FIELD(D_8023DE30_ovl_286BD0, s32, 0x234);
-            if (var_ft1 != 0.0f) {
-                var_a1_2 = 0;
-            }
-            if (((var_a3 ^ 1) & var_a1_2) && (var_ft0 == 0.0f)) {
-                if ((func_80233DA8_ovl_286BD0(0, var_a1_2, D_8023DE30_ovl_286BD0, var_a3) & 0xFF) && (FIELD(D_8023DE30_ovl_286BD0, u8, 0x23C) != 2)) {
-                    FIELD(D_8023DE30_ovl_286BD0, u8, 0x23C) = 1U;
-                }
-            } else {
-                FIELD(D_8023DE30_ovl_286BD0, u8, 0x23C) = 0U;
-            }
-            func_80234078_ovl_286BD0();
+        if ((u8)(pad[3] + 4) >= 9) {
+            fy = (s8)pad[3] / 3.0f;
+        }
+        if (fx > 0.0f) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) += (s16)fx;
+        }
+        if (fx < 0.0f) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) += (s16)fx;
+        }
+        if (fy < 0.0f) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) -= (s16)fy;
+        }
+        if (fy > 0.0f) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) -= (s16)fy;
         }
     }
+    x = FIELD(D_8023DE30_ovl_286BD0, s32, 0x230);
+    lim = D_8023DE30_ovl_286BD0[0x240] * 60 + 0x34;
+    if (lim >= x) {
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = lim;
+    } else {
+        lim = (D_8023DE30_ovl_286BD0[0x242] + 1) * 60 + 0x34;
+        if (lim < x) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x230) = lim;
+        }
+    }
+    x = FIELD(D_8023DE30_ovl_286BD0, s32, 0x234);
+    lim = D_8023DE30_ovl_286BD0[0x241] * 72 + 0x36;
+    if (lim >= x) {
+        FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = lim;
+    } else {
+        lim = (D_8023DE30_ovl_286BD0[0x243] + 1) * 72 + 0x36;
+        if (lim < x) {
+            FIELD(D_8023DE30_ovl_286BD0, s32, 0x234) = lim;
+        }
+    }
+    for (k = 7; k != 0; k--) {
+        s32 *t = (s32 *)(D_8023DE30_ovl_286BD0 + k * 4);
+
+        t[0x1B4 / 4] = t[0x1B0 / 4];
+        t[0x1DC / 4] = t[0x1D8 / 4];
+    }
+    FIELD(D_8023DE30_ovl_286BD0, s32, 0x1B8) = FIELD(D_8023DE30_ovl_286BD0, s32, 0x230);
+    FIELD(D_8023DE30_ovl_286BD0, s32, 0x1E0) = FIELD(D_8023DE30_ovl_286BD0, s32, 0x234);
+    rest = 1;
+    if (fx != 0.0f) {
+        rest = 0;
+    }
+    if ((moved ^ 1) & rest) {
+        if (fy == 0.0f) {
+            if ((u8)func_80233DA8_ovl_286BD0(0) && D_8023DE30_ovl_286BD0[0x23C] != 2) {
+                D_8023DE30_ovl_286BD0[0x23C] = 1;
+            }
+            goto end;
+        }
+    }
+    D_8023DE30_ovl_286BD0[0x23C] = 0;
+end:
+    func_80234078_ovl_286BD0();
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802344D0_ovl_286BD0);
