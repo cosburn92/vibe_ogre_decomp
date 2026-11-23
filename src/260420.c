@@ -82,7 +82,63 @@ void func_8020B9D0_ovl_25EE90(void) {
     HFree(D_80220CA8_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020BA6C_ovl_25EE90);
+static inline Ent260 *CacheRemember(Ent260 *e) {
+    if (++D_80220CB0_ovl_25EE90 >= D_80220CAC_ovl_25EE90) {
+        D_80220CB0_ovl_25EE90 = 0;
+    }
+    D_80220CB8_ovl_25EE90[D_80220CB0_ovl_25EE90] = e;
+    return e;
+}
+
+/* Finds the cache entry holding p: first in the recent-use ring (newest first), then by scanning
+ * the pool from both ends and both sides of the middle at once (recording the hit in the ring).
+ * n and k are reused as the two "halves searched" flags */
+Ent260 *func_8020BA6C_ovl_25EE90(void *p) {
+    s32 n = D_80220CAC_ovl_25EE90;
+    s32 k = D_80220CB0_ovl_25EE90;
+    Ent260 *lo, *mid, *mid2, *hi;
+
+    for (; n > 0; n--, k--) {
+        if (k < 0) {
+            k = D_80220CAC_ovl_25EE90 - 1;
+        }
+        lo = D_80220CB8_ovl_25EE90[k];
+        if (lo != NULL && lo->id == (s32)p) {
+            return lo;
+        }
+    }
+    lo = D_80220CA8_ovl_25EE90;
+    n = 0;
+    k = 0;
+    mid = &lo[D_80220CA0_ovl_25EE90 / 2];
+    mid2 = mid + 1;
+    hi = &lo[D_80220CA0_ovl_25EE90 - 1];
+    do {
+        if (lo->id == (s32)p) {
+            return CacheRemember(lo);
+        }
+        if (mid->id == (s32)p) {
+            return CacheRemember(mid);
+        }
+        if (mid2->id == (s32)p) {
+            return CacheRemember(mid2);
+        }
+        if (hi->id == (s32)p) {
+            return CacheRemember(hi);
+        }
+        lo++;
+        mid--;
+        mid2++;
+        hi--;
+        if (mid < lo) {
+            k = 1;
+        }
+        if (hi < mid2) {
+            n = 1;
+        }
+    } while (!(k & n));
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/260420", func_8020BC78_ovl_25EE90);
 
