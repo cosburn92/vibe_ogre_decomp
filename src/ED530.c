@@ -595,7 +595,49 @@ void func_801A8C5C_ovl_0EBBB0(void) {
     gDPSetPrimColor(D_800E9BA0++, 0, 0, 0xB5, 0xA5, 0x83, (u8)(D_801ABA58_ovl_0EBBB0->f15C * 255.0f));
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A8E64_ovl_0EBBB0);
+typedef struct {
+    /* 0x00 */ u16 flags;
+    /* 0x02 */ u8 unk02[0x22];
+} Rec24;
+extern Rec24 D_801951CC[];
+
+#define G0E(w0_, w1_)                  \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;        \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (u32)(w1_);           \
+    }
+
+/* Loads the 8x16 CI4 icon of record i (1-based; 0xAA/0xAB/0xAC by flag bits 1-2) with its palette */
+void func_801A8E64_ovl_0EBBB0(s32 i) {
+    u8 *tex;
+    s32 id;
+    s32 f = D_801951CC[i - 1].flags & 6;
+
+    id = 0xAC;
+    if (f == 2) {
+        id = 0xAA;
+    } else {
+        id -= f == 4;
+    }
+    tex = LoadAsset(0x0203C53E, id, -0xA);
+    G0E(0xE7000000, 0);
+    G0E(0xE3001001, 0x8000);
+    G0E(0xFD500000, tex);
+    G0E(0xF5500000, 0x07090230);
+    G0E(0xE6000000, 0);
+    G0E(0xF3000000, 0x0703F800);
+    G0E(0xE7000000, 0);
+    G0E(0xF5480200, 0x00090230);
+    G0E(0xF2000000, 0x0001C03C);
+    G0E(0xFD100000, tex + 0x80);
+    G0E(0xE8000000, 0);
+    G0E(0xF5000100, 0x07000000);
+    G0E(0xE6000000, 0);
+    G0E(0xF0000000, 0x073FC000);
+    G0E(0xE7000000, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A906C_ovl_0EBBB0);
 
