@@ -317,7 +317,7 @@ void func_801707F4_ovl_040E80(void) {
 
 extern u8 D_80196A93_ovl_040E80[];
 extern u8 D_80196A30_ovl_040E80[];
-void func_80171FE0_ovl_040E80(s32 a, s32 b);
+s32 func_80171FE0_ovl_040E80(s32 a, s32 b);
 void DateAdvanceDay(void *d);
 void func_8016C70C_ovl_040E80(void *d);
 extern s16 D_80197B06_ovl_040E80;
@@ -376,7 +376,40 @@ s32 func_80171ED8_ovl_040E80(void) {
     return r;
 }
 
+extern s32 D_80197B14_ovl_040E80;
+extern u8 D_80197B02_ovl_040E80;
+void *LoadChunk(s32 id);
+typedef struct {
+    s32 w[25];
+} MsgState46;
+
+/* Runs message b of script a immediately (mode 2) without disturbing the current message state */
+#ifdef NON_MATCHING
+/* 80 vs 81 instructions: the original keeps &state+2 in s1 for the two byte stores and the final restore, and re-reads the script index by symbol */
+s32 func_80171FE0_ovl_040E80(s32 a, s32 b) {
+    MsgState46 saved = *(MsgState46 *)D_80197B00_ovl_040E80;
+    s32 *t;
+    s32 id;
+    u8 *m;
+
+    D_80197B02_ovl_040E80 = 0;
+    D_80197B03_ovl_040E80 = 2;
+    D_80197B04_ovl_040E80 = 0;
+    D_80197B00_ovl_040E80[0] = a;
+    D_80197B01_ovl_040E80 = b;
+    t = LoadChunkRaw(NULL, 0x3A5668);
+    id = t[D_80197B00_ovl_040E80[0]];
+    HFree(t);
+    m = LoadChunk(id);
+    func_80170954_ovl_040E80(m + ((u16 *)m)[D_80197B01_ovl_040E80]);
+    HFree(m);
+    a = D_80197B14_ovl_040E80;
+    *(MsgState46 *)D_80197B00_ovl_040E80 = saved;
+    return a;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80171FE0_ovl_040E80);
+#endif
 
 extern s32 D_80197B14_ovl_040E80;
 void *LoadChunk(s32 id);
