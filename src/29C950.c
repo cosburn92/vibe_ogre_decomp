@@ -1445,12 +1445,14 @@ void func_80231C54_ovl_29A4C0(f32 *p, f32 *out, Mtx29 *m, f32 *cam) {
     }
 }
 
+/* Sets the f32 at 0x12C of unit i, or of every unit when i == -1, to v */
 #ifdef NON_MATCHING
-/* s16 range-loop register flow differs */
+/* 1 instruction short: the original keeps start in v0 (separate from i in a0) and copies it into k
+ * after the if; GCC here reuses i's register. The struct-typed store keeps the base hoisted. */
 void func_80231DE0_ovl_29A4C0(s32 i, s32 unused, f32 v) {
     s16 k;
-    s16 end;
-    s16 start;
+    s32 end;
+    s32 start;
 
     if (i == -1) {
         start = 0;
@@ -1459,9 +1461,9 @@ void func_80231DE0_ovl_29A4C0(s32 i, s32 unused, f32 v) {
         start = i;
         end = i + 1;
     }
-    for (k = start; k < end; k++) {
+    for (k = start; k < (s16)end; k++) {
         if (D_8022A974->units[k] != NULL) {
-            FIELD(D_8022A974->units[k], f32, 0x12C) = v;
+            ((struct { u8 pad[0x12C]; f32 f; } *)D_8022A974->units[k])->f = v;
         }
     }
 }
