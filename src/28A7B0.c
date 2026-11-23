@@ -598,52 +598,39 @@ void func_8022F848_ovl_286BD0(void) {
     func_802344D0_ovl_286BD0();
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 33 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_80098C20(u32, s32, s32, s32); /* extern */
-s32 guOrtho(u32, s32, s32, s32, f32, f32, f32, f32); /* extern */
-extern u32 D_801969B0;
+#include "gbi_ultra.h"
+void func_80098C20(Mtx28 *m, f32 x, f32 y, f32 z);
+void guOrtho(Mtx28 *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void func_80232E20_ovl_286BD0();
+void func_80230360_ovl_286BD0(s32 a);
+void func_802311B0_ovl_286BD0(void);
+void func_8023324C_ovl_286BD0(void);
 
+/* (D_801969B0 is the matrix pool pointer kept as a u32 here: += 0x40 then - 0x40 is its post-increment) */
+/* Sets a 320x240 orthographic camera and, unless the screen is locked (0x238), draws the grid */
 void func_8022F864_ovl_286BD0(void) {
-    Gfx *temp_v1;
-    Gfx *temp_v1_2;
-    Gfx *temp_v1_3;
-    u32 temp_a0;
-    u32 temp_a0_2;
-    u32 temp_t0;
+    gDPPipeSync(D_800E9BA0++);
+    guOrtho((Mtx28 *)D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, -1000.0f, 2000.0f, 1.0f);
+    {
+        Gfx *_g = D_800E9BA0++;
 
-    temp_v1 = D_800E9BA0;
-    D_800E9BA0 = temp_v1 + 8;
-    temp_v1->w0 = 0xE7000000;
-    temp_v1->w1 = 0;
-    guOrtho(D_801969B0, 0xC3200000, 0x43200000, 0xC2F00000, 120.0f, -1000.0f, 2000.0f, 1.0f);
-    temp_t0 = D_801969B0;
-    temp_v1_2 = D_800E9BA0;
-    temp_a0 = temp_t0 + 0x40;
-    D_800E9BA0 = temp_v1_2 + 8;
-    temp_v1_2->w0 = 0xDA380007;
-    D_801969B0 = temp_a0;
-    temp_v1_2->w1 = temp_t0;
-    func_80098C20(temp_a0, 0, 0, 0);
-    temp_v1_3 = D_800E9BA0;
-    temp_a0_2 = D_801969B0;
-    D_800E9BA0 = temp_v1_3 + 8;
-    temp_v1_3->w0 = 0xDA380003;
-    D_801969B0 = temp_a0_2 + 0x40;
-    temp_v1_3->w1 = temp_a0_2;
-    if (FIELD(D_8023DE30_ovl_286BD0, u8, 0x238) == 0) {
-        func_80232E20_ovl_286BD0(temp_a0_2, 0xDA380003, D_8023DE30_ovl_286BD0);
+        _g->w0 = 0xDA380007;
+        _g->w1 = (D_801969B0 += 0x40) - 0x40;
+    }
+    func_80098C20((Mtx28 *)D_801969B0, 0.0f, 0.0f, 0.0f);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380003;
+        _g->w1 = (D_801969B0 += 0x40) - 0x40;
+    }
+    if (D_8023DE30_ovl_286BD0[0x238] == 0) {
+        func_80232E20_ovl_286BD0();
         func_80230360_ovl_286BD0(0);
         func_802311B0_ovl_286BD0();
         func_8023324C_ovl_286BD0();
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F864_ovl_286BD0);
-#endif
 
 /* Arrow position for slot idx: grid cell k (column 0x60, row 0x70), pushed 18 out every other
  * 8 frames, plus a bob from D_8023E178 in direction a (0xA0 up, 0xB0 right, 0xC0 left, 0xD0 down) */
