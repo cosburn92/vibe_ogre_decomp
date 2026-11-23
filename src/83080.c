@@ -4,57 +4,36 @@
 
 INCLUDE_ASM("asm/nonmatchings/83080", func_801A40F0_ovl_079730);
 
-#ifdef NON_MATCHING
-/* m2c draft, 47 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern s32 D_80193BF8;
+extern u8 D_80193BC0[][0x38];
+void func_801A40F0_ovl_079730(u8 *u);
 
-void func_801A4568_ovl_079730(s32 arg0) {
-    s32 *var_s0;
-    s32 temp_s2;
-    s32 temp_v1_2;
-    s32 var_s1;
-    u8 temp_v1;
+/* Applies func_801A40F0 to every player unit 1-99 of an unpromoted 0x52-0x57 class: on event 3
+ * to classes 0x52 / 0x55 / 0x57, on event 4 to class 0x53 */
+void func_801A4568_ovl_079730(u16 ev) {
+    s32 i;
 
-    var_s1 = 1;
-    temp_s2 = arg0 & 0xFFFF;
-    var_s0 = &D_80193BF8;
-    do {
-        temp_v1 = FIELD(var_s0, u8, 0x11);
-        temp_v1_2 = temp_v1 & 0xFF;
-        if (((u32) (temp_v1 - 0x52) < 6U) && (temp_v1_2 == FIELD(var_s0, u8, 0x12))) {
-            if (temp_s2 != 3) {
-                if (temp_s2 != 4) {
-                    var_s1 += 1;
-                } else {
-                    if (temp_v1_2 == 0x53) {
-                        goto block_13;
+    for (i = 1; i < 100; i++) {
+        u8 *u = D_80193BC0[i];
+        s32 c = u[0x11];
+        s32 d = u[0x12];
+
+        if ((u32)(c - 0x52) < 6 && (c = (u8)c) == d) {
+            switch (ev) {
+                case 3:
+                    switch (c) {
+                        case 0x52:
+                        case 0x55:
+                        case 0x57:
+                            func_801A40F0_ovl_079730(u);
+                            break;
                     }
-                    goto block_14;
-                }
-            } else {
-                switch (temp_v1_2) {                /* irregular */
-                default:
-                    var_s1 += 1;
                     break;
-                case 0x57:
-                    /* fallthrough */
-                case 0x55:
-                case 0x52:
-block_13:
-                    func_801A40F0_ovl_079730(var_s0);
-                    goto block_14;
-                }
+                case 4:
+                    if (c == 0x53) {
+                        func_801A40F0_ovl_079730(u);
+                    }
+                    break;
             }
-        } else {
-block_14:
-            var_s1 += 1;
         }
-        var_s0 += 0x38;
-    } while (var_s1 < 0x64);
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/83080", func_801A4568_ovl_079730);
-#endif
