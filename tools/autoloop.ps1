@@ -29,6 +29,12 @@ You are running unattended in a loop: one function per session, then exit.
    yaml had changed, since asm/ is untracked), then write one paragraph
    explaining the problem to build/autoloop/PROBLEM.txt and stop.
 
+Run every shell command with the Bash tool (not PowerShell), and use exactly
+these forms, which are pre-approved; anything else will be refused:
+  build:    wsl bash -lc "cd /mnt/c/Users/Connor/dev/ogredecomp && make 2>&1 | tail -3"
+  diff:     wsl bash -lc "cd /mnt/c/Users/Connor/dev/ogredecomp && sh tools/objcmp.sh SEG FUNC ROM SIZE"
+  sizes:    wsl bash -lc "cd /mnt/c/Users/Connor/dev/ogredecomp && sh tools/sizecheck.sh SEG"
+  git:      git status / log / diff / add / commit / checkout -- . / clean -fd src
 Keep reads small: pipe big asm/diff output through head or grep.
 Do exactly one function, then stop.
 '@
