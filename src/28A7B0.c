@@ -462,7 +462,49 @@ void func_8022F408_ovl_286BD0(void) {
     HFree(raw);
 }
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F5C4_ovl_286BD0);
+extern void *D_800C4B20; /* z buffer (NULL when unused) */
+extern void *D_800E8210; /* frame buffer */
+extern u8 D_80186380[];  /* full-screen fill rectangle */
+u32 osVirtualToPhysical(void *p);
+#define G28(w0_, w1_)                  \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;        \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (u32)(w1_);           \
+    }
+
+/* Clears the z buffer (when there is one) and, for the first two frames, the frame buffer, then
+ * sets the frame buffer as the colour image */
+void func_8022F5C4_ovl_286BD0(void) {
+    G28(0xE7000000, 0);
+    G28(0xE7000000, 0);
+    G28(0xE3000A01, 0x300000);
+    G28(0xE7000000, 0);
+    G28(0xE200001C, 0);
+    if (D_800C4B20 != NULL) {
+        G28(0xFE000000, (u32)D_800C4B20 - 0x80000000);
+        G28(0xFF10027F, (u32)D_800C4B20 - 0x80000000);
+        G28(0xF7000000, 0xFFFCFFFC);
+        G28(0xE7000000, 0);
+        G28(0xDE000000, D_80186380);
+        G28(0xE7000000, 0);
+    }
+    G28(0xFF10027F, osVirtualToPhysical(D_800E8210));
+    if (D_8023DE3C_ovl_286BD0 < 2) {
+        G28(0xF7000000, 0x10001);
+        G28(0xE7000000, 0);
+        G28(0xDE000000, D_80186380);
+        G28(0xE7000000, 0);
+    }
+    G28(0xE7000000, 0);
+    G28(0xE7000000, 0);
+    G28(0xE3000A01, 0);
+    G28(0xE7000000, 0);
+    if (D_8023DE3C_ovl_286BD0 < 5) {
+        D_8023DE3C_ovl_286BD0++;
+    }
+}
 
 void func_8022F848_ovl_286BD0(void) {
     func_802344D0_ovl_286BD0();
