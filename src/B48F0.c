@@ -826,57 +826,42 @@ void func_801CAF18_ovl_087200(s32 arg0, u8 arg1, s32 arg2, u8 arg3) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAF18_ovl_087200);
 #endif
 
+/* Swaps formation cells a and b of squad sq (the leader follows its cell), clears flag 4 of every
+ * member, then refreshes the squad's front-row count (0x1D) and its display */
 #ifdef NON_MATCHING
-/* m2c draft, 13 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801CB0FC_ovl_087200(s32 arg0, u8 arg1, u8 arg2) {
-    s32 temp_v0;
-    s32 var_a2;
-    u16 temp_s0;
-    u8 temp_t0;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
-    void *temp_a3;
-    void *temp_s1;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v1_4;
+/* 74 vs 72: the squad id stays in a0 in the original; here it is moved to s0 at entry and the swap pointers land in different registers */
+void func_801CB0FC_ovl_087200(s32 sq, s32 a, s32 b) {
+    u8 *s = D_80196AF8 + (u16)sq * 0x36 + 0x117C;
+    u8 *pb = s + (u16)b;
+    u8 t = pb[4];
+    s32 i;
 
-    temp_s1 = D_80196AF8 + (((arg0 & 0xFFFF) * 0x36) + 0x117C);
-    temp_a3 = temp_s1 + (arg2 & 0xFFFF);
-    temp_t0 = FIELD(temp_a3, u8, 4);
-    temp_v0 = arg1 & 0xFFFF;
-    if ((temp_t0 & 0xFF) == 0xFF) {
-        temp_v0_2 = temp_s1 + temp_v0;
-        FIELD(temp_a3, u8, 4) = (u8) FIELD(temp_v0_2, u8, 4);
-        FIELD(temp_v0_2, u8, 4) = 0xFFU;
+    if (t == 0xFF) {
+        u8 *pa = s + (u16)a;
+
+        pb[4] = pa[4];
+        pa[4] = 0xFF;
     } else {
-        temp_v0_3 = temp_s1 + temp_v0;
-        temp_v1 = FIELD(temp_v0_3, u8, 4);
-        FIELD(temp_v0_3, u8, 4) = temp_t0;
-        FIELD(temp_a3, u8, 4) = temp_v1;
+        u8 *pa = s + (u16)a;
+        u8 x = pa[4];
+
+        pa[4] = t;
+        pb[4] = x;
     }
-    temp_v1_2 = FIELD(temp_s1, u8, 3);
-    if (temp_v1_2 == (arg1 & 0xFFFF)) {
-        FIELD(temp_s1, u8, 3) = arg2;
-    } else if (temp_v1_2 == (arg2 & 0xFFFF)) {
-        FIELD(temp_s1, u8, 3) = arg1;
+    if (s[3] == (u16)a) {
+        s[3] = b;
+    } else if (s[3] == (u16)b) {
+        s[3] = a;
     }
-    var_a2 = 0;
-    do {
-        temp_v1_3 = FIELD((D_80196AF8 + ((arg0 & 0xFFFF) * 0x36) + var_a2), u8, 0x1180);
-        var_a2 += 1;
-        if (temp_v1_3 != 0xFF) {
-            temp_v1_4 = D_80196AF8 + (temp_v1_3 * 2);
-            FIELD(temp_v1_4, u8, 0x1872) = (u8) (FIELD(temp_v1_4, u8, 0x1872) & 0xFB);
+    for (i = 0; i < 9; i++) {
+        u8 m = (D_80196AF8 + (u16)sq * 0x36)[0x1180 + i];
+
+        if (m != 0xFF) {
+            D_80196AF8[m * 2 + 0x1872] &= 0xFB;
         }
-        temp_s0 = arg0 & 0xFFFF;
-    } while (var_a2 < 9);
-    FIELD(temp_s1, u8, 0x1D) = func_801D06F4_ovl_087200(temp_s0);
-    func_801C67B0_ovl_087200((u8) temp_s0);
+    }
+    s[0x1D] = func_801D06F4_ovl_087200((u16)sq);
+    func_801C67B0_ovl_087200((u16)sq);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB0FC_ovl_087200);
