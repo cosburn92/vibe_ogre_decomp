@@ -153,7 +153,40 @@ Tree0E *func_801A382C_ovl_0EBBB0(Tree0E *root, Tree0E *n) {
     return root;
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A38B4_ovl_0EBBB0);
+extern u16 D_800C4BE4;
+void guMtxF2L(void *mf, void *m);
+
+/* Draws the nodes of draw tree n whose key is k (in tree order): each loads its matrix (a scene
+ * float matrix converted into the frame's matrix pool, or a frame matrix) and calls its list */
+void func_801A38B4_ovl_0EBBB0(DrawNode0E *n, u16 k) {
+    if (n != NULL) {
+        D_800E9BA0->w0 = 0xE7000000;
+        D_800E9BA0->w1 = 0;
+        D_800E9BA0++;
+        if (k != n->key) {
+            if (k < n->key) {
+                func_801A38B4_ovl_0EBBB0((DrawNode0E *)n->link.left, k);
+            } else {
+                func_801A38B4_ovl_0EBBB0((DrawNode0E *)n->link.right, k);
+            }
+        } else {
+            func_801A38B4_ovl_0EBBB0((DrawNode0E *)n->link.left, k);
+            if (n->frame == 0) {
+                guMtxF2L(FIELDX(D_801ABA58_ovl_0EBBB0, u8 *, 0xC0) + (n->m << 6), D_800E9BE0->mtx[D_800C4BE4]);
+                D_800E9BA0->w0 = 0xDA380003;
+                D_800E9BA0++->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000;
+            } else {
+                D_800E9BA0->w0 = 0xDA380003;
+                D_800E9BA0->w1 = (u32)D_800E9BE0->mtx[FIELDX(D_801ABA58_ovl_0EBBB0, u16 *, 0x124)[n->m]] - 0x80000000;
+                D_800E9BA0++;
+            }
+            D_800E9BA0->w0 = 0xDE000000;
+            D_800E9BA0->w1 = n->c;
+            D_800E9BA0++;
+            func_801A38B4_ovl_0EBBB0((DrawNode0E *)n->link.right, k);
+        }
+    }
+}
 
 /* Frees a binary tree */
 void func_801A3A5C_ovl_0EBBB0(Tree0E *n) {
