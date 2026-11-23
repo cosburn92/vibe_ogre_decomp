@@ -241,7 +241,70 @@ u8 func_801B7914_ovl_1F0A30(s32 t) {
     return 0;
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_801BE9A8_ovl_1F0A30(u8 fmt, u16 w);
+void func_80080998(void *dst, void *src, s32 n);
+
+/* Copies image src into its own allocation and frees src; a "B5" multi-frame image becomes a chain
+ * of separately allocated frames (header link at 0x14, frame links at 0xC) */
+#ifdef NON_MATCHING
+/* 140/140: structure and calls line up; src / header copy / frame pointer get different saved registers */
+void *func_801B7A7C_ovl_1F0A30(u8 *src) {
+    u8 *out;
+    s32 n;
+
+    if (FIELD(src, u16, 0) == 0x4235) {
+        u8 *h = src;
+        u8 *o2;
+        u8 *p = h + 8;
+        s32 sz;
+        u32 i;
+        void **link;
+
+        if (h[2] == 1) {
+            sz = func_801BE9A8_ovl_1F0A30(2, FIELD(h, u16, 0xC)) * FIELD(h, u16, 0xE);
+        } else if (h[2] == 3) {
+            sz = func_801BE9A8_ovl_1F0A30(3, FIELD(h, u16, 0xC)) * FIELD(h, u16, 0xE);
+        } else {
+            sz = (func_801BE9A8_ovl_1F0A30(2, FIELD(h, u16, 0xC)) + func_801BE9A8_ovl_1F0A30(1, FIELD(h, u16, 0xC))) * FIELD(h, u16, 0xE);
+        }
+        n = sz + 0x18;
+        o2 = HMalloc(n);
+        func_80080998(o2, h, n);
+        FIELD(o2, void *, 0x14) = NULL;
+        link = (void **)(o2 + 0x14);
+        for (i = 1; i < h[3]; i++) {
+            u8 *f;
+
+            p += sz + 0x10;
+            if (h[2] == 1) {
+                sz = func_801BE9A8_ovl_1F0A30(2, FIELD(p, u16, 4)) * FIELD(p, u16, 6);
+            } else if (h[2] == 3) {
+                sz = func_801BE9A8_ovl_1F0A30(3, FIELD(p, u16, 4)) * FIELD(p, u16, 6);
+            } else {
+                sz = (func_801BE9A8_ovl_1F0A30(2, FIELD(p, u16, 4)) + func_801BE9A8_ovl_1F0A30(1, FIELD(p, u16, 4))) * FIELD(p, u16, 6);
+            }
+            n = sz + 0x10;
+            *link = HMalloc(n);
+            func_80080998(*link, p, n);
+            f = *link;
+            FIELD(f, void *, 0xC) = NULL;
+            link = (void **)(f + 0xC);
+        }
+        HFree(h);
+        return o2;
+    }
+    n = func_801BE9A8_ovl_1F0A30(src[3], FIELD(src, u16, 4)) * FIELD(src, u16, 6) + 8;
+    out = HMalloc(n);
+    func_80080998(out, src, n);
+    HFree(src);
+    return out;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7A7C_ovl_1F0A30);
+#endif
 
 /* Frees a 'B5' image bank (and its chained pages) */
 inline void func_801B7CBC_ovl_1F0A30(u8 *p) {
