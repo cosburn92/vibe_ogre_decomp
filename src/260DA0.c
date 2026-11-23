@@ -309,23 +309,81 @@ inline void *func_8020C9B0_ovl_25EE90(s32 id) {
 
 /* Acquires resource id of kind 4, 7 or 8 */
 #ifdef NON_MATCHING
-/* the three inlined acquires (func_8020C704/C908/C9B0) share their tails differently: the original cross-jumps the cache-entry stores and the add-ref path between the cases */
+/* 106/106: r and the cache entry swap s0/s1; the default hang loop's jump is placed differently */
 void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
     void *r;
+    CacheEnt *e;
 
     switch (kind) {
-    default:
-        while (1) {
-        }
-    case 4:
-        r = func_8020C704_ovl_25EE90(id);
-        break;
-    case 7:
-        r = func_8020C908_ovl_25EE90(id);
-        break;
-    case 8:
-        r = func_8020C9B0_ovl_25EE90(id);
-        break;
+        case 4:
+            r = NULL;
+            if (id > 0) {
+                r = func_8020BF5C_ovl_25EE90(4, id, 0);
+                if (r != NULL) {
+                    func_8020BF94_ovl_25EE90(r);
+                } else {
+                    e = func_8020BFE8_ovl_25EE90();
+                    if (e != NULL) {
+                        r = func_8020C380_ovl_25EE90(4, id);
+                        if (r != NULL) {
+                            e->h0 = 1;
+                            e->data = r;
+                            e->kind = 4;
+                            e->id = id;
+                            e->w8 = 0;
+                        } else {
+                        for (;;) {
+                        }
+                    }
+                    }
+                }
+            }
+            break;
+        case 7:
+            r = NULL;
+            if (id > 0) {
+                r = func_8020BF5C_ovl_25EE90(7, id, 0);
+                if (r != NULL) {
+                    func_8020BF94_ovl_25EE90(r);
+                } else {
+                    e = func_8020BFE8_ovl_25EE90();
+                    if (e != NULL) {
+                        r = func_8020C380_ovl_25EE90(7, id);
+                        if (r != NULL) {
+                            e->h0 = 1;
+                            e->data = r;
+                            e->kind = 7;
+                            e->id = id;
+                            e->w8 = 0;
+                        }
+                    }
+                }
+            }
+            break;
+        case 8:
+            r = NULL;
+            if (id > 0) {
+                r = func_8020BF5C_ovl_25EE90(8, id, 0);
+                if (r != NULL) {
+                    func_8020BF94_ovl_25EE90(r);
+                } else {
+                    e = func_8020BFE8_ovl_25EE90();
+                    if (e != NULL) {
+                        r = func_8020C380_ovl_25EE90(8, id);
+                        if (r != NULL) {
+                            e->h0 = 1;
+                            e->data = r;
+                            e->kind = 8;
+                            e->id = id;
+                            e->w8 = 0;
+                        }
+                    }
+                }
+            }
+            break;
+        default:
+            for (;;) {
+            }
     }
     return r;
 }
