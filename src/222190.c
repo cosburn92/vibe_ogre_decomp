@@ -565,7 +565,7 @@ u8 func_801E1590_ovl_213B10(s32 side) {
     return 0xFF;
 }
 
-void func_801E15E0_ovl_213B10(u8 *u, s32 cls) {
+inline void func_801E15E0_ovl_213B10(u8 *u, s32 cls) {
     s32 a;
     s32 b;
     s32 c;
@@ -774,4 +774,70 @@ block_20:
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E1810_ovl_213B10);
 #endif
 
+void func_801CA3E0();
+void func_801C9478();
+void func_801C974C();
+void func_801E1810_ovl_213B10();
+extern s32 D_801E5FE0_ovl_213B10[];
+extern s32 D_801E5FD0_ovl_213B10[];
+
+/* Sets up unit u from deployment record d (side 3, kind 4, flags 1, row 2, ...), then marks the
+ * opposing side's units (0x40 |= 0x800) */
+#ifdef NON_MATCHING
+/* 132 vs 131: GCC keeps the constant 1 (state 0x54 and the func_801C41C8 flag) in a saved register across the calls, costing a register save */
+u8 *func_801E1A48_ovl_213B10(u8 *u, u8 *d) {
+    s32 base;
+    u32 i;
+    s32 j;
+
+    if (d[3] == 0) {
+        func_801CA3E0(u, 0);
+        base = D_801E5FE0_ovl_213B10[d[4]];
+    } else {
+        func_801C9478(u, 0);
+        FIELD(u, s32, 0x40) |= 0x500;
+        base = D_801E5FD0_ovl_213B10[d[4]];
+    }
+    FIELD(u, s32, 0x54) = 1;
+    FIELD(u, s32, 0x58) = base;
+    u[0xA5] = d[1];
+    u[0xA6] = d[2];
+    u[0xA7] = d[3];
+    u[0xA8] = d[4];
+    u[0xA9] = d[5];
+    i = 0;
+    u[0xAA] = d[6];
+    FIELD(u, s16, 0x20) = u[0xA6] * (FIELD(u, u16, 0x22) / 3);
+    func_801C974C(u, 0);
+    func_801E1810_ovl_213B10(u);
+    u[0xF6] = 0;
+    func_801E15E0_ovl_213B10(u, FIELD(u, s32, 0x4C));
+    for (; i < 3; i++) {
+        if ((u[0xA5] >> 1) & 1) {
+            if (FIELD(u + i * 4, s32, 0) != 0) {
+                func_801ADADC(FIELD(u + i * 4, s32, 0));
+                func_801ADB9C(FIELD(u + i * 4, s32, 0xC));
+            }
+        }
+    }
+    for (j = 0; j < 20; j++) {
+        u8 **v = func_801C8FE8(j);
+
+        if (v != NULL) {
+            s32 r;
+
+            if (u[0xA7] == 0) {
+                r = func_801C8B68((u8 *)v);
+            } else {
+                r = func_801C8B84((u8 *)v);
+            }
+            if (r != 0) {
+                FIELD(v, s32, 0x40) |= 0x800;
+            }
+        }
+    }
+    return u;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E1A48_ovl_213B10);
+#endif
