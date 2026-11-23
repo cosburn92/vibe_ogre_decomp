@@ -756,7 +756,78 @@ s16 func_80230744_ovl_29A4C0(s32 k) {
     return v;
 }
 
+void func_80178534(void);
+s32 func_80227838(s32 id);
+s32 func_80227B9C(s32 slot);
+s32 func_80227CBC(void);
+s16 func_8019EE58(u8 a, u16 b, u16 c, u8 d, u8 e);
+void func_80230B60_ovl_29A4C0();
+extern s32 D_8018F500;
+extern s32 D_8018F504;
+extern void *D_8018F508;
+extern s32 D_8018F50C;
+extern u8 D_8018FC19;
+extern u8 D_80196A58[];
+extern u8 D_800E8328[][0xA8];
+
+/* Starts effect (kind, id) for battle slot: loads the 0x51-0x53 resource and (mode 2) the slot's
+ * own, creates the effect via func_8019EE58, applies flags (1: 0x20, 2: 0x08), the mode-1 target
+ * (x, y) and z, and records (handle, kind, y or 0) in the slot's 6-byte record */
+#ifdef NON_MATCHING
+/* 0x2B4 vs 0x2CC: the original keeps &D_8018F500 in s0 and, short of registers, leaves b, e and
+ * slot in their stack slots; register allocation differs throughout */
+void func_80230858_ovl_29A4C0(s32 kind, s32 id, s32 x, s32 y, u8 e, s32 slot, u8 flags, u16 b, s32 mode, s32 z) {
+    u8 h = 0;
+    s16 r;
+    u16 *rec;
+
+    func_80178534();
+    bzero(D_8019EE40, 8);
+    if ((D_8018F500 = func_80227838(0x51)) == 0 && (D_8018F500 = func_80227838(0x52)) == 0) {
+        D_8018F500 = func_80227838(0x53);
+    }
+    if (D_8018FC19 == 2) {
+        if ((D_8018F504 = func_80227B9C(slot)) == 0) {
+            D_8018F504 = D_8018F500;
+        }
+    }
+    D_8018F508 = D_80196A58;
+    D_8018F50C = func_80227CBC();
+    if (mode == 0) {
+        h = (y << 4) + x;
+    }
+    r = func_8019EE58(kind, b, id, h, e);
+    id = r;
+    if (flags & 1) {
+        D_800E8328[r][0x2A] |= 0x20;
+    }
+    if (flags & 2) {
+        D_800E8328[r][0x2A] |= 8;
+    }
+    if (mode == 1) {
+        D_800E8328[r][0x2C] = 0;
+        D_800E8328[r][0x2D] = x;
+        D_800E8328[r][0x34] = y >> 8;
+        D_800E8328[r][0x35] = y;
+        D_800E8328[r][0x2A] |= 0x40;
+    }
+    D_800E8328[r][0x32] = z >> 8;
+    D_800E8328[r][0x33] = z;
+    HFree(FIELD(D_8022A974, void *, 0x1D8 + slot * 4));
+    rec = HMalloc(6);
+    FIELD(D_8022A974, u16 *, 0x1D8 + slot * 4) = rec;
+    rec[0] = id;
+    rec[1] = kind;
+    if (mode == 1) {
+        rec[2] = 0;
+    } else {
+        rec[2] = y;
+    }
+    func_80230B60_ovl_29A4C0();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80230858_ovl_29A4C0);
+#endif
 
 u8 func_80230B24_ovl_29A4C0(u8 a) {
     return func_8019F174(a);
