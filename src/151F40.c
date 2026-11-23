@@ -485,7 +485,36 @@ u16 func_80202140_ovl_14EBE0(u8 side, u8 n, u8 kind) {
     return r * m.v[kind];
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80202434_ovl_14EBE0);
+extern Mult151 D_80214CD0_ovl_14EBE0;
+u8 func_8016D350(u8 cls, u8 base);
+
+/* Magic version: func_8016D350 plus item bonus 2, scaled by int and (men + item bonus 3), with the
+ * multipliers from D_80214CD0 */
+u16 func_80202434_ovl_14EBE0(u8 side, u8 n, u8 kind) {
+    Mult151 m = D_80214CD0_ovl_14EBE0;
+    Character *c;
+    u8 idx;
+    u8 cls;
+    u8 base;
+    f32 intl;
+    f32 men;
+    f32 bonus;
+    u16 r;
+
+    idx = n < 100 ? n : 0;
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    cls = c->cls;
+    base = c->baseCls;
+    intl = c->intl;
+    men = c->men + ItemBonus151(side, idx, 3);
+    bonus = ItemBonus151(side, idx, 2);
+    r = (func_8016D350(cls, base) + bonus) / 20.0f * (intl + 50.0f) / 50.0f * (men + 100.0f) / 100.0f;
+    return r * m.v[kind];
+}
 
 /* Base stat `stat` (0 str .. 5 dex) of a character (side 0 player, else enemy); idx >= 100 reads slot 0 */
 u16 func_80202728_ovl_14EBE0(u8 side, u8 idx, u8 stat) {
