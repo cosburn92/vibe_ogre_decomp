@@ -563,6 +563,18 @@ void func_801AFBE8_ovl_1F0A30(s32 a) {
     func_801AF730_ovl_1F0A30(D_801CE8A8_ovl_1F0A30, a);
 }
 
+typedef struct {
+    u16 h0;
+    u8 unk2[0x19];
+    u8 b1B;
+    u8 unk1C[0x1C];
+} Rec38;
+extern Rec38 D_80193BD8[];
+extern u8 D_80190F80[];
+void func_80080998(void *dst, void *src, s32 n);
+s32 func_801C8AEC_ovl_1F0A30(void);
+s32 func_801C8AFC_ovl_1F0A30(void);
+
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AFC0C_ovl_1F0A30);
 
 #ifdef NON_MATCHING
@@ -673,17 +685,6 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0020_ovl_1F0A30);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-typedef struct {
-    u16 h0;
-    u8 unk2[0x19];
-    u8 b1B;
-    u8 unk1C[0x1C];
-} Rec38;
-extern Rec38 D_80193BD8[];
-extern u8 D_80190F80[];
-void func_80080998(void *dst, void *src, s32 n);
-s32 func_801C8AEC_ovl_1F0A30(void);
-s32 func_801C8AFC_ovl_1F0A30(void);
 void func_801BE894_ovl_1F0A30(void);
 void func_8020B098(void);
 void func_801BBC78_ovl_1F0A30(void);
