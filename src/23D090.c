@@ -993,7 +993,40 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBF58_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC00C_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC4B0_ovl_23B220);
+s32 func_801C8C90(u8 *u);
+
+/* Builds the two portrait slots of unit u (its leader part, then its second part when
+ * func_801C8C90 says it has one) at their fixed screen positions */
+void func_801EC4B0_ovl_23B220(u8 *u) {
+    u8 *e = (u8 *)D_801EFE48_ovl_23B220 + 0x5D4;
+    s32 *xy = (s32 *)((u8 *)D_801EFE48_ovl_23B220 + 0x5DC);
+    Spr23 s;
+
+    s = *(Spr23 *)(((u8 **)u)[0] + 0x44);
+    s.w0 = FIELD(u, s32, 0x50);
+    s.owner = ((u8 **)u)[0];
+    func_801AD9D4(&s, 0);
+    func_801ADD88(&s, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), func_801C8B68(u), func_801C8BA4(u));
+    FIELD(e, s32, 4) = func_801C49A0(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), s.hA, func_801C8B68(u),
+                                     func_801C8BA4(u), func_801C8FB8(u), xy);
+    FIELD(e, u8 *, 0) = u;
+    FIELD(e, s16, 0x18) = 0xF0 - FIELD(e, s32, 0x10);
+    FIELD(e, s16, 0x1A) = FIELD(e, s32, 0xC) + 0x87;
+    if (func_801C8C90(u) != 0) {
+        e = (u8 *)D_801EFE48_ovl_23B220 + 0x5F0;
+        xy = (s32 *)((u8 *)D_801EFE48_ovl_23B220 + 0x5F8);
+        s = *(Spr23 *)(((u8 **)u)[1] + 0x44);
+        s.w0 = FIELD(u, s32, 0x50);
+        s.owner = ((u8 **)u)[1];
+        func_801AD9D4(&s, 0);
+        func_801ADD88(&s, FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), func_801C8B68(u), func_801C8BA4(u));
+        FIELD(e, s32, 4) = func_801C49A0(FIELD(u, s32, 0x48), FIELD(u, s32, 0x4C), s.hA, func_801C8B68(u),
+                                         func_801C8BA4(u), func_801C8FB8(u), xy);
+        FIELD(e, u8 *, 0) = u;
+        FIELD(e, s16, 0x18) = 0xE4 - FIELD(e, s32, 0x10);
+        FIELD(e, s16, 0x1A) = FIELD(e, s32, 0xC) + 0x8A;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC6F4_ovl_23B220);
 
