@@ -858,7 +858,61 @@ s32 func_8023DCC0_ovl_2A8D20(void) {
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DCD4_ovl_2A8D20);
 
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023DE14_ovl_2A8D20);
+s32 func_801C8B84(u8 *u);
+extern u8 D_801976DC;
+extern u8 D_801976E8;
+extern u16 D_80190EBC[];
+extern u8 D_80191010[];
+extern u16 D_8019532C[];
+extern u8 D_80195480[];
+
+/* 1 when unit u is out of action (no HP or status bit 2), except in mode 1 */
+s32 func_8023DE14_ovl_2A8D20(u8 *u) {
+    s32 r = 0;
+    s32 st;
+    u8 k;
+    s32 c;
+
+    if (D_8022A7F0 == 1) {
+        return 0;
+    }
+    if (func_801C8B84(u)) {
+        c = D_801976DC < 30;
+    } else {
+        c = D_801976E8 < 30;
+    }
+    if (c) {
+        k = u[0xF6];
+        if (k < 100) {
+            if (D_80193BC0[k].c.hp == 0) {
+                r = 1;
+            }
+            st = D_80193BC0[k].c.status & 4;
+        } else {
+            if (D_80190EBC[k] == 0) {
+                r = 1;
+            }
+            st = D_80191010[k] & 4;
+        }
+    } else {
+        k = u[0xF6];
+        if (k < 100) {
+            if (D_80195560[k].hp == 0) {
+                r = 1;
+            }
+            st = D_80195560[k].status & 4;
+        } else {
+            if (D_8019532C[k] == 0) {
+                r = 1;
+            }
+            st = D_80195480[k] & 4;
+        }
+    }
+    if (st) {
+        r = 1;
+    }
+    return r;
+}
 
 /* Sets up the cursor box (x, y, w, h; w = h = -1 means 24x24) */
 void func_8023DF70_ovl_2A8D20(s32 w, s32 h, s32 x, s32 y, s32 a, s32 b) {
