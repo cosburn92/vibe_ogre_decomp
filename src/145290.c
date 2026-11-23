@@ -661,8 +661,6 @@ s8 func_801F40A0_ovl_145210(u8);                    /* extern */
 extern s32 D_801F3658;
 extern u8 *D_801FCD2C_ovl_145210[];
 
-#ifdef NON_MATCHING
-/* 105/105, 2 words: the record address is added as base + index in the original (addu v0,s1,v0) */
 void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
     s32 temp_a0;
     u16 temp_v1;
@@ -689,8 +687,16 @@ void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
             FIELD(temp_s0, u8, 0x15) = (u8) FIELD(arg1, u8, 0xA);
             FIELD(temp_s0, u8, 0x16) = (u8) FIELD(arg1, u8, 0xB);
         }
-        FIELD(temp_s0, s32, 8) = FIELD((u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14, s32, 0x10);
-        FIELD(temp_s0, s32, 0xC) = FIELD((u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14, s32, 0x14);
+        {
+            u8 *r = (u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14;
+
+            FIELD(temp_s0, s32, 8) = FIELD(r, s32, 0x10);
+        }
+        {
+            u8 *r = (u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14;
+
+            FIELD(temp_s0, s32, 0xC) = FIELD(r, s32, 0x14);
+        }
         FIELD(temp_s0, s8, 0x12) = func_801F40A0_ovl_145210(FIELD(arg0, u8, 2));
         temp_a0 = (s32)D_801FCD2C_ovl_145210[FIELD(arg0, u8, 5)];
         temp_v1_2 = FIELD(temp_s0, u8, 0x11) & 0xF8;
@@ -707,9 +713,6 @@ void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
         func_801F4BBC_ovl_145210((s32) temp_s0);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F5AD0_ovl_145210);
-#endif
 
 /* Advances the 12-frame cycle and picks the frame pair from the key table */
 void func_801F5C74_ovl_145210(u8 *o) {
