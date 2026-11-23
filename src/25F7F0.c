@@ -166,7 +166,48 @@ void func_8020B4E4_ovl_25EE90(u16 active, u16 *src) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/25F7F0", func_8020B538_ovl_25EE90);
+extern u8 D_801CEAA8;
+extern u8 D_801CEAA9;
+extern u8 D_801CEAAA;
+extern u8 D_801CEAAB;
+
+/* Starts an interpolation from the current values (the fourth from mode's setting) to src */
+void func_8020B538_ovl_25EE90(u16 mode, u16 *src) {
+    Interp4 *s = &D_80220E70_ovl_25EE90;
+    u16 *d = s->data;
+
+    s->data[5] = s->head[0];
+    s->data[6] = s->head[1];
+    s->data[7] = s->head[2];
+    if (mode == 1) {
+        d[8] = s->head[3];
+    } else {
+        switch (mode) {
+        case 2:
+            d[8] = D_801CEAA8;
+            break;
+        case 3:
+            d[8] = D_801CEAA9;
+            break;
+        case 4:
+            d[8] = D_801CEAAA;
+            break;
+        case 5:
+            d[8] = D_801CEAAB;
+            break;
+        default:
+            while (1) {
+            }
+        }
+    }
+    d[0] = src[0];
+    d[1] = src[1];
+    d[2] = src[2];
+    d[3] = src[3];
+    d[4] = src[4];
+    s->timer = 0;
+    s->active = mode;
+}
 
 void func_8020B660_ovl_25EE90(u16 *src) {
     s32 k;
