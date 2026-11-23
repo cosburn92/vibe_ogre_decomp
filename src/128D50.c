@@ -60,7 +60,46 @@ void func_801D4738_ovl_101CE0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D4740_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/128D50", func_801D4928_ovl_101CE0);
+extern u8 D_8018F481;
+extern u8 D_80193BC0[][0x38];
+extern u8 D_80187C40[][0x48];
+extern u8 D_80195560[][0x34];
+
+/* Squad type of s from its five members' class types (0 empty, 2 generic), 7 for the special
+ * squads 31 and 32 on some stages */
+u8 func_801D4928_ovl_101CE0(void *sq) {
+    SquadRec *s = sq;
+    u8 t[5];
+    s32 i;
+
+    if (s->unk0 == 31 && D_8018F481 != 8) {
+        return 7;
+    }
+    switch (D_8018F481) {
+    case 0x27:
+    case 0x2D:
+    case 0x2E:
+    case 0x2F:
+    case 0x3C:
+        if (s->unk0 == 32) {
+            return 7;
+        }
+    }
+    for (i = 0; i < 5; i++) {
+        u8 c = s->rest[i];
+
+        if (c == 0) {
+            t[i] = 0;
+        } else if (c >= 100) {
+            t[i] = 2;
+        } else if (s->unk0 >= 31) {
+            t[i] = D_80187C40[D_80195560[c][0x12]][0];
+        } else {
+            t[i] = D_80187C40[D_80193BC0[c][0x12]][0];
+        }
+    }
+    return func_8016B088(t[0], t[1], t[2], t[3], t[4]);
+}
 
 u8 func_801D4A74_ovl_101CE0(u8 *sq) {
     u8 v[5];
