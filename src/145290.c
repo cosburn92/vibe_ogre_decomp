@@ -598,7 +598,41 @@ void func_801F5C74_ovl_145210(u8 *o) {
     FIELD(o, s32, 0x14) = FIELD(o, s32 *, 0)[D_801FCFC0_ovl_145210[lo][1] + 3];
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F5D28_ovl_145210);
+typedef struct {
+    /* 0x0 */ u8 t;
+    /* 0x1 */ u8 pad[3];
+    /* 0x4 */ f32 x;
+    /* 0x8 */ f32 y;
+} Key145;
+
+/* Steps o's frame (o+6) and sets its position (o+0x20/0x24) from the n keys, interpolating between
+ * the surrounding pair; 1 once the frame reaches `end` */
+s32 func_801F5D28_ovl_145210(u8 *o, Key145 *k, u8 n, u8 end) {
+    u8 t = ++o[6];
+    s32 lo = 0;
+    s32 hi = n - 1;
+    s32 done = t >= end;
+
+    while (lo < hi) {
+        s32 mid = (lo + hi) / 2;
+        s32 m1 = mid + 1;
+
+        if (t < k[m1].t) {
+            hi = mid;
+        } else {
+            lo = m1;
+        }
+    }
+    hi = lo + 1;
+    if (lo == n - 1) {
+        FIELD(o, f32, 0x20) = k[lo].x;
+        FIELD(o, f32, 0x24) = k[lo].y;
+    } else {
+        FIELD(o, f32, 0x20) = k[lo].x + (k[hi].x - k[lo].x) * (f32)(o[6] - k[lo].t) / (f32)(k[hi].t - k[lo].t);
+        FIELD(o, f32, 0x24) = k[lo].y + (k[hi].y - k[lo].y) * (f32)(o[6] - k[lo].t) / (f32)(k[hi].t - k[lo].t);
+    }
+    return done;
+}
 
 INCLUDE_RODATA("asm/nonmatchings/145290", D_801FD958_ovl_145210);
 
