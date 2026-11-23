@@ -339,7 +339,48 @@ void func_8022EDEC_ovl_286BD0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022EEB4_ovl_286BD0);
 
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F024_ovl_286BD0);
+typedef struct {
+    u8 b[0x40];
+} Mtx28;
+typedef struct {
+    u8 b[0x10];
+} Vtx28;
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p4;
+    /* 0x08 */ Mtx28 *mtx;
+    /* 0x0C */ void *pC;
+    /* 0x10 */ Vtx28 *vtx;
+} FbSet28;
+extern u8 D_800A81F0;
+extern u8 D_8022A996;
+extern FbSet28 *D_800E9BE0;
+extern u16 D_800E79E0;
+extern u16 D_800C4BE4;
+extern u32 D_801969B0;
+extern u32 D_80197178;
+u8 func_8016CD30(void);
+void func_8022F5C4_ovl_286BD0(void);
+void func_8022F864_ovl_286BD0(void);
+void func_8023498C_ovl_286BD0(u8 *img);
+void func_8023DB88_ovl_286BD0(void);
+
+/* Per-frame draw: points the matrix/vertex cursors at this frame's pools, draws, then advances the
+ * pool counts by what was used */
+void func_8022F024_ovl_286BD0(void) {
+    D_8022A996 = D_800A81F0;
+    D_801969B0 = (u32)(D_800E9BE0->mtx + D_800C4BE4);
+    D_80197178 = (u32)(D_800E9BE0->vtx + D_800E79E0);
+    if (func_8016CD30()) {
+        func_8022F5C4_ovl_286BD0();
+        func_8022F864_ovl_286BD0();
+    } else if (((u8 *)D_8023DE34_ovl_286BD0)[0x66] != 2 && D_8023DE34_ovl_286BD0->chunk14 != NULL) {
+        func_8023498C_ovl_286BD0((u8 *)D_8023DE34_ovl_286BD0->chunk14);
+    }
+    func_8023DB88_ovl_286BD0();
+    D_800C4BE4 += (Mtx28 *)D_801969B0 - (D_800E9BE0->mtx + D_800C4BE4);
+    D_800E79E0 += (Vtx28 *)D_80197178 - (D_800E9BE0->vtx + D_800E79E0);
+}
 
 inline void func_8022F148_ovl_286BD0(void) {
     nuGfxTaskAllEndWait();
