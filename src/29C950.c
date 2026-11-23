@@ -759,7 +759,55 @@ void func_80230FD4_ovl_29A4C0(void) {
     }
 }
 
+void *memset(void *p, s32 c, s32 n);
+
+/* Restarts battle unit k with animation `anim`, frame f, palette pal and variant v (each -1 keeps
+ * the current one) at (x, y, z) unless both x and y are -1; returns k */
+#ifdef NON_MATCHING
+/* 101 vs 102 instructions with one more saved register: the original sign-extends the frame at each call and keeps -1 in s4 */
+s32 func_80231090_ovl_29A4C0(s32 k, s32 anim, s32 f, s32 pal, f32 x, f32 y, f32 z, s32 v) {
+    BUnit *u;
+
+    if (k != -1) {
+        u = D_8022A974->units[k];
+        if (anim == -1) {
+            anim = u->wE8;
+        }
+        if (f == -1) {
+            f = FIELD(u, s16, 0x138);
+        }
+        if (pal == -1) {
+            pal = u->unk13E[1];
+        }
+        if (v == -1) {
+            v = u->b146;
+        }
+        if (func_80231BBC_ovl_29A4C0(anim, f, pal, 0) != -1) {
+            u->wE8 = anim;
+            FIELD(u, s32, 0xE4) = k;
+            FIELD(u, s16, 0x138) = f;
+            u->h134 = func_80231BBC_ovl_29A4C0(u->wE8, f, pal, 0);
+            u->unk13E[1] = pal;
+            u->unk13E[2] = pal;
+            u->wF0 = -1;
+            u->wF4 = 0;
+            FIELD(u, s32, 0xF8) = 0;
+            u->b146 = v;
+            u->b13D = 0;
+            if (x != -1.0f || y != -1.0f) {
+                FIELD(u, f32, 0x11C) = x;
+                FIELD(u, f32, 0x120) = y;
+                FIELD(u, f32, 0x124) = z;
+            }
+            memset(u, 0xFF, 0x10);
+            BattleAnimStep2(u);
+        }
+    }
+    return k;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/29C950", func_80231090_ovl_29A4C0);
+#endif
 
 /* Snaps the unit's x/z to the target when within 0.1; returns bit 0 = x snapped, bit 1 = z snapped */
 s16 func_80231238_ovl_29A4C0(BUnit *u, f32 x, f32 z, f32 tx, f32 tz) {
