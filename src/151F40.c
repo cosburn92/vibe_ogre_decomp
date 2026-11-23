@@ -205,7 +205,50 @@ u16 func_802014C8_ovl_14EBE0(u8 i) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_802014C8_ovl_14EBE0);
 #endif
 
+extern u8 D_80187C39[]; /* gClassTable[0].resist[0], stride 0x48 */
+u8 func_8016D3A4(u8 cls, u8 base);
+s16 func_80201A44_ovl_14EBE0(s32 side, s32 idx, s32 k);
+
+/* Physical defence rating of character idx (player side 0, else enemy; idx 100+ reads 0): the
+ * class value from func_8016D3A4 scaled by (vit + bonus + 25) / 25, (str + bonus + 100) / 100 and
+ * (physical resist + item bonus 13 + 50) / 150 */
+#ifdef NON_MATCHING
+/* same size; the final resist + bonus add has its operands (and so v0/v1) the other way round */
+u16 func_8020153C_ovl_14EBE0(u8 side, u8 n) {
+    Character *c;
+    u8 idx;
+    u8 cls;
+    u8 base;
+    f32 vit;
+    f32 str;
+    f32 v;
+    u8 a;
+    u8 b;
+    s16 sum;
+    s32 i;
+
+    idx = n < 100 ? n : 0;
+    if (side == 0) {
+        c = &D_80193BC0[idx].c;
+    } else {
+        c = &D_80195560[idx];
+    }
+    cls = c->cls;
+    base = c->baseCls;
+    vit = c->vit + func_80201A44_ovl_14EBE0(side, idx, 1);
+    str = c->str + func_80201A44_ovl_14EBE0(side, idx, 0);
+    v = func_8016D3A4(cls, base);
+    func_80201AFC_ovl_14EBE0(side, idx, &a, &b);
+    sum = 0;
+    for (i = 1; i < 5; i++) {
+        sum += (s8)D_80213054_ovl_14EBE0[13](func_80201B68_ovl_14EBE0(side, idx, i));
+    }
+    return v / 20.0f * (vit + 25.0f) / 25.0f * (str + 100.0f) / 100.0f *
+           ((sum + D_80187C39[c->baseCls * 0x48]) + 50.0f) / 150.0f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/151F40", func_8020153C_ovl_14EBE0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/151F40", func_802017C0_ovl_14EBE0);
 
