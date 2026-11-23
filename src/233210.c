@@ -146,71 +146,19 @@ static inline s16 BattleUnitWeaponBonus(BattleUnit *u) {
     return func_8016F65C(id);
 }
 
-/* Item bonus of one equipment slot (0 when empty) */
-static inline s8 ItemBonus7EC(u16 id) {
-    return id != 0 ? func_8016F7EC(id) : 0;
-}
+s8 func_8016F6FC(u16 id);
+s8 func_8016F74C(u16 id);
+s8 func_8016F79C(u16 id);
 
-/* Sum of the unit's four equipment slots' func_8016F7EC bonuses */
-static inline s16 BattleUnitItemSum7EC(BattleUnit *u) {
-    s16 s;
-
-    if (u == NULL) {
-        return 0;
-    }
-    s = ItemBonus7EC(u->items[0]);
-    if (u->items[1] != 0) {
-        s += func_8016F7EC(u->items[1]);
-    }
-    if (u->items[2] != 0) {
-        s += func_8016F7EC(u->items[2]);
-    }
-    return u->items[3] != 0 ? s + func_8016F7EC(u->items[3]) : s;
-}
-
-/* Item bonus of one equipment slot (0 when empty) */
-static inline s8 ItemBonus6AC(u16 id) {
-    return id != 0 ? func_8016F6AC(id) : 0;
-}
-
-/* Sum of the unit's four equipment slots' func_8016F6AC bonuses */
-static inline s16 BattleUnitItemSum6AC(BattleUnit *u) {
-    s16 s;
-
-    if (u == NULL) {
-        return 0;
-    }
-    s = ItemBonus6AC(u->items[0]);
-    if (u->items[1] != 0) {
-        s += func_8016F6AC(u->items[1]);
-    }
-    if (u->items[2] != 0) {
-        s += func_8016F6AC(u->items[2]);
-    }
-    return u->items[3] != 0 ? s + func_8016F6AC(u->items[3]) : s;
-}
-
-/* Item bonus of one equipment slot (0 when empty) */
-static inline s8 ItemBonus65C(u16 id) {
-    return id != 0 ? func_8016F65C(id) : 0;
-}
-
-/* Sum of the unit's four equipment slots' func_8016F65C bonuses */
-static inline s16 BattleUnitItemSum65C(BattleUnit *u) {
-    s16 s;
-
-    if (u == NULL) {
-        return 0;
-    }
-    s = ItemBonus65C(u->items[0]);
-    if (u->items[1] != 0) {
-        s += func_8016F65C(u->items[1]);
-    }
-    if (u->items[2] != 0) {
-        s += func_8016F65C(u->items[2]);
-    }
-    return u->items[3] != 0 ? s + func_8016F65C(u->items[3]) : s;
-}
+/* ItemBonusX: one equipment slot's func_8016FX bonus (0 when empty); BattleUnitItemSumX: the sum
+ * over the unit's four slots */
+#define ITEM_SUM_HELPERS(X)                                                                             static inline s8 ItemBonus##X(u16 id) {                                                                 return id != 0 ? func_8016F##X(id) : 0;                                                         }                                                                                                   static inline s16 BattleUnitItemSum##X(BattleUnit *u) {                                                 s16 s;                                                                                                                                                                                                  if (u == NULL) {                                                                                        return 0;                                                                                       }                                                                                                   s = ItemBonus##X(u->items[0]);                                                                      if (u->items[1] != 0) {                                                                                 s += func_8016F##X(u->items[1]);                                                                }                                                                                                   if (u->items[2] != 0) {                                                                                 s += func_8016F##X(u->items[2]);                                                                }                                                                                                   return u->items[3] != 0 ? s + func_8016F##X(u->items[3]) : s;                                   }
+ITEM_SUM_HELPERS(65C)
+ITEM_SUM_HELPERS(6AC)
+ITEM_SUM_HELPERS(6FC)
+ITEM_SUM_HELPERS(74C)
+ITEM_SUM_HELPERS(79C)
+ITEM_SUM_HELPERS(7EC)
 
 BattleUnit *func_801CA2E0(s32 lane, s32 row);
 s32 func_801CD19C(s32 a, s32 cls, s32 flag);
@@ -869,28 +817,7 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2D10_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2F1C_ovl_22A280);
 
-s8 func_8016F79C(u16 id);
 f32 func_801F2340_ovl_22A280(BattleUnit *u);
-
-static inline s8 ItemBonus79C(u16 id) {
-    return id != 0 ? func_8016F79C(id) : 0;
-}
-
-static inline s16 BattleUnitItemSum79C(BattleUnit *u) {
-    s16 s;
-
-    if (u == NULL) {
-        return 0;
-    }
-    s = ItemBonus79C(u->items[0]);
-    if (u->items[1] != 0) {
-        s += func_8016F79C(u->items[1]);
-    }
-    if (u->items[2] != 0) {
-        s += func_8016F79C(u->items[2]);
-    }
-    return u->items[3] != 0 ? s + func_8016F79C(u->items[3]) : s;
-}
 
 s32 func_801F312C_ovl_22A280(BattleUnit *u) {
     f32 p = u->intel + BattleUnitItemSum79C(u) + 50;
