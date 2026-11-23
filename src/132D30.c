@@ -319,75 +319,63 @@ block_17:
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DEFC0_ovl_101CE0);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801DCD40_ovl_101CE0(void *, s32);      /* extern */
+s32 func_801DCD40_ovl_101CE0(u8 *u, s32 a);
 extern s32 D_801F0DE0_ovl_101CE0;
 extern u8 D_801F0E0A_ovl_101CE0;
+u8 func_801DF34C_ovl_101CE0(u8 *u);
 
-s32 func_801DF204_ovl_101CE0(void *arg0) {
-    s32 temp_a0;
-    s32 temp_v1_2;
-    s32 temp_v1_4;
-    s32 var_s2;
-    s32 var_v0;
-    u16 temp_v0;
-    u16 temp_v1;
-    u16 temp_v1_3;
-    u32 var_s0;
+/* Advances unit u's march timer (0xB6, 180 per step) by 2 or 3 (halved by effect 0x1A), plus 1
+ * outside hours 6-17; each full step tires the squad. Returns the highest fatigue reached, or -1 */
+#ifdef NON_MATCHING
+/* 82/82, 1 word: the timer add is addu v1,s0,v0 in the original (operands swapped here) */
+s32 func_801DF204_ovl_101CE0(void *p) {
+    u8 *u = p;
+    u32 f = FIELD(u, u32, 0);
+    s32 r = -1;
 
-    temp_a0 = FIELD(arg0, s32, 0);
-    var_s2 = -1;
-    if (temp_a0 & 1) {
-        var_v0 = -1;
-        if (!(temp_a0 & 0x20000)) {
-            var_v0 = -1;
-            if (D_801F0DE0_ovl_101CE0 == 0) {
-                if (!(temp_a0 & 0x40000) || (FIELD(arg0, u8, 4) == 0x1E)) {
-                    goto block_5;
-                }
-                var_s0 = 2;
-                if (!(temp_a0 & 0x40)) {
-                    var_s0 = (-(FIELD(arg0, s32, 0x70) == 1) & 3) | 2;
-                }
-                if (func_801DCD40_ovl_101CE0(arg0, 0x1A) != 0) {
-                    var_s0 = var_s0 >> 1;
-                }
-                temp_v1 = var_s0 + FIELD(arg0, u16, 0xB6);
-                FIELD(arg0, u16, 0xB6) = temp_v1;
-                if ((u32) (temp_v1 & 0xFFFF) >= 0xB5U) {
-                    FIELD(arg0, u16, 0xB6) = (u16) (temp_v1 - 0xB4);
-                    temp_v1_2 = func_801DF34C_ovl_101CE0(arg0) & 0xFF;
-                    if (temp_v1_2 > -1) {
-                        var_s2 = temp_v1_2;
-                    }
-                }
-                var_v0 = var_s2;
-                if ((u32) (D_801F0E0A_ovl_101CE0 - 6) >= 0xCU) {
-                    temp_v1_3 = FIELD(arg0, u16, 0xB6);
-                    temp_v0 = temp_v1_3 + 1;
-                    FIELD(arg0, u16, 0xB6) = temp_v0;
-                    var_v0 = var_s2;
-                    if ((u32) (temp_v0 & 0xFFFF) >= 0xB5U) {
-                        FIELD(arg0, u16, 0xB6) = (u16) (temp_v1_3 - 0xB3);
-                        temp_v1_4 = func_801DF34C_ovl_101CE0(arg0) & 0xFF;
-                        if (var_s2 < temp_v1_4) {
-                            var_s2 = temp_v1_4;
-                        }
-                        var_v0 = var_s2;
-                    }
-                }
-                /* Duplicate return node #18. Try simplifying control flow for better match */
-                return var_v0;
+    if (!(f & 1)) {
+        return -1;
+    }
+    if (f & 0x20000) {
+        return -1;
+    }
+    if (D_801F0DE0_ovl_101CE0 != 0) {
+        return -1;
+    }
+    if (!(f & 0x40000) || u[4] == 30) {
+    fail:
+        return -1;
+    }
+    {
+    u32 step = 2;
+    s32 t;
+
+    if (!(f & 0x40)) {
+        step = (FIELD(u, s32, 0x70) == 1) ? 3 : 2;
+    }
+    if (func_801DCD40_ovl_101CE0(u, 0x1A) != 0) {
+        step >>= 1;
+    }
+    FIELD(u, u16, 0xB6) += step;
+    if (FIELD(u, u16, 0xB6) >= 181) {
+        FIELD(u, u16, 0xB6) -= 180;
+        t = func_801DF34C_ovl_101CE0(u);
+        if (r < t) {
+            r = t;
+        }
+    }
+    if ((u32)(D_801F0E0A_ovl_101CE0 - 6) >= 12) {
+        FIELD(u, u16, 0xB6)++;
+        if (FIELD(u, u16, 0xB6) >= 181) {
+            FIELD(u, u16, 0xB6) -= 180;
+            t = func_801DF34C_ovl_101CE0(u);
+            if (r < t) {
+                r = t;
             }
         }
-        return var_v0;
     }
-block_5:
-    return -1;
+    }
+    return r;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DF204_ovl_101CE0);
