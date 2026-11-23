@@ -96,52 +96,41 @@ void func_80173D84_ovl_040E80(void *list) {
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80173DBC_ovl_040E80);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 _bcopy(s32 *, void *, s32);         /* extern */
+s32 _bcopy(s32 *, void *, s32);
 extern s32 D_8018F3A0_ovl_040E80;
 
-void func_80174138_ovl_040E80(void *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
-    s16 temp_a0;
-    s16 temp_a1;
-    s16 temp_a2;
-    s16 temp_v0;
-    s16 temp_v0_2;
-    s16 temp_v1;
-    s32 var_v0;
-    s32 var_v0_2;
+/* Fills quad v (four 16-byte vertices from the template) for the screen rectangle (x0, y0) -
+ * (x1, y1): centred coordinates and texture coordinates spanning the rectangle */
+#ifdef NON_MATCHING
+/* 71 vs 70: the original keeps copies of x0/x1 (s5/s6) and compares the sign-extended differences, likely an inline span helper */
+void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, u16 y1) {
+    s32 w, h;
+    s16 l, t, r, b;
 
-    _bcopy(&D_8018F3A0_ovl_040E80, arg0, 0x40);
-    if ((arg3 - arg1) > 0) {
-        var_v0 = arg3 - arg1;
-    } else {
-        var_v0 = arg1 - arg3;
-    }
-    var_v0_2 = arg4 - arg2;
-    if (((s16) arg4 - arg2) <= 0) {
-        var_v0_2 = arg2 - arg4;
-    }
-    temp_a0 = 0xA0 - arg3;
-    temp_a1 = 0x78 - arg4;
-    temp_a2 = (var_v0_2 - 1) << 6;
-    temp_v0 = 0x78 - arg2;
-    temp_v1 = 0xA0 - arg1;
-    FIELD(arg0, s16, 0x12) = temp_v0;
-    FIELD(arg0, s16, 0x22) = temp_v0;
-    temp_v0_2 = (var_v0 - 1) << 6;
-    FIELD(arg0, s16, 0) = temp_a0;
-    FIELD(arg0, s16, 2) = temp_a1;
-    FIELD(arg0, s16, 0xA) = temp_a2;
-    FIELD(arg0, s16, 0x10) = temp_a0;
-    FIELD(arg0, s16, 0x20) = temp_v1;
-    FIELD(arg0, s16, 0x28) = temp_v0_2;
-    FIELD(arg0, s16, 0x30) = temp_v1;
-    FIELD(arg0, s16, 0x32) = temp_a1;
-    FIELD(arg0, s16, 0x38) = temp_v0_2;
-    FIELD(arg0, s16, 0x3A) = temp_a2;
+    _bcopy(&D_8018F3A0_ovl_040E80, v, 0x40);
+    w = (x1 - x0 > 0) ? x1 - x0 : x0 - x1;
+    h = ((s16)y1 - y0 > 0) ? y1 - y0 : y0 - y1;
+    w = (w - 1) << 6;
+    h = (h - 1) << 6;
+    r = 0xA0 - x1;
+    b = 0x78 - y1;
+    t = 0x78 - y0;
+    l = 0xA0 - x0;
+    FIELD(v, s16, 0x12) = t;
+    FIELD(v, s16, 0x22) = t;
+    FIELD(v, s16, 0) = r;
+    FIELD(v, s16, 2) = b;
+    FIELD(v, s16, 0xA) = h;
+    FIELD(v, s16, 0x10) = r;
+    FIELD(v, s16, 0x20) = l;
+    FIELD(v, s16, 0x28) = w;
+    FIELD(v, s16, 0x30) = l;
+    FIELD(v, s16, 0x32) = b;
+    FIELD(v, s16, 0x38) = w;
+    FIELD(v, s16, 0x3A) = h;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80174138_ovl_040E80);
