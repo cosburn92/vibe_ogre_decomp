@@ -17,7 +17,9 @@ typedef struct BattleUnit {
     /* 0x22 */ u16 maxHp;
     /* 0x24 */ u16 str;
     /* 0x26 */ u16 vit;
-    /* 0x28 */ u8 unk28[6];
+    /* 0x28 */ u16 agi;
+    /* 0x2A */ u16 unk2A;
+    /* 0x2C */ u16 intel;
     /* 0x2E */ u16 dex;
     /* 0x30 */ u8 unk30;
     /* 0x31 */ u8 unk31[2];
@@ -867,7 +869,68 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F2D10_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F2F1C_ovl_22A280);
 
+s8 func_8016F79C(u16 id);
+f32 func_801F2340_ovl_22A280(BattleUnit *u);
+
+static inline s8 Bonus79C(u16 id) {
+    return id != 0 ? func_8016F79C(id) : 0;
+}
+
+static inline s8 Bonus7EC(u16 id) {
+    return id != 0 ? func_8016F7EC(id) : 0;
+}
+
+
+static inline s32 BattleUnitItemSum79C(BattleUnit *u) {
+    s16 s;
+
+    if (u == NULL) {
+        return 0;
+    }
+    s = Bonus79C(u->items[0]);
+    if (u->items[1] != 0) {
+        s += func_8016F79C(u->items[1]);
+    }
+    if (u->items[2] != 0) {
+        s += func_8016F79C(u->items[2]);
+    }
+    if (u->items[3] != 0) {
+        return s + func_8016F79C(u->items[3]);
+    }
+    return s;
+}
+
+static inline s32 ItemSum7EC_b(BattleUnit *u) {
+    s16 s;
+
+    if (u == NULL) {
+        return 0;
+    }
+    s = Bonus7EC(u->items[0]);
+    if (u->items[1] != 0) {
+        s += func_8016F7EC(u->items[1]);
+    }
+    if (u->items[2] != 0) {
+        s += func_8016F7EC(u->items[2]);
+    }
+    if (u->items[3] != 0) {
+        return s + func_8016F7EC(u->items[3]);
+    }
+    return s;
+}
+
+#ifdef NON_MATCHING
+/* same length; the inlined item sums' last item (if/return vs the original's single truncation at the join) differs */
+s32 func_801F312C_ovl_22A280(BattleUnit *u) {
+    f32 p = u->intel + BattleUnitItemSum79C(u) + 50;
+
+    p *= (f32)(u->dex + ItemSum7EC_b(u) + 100) / 50.0f;
+    p *= (func_801F2340_ovl_22A280(u) + 100.0f) / 100.0f;
+    return p;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F312C_ovl_22A280);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F32EC_ovl_22A280);
 
