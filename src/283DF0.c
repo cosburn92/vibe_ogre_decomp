@@ -88,7 +88,61 @@ void func_8022825C_ovl_281860(void) {
 
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_802282B8_ovl_281860);
 
-INCLUDE_ASM("asm/nonmatchings/283DF0", func_8022A1F8_ovl_281860);
+s32 func_8022A32C_ovl_281860(s32 *p, s32 start, s32 n, s32 dir);
+
+/* Script IF: compares val with the operand using comparison code[pc + 1]; when it holds, runs on
+ * past the skip words, otherwise executes the nested block */
+s32 func_8022A1F8_ovl_281860(s32 *depth, s32 pc, s32 *code, s32 val, s32 skip, s32 x) {
+    s32 ok = 0;
+
+    (*depth)++;
+    switch ((u32)code[pc + 1]) {
+    case 0:
+        if (val == code[pc + 2]) {
+            ok = 1;
+        }
+        break;
+    case 1:
+        if (val != code[pc + 2]) {
+            ok = 1;
+        }
+        break;
+    case 2:
+        if (val >= code[pc + 2]) {
+            ok = 1;
+        }
+        break;
+    case 3:
+        if (code[pc + 2] >= val) {
+            ok = 1;
+        }
+        break;
+    case 4:
+        if (code[pc + 2] < val) {
+            ok = 1;
+        }
+        break;
+    case 5:
+        if (val < code[pc + 2]) {
+            ok = 1;
+        }
+        break;
+    }
+    if (ok != 0) {
+        return pc + 2 + skip;
+    } else {
+        s32 r = func_8022A32C_ovl_281860(code, pc + 2, *depth, x);
+
+        (*depth)--;
+        return r;
+    }
+}
+
+/* the switch table above is the overlay's last rodata; the section ends 8-byte aligned */
+__asm__(".section .rodata
+.word 0, 0
+.section .text
+");
 
 /* Script marker search from start: dir 1 finds the next 0x80000002; otherwise goes to the 0x80000000
  * end marker and walks back to the n-th 0x80000002. -1 when not found */
