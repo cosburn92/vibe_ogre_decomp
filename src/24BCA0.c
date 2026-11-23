@@ -8,7 +8,7 @@ s32 func_801C8AA4(s32 a);
 s32 func_801CA1C4(s32 lane, s32 row);
 u8 *func_801C8FE8(s32 i);
 void func_801F7344_ovl_24BCA0(u8 a, u8 *out, u8 b);
-void func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
+u8 *func_801F85C0_ovl_24BCA0(u8 *a, u8 *b);
 void func_801F885C_ovl_24BCA0(u8 *a, u8 *b);
 void func_801F8AF8_ovl_24BCA0(u8 *a, u8 *b, f32 c);
 void func_801F91BC_ovl_24BCA0(u8 *a, u8 *b, s32 c);
@@ -255,7 +255,7 @@ inline void func_801F81C4_ovl_24BCA0(u8 *p, u16 f) {
     }
 }
 
-u8 *func_801F8218_ovl_24BCA0(AnimReq *r) {
+inline u8 *func_801F8218_ovl_24BCA0(AnimReq *r) {
     u8 *o = D_80209718_ovl_24BCA0[r->kind & 3](r->id);
 
     func_801F81C4_ovl_24BCA0(o, r->flags);
@@ -297,7 +297,67 @@ u8 *func_801F8518_ovl_24BCA0(AnimReq *r, s32 x) {
     return o + 0x1C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F85C0_ovl_24BCA0);
+typedef struct {
+    f32 v[3];
+} Dir24B;
+extern Dir24B D_8020A230_ovl_24BCA0;
+extern u8 D_80220EE0[];
+void func_8020A4A8(void *src, u8 *dst);
+void func_80217680(f32 *dir, u8 *dst);
+void func_8020A5A0(u8 *m, f32 *pos);
+
+/* Spawns animation r at pos: kind 0 just places it, kinds 1-2 also orient it (copied matrix or
+ * the default direction, mirrored to pos's side) */
+u8 *func_801F85C0_ovl_24BCA0(u8 *a, u8 *b) {
+    f32 *pos = (f32 *)a;
+    AnimReq *r = (AnimReq *)b;
+    u8 *o;
+    u8 *m;
+    Dir24B dir;
+    u8 k;
+
+    switch (r->kind & 3) {
+    case 0:
+        m = func_801F8218_ovl_24BCA0(r);
+        ((f32 *)m)[0] = pos[0];
+        ((f32 *)m)[1] = pos[1];
+        ((f32 *)m)[2] = pos[2];
+        return m - 0x1C;
+    case 1:
+        o = D_80209718_ovl_24BCA0[1](r->id);
+        func_801F81C4_ovl_24BCA0(o, r->flags);
+        k = r->kind;
+        dir = D_8020A230_ovl_24BCA0;
+        m = o + 0x1C;
+        if (k & 0x40) {
+            func_8020A4A8(D_80220EE0, m);
+        } else {
+            if (k & 0x80) {
+                dir.v[0] = (-pos[0] < 0.0f) ? -1.0f : 1.0f;
+            }
+            func_80217680(dir.v, m);
+        }
+        func_8020A5A0(m, pos);
+        return m - 0x1C;
+    case 2:
+        o = D_80209718_ovl_24BCA0[2](r->id);
+        func_801F81C4_ovl_24BCA0(o, r->flags);
+        k = r->kind;
+        dir = D_8020A230_ovl_24BCA0;
+        m = o + 0x1C;
+        if (k & 0x40) {
+            func_8020A4A8(D_80220EE0, m);
+        } else {
+            if (k & 0x80) {
+                dir.v[0] = (-pos[0] < 0.0f) ? -1.0f : 1.0f;
+            }
+            func_80217680(dir.v, m);
+        }
+        func_8020A5A0(m, pos);
+        return m - 0x1C;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F885C_ovl_24BCA0);
 
@@ -324,14 +384,6 @@ void func_801F8ED0_ovl_24BCA0(u8 a, u8 *b, f32 c) {
     func_801F8AF8_ovl_24BCA0(tmp, b, c);
 }
 
-typedef struct {
-    f32 v[3];
-} Dir24B;
-extern Dir24B D_8020A230_ovl_24BCA0;
-extern u8 D_80220EE0[];
-void func_8020A4A8(void *src, u8 *dst);
-void func_80217680(f32 *dir, u8 *dst);
-void func_8020A5A0(u8 *m, f32 *pos);
 
 /* Spawns animation r (variant i) at pos: its matrix is copied from D_80220EE0 (kind bit 6) or built
  * from the default direction, mirrored to face pos's side when kind bit 7 is set */
