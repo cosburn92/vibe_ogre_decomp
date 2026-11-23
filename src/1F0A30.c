@@ -670,7 +670,76 @@ void func_801B0020_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B0020_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801B00B0_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    u16 h0;
+    u8 unk2[0x19];
+    u8 b1B;
+    u8 unk1C[0x1C];
+} Rec38;
+extern Rec38 D_80193BD8[];
+extern u8 D_80190F80[];
+void func_80080998(void *dst, void *src, s32 n);
+s32 func_801C8AEC_ovl_1F0A30(void);
+s32 func_801C8AFC_ovl_1F0A30(void);
+void func_801BE894_ovl_1F0A30(void);
+void func_8020B098(void);
+void func_801BBC78_ovl_1F0A30(void);
+void func_8017C2FC(void *p);
+void func_801C1D98_ovl_1F0A30(void);
+void func_801C1A9C_ovl_1F0A30(void);
+void func_801C234C_ovl_1F0A30(void);
+void func_801CBD48_ovl_1F0A30(void);
+void bzero(void *p, s32 n);
+
+/* Tears the battle context down: hands the saved roster (0x607C) back to the 100 unit records,
+ * then frees the context's buffers and subsystems */
+void func_801B00B0_ovl_1F0A30(void) {
+    u32 i;
+    s32 off;
+
+    if (D_801CE8BC_ovl_1F0A30 != NULL) {
+        if (func_801C8AEC_ovl_1F0A30() != 0 || func_801C8AFC_ovl_1F0A30() != 0) {
+            u8 *r = FIELD(D_801CE8BC_ovl_1F0A30, u8 *, 0x607C);
+            s32 k;
+
+            func_80080998(D_80190F80, r, 0x16C);
+            for (k = 0; k < 100; k++) {
+                D_80193BD8[k].h0 = ((u16 *)(r + 0x16C))[k];
+                D_80193BD8[k].b1B = FIELD(r + k, u8, 0x234);
+            }
+            HFree(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x607C));
+            FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x607C) = NULL;
+        }
+        func_801BE894_ovl_1F0A30();
+        func_8020B098();
+        func_801BBC78_ovl_1F0A30();
+        for (i = 0, off = 0; i < 16; i++, off += 12) {
+            HFree(FIELD(D_801CE8BC_ovl_1F0A30, void *, off));
+        }
+        for (i = 0; i < 10; i++) {
+            HFree(((void **)((u8 *)D_801CE8BC_ovl_1F0A30 + 0x180))[i]);
+        }
+        bzero(D_801CE8BC_ovl_1F0A30, 0xC0);
+        if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x5748) != NULL) {
+            func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x5748));
+        }
+        if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x574C) != NULL) {
+            func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x574C));
+        }
+        if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x57D4) != NULL) {
+            func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x57D4));
+        }
+        func_801C1D98_ovl_1F0A30();
+        func_801C1A9C_ovl_1F0A30();
+        func_801C234C_ovl_1F0A30();
+        func_801CBD48_ovl_1F0A30();
+        HFree(D_801CE8BC_ovl_1F0A30);
+        D_801CE8BC_ovl_1F0A30 = NULL;
+    }
+}
 
 /* Draws label i centred in a 270-pixel field */
 void func_801B0284_ovl_1F0A30(u8 *o, s32 i) {
