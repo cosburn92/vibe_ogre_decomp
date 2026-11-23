@@ -120,79 +120,63 @@ s32 func_802258DC_ovl_27A020(s16 i) {
     return D_8022D150_ovl_27A020[i];
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 extern u8 D_80193BD3;
-extern s32 D_8022C5CC_ovl_27A020;
+extern s32 D_8022C5CC_ovl_27A020[];
 
-s32 func_8022592C_ovl_27A020(s16 arg0) {
-    s16 var_v1;
-    s32 temp_lo;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_a1;
-    s32 var_t0;
-    s32 var_v0;
-    u8 temp_v1;
-    u8 var_a3;
-    u8 var_t2;
-    void *var_a2;
+/* Cost of curing slot's member: the class price times (level + 4 when petrified, + 27 when dead),
+ * rounded to the nearest 10; 0 when it needs no cure, -1 for an empty slot */
+#ifdef NON_MATCHING
+/* 96/96, 69 words: the member offset (func_80225890 inlined) is tested after the call in the original; here the zero case is threaded straight to the else branch */
+s32 func_8022592C_ovl_27A020(s16 slot) {
+    u8 *c = NULL;
+    u8 *g = NULL;
+    s16 cls = 0;
+    u8 lvl = 0;
+    s32 add = 0;
+    s16 e;
+    s32 v;
+    s32 r;
 
-    var_a2 = NULL;
-    var_t0 = 0;
-    var_a3 = 0;
-    var_t2 = 0;
-    var_a1 = 0;
-    if (D_8022D150_ovl_27A020[arg0] == 0) {
+    if (D_8022D150_ovl_27A020[slot] == 0) {
         return -1;
     }
-    temp_v1 = FIELD(&gSquads[D_801976DC].unk00[arg0], u8, 2);
-    var_v1 = temp_v1 - 0x63;
-    if (temp_v1 < 0x64U) {
-        var_v1 = 0;
-    }
-    temp_v0 = arg0 << 0x10;
-    if ((var_v1 << 0x10) == 0) {
-        var_a2 = *(D_8022D150_ovl_27A020 + (temp_v0 >> 0xE));
+    e = func_80225890_ovl_27A020(slot);
+    if (e == 0) {
+        c = (u8 *)D_8022D150_ovl_27A020[slot];
     } else {
-        var_t0 = *(D_8022D150_ovl_27A020 + (temp_v0 >> 0xE));
+        g = (u8 *)D_8022D150_ovl_27A020[slot];
     }
-    if (var_a2 != NULL) {
-        if (FIELD(var_a2, u8, 0x33) & 4) {
-            var_a1 = 4;
+    if (c != NULL) {
+        if (c[0x33] & 4) {
+            add = 4;
         }
-        if (FIELD(var_a2, u16, 0x18) == 0) {
-            var_a1 = 0x1B;
+        if (FIELD(c, u16, 0x18) == 0) {
+            add = 0x1B;
         }
-        var_a3 = FIELD(var_a2, u8, 0x11);
-        var_t2 = FIELD(var_a2, u8, 0x13);
-    } else if (var_t0 != 0) {
-        if (FIELD((var_t0 + var_v1), u8, 0xF3) & 4) {
-            var_a1 = 4;
+        cls = c[0x11];
+        lvl = c[0x13];
+    } else if (g != NULL) {
+        if (g[e + 0xF3] & 4) {
+            add = 4;
         }
-        var_a3 = 1;
-        var_t2 = D_80193BD3;
+        cls = 1;
+        lvl = D_80193BD3;
     }
-    if (var_a1 == 0) {
+    if (add == 0) {
         return 0;
     }
-    if ((var_a3 << 0x10) > 0) {
-        var_a3 -= 1;
+    if (cls > 0) {
+        cls--;
     }
-    temp_v1_2 = *(&D_8022C5CC_ovl_27A020 + ((s32) (var_a3 << 0x10) >> 0xE));
-    temp_v0_2 = var_t2 + var_a1;
-    temp_lo = temp_v1_2 * temp_v0_2;
-    temp_v1_3 = (temp_v1_2 * temp_v0_2) % 10;
-    var_v0 = temp_lo - temp_v1_3;
-    if (temp_v1_3 >= 5) {
-        var_v0 = (temp_lo - temp_v1_3) + 0xA;
+    v = D_8022C5CC_ovl_27A020[cls] * (lvl + add);
+    r = v % 10;
+    if (r >= 5) {
+        return v - r + 10;
     }
-    return var_v0;
+    return v - r;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022592C_ovl_27A020);
