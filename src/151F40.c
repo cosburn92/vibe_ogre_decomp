@@ -988,14 +988,67 @@ s8 func_80206DE4_ovl_14EBE0(s8 cur) {
     return cur < 0 ? 0 : (cur < 3 ? cur : 2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80206EB4_ovl_14EBE0);
-
 typedef struct {
     u8 id;
     u8 flags;
     u8 rest[23];
 } Sq151;
 extern Sq151 gSquads[];
+
+extern u8 D_80213782_ovl_14EBE0;
+
+/* Picks the target of menu choice `mode` for row recs[mode] (10-byte rows, target id at +1):
+ * 0 a table entry, 1 the deployed unit (when 0x5F6 is 2), 2 the reserve entry, 3 the first
+ * active squad of the slot's side (or none if the slot is taken) */
+#ifdef NON_MATCHING
+/* 109/109: case 1 and case 2 index arithmetic scheduled/registered differently (sb before the slot load; case 2 adds before truncating) */
+void func_80206EB4_ovl_14EBE0(s8 mode, u8 *recs, u8 *tbl, s32 unused, u8 *slots) {
+    u8 *sel = &D_80213781_ovl_14EBE0;
+    u8 k;
+    s32 idx;
+
+    *sel = mode;
+    k = recs[mode * 10 + 1];
+    switch (mode) {
+        case 0:
+            D_80213782_ovl_14EBE0 = tbl[k * 12];
+            break;
+        case 1:
+            if ((s8)D_80213778_ovl_14EBE0[0x5F6] == 2) {
+                *sel = 0;
+                k = D_80213778_ovl_14EBE0[(u8)(D_80213778_ovl_14EBE0[0x62D] + slots[k * 8 + 5]) + 0x5D9];
+                D_80213782_ovl_14EBE0 = tbl[k * 12];
+            } else {
+                D_80213782_ovl_14EBE0 = k;
+            }
+            break;
+        case 2:
+            *sel = 0;
+            k += D_80213778_ovl_14EBE0[0x5F7];
+            D_80213782_ovl_14EBE0 = tbl[k * 12];
+            break;
+        case 3:
+            if ((*sel = D_800E91D0[k * 8 + 0x3DF]) != 0) {
+                D_80213782_ovl_14EBE0 = 0;
+            } else {
+                u8 side = D_80213778_ovl_14EBE0[k * 8 + 0x3DC] & 0x7F;
+                s32 i;
+                u32 n = 50;
+
+                for (i = 0; (u8)i < n; i++) {
+                    if (gSquads[(u8)i].id == side && (gSquads[(u8)i].flags & 1)) {
+                        break;
+                    }
+                }
+                D_80213782_ovl_14EBE0 = i;
+            }
+            break;
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/151F40", func_80206EB4_ovl_14EBE0);
+#endif
+
 extern s32 D_801F0BA8;
 extern u8 D_80213783_ovl_14EBE0;
 
