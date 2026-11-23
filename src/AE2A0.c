@@ -500,7 +500,44 @@ void func_801C74D8_ovl_087200(f32 *x, f32 *y, s32 i) {
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C74D8_ovl_087200);
 #endif
 
+/* Screen position of the cursor cell (index st+0x186, may be negative) in the 6-wide grid, using
+ * floored division */
+#ifdef NON_MATCHING
+/* 97 vs 94 instructions: the original keeps the index in a2 and the column in a3 (no copy of x out of a0) and avoids re-extending the floored row */
+void func_801C7624_ovl_087200(f32 *x, f32 *y) {
+    s32 i = FIELD(D_80196AF8, s16, 0x186);
+    s32 c;
+    s16 q;
+    f32 fr;
+    f32 fc;
+
+    if (i < 0) {
+        c = i % 6;
+        if (c != 0) {
+            if (c < 0) {
+                c = -c;
+            }
+            c = 6 - c;
+        } else {
+            c = 0;
+        }
+    } else {
+        c = i % 6;
+    }
+    q = i;
+    if (i < 0) {
+        q = ((i + 1) / 6 - 1) * 6;
+    }
+    fr = q / 6;
+    fc = 5 - c;
+    *x = 10.0f - fr * 36.0f + fc * 15.0f + 0.5f;
+    *y = fc * 25.0f + -5.0f + fr * 10.0f + 0.5f;
+    *x += 15.0f;
+    *y += 25.0f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C7624_ovl_087200);
+#endif
 
 #ifdef NON_MATCHING
 /* float constants 10.0/0.5 are shared registers in the original */
