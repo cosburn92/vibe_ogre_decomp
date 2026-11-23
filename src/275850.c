@@ -40,7 +40,77 @@ s32 func_802210C0_ovl_275850(u8 *o, s32 k);
 void func_80221368_ovl_275850(u8 *o, s32 a);
 /* --- end decls --- */
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+typedef struct {
+    /* 0x0 */ s16 x;
+    /* 0x2 */ s16 y;
+    /* 0x4 */ s16 z;
+    /* 0x6 */ u16 flag;
+    /* 0x8 */ s16 s;
+    /* 0xA */ s16 t;
+    /* 0xC */ u8 c[4];
+} Vtx275;
+extern Vtx275 *D_80197178; /* frame vertex pool cursor */
+
+static inline void PutVtx275(s16 x, s16 y, s16 z, s16 s, s16 t) {
+    D_80197178->x = x;
+    D_80197178->y = y;
+    D_80197178->c[0] = 0xFF;
+    D_80197178->flag = 0;
+    D_80197178->s = s;
+    D_80197178->t = t;
+    D_80197178->z = z;
+    D_80197178->c[1] = 0xFF;
+    D_80197178->c[2] = 0xFF;
+    D_80197178->c[3] = 0xFF;
+    D_80197178++;
+}
+
+/* Emits ribbon k of object o as quads into the vertex pool: one quad per segment of its point
+ * list (x, y, z triples at record + 6), 4 units tall and the record's width (+2) wide, textured
+ * left to right; returns the new pool cursor */
+#ifdef NON_MATCHING
+/* 167 vs 170: the original is a leaf with no frame (everything in temporaries) and tests the facing with negu/ori; here one saved register is used */
+s32 func_802210C0_ovl_275850(u8 *o, s32 k) {
+    u8 *r = FIELD(o, u8 *, 0xC) + (s16)k * 0x50;
+    s16 half = (s16)FIELD(r, u16, 2) / 2;
+    s16 *pts = (s16 *)(r + 6);
+    s16 i;
+
+    for (i = 0; i < FIELD(o, s16, 0xA) * 3; ) {
+        s16 *p0 = &pts[i];
+        s16 *p1;
+        s32 s0;
+        s32 s1;
+        s32 t0;
+        s32 t1;
+
+        s0 = 15;
+        if ((-(p0[0] < p0[3]) | 1) == 1) {
+            s0 = 0;
+            t0 = 0;
+            s1 = 15;
+            t1 = 23;
+        } else {
+            t0 = 23;
+            s1 = 0;
+            t1 = 0;
+        }
+        i += 3;
+        p1 = &pts[i];
+        PutVtx275(p1[0], p1[1] + 2, p1[2] - half, s0 << 7, t0 << 7);
+        PutVtx275(p1[0], p1[1] - 2, p1[2] + half, s1 << 7, t0 << 7);
+        p0 = &pts[i - 3];
+        PutVtx275(p0[0], p0[1] - 2, p0[2] + half, s1 << 7, t1 << 7);
+        PutVtx275(p0[0], p0[1] + 2, p0[2] - half, s0 << 7, t1 << 7);
+    }
+    return (s32)D_80197178;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/275850", func_802210C0_ovl_275850);
+#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
