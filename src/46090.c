@@ -493,7 +493,56 @@ void func_80172368_ovl_040E80(void) {
     D_801936A8_ovl_040E80 = 0;
 }
 
+extern s16 D_8018F1A0_ovl_040E80;
+extern s16 D_80197B60_ovl_040E80;
+void func_80080998(void *dst, void *src, s32 n);
+void *LoadChunkRaw(void *dst, s32 id);
+
+/* Reloads the message scripts for the current chapter (D_801936A8), resetting the message
+ * state but keeping its id (0x08), option word (0x60) and the 0x40-byte work area (0x20) */
+#ifdef NON_MATCHING
+/* 132 vs 136: GCC cross-jumps the script-index load (t[D_80197B06]) of both branches into the shared tail; the original keeps one per branch with t in a0 */
+void func_80172394_ovl_040E80(void) {
+    MsgState46 saved;
+    s32 *t;
+    s32 a;
+    s32 b;
+
+    D_8018F1A0_ovl_040E80 = 0;
+    HFree(*(void **)(D_80197B00_ovl_040E80 + 0x18));
+    HFree(D_80197B1C_ovl_040E80);
+    if ((s16)D_80197B08_ovl_040E80 != 1 && (s16)D_80197B08_ovl_040E80 != -1) {
+        D_80197B08_ovl_040E80 = -1;
+    }
+    if (D_801936A8_ovl_040E80 != 0) {
+        if (D_80197B02_ovl_040E80 == 0) {
+            saved = *(MsgState46 *)D_80197B00_ovl_040E80;
+            bzero(D_80197B00_ovl_040E80, 0x64);
+            D_80197B08_ovl_040E80 = ((u16 *)&saved)[4];
+            D_80197B60_ovl_040E80 = ((u16 *)&saved)[0x30];
+            func_80080998(D_80197B00_ovl_040E80 + 0x20, (u8 *)&saved + 0x20, 0x40);
+            D_80197B06_ovl_040E80 = D_801936A8_ovl_040E80;
+        }
+        t = LoadChunkRaw(NULL, 0x3A5668);
+        a = t[D_80197B06_ovl_040E80];
+        b = t[0x104 / 4];
+    } else {
+        saved = *(MsgState46 *)D_80197B00_ovl_040E80;
+        bzero(D_80197B00_ovl_040E80, 0x64);
+        D_80197B08_ovl_040E80 = ((u16 *)&saved)[4];
+        func_80080998(D_80197B00_ovl_040E80 + 0x20, (u8 *)&saved + 0x20, 0x40);
+        D_80197B06_ovl_040E80 = D_801936A8_ovl_040E80;
+        t = LoadChunkRaw(NULL, 0x3A5668);
+        a = t[D_80197B06_ovl_040E80];
+        b = t[0x118 / 4];
+    }
+    HFree(t);
+    D_80197B18_ovl_040E80 = LoadChunk(a);
+    D_80197B1C_ovl_040E80 = LoadChunk(b);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172394_ovl_040E80);
+#endif
 
 void func_801725B4_ovl_040E80(u16 v) {
     D_80197B08_ovl_040E80 = v;
