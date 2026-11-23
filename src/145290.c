@@ -931,7 +931,113 @@ void func_801F632C_ovl_145210(MapMarker *m) {
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F632C_ovl_145210);
 #endif
 
+extern void (*D_801FD094_ovl_145210[])(MapMarker *m);
+
+/* Per-frame marker update for a live unit: visibility (bit 0), outline flags, brightness,
+ * blink alpha (0xB), then picks a new animation state when idle and runs its handler */
+#ifdef NON_MATCHING
+/* 4 instructions short: the original keeps separate copies of the brightness and blink values
+ * (extra moves) and stores the blink alpha in each branch; register choice differs throughout */
+void func_801F6540_ovl_145210(MapMarker *m) {
+    u8 *s;
+    s32 v;
+    s32 t;
+    s32 c;
+    u8 w;
+    u32 fl;
+
+    if (!(m->u->flags & 1)) {
+        return;
+    }
+    if ((m->u->flags & 0x60000) != 0x40000) {
+        m->flags |= 1;
+    } else {
+        m->flags &= ~1;
+    }
+    s = (u8 *)m + 0x30;
+    t = m->u->unk70 == 1 && !(m->u->flags & 0x40);
+    m->b33 = t;
+    w = FIELD(m, u8, 0x31) & ~1;
+    FIELD(m, u8, 0x31) = w;
+    if ((m->u->flags & 0x28) || (!(m->u->flags & 0x20) && FIELD(m, u8, 0xB) != 0)) {
+        FIELD(m, u8, 0x31) = w | 1;
+    } else if ((m->u->flags & 0x11) == 1) {
+        s[1] |= 1;
+    }
+    if ((m->flags & 1) && (s[6] == 0 || s[6] == 2)) {
+        s[1] |= 2;
+    } else {
+        s[1] &= ~2;
+    }
+    if (m->flags & 0x200) {
+        c = FIELD(m, u8, 8) - 0x20;
+        if (c <= 100) {
+            c = 100;
+        }
+    } else {
+        c = FIELD(m, u8, 8) + 0x40;
+        if (c >= 0xFF) {
+            c = 0xFF;
+        }
+    }
+    w = c;
+    FIELD(m, u8, 0xA) = FIELD(m, u8, 9) = FIELD(m, u8, 8) = w;
+    if (m->flags & 0x100) {
+        s[1] |= 1;
+        if (m->flags & 0x80) {
+            v = FIELD(m, u8, 0xB) - 0x20;
+            if (v <= 0) {
+                v = 0;
+                m->flags &= ~0x80;
+            }
+        } else {
+            v = FIELD(m, u8, 0xB) + 0x20;
+            if (v >= 0xFF) {
+                v = 0xFF;
+                m->flags |= 0x80;
+            }
+        }
+    } else {
+        v = FIELD(m, u8, 0xB);
+        if (m->u->flags & 0x28) {
+            if (v < 0xDF) {
+                v += 0x20;
+            } else {
+                v = 0xFF;
+            }
+        } else if (v < 0x41) {
+            v = 0;
+        } else {
+            v -= 0x20;
+        }
+    }
+    FIELD(m, u8, 0xB) = v;
+    if (m->b6 == 0) {
+        fl = m->u->flags;
+        if (!(fl & 0x10)) {
+            v = 2;
+        } else if (m->flags & 0x400) {
+            v = 5;
+        } else if (m->flags & 0x800) {
+            v = 6;
+        } else if ((fl & 0x28) == 8) {
+            v = 4;
+        } else if (fl & 0x20000) {
+            v = 1;
+        } else if (fl & 0x80000) {
+            v = 3;
+        } else {
+            goto run;
+        }
+        m->b6 = v;
+        m->b7 = 0;
+    }
+run:
+    D_801FD094_ovl_145210[m->b6](m);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F6540_ovl_145210);
+#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
