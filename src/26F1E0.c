@@ -13,7 +13,8 @@ typedef struct {
 extern s32 D_80220F68_ovl_25EE90;
 extern s32 D_80220F6C_ovl_25EE90;
 
-void func_8021A630_ovl_25EE90(void);
+struct FadeTask26F;
+s32 func_8021A630_ovl_25EE90(u16 msg, struct FadeTask26F *o);
 s32 func_8021D168_ovl_25EE90(u16 msg, u8 *o);
 void func_8021C62C_ovl_25EE90(void);
 #ifndef FIELD
@@ -35,7 +36,106 @@ void func_8020FF6C_ovl_25EE90();
 extern u8 D_80220980_ovl_25EE90[];
 /* --- end decls --- */
 
+s32 func_801C8B84(u8 *u);
+u8 *func_801C8FE8(s32 i);
+
+typedef struct {
+    u8 *u;
+    u8 a;
+    u8 b;
+} Fade26F;
+typedef struct FadeTask26F {
+    s32 n;
+    Fade26F e[10];
+    s32 dur;
+    s32 t;
+} FadeTask26F;
+
+/* Fades the two colour bytes (0xAB, 0xAC) of every unit on side D_80220F68 to 0 over
+ * D_80220F6C frames, holds, and (0x1003) fades them back */
+#ifdef NON_MATCHING
+/* same length; the counter init in 0x100 and the restore loop's two registers are swapped */
+s32 func_8021A630_ovl_25EE90(u16 msg, FadeTask26F *o) {
+    s32 r = 0;
+    s32 i;
+    u8 *u;
+    Fade26F *e;
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100: {
+            s32 *side = &D_80220F68_ovl_25EE90;
+            s32 n;
+
+            i = 0;
+            o->dur = D_80220F6C_ovl_25EE90;
+            n = 0;
+            for (; i < 20; i++) {
+                u = func_801C8FE8(i);
+                if (u != NULL && func_801C8B84(u) == *side) {
+                    o->e[n].u = u;
+                    o->e[n].a = u[0xAB];
+                    o->e[n].b = u[0xAC];
+                    n++;
+                }
+            }
+            o->n = n;
+            o->t = 0;
+            func_8020DC80_ovl_25EE90(0x1000);
+            break;
+        }
+        case 0x1000: {
+            s32 k;
+            FadeTask26F *q;
+
+            if (++o->t >= o->dur) {
+                o->t = o->dur;
+                func_8020DC80_ovl_25EE90(0x1001);
+            }
+            for (k = 0; k < o->n; k++) {
+                u8 *v = o->e[k].u;
+
+                v[0xAB] = o->e[k].a + -o->e[k].a * o->t / o->dur;
+                v[0xAC] = o->e[k].b + -o->e[k].b * o->t / o->dur;
+            }
+            break;
+        }
+        case 0x1002: {
+            s32 k;
+            FadeTask26F *q;
+
+            if (++o->t >= o->dur) {
+                for (k = 0; k < o->n; k++) {
+                    u8 *v = o->e[k].u;
+
+                    v[0xAB] = o->e[k].a;
+                    v[0xAC] = o->e[k].b;
+                }
+                func_8020DC80_ovl_25EE90(0x101);
+            } else {
+                for (k = 0; k < o->n; k++) {
+                    u8 *v = o->e[k].u;
+
+                    v[0xAB] = o->e[k].a * o->t / o->dur;
+                    v[0xAC] = o->e[k].b * o->t / o->dur;
+                }
+            }
+            break;
+        }
+        case 0x1001:
+            break;
+        case 0x1003:
+            o->t = 0;
+            func_8020DC80_ovl_25EE90(0x1002);
+            break;
+    }
+    return r;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/26F1E0", func_8021A630_ovl_25EE90);
+#endif
 
 void *func_8021A998_ovl_25EE90(s32 a, s32 b) {
     D_80220F68_ovl_25EE90 = a;
