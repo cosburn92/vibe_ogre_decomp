@@ -788,49 +788,33 @@ void func_801EB508_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB508_ovl_23B220);
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, 17 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_801B594C(void *, s32, s32, u16, s32, s32, s32); /* extern */
-extern s32 D_801F0250_ovl_23B220;
+#include "gbi_ultra.h"
+s32 func_801B594C(void *img, s32 a, s32 b, u16 w, s32 h, s32 x, s32 y);
+extern Gfx D_801F0250_ovl_23B220[];
 
+/* Draws the full-screen picture (0x60C, at x 0x610) in 16-line strips with prim alpha 0x653 */
 void func_801EB594_ovl_23B220(void) {
-    Gfx *temp_v1;
-    Gfx *temp_v1_2;
-    Gfx *temp_v1_3;
-    s32 var_s1;
-    u8 *temp_s0;
-    void *temp_v0;
+    u8 *e;
+    s32 i;
 
-    temp_v1 = D_800E9BA0;
-    var_s1 = 0;
-    D_800E9BA0 = temp_v1 + 8;
-    temp_v1->w0 = 0xDE000000;
-    temp_v1->w1 = (u32) &D_801F0250_ovl_23B220;
-    D_800E9BA0 = temp_v1 + 0x10;
-    FIELD(temp_v1, s32, 8) = 0xFA000000;
-    temp_s0 = &D_801EFE48_ovl_23B220->unk378[0x294];
-    FIELD(temp_v1, s32, 0xC) = (s32) FIELD(D_801EFE48_ovl_23B220, u8, 0x653);
+    gSPDisplayList(D_800E9BA0++, D_801F0250_ovl_23B220);
+    i = 0;
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFA000000;
+        e = (u8 *)&D_801EFE48_ovl_23B220->img60C;
+        _g->w1 = FIELD(D_801EFE48_ovl_23B220, u8, 0x653);
+    }
     do {
-        func_801B594C(FIELD(temp_s0, void *, 0), 0, 0, FIELD(FIELD(temp_s0, void *, 0), u16, 4), 0x10, (s32) FIELD(temp_s0, s16, 4), var_s1 * 0x10);
-        temp_v1_2 = D_800E9BA0;
-        var_s1 += 1;
-        D_800E9BA0 = temp_v1_2 + 8;
-        temp_v1_2->w0 = 0xE7000000;
-        temp_v1_2->w1 = 0;
-    } while (var_s1 < 8);
-    temp_v0 = FIELD(temp_s0, void *, 0);
-    func_801B594C(FIELD(temp_s0, void *, 0), 0, 0, FIELD(temp_v0, u16, 4), (s32) FIELD(temp_v0, u16, 6), (s32) FIELD(temp_s0, s16, 4), var_s1 * 0x10);
-    temp_v1_3 = D_800E9BA0;
-    D_800E9BA0 = temp_v1_3 + 8;
-    temp_v1_3->w0 = 0xE7000000;
-    temp_v1_3->w1 = 0;
+        func_801B594C(FIELD(e, u8 *, 0), 0, 0, FIELD(FIELD(e, u8 *, 0), u16, 4), 16, FIELD(e, s16, 4), i * 16);
+        i++;
+        gDPPipeSync(D_800E9BA0++);
+    } while (i < 8);
+    func_801B594C(FIELD(e, u8 *, 0), 0, 0, FIELD(FIELD(e, u8 *, 0), u16, 4), FIELD(FIELD(e, u8 *, 0), u16, 6),
+                  FIELD(e, s16, 4), i * 16);
+    gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB594_ovl_23B220);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB6C8_ovl_23B220);
 
