@@ -501,7 +501,87 @@ u8 func_8017ADE8_ovl_040E80(s32 id) {
     return 0;
 }
 
+void func_8017AC08_ovl_040E80(s32 src, u8 *dst);
+
+/* Loads glyph id into the cache: takes the least recently used node (clearing its id from the
+ * cached-bitmap), makes it most recent, then unpacks a kanji (39 bytes, from 0x200) or a 1-bit
+ * 8x16 glyph (16 bytes, from 0x100: alternate font) into 2-bit texels. Returns the texels */
+#ifdef NON_MATCHING
+/* 158/158 instructions, 9 words differ: in the 1-bit expansion setup the source pointer copy is scheduled after the node load in the original */
+s32 func_8017AE20_ovl_040E80(s32 id) {
+    u8 raw[0x38];
+    u8 *buf;
+    TextNode *n;
+    TextNode *head;
+    u16 old = D_80190F48_ovl_040E80->id;
+    s32 alt;
+    s32 i;
+    s32 a;
+    u8 *src;
+    u8 *dst;
+    s32 c;
+
+    if (old < 0x1000) {
+        D_80190F50_ovl_040E80[old >> 3] &= ~(1 << (old & 7));
+    }
+    D_80190F50_ovl_040E80[id >> 3] |= 1 << (id & 7);
+    n = D_80190F48_ovl_040E80;
+    head = D_80190F4C_ovl_040E80;
+    D_80190F4C_ovl_040E80 = n;
+    D_80190F48_ovl_040E80 = n->prev;
+    D_80190F48_ovl_040E80->next = NULL;
+    head->prev = n;
+    n->next = head;
+    n->prev = NULL;
+    n->id = id;
+    buf = (u8 *)((s32)&raw[0xF] & ~0xF);
+    alt = 0;
+    if (id >= 0x200) {
+        id -= 0x200;
+    } else if (id >= 0x100) {
+        id -= 0x100;
+        alt = 1;
+    }
+    if (alt == 0) {
+        a = (s32)D_80190F40_ovl_040E80 + id * 39;
+        RomRead((void *)(a & ~1), buf, 0x28);
+        func_8017AC08_ovl_040E80((s32)buf | (a & 1), D_80190F4C_ovl_040E80->data);
+        D_80190F4C_ovl_040E80->value = 0;
+    } else {
+        RomRead((u8 *)D_80190F40_ovl_040E80 + id * 16, buf, 0x10);
+        i = 0;
+        dst = D_80190F4C_ovl_040E80->data;
+        for (src = buf; i < 32; i++) {
+            c = *src;
+            switch (i & 3) {
+                case 0:
+                    src++;
+                    dst[0] = ((c >> 2) & 0x30) | ((c >> 4) & 3);
+                    dst[1] = ((c * 4) & 0x30) | (c & 3);
+                    break;
+                case 1:
+                    src++;
+                    dst[2] = ((c >> 2) & 0x30) | ((c >> 4) & 3);
+                    dst[3] = ((c * 4) & 0x30) | (c & 3);
+                    break;
+                case 2:
+                    dst[4] = 0;
+                    dst[5] = 0;
+                    break;
+                case 3:
+                    dst[6] = 0;
+                    dst[7] = 0;
+                    dst += 8;
+                    break;
+            }
+        }
+        D_80190F4C_ovl_040E80->value = 1;
+    }
+    return (s32)D_80190F4C_ovl_040E80->data;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017AE20_ovl_040E80);
+#endif
 
 INCLUDE_RODATA("asm/nonmatchings/4EF10", D_80190C88_ovl_040E80);
 
