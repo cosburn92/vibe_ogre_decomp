@@ -718,27 +718,38 @@ u8 ItemGetFlag80(u16 id) {
     return (gItemTable[id].flags >> 7);
 }
 
-#ifdef NON_MATCHING
-/* Same logic; GCC lays out the branches differently (the original tests c == 24 with bne/j). */
-s32 ItemIsWeapon(u16 id) {
+/* 1 for weapons (categories 1-13 and 24) */
+inline s32 ItemIsWeapon(u16 id) {
     s32 c = gItemTable[id].category;
 
     if (c != 0) {
         if (c < 14) {
             return 1;
         }
-        if (c != 24) {
-            return 0;
+        switch (c) {
+        case 24:
+            return 1;
         }
-        return 1;
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/43100", ItemIsWeapon);
-#endif
 
-INCLUDE_ASM("asm/nonmatchings/43100", func_8016FA34_ovl_040E80);
+/* The first of the four items that is a weapon, or 0 */
+u16 func_8016FA34_ovl_040E80(u16 a, u16 b, u16 c, u16 d) {
+    if (ItemIsWeapon(a)) {
+        return a;
+    }
+    if (ItemIsWeapon(b)) {
+        return b;
+    }
+    if (ItemIsWeapon(c)) {
+        return c;
+    }
+    if (ItemIsWeapon(d)) {
+        return d;
+    }
+    return 0;
+}
 
 /* The first of the four items with category 23, or 0. */
 u16 func_8016FB50_ovl_040E80(u16 a, u16 b, u16 c, u16 d) {
