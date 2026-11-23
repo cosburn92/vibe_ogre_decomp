@@ -249,7 +249,7 @@ inline void func_8022126C_ovl_1BA050(void) {
 }
 
 /* Script i of the loaded script bank (a table of offsets); hangs if none is loaded. */
-u8 *func_802212AC_ovl_1BA050(s32 i) {
+inline u8 *func_802212AC_ovl_1BA050(s32 i) {
     if (D_8022A214_ovl_1BA050 == NULL) {
         for (;;) {
         }
@@ -488,7 +488,54 @@ void func_80221750_ovl_1BA050(ScriptCtx *ctx) {
     bzero(ctx, 0x38);
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 func_80228048_ovl_1BA050(s32 id, u8 *s, u8 flags, s16 x0, s16 y0, s16 x1, s16 y1, s16 ax0, s16 ay0, s16 ax1,
+                             s16 ay1);
+void func_80227EB8_ovl_1BA050(s32 w, u16 a, u8 b, u8 c);
+void func_80227F14_ovl_1BA050(s32 id, u8 n);
+
+/* Script op: opens window id with text s over the command's rect (or growing from its centre when
+ * flag 0x10 is set) */
+#ifdef NON_MATCHING
+/* 94/94 instructions, 16 words differ: the command pointer lands in a3 (the original keeps it in a2 and computes x0 straight into a3) */
+s32 func_8022176C_ovl_1BA050(u8 *o) {
+    s32 id = FIELD(FIELD(o, u8 *, 8), u16, 2);
+    u8 *s = func_802212AC_ovl_1BA050(FIELD(FIELD(o, u8 *, 8), s32, 0xC));
+    u8 *c = FIELD(o, u8 *, 8);
+    s16 x0, y0, x1, y1;
+    s32 w;
+
+    if (c[0x13] & 0x10) {
+        s32 mx = (FIELD(c, s16, 4) + FIELD(c, s16, 8)) / 2;
+        s32 my;
+
+        x0 = mx - 4;
+        x1 = mx + 4;
+        my = (FIELD(c, s16, 6) + FIELD(c, s16, 0xA)) / 2;
+        y0 = my - 4;
+        y1 = my + 4;
+    } else {
+        x0 = FIELD(c, u16, 4);
+        y0 = FIELD(c, u16, 6);
+        x1 = FIELD(c, u16, 8);
+        y1 = FIELD(c, u16, 0xA);
+    }
+    w = func_80228048_ovl_1BA050(id, s, FIELD(o, u8 *, 8)[0x13], x0, y0, x1, y1, FIELD(FIELD(o, u8 *, 8), s16, 4),
+                                 FIELD(FIELD(o, u8 *, 8), s16, 6), FIELD(FIELD(o, u8 *, 8), s16, 8),
+                                 FIELD(FIELD(o, u8 *, 8), s16, 0xA));
+    c = FIELD(o, u8 *, 8);
+    if (FIELD(c, u16, 0x10) != 0) {
+        func_80227EB8_ovl_1BA050(w, FIELD(c, u16, 0x10), c[0x12], c[0x13]);
+    }
+    func_80227F14_ovl_1BA050(id, FIELD(o, u8 *, 8)[1] + 1);
+    FIELD(o, u8 *, 8) += 0x14;
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1BA050", func_8022176C_ovl_1BA050);
+#endif
 
 /* Script command: open window cmd[3] with text cmd->w8 at (h4, h6), flags cmd[1]; registers it with
  * value cmd[2] + 1 */
