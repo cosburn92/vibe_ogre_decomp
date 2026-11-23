@@ -6,9 +6,17 @@
 __asm__(".section .rodata\n.global D_801F0490_ovl_23B220\nD_801F0490_ovl_23B220:\n.word 0, 0, 0, 0\n.section .text\n");
 
 typedef struct {
-    /* 0x00 */ u8 unk00[0x60];
+    /* 0x00 */ s32 (*draw)(u8 *o);
+    /* 0x04 */ s32 sx;
+    /* 0x08 */ s32 sy;
+    /* 0x0C */ s32 sz;
+    /* 0x10 */ u8 unk10[8];
+    /* 0x18 */ void *img;
+    /* 0x1C */ u8 unk1C[4];
+    /* 0x20 */ f32 mf[4][4];
     /* 0x60 */ u16 flags;
-    /* 0x62 */ u8 unk62[4];
+    /* 0x62 */ s16 unk62;
+    /* 0x64 */ s16 unk64;
     /* 0x66 */ s16 id;
 } Ent23; /* size 0x68 */
 
@@ -366,7 +374,60 @@ s32 func_801EA158_ovl_23B220(u8 *o) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA158_ovl_23B220);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA224_ovl_23B220);
+extern void *D_801EFE4C_ovl_23B220;
+void func_801ADADC(void *o);
+s32 func_801EA158_ovl_23B220(u8 *o);
+
+/* Creates the four title objects (ids 0-3) with their scales, angles and images */
+void func_801EA224_ovl_23B220(void) {
+    s32 img = 0;
+    s32 i;
+    Ent23 *e;
+
+    D_801EFE4C_ovl_23B220 = func_801CC234(0x36EA02, 2);
+    for (i = 0; i < 4; i++) {
+        e = &D_801EFE48_ovl_23B220->ent[i];
+        e->draw = func_801EA158_ovl_23B220;
+        e->id = i;
+        e->unk62 = 0x7C;
+        guMtxIdentF(e->mf);
+        e->mf[3][0] = -100.0f;
+        e->flags |= 0x10;
+        e->mf[3][2] = 10.0f;
+        switch (i) {
+            case 0:
+                img = 2;
+                e->sx = e->sy = e->sz = -13000;
+                e->unk64 = -0x57;
+                e->flags |= 2;
+                break;
+            case 1:
+                img = 2;
+                e->sx = e->sy = e->sz = -10000;
+                e->unk64 = 0x5A;
+                e->flags |= 1;
+                break;
+            case 2:
+                img = 1;
+                e->sx = e->sy = e->sz = -11500;
+                e->unk64 = 0x5A;
+                e->flags |= 2;
+                break;
+            case 3:
+                img = 0;
+                e->sx = e->sy = e->sz = -12000;
+                e->unk64 = 0x5A;
+                e->flags |= 1;
+                break;
+        }
+        if (i == 2 || i == 3) {
+            e->img = func_801CC234(0x36EA02, img);
+        } else {
+            e->img = D_801EFE4C_ovl_23B220;
+        }
+        func_801ADADC(e);
+    }
+}
 
 #ifdef NON_MATCHING
 /* branch layout of the id test differs */
