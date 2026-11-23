@@ -327,7 +327,51 @@ s16 func_801BE6FC_ovl_1F0A30(s32 i) {
     return D_801D06A8_ovl_1F0A30[i].z;
 }
 
+extern u8 *D_801D0738_ovl_1F0A30;
+extern u8 *D_801D06F4_ovl_1F0A30;
+extern u8 *D_801D073C_ovl_1F0A30;
+extern u8 *D_801D0830_ovl_1F0A30;
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void *func_80071C04(s32 size);
+void *HMalloc(s32 size);
+void _bcopy(void *src, void *dst, s32 n);
+typedef struct {
+    u16 off[15];
+    u16 size;
+} TabHdr201;
+
+/* Loads the class data tables (chunk 0x315736) and points the table globals into the copy */
+#ifdef NON_MATCHING
+/* 96 vs 94 instructions: the original pairs each offset load with its add through t8 and saves one register fewer; GCC here loads all fifteen offsets first */
+void func_801BE71C_ovl_1F0A30(void) {
+    TabHdr201 *raw = func_80071C04(ChunkSize(0x315736));
+    TabHdr201 *h;
+
+    LoadChunkRaw(raw, 0x315736);
+    D_801D06AC_ovl_1F0A30 = HMalloc(raw->size);
+    _bcopy(raw, D_801D06AC_ovl_1F0A30, raw->size);
+    h = D_801D06AC_ovl_1F0A30;
+    D_801D0690_ovl_1F0A30 = (u16 *)((u8 *)h + h->off[0]);
+    D_801D0698_ovl_1F0A30 = (void *)((u8 *)h + h->off[1]);
+    D_801D0680_ovl_1F0A30 = (u8 *)h + h->off[2];
+    D_801D0684_ovl_1F0A30 = (u8 *)h + h->off[3];
+    D_801D0688_ovl_1F0A30 = (u8 *)h + h->off[4];
+    D_801D0738_ovl_1F0A30 = (u8 *)h + h->off[5];
+    D_801D06F4_ovl_1F0A30 = (u8 *)h + h->off[6];
+    D_801D0694_ovl_1F0A30 = (u16 *)((u8 *)h + h->off[7]);
+    D_801D068C_ovl_1F0A30 = (void *)((u8 *)h + h->off[8]);
+    D_801D069C_ovl_1F0A30 = (s16 *)((u8 *)h + h->off[9]);
+    D_801D06A0_ovl_1F0A30 = (s16 *)((u8 *)h + h->off[10]);
+    D_801D06A4_ovl_1F0A30 = (u8 *)h + h->off[11];
+    D_801D06A8_ovl_1F0A30 = (void *)((u8 *)h + h->off[12]);
+    D_801D073C_ovl_1F0A30 = (u8 *)h + h->off[13];
+    D_801D0830_ovl_1F0A30 = (u8 *)h + h->off[14];
+    HFree(raw);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BE71C_ovl_1F0A30);
+#endif
 
 void func_801BE894_ovl_1F0A30(void) {
     HFree(D_801D06AC_ovl_1F0A30);
