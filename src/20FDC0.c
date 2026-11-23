@@ -86,7 +86,34 @@ void func_801CCD4C_ovl_1F0A30(s32 a, s32 b, s32 c) {
     func_801CCA5C_ovl_1F0A30(a, c, b);
 }
 
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CCD70_ovl_1F0A30);
+void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
+f32 sinf(f32 x);
+f32 cosf(f32 x);
+
+/* Projects point p through model matrix m and the camera (eye, at, up, vertical fov in degrees)
+ * to 320x240 screen coordinates */
+void func_801CCD70_ovl_1F0A30(f32 *out, f32 *p, f32 m[4][4], f32 *at, f32 *eye, f32 *up, f32 fovy) {
+    f32 mf[4][4];
+    f32 v[3];
+    f32 t; /* half the fov in radians, then the view depth scale */
+    f32 x;
+    f32 y;
+    f32 z;
+
+    guLookAtF(mf, eye[0], eye[1], eye[2], at[0], at[1], at[2], up[0], up[1], up[2]);
+    guMtxCatF(m, mf, mf);
+    x = p[0];
+    y = p[1];
+    z = p[2];
+    v[0] = x * mf[0][0] + y * mf[1][0] + z * mf[2][0] + mf[3][0];
+    v[1] = x * mf[0][1] + y * mf[1][1] + z * mf[2][1] + mf[3][1];
+    v[2] = x * mf[0][2] + y * mf[1][2] + z * mf[2][2] + mf[3][2];
+    t = fovy * 3.14159265358979312 / 360.0;
+    t = v[2] * sinf(t) / cosf(t);
+    out[0] = (320.0 - v[0] * 320.0f / (t * 1.3)) / 2.0;
+    out[1] = (240.0f - v[1] * 240.0f / t) / 2.0f;
+}
 
 void func_801CCF5C_ovl_1F0A30(u16 *p, s16 a, s16 b, s16 c, s16 d) {
     bzero(p, 0x10);
