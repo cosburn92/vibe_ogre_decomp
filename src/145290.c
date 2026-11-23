@@ -307,7 +307,45 @@ void func_801F47C4_ovl_145210(u8 a) {
     func_801F4358_ovl_145210(6, p);
 }
 
-INCLUDE_ASM("asm/nonmatchings/145290", func_801F480C_ovl_145210);
+/* Frees cached asset e by kind and returns its slot to the free list */
+static inline void Release145(Slot145 *e) {
+    u8 *d = (u8 *)e + 4;
+
+    switch (e->used) {
+    case 2:
+        func_80079618(FIELD(d, s32, 0), d[4], -0x11);
+        break;
+    case 3:
+        func_80079618(FIELD(d, s32, 0), d[4], -0x14, d[5]);
+        break;
+    case 4:
+    case 5:
+        func_80079618(0x0209D322, FIELD(d, u16, 0), -0x11);
+        break;
+    case 6:
+        HFree(FIELD(e, void *, 0x10));
+        break;
+    }
+    e->next = D_801FDA02_ovl_145210;
+    ((Res145 *)e)->refs = 0;
+    D_801FDA02_ovl_145210 = e - D_801FDA54_ovl_145210;
+    e->used = 0;
+}
+
+/* Frees every cached asset and the cache table */
+void func_801F480C_ovl_145210(void) {
+    s32 i;
+
+    for (i = 0; i < D_801FDA00_ovl_145210; i++) {
+        if (D_801FDA54_ovl_145210[i].used != 0) {
+            Release145(&D_801FDA54_ovl_145210[i]);
+        }
+    }
+    D_801FDA54_ovl_145210 = ((void *(*)(void *))HFree)(D_801FDA54_ovl_145210);
+}
+
+/* the switch table above is padded by two words in the original rodata */
+__asm__(".section .rodata\n.word 0, 0\n.section .text\n");
 
 /* Pool of 32 slots chained by index; 0xFF ends the chain */
 void func_801F4960_ovl_145210(void) {
