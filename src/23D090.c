@@ -629,7 +629,70 @@ INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAA58_ovl_23B220);
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAAD8_ovl_23B220);
 
+typedef struct {
+    /* 0x000 */ u8 text[0x100];
+    /* 0x100 */ u8 *backdrop;
+    /* 0x104 */ u8 unk104[4];
+    /* 0x108 */ u8 *src;
+    /* 0x10C */ s32 len;
+    /* 0x110 */ s32 tick;
+    /* 0x114 */ s32 backdropSize;
+    /* 0x118 */ s32 lines;
+} Text23;
+
+/* Advances the text box's typewriter: one character per 0x100 ticks (two-byte SJIS characters at
+ * once); "@c" clears, "@s" / "@w" pause, "@n" breaks the line; a 0 byte ends the text */
+#ifdef NON_MATCHING
+/* same length; register allocation of the character copies differs and GCC hoists the '\n' constant out of the loop */
+void func_801EADF8_ovl_23B220(void) {
+    if (!(D_801EFE48_ovl_23B220->flags & 0x20)) {
+        Text23 *t = (Text23 *)&D_801EFE48_ovl_23B220->unk23E[0xE];
+
+        t->tick += 0x100;
+        while (t->tick > 0x100) {
+            u8 *p = t->src;
+            s32 c = *p;
+            u8 b = c;
+            u16 w = b;
+
+            if (c == 0) {
+                t->tick = 0x100;
+                D_801EFE48_ovl_23B220->flags |= 0x20;
+            } else if (w < 0x81 || (u32)(b - 0xA0) < 0x40 || w >= 0xFD) {
+                if (c == '@') {
+                    t->src = p + 2;
+                    switch (p[1]) {
+                        case 'c':
+                            t->len = 0;
+                            break;
+                        case 's':
+                            t->tick = -0x800;
+                            break;
+                        case 'w':
+                            t->tick = -0x2000;
+                            break;
+                        case 'n':
+                            t->text[t->len++] = '\n';
+                            if (++t->lines < 3) {
+                                t->tick += 0x100;
+                            }
+                            break;
+                    }
+                } else {
+                    t->text[t->len++] = *t->src++;
+                }
+            } else {
+                t->text[t->len++] = *t->src++;
+                t->text[t->len++] = *t->src++;
+            }
+            t->tick -= 0x100;
+        }
+        t->text[t->len] = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EADF8_ovl_23B220);
+#endif
 
 void func_801EAF9C_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 0x10;
