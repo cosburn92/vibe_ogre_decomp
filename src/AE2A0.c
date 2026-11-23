@@ -279,111 +279,56 @@ s32 func_801C6760_ovl_087200(void) {
     return r;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 129 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801C67B0_ovl_087200(s32 arg0) {
-    s32 temp_v1_3;
-    s32 temp_v1_4;
-    s32 var_a3;
-    s32 var_a3_2;
-    s32 var_v0;
-    s32 var_v0_2;
-    u8 temp_v1_2;
-    void *temp_a0;
-    void *temp_v1;
-    void *var_a2;
+/* Rebuilds the flag grid of squad sq's formation: each member whose state is 3 sets its own cell
+ * and flags the neighbouring cells */
+void func_801C67B0_ovl_087200(s32 sq) {
+    u8 *p = (u8 *)D_80196AF8 + (sq * 0x36 + 0x117C);
+    u8 *q;
+    s32 i;
 
-    var_a3 = 0;
-    temp_v1 = D_80196AF8 + ((arg0 * 0x36) + 0x117C);
-    var_v0 = 0 < 9;
-    do {
-        temp_a0 = temp_v1 + var_a3;
-        if (var_v0 != 0) {
-            FIELD(temp_a0, s8, 0xE) = 0xF;
-        } else {
-            FIELD(temp_a0, s8, 0xE) = 0;
-        }
-        var_a3 += 1;
-        var_v0 = var_a3 < 9;
-    } while (var_a3 < 0xF);
-    var_a3_2 = 0;
-    var_a2 = temp_v1;
-    do {
-        temp_v1_2 = FIELD(var_a2, u8, 4);
-        if ((temp_v1_2 != 0xFF) && (FIELD((D_80196AF8 + (temp_v1_2 * 2)), u8, 0x1873) == 3)) {
-            FIELD(var_a2, s8, 0xE) = 0xF;
-            if (var_a3_2 < 6) {
-                FIELD(var_a2, u8, 0x17) = (u8) (FIELD(var_a2, u8, 0x17) | 3);
-                temp_v1_3 = var_a3_2 % 3;
-                if (temp_v1_3 != 1) {
-                    if (temp_v1_3 < 2) {
-                        var_v0_2 = var_a3_2 < 3;
-                        if (temp_v1_3 != 0) {
-
-                        } else {
-                            FIELD(var_a2, u8, 0x18) = (u8) (FIELD(var_a2, u8, 0x18) | 1);
-                            FIELD(var_a2, u8, 0xF) = (u8) (FIELD(var_a2, u8, 0xF) | 5);
-                            goto block_18;
-                        }
-                    } else {
-                        var_v0_2 = var_a3_2 < 3;
-                        if (temp_v1_3 != 2) {
-
-                        } else {
-                            FIELD(var_a2, u8, 0x16) = (u8) (FIELD(var_a2, u8, 0x16) | 2);
-                            FIELD(var_a2, u8, 0xD) = (u8) (FIELD(var_a2, u8, 0xD) | 0xA);
-                            goto block_18;
-                        }
-                    }
-                } else {
-                    FIELD(var_a2, u8, 0x18) = (u8) (FIELD(var_a2, u8, 0x18) | 1);
-                    FIELD(var_a2, u8, 0x16) = (u8) (FIELD(var_a2, u8, 0x16) | 2);
-                    FIELD(var_a2, u8, 0xD) = (u8) (FIELD(var_a2, u8, 0xD) | 0xA);
-                    FIELD(var_a2, u8, 0xF) = (u8) (FIELD(var_a2, u8, 0xF) | 5);
-                    goto block_18;
+    for (i = 0; i < 15; i++) {
+        (p + i)[0xE] = (i < 9) ? 0xF : 0;
+    }
+    for (i = 0; i < 9; i++) {
+        if (p[i + 4] != 0xFF && FIELD((u8 *)D_80196AF8 + (p[i + 4] << 1), u8, 0x1873) == 3) {
+            p[i + 0xE] = 0xF;
+            if (i < 6) {
+                p[i + 0x17] |= 3;
+                switch (i % 3) {
+                    case 0:
+                        p[i + 0x18] |= 1;
+                        p[i + 0xF] |= 5;
+                        break;
+                    case 1:
+                        p[i + 0x18] |= 1;
+                        p[i + 0x16] |= 2;
+                        p[i + 0xD] |= 0xA;
+                        p[i + 0xF] |= 5;
+                        break;
+                    case 2:
+                        p[i + 0x16] |= 2;
+                        p[i + 0xD] |= 0xA;
+                        break;
                 }
-            } else {
-block_18:
-                var_v0_2 = var_a3_2 < 3;
             }
-            if (var_v0_2 == 0) {
-                FIELD(var_a2, u8, 0xB) = (u8) (FIELD(var_a2, u8, 0xB) & 3);
-                temp_v1_4 = var_a3_2 % 3;
-                if (temp_v1_4 != 1) {
-                    if (temp_v1_4 < 2) {
-                        if (temp_v1_4 != 0) {
-                            var_a3_2 += 1;
-                        } else {
-                            FIELD(var_a2, u8, 0xC) = (u8) (FIELD(var_a2, u8, 0xC) & 0xB);
-                            goto block_29;
-                        }
-                    } else if (temp_v1_4 != 2) {
-                        var_a3_2 += 1;
-                    } else {
-                        FIELD(var_a2, u8, 0xA) = (u8) (FIELD(var_a2, u8, 0xA) & 7);
-                        goto block_29;
-                    }
-                } else {
-                    FIELD(var_a2, u8, 0xC) = (u8) (FIELD(var_a2, u8, 0xC) & 0xB);
-                    FIELD(var_a2, u8, 0xA) = (u8) (FIELD(var_a2, u8, 0xA) & 7);
-                    goto block_29;
+            if (i >= 3) {
+                p[i + 0xB] &= 3;
+                switch (i % 3) {
+                    case 0:
+                        p[i + 0xC] &= 0xB;
+                        break;
+                    case 1:
+                        p[i + 0xC] &= 0xB;
+                        p[i + 0xA] &= 7;
+                        break;
+                    case 2:
+                        p[i + 0xA] &= 7;
+                        break;
                 }
-            } else {
-                goto block_29;
             }
-        } else {
-block_29:
-            var_a3_2 += 1;
         }
-        var_a2 += 1;
-    } while (var_a3_2 < 9);
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C67B0_ovl_087200);
-#endif
 
 void func_801C69D8_ovl_087200(void) {
     D_80196AF8->b98 = 0;
