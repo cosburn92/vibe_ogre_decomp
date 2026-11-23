@@ -538,7 +538,47 @@ void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 81 vs 84: after the end-marker test the original recomputes &k[j] and re-reads its frame; GCC here reuses the first load */
+void func_802144EC_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots, u16 kind, s32 add) {
+    u32 i;
+
+    if (FIELD(mdl, s32, 0) >= frame) {
+        for (i = 0; i < mdl->n; i++) {
+            if (slots[i] != 0) {
+                u16 f = FIELD(&mdl->recs[i], u16, 2);
+                u8 *o = (u8 *)slots[i] + 0x18;
+
+                do {
+                if (f & 0x8000) {
+                    Key26 *k = FIELD(mdl, Key26 **, 0x14)[f & 0x7FFF];
+                    s32 j = 0;
+
+                loop:
+                    if (k[j].frame != -1 || k[j].val != 0) {
+                        if (frame == k[j].frame) {
+                            goto found;
+                        }
+                        if (frame >= k[j].frame) {
+                            j++;
+                            goto loop;
+                        }
+                    }
+                    j--;
+                    if (j < 0) {
+                        j = 0;
+                    }
+                found:
+                    FIELD(o, s32, 0xC) = func_8020EC2C_ovl_25EE90(kind, k[j].val + add);
+                }
+                } while (0);
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_802144EC_ovl_25EE90);
+#endif
 
 /* As func_802143B4 for the other slot layout (value at +0x20): applies frame `frame` of model mdl's keyed tracks (record flag 0x8000) to the slots: each slot
  * gets the value of the last key at or before the frame */
