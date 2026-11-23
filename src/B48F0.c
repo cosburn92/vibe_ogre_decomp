@@ -59,60 +59,53 @@ u16 func_801CBC98_ovl_087200(u8 i);
 void func_801CE074_ovl_087200(void);
 /* --- end decls --- */
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_801A4894_ovl_087200();                    /* extern */
+void func_801A4894_ovl_087200();
 extern s32 D_800E9C0A;
 
+/* Opens message a in the message window at the bottom (pos 1), middle (2) or top of the screen;
+ * groups 0x1C-0x1E use the tall portrait window. With show set, a group-5 message is skipped when
+ * the message option (D_800E9C0A + 6) is off */
+#ifdef NON_MATCHING
+/* 88/88, 9 words: the window height lands in t2 here, t1 in the original */
 void func_801C7E90_ovl_087200(s32 a, s32 b, s32 c) {
-    s16 var_t0;
-    s16 var_v1;
-    s32 temp_a1;
-    s32 temp_a3;
-    s32 temp_v0;
-    s32 var_a3;
-    s32 var_t2;
-    u32 temp_v1;
-    u32 var_t1;
-    void (*var_t3)();
+    u8 pos = b;
+    u8 show = c;
+    s32 grp = a & 0xFFFF0000;
+    void (*fn)();
+    u32 h;
+    s32 y0, y1;
+    s16 ty0, ty1;
 
-    temp_a3 = a & 0xFFFF0000;
-    if ((((temp_a3 == 0x1C0000) | (temp_a3 == 0x1D0000)) != 0) || (var_t1 = 0x28, (temp_a3 == 0x1E0000))) {
-        var_t3 = func_801A4894_ovl_087200;
-        var_t1 = 0x38;
+    if ((grp == 0x1C0000) | (grp == 0x1D0000) || (h = 0x28, grp == 0x1E0000)) {
+        fn = func_801A4894_ovl_087200;
+        h = 0x38;
     } else {
-        var_t3 = func_801A43F4_ovl_087200;
+        fn = func_801A43F4_ovl_087200;
     }
-    if (!(c & 0xFF) || !((FIELD(&D_800E9C0A, u8, 6) == 0) & (temp_a3 == 0x50000))) {
-        temp_a1 = b & 0xFF;
-        FIELD(D_80196AF8, s32, 0x10C8) = a;
-        if (temp_a1 == 1) {
-            var_t2 = 0xCB;
-            var_a3 = 0xCF;
-            var_t0 = 0xCF - var_t1;
-            var_v1 = 0xCF;
-        } else {
-            var_t2 = 0x18;
-            if (temp_a1 == 2) {
-                var_t2 = 0x76;
-                var_a3 = 0x7A;
-                temp_v1 = var_t1 >> 1;
-                var_t0 = 0x78 - temp_v1;
-                var_v1 = temp_v1 + 0x78;
-            } else {
-                var_a3 = 0x1C;
-                var_t0 = 0x18;
-                var_v1 = var_t1 + 0x18;
-            }
-        }
-        temp_v0 = func_801CC974_ovl_087200(0x100U, 0x12U, var_t3, 0x9C, (s16) var_t2, 0xA4, (s16) var_a3, 0x18, (s16) (s32) var_t0, 0x128, (s16) (s32) var_v1);
-        FIELD(D_80196AF8, s32, 0x10CC) = temp_v0;
-        func_801C0798_ovl_087200((s16) temp_v0, FIELD(D_80196AF8, s32, 0x10C8));
-        func_801C18AC_ovl_087200(0xB, 0, 0);
+    if (show && ((FIELD(&D_800E9C0A, u8, 6) == 0) & (grp == 0x50000))) {
+        return;
     }
+
+    FIELD(D_80196AF8, s32, 0x10C8) = a;
+    if (pos == 1) {
+        y0 = 0xCB;
+        y1 = 0xCF;
+        ty0 = 0xCF - h;
+        ty1 = 0xCF;
+    } else if (pos == 2) {
+        y0 = 0x76;
+        y1 = 0x7A;
+        ty0 = 0x78 - (h >> 1);
+        ty1 = (h >> 1) + 0x78;
+    } else {
+        y0 = 0x18;
+        y1 = 0x1C;
+        ty0 = 0x18;
+        ty1 = h + 0x18;
+    }
+    FIELD(D_80196AF8, s32, 0x10CC) = func_801CC974_ovl_087200(0x100, 0x12, fn, 0x9C, y0, 0xA4, y1, 0x18, ty0, 0x128, ty1);
+    ((void (*)(s32, s32))func_801C0798_ovl_087200)(FIELD(D_80196AF8, s32, 0x10CC), FIELD(D_80196AF8, s32, 0x10C8));
+    func_801C18AC_ovl_087200(0xB, 0, 0);
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C7E90_ovl_087200);
