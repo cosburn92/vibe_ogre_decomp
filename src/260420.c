@@ -15,7 +15,7 @@ typedef struct {
 extern s32 D_80220CA0_ovl_25EE90;
 extern Ent260 *D_80220CA8_ovl_25EE90;
 
-Ent260 *func_8020BC78_ovl_25EE90(u16 a);
+Ent260 *func_8020BC78_ovl_25EE90();
 extern s32 D_80220CA4_ovl_25EE90;
 extern s32 D_80220CAC_ovl_25EE90;
 extern s32 D_80220CB0_ovl_25EE90;
@@ -140,11 +140,59 @@ Ent260 *func_8020BA6C_ovl_25EE90(void *p) {
     return NULL;
 }
 
-INCLUDE_ASM("asm/nonmatchings/260420", func_8020BC78_ovl_25EE90);
+#define CACHE_HIT(e) ((e)->id != 0 && (e)->h2 == (u16)a && (e)->w4 == b && (e)->w8 == c)
+
+/* Finds the cache entry for resource (a, b, c) the same way as func_8020BA6C */
+Ent260 *func_8020BC78_ovl_25EE90(s32 a, s32 b, s32 c) {
+    s32 n = D_80220CAC_ovl_25EE90;
+    s32 k = D_80220CB0_ovl_25EE90;
+    Ent260 *lo, *mid, *mid2, *hi;
+
+    for (; n > 0; n--, k--) {
+        if (k < 0) {
+            k = D_80220CAC_ovl_25EE90 - 1;
+        }
+        lo = D_80220CB8_ovl_25EE90[k];
+        if (lo != NULL && CACHE_HIT(lo)) {
+            return lo;
+        }
+    }
+    lo = D_80220CA8_ovl_25EE90;
+    n = 0;
+    k = 0;
+    mid = &lo[D_80220CA0_ovl_25EE90 / 2];
+    mid2 = mid + 1;
+    hi = &lo[D_80220CA0_ovl_25EE90 - 1];
+    do {
+        if (CACHE_HIT(lo)) {
+            return CacheRemember(lo);
+        }
+        if (CACHE_HIT(mid)) {
+            return CacheRemember(mid);
+        }
+        if (CACHE_HIT(mid2)) {
+            return CacheRemember(mid2);
+        }
+        if (CACHE_HIT(hi)) {
+            return CacheRemember(hi);
+        }
+        lo++;
+        mid--;
+        mid2++;
+        hi--;
+        if (mid < lo) {
+            k = 1;
+        }
+        if (hi < mid2) {
+            n = 1;
+        }
+    } while (!(k & n));
+    return NULL;
+}
 
 s32 func_8020BF5C_ovl_25EE90(u16 a) {
     s32 r = 0;
-    Ent260 *e = func_8020BC78_ovl_25EE90(a);
+    Ent260 *e = ((Ent260 *(*)())func_8020BC78_ovl_25EE90)(a);
 
     if (e != NULL) {
         r = e->id;
@@ -205,7 +253,7 @@ void func_8020C074_ovl_25EE90(void *p) {
 }
 
 void func_8020C130_ovl_25EE90(u16 id) {
-    Ent260 *e = func_8020BC78_ovl_25EE90(id);
+    Ent260 *e = ((Ent260 *(*)())func_8020BC78_ovl_25EE90)(id);
 
     if (e != NULL) {
         CacheRelease(e);
