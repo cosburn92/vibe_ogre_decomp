@@ -397,68 +397,15 @@ void func_80202928_ovl_14EBE0(u8 *p, s32 b) {
     func_80200DD0_ovl_14EBE0(p + 0x2A, b, 7);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 54 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void func_8020296C_ovl_14EBE0(s32 arg0, s32 arg1, s32 arg2) {
-    Gfx *temp_a1;
-    Gfx *temp_a2;
-    Gfx *temp_v1;
-    Gfx *temp_v1_3;
-    s16 temp_s0;
-    s32 temp_s1;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 temp_v0_3;
-    s32 temp_v1_2;
-    s32 var_a0;
-    s32 var_v0;
-
-    temp_v1 = D_800E9BA0;
-    D_800E9BA0 = temp_v1 + 8;
-    temp_v1->w0 = 0xDE000000;
-    temp_v1->w1 = (u32) D_80213648_ovl_14EBE0;
-    func_80200F70_ovl_14EBE0(D_801F36C0 + ((arg2 << 5) + 0x1E0), D_801F0B90 + 0x1868, 0x10, 0x50, 2);
-    temp_a1 = D_800E9BA0;
-    temp_s1 = arg2 << 9;
-    D_800E9BA0 = temp_a1 + 8;
-    temp_a2 = temp_a1 + 0x10;
-    temp_a1->w0 = 0xE7000000;
-    temp_v0 = arg0 + 0xF;
-    temp_v0_2 = arg1 + 0xF;
-    temp_s0 = arg0 * 4;
-    FIELD(temp_a1, s32, 8) = (s32) ((((temp_v0 * 4) & ((s32) ~(s16) (temp_v0 * 4) >> 0x1F) & 0xFFC) << 0xC) | (((temp_v0_2 * 4) & ((s32) ~(s16) (temp_v0_2 * 4) >> 0x1F) & 0xFFC) | 0xE4000000));
-    D_800E9BA0 = temp_a2;
-    D_800E9BA0 = temp_a1 + 0x18;
-    temp_a1->w1 = 0;
-    FIELD(temp_a1, s32, 0xC) = (s32) ((((arg0 * 4) & ((s32) ~temp_s0 >> 0x1F) & 0xFFC) << 0xC) | ((arg1 * 4) & ((s32) ~(s16) (arg1 * 4) >> 0x1F) & 0xFFC));
-    FIELD(temp_a1, s32, 0x10) = 0xE1000000;
-    if (temp_s0 < 0) {
-        temp_v1_2 = temp_s0 * 8;
-        var_a0 = (temp_v1_2 & -(temp_v1_2 < 1)) * -0x10000;
-    } else {
-        var_a0 = 0;
-    }
-    if (!(arg1 & 0x20000000)) {
-        var_v0 = temp_s1 & 0xFFFF;
-    } else {
-        temp_v0_3 = (s32) (arg1 << 0x12) >> 0xD;
-        var_v0 = (temp_s1 - (temp_v0_3 & -(temp_v0_3 < 1))) & 0xFFFF;
-    }
-    temp_a2->w1 = var_a0 | var_v0;
-    temp_v1_3 = D_800E9BA0;
-    D_800E9BA0 = temp_v1_3 + 8;
-    temp_v1_3->w0 = 0xF1000000;
-    D_800E9BA0 = temp_v1_3 + 0x10;
-    temp_v1_3->w1 = 0x04000400;
-    FIELD(temp_v1_3, s32, 8) = 0xE7000000;
-    FIELD(temp_v1_3, s32, 0xC) = 0;
+/* Draws the 16x16 element icon k (palette k of the element palettes) at (x, y) */
+void func_8020296C_ovl_14EBE0(s32 x, s32 y, s32 k) {
+    gSPDisplayList(D_800E9BA0++, D_80213648_ovl_14EBE0);
+    func_80200F70_ovl_14EBE0(D_801F36C0 + ((k << 5) + 0x1E0), D_801F0B90 + 0x1868, 16, 80, 2);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, x << 2, y << 2, (x + 15) << 2, (y + 15) << 2, 0, 0, k << 9, 1 << 10,
+                            1 << 10);
+    gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_8020296C_ovl_14EBE0);
-#endif
 
 /* Draws status icon k (1 uses the first palette, others the second) at (a, b) */
 void func_80202B70_ovl_14EBE0(void *a, s32 b, u8 k) {
