@@ -637,7 +637,68 @@ s32 func_801725C0_ovl_040E80(u8 c) {
     return r;
 }
 
+extern u8 D_801971F2_ovl_040E80[];
+extern u8 D_801969B9_ovl_040E80[];
+extern u8 D_801969BA_ovl_040E80[];
+
+/* Removes unit i from its squad (and, when it led a squad flagged 2, that squad from its
+ * legion's line-up) */
+#ifdef NON_MATCHING
+/* 122 vs 124: loops and stores right; the original's legion pass addresses the flag byte by symbol + index each time and copies the line-up through a second base */
+void func_80172610_ovl_040E80(u8 i) {
+    s16 sq;
+    s16 j;
+    s16 found = 0;
+
+    j = 0;
+    for (sq = 0; sq < 30; sq++) {
+        for (j = 0; j < 5; j++) {
+            u8 *m = &D_801971F2_ovl_040E80[sq * 25 + j];
+
+            if (*m == i) {
+                u8 f = D_801971F1_ovl_040E80[sq].v;
+
+                D_801971F1_ovl_040E80[sq].v = f & 0xFB;
+                if (j != 0) {
+                    *m = 0;
+                    D_801971F2_ovl_040E80[sq * 25 + 5 + j] = 0;
+                    return;
+                }
+                D_801971F1_ovl_040E80[sq].v = f & 0xFA;
+                if (!(f & 2)) {
+                    return;
+                }
+                found = sq;
+                break;
+            }
+        }
+        j = 0;
+    }
+    for (sq = 0; sq < 6; sq++) {
+        u8 *l = &D_801969BA_ovl_040E80[sq * 11];
+
+        for (; j < 5; j++) {
+            if (l[j] == found) {
+                u8 f = D_801969B9_ovl_040E80[sq * 11];
+
+                D_801969B9_ovl_040E80[sq * 11] = f & 0xFB;
+                if (j == 0) {
+                    D_801969B9_ovl_040E80[sq * 11] = f & 0xFA;
+                    return;
+                }
+                for (; j < 4; j++) {
+                    l[j] = l[j + 1];
+                }
+                l[j] = 0xFF;
+                break;
+            }
+        }
+        j = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80172610_ovl_040E80);
+#endif
 
 /* Adds n of item id to the stock (max 99), using the first empty slot for a new item */
 void func_80172800_ovl_040E80(u16 id, s32 n) {
