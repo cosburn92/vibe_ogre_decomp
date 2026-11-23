@@ -470,7 +470,51 @@ INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF1CC_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF730_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F0A30", func_801AF9B8_ovl_1F0A30);
+void func_8017C2FC(void *w);
+void func_8009C550(char *dst, char *src);
+u8 *func_8017C074(s32 a, s32 b, void *fn, s32 x0, s32 y0, s32 x1, s32 y1);
+void *HMalloc(s32 size);
+void _bcopy(void *src, void *dst, s32 n);
+s32 strlen(char *s);
+void func_801B0284_ovl_1F0A30(u8 *o, s32 i);
+
+#define WTXT(w) FIELD(w, u8 *, 0xD0)
+
+/* Opens the message window (top, or bottom when side is set) showing s, replacing any open one */
+void func_801AF9B8_ovl_1F0A30(char *s, s32 side) {
+    s32 y = 20;
+    char *buf;
+    u8 *w;
+    Ctx1F *c;
+
+    if (side != 0) {
+        y = 200;
+    }
+    if (FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x57D4) != NULL) {
+        func_8017C2FC(FIELD(D_801CE8BC_ovl_1F0A30, void *, 0x57D4));
+    }
+    func_8009C550((char *)D_801CE8BC_ovl_1F0A30 + 0x5750, s);
+    buf = (char *)D_801CE8BC_ovl_1F0A30 + 0x5750;
+    w = func_8017C074(0x100, 8, func_801B0284_ovl_1F0A30, 25, y, 295, y + 18);
+    WTXT(w) = HMalloc(0x604);
+    _bcopy(buf, WTXT(w), strlen(buf) + 1);
+    FIELD(WTXT(w), u8 *, 0x530) = WTXT(w);
+    WTXT(w)[0x5F0] = 4;
+    WTXT(w)[0x5F5] = 1;
+    WTXT(w)[0x5F1] = 0;
+    WTXT(w)[0x5FC] = 0;
+    WTXT(w)[0x5FD] = 0;
+    WTXT(w)[0x5F2] = 0;
+    WTXT(w)[0x5F3] = 8;
+    WTXT(w)[0x5F4] = 1;
+    WTXT(w)[0x5F6] = 15;
+    WTXT(w)[0x5FE] = 2;
+    WTXT(w)[0x5F7] = 0;
+    c = D_801CE8BC_ovl_1F0A30;
+    FIELD(w, s16, 0x18) = 0xFF;
+    FIELD(c, u8 *, 0x57D4) = w;
+    FIELD(c, u8, 0x57D0) = 30;
+}
 
 /* Shows "<name> ..." message for unit u's action a */
 void func_801AFB0C_ovl_1F0A30(u8 *u, u8 *a) {
