@@ -109,7 +109,30 @@ s32 func_801F730C_ovl_24BCA0(s32 a) {
 
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F7344_ovl_24BCA0);
 
+extern s32 (*D_8020970C_ovl_24BCA0[])(u8 c);
+f32 func_801BC35C(s16 x, s16 z);
+
+/* World position of map cell c: table x/z plus offsets, y from the ground height */
+#ifdef NON_MATCHING
+/* range chain: presetting k = 0xFF avoids the set-compare, but c is not copied to s0 up front and the 0xFF lands in a bnezl slot */
+void func_801F751C_ovl_24BCA0(s32 c, f32 *p, f32 ox, f32 oy, f32 oz) {
+    s32 k;
+
+    k = 0xFF;
+    if ((u8)c < 20) {
+        k = 0;
+    } else if ((u8)(c - 20) < 27) {
+        k = 1;
+    } else if ((u8)(c - 47) < 40) {
+        k = 2;
+    }
+    p[0] = D_80209700_ovl_24BCA0[k]((u8)c) + ox;
+    p[2] = D_8020970C_ovl_24BCA0[k]((u8)c) + oz;
+    p[1] = func_801BC35C(p[0], p[2]) + oy;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F751C_ovl_24BCA0);
+#endif
 
 /* Position for string str (0xFF-terminated): x of the last character, y and z averaged */
 void func_801F7644_ovl_24BCA0(u8 *str, f32 *out, u8 c) {
