@@ -1047,19 +1047,19 @@ void *func_801CC124_ovl_1F0A30(s32 id) {
 }
 
 /* Loads entry k of the index chunk id and unpacks it like func_801CC124 */
-#ifdef NON_MATCHING
-/* 82/82 instructions, 17 words differ: id/k/index land in s2/s1/s0 instead of s1/s0/s2 (same issue as 1CE070 func_801986E0) */
+/* Loads entry k of the index chunk id and unpacks it like func_801CC124 */
 void *func_801CC234_ovl_1F0A30(s32 id, s32 k) {
     s32 *index = func_80071C04(ChunkSize(id));
     s32 size;
     u8 *raw;
     void *out;
 
-    LoadChunkRaw(index, id);
+    raw = (u8 *)index;
+    LoadChunkRaw(raw, id);
     {
         s32 e = index[k];
 
-        HFree(index);
+        HFree(raw);
         size = ChunkSize(e);
         raw = func_80071C04(size);
         LoadChunkRaw(raw, e);
@@ -1079,9 +1079,6 @@ void *func_801CC234_ovl_1F0A30(s32 id, s32 k) {
     HFree(raw);
     return out;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20BCE0", func_801CC234_ovl_1F0A30);
-#endif
 
 /* 1 when one side has no active units left (dead, retreated or flag 1 excluded) */
 s32 func_801CC37C_ovl_1F0A30(void) {
