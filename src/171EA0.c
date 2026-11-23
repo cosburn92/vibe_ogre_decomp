@@ -100,7 +100,85 @@ void func_80214FFC_ovl_171EA0(void) {
     func_80215378_ovl_171EA0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/171EA0", func_802150C8_ovl_171EA0);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void *func_8017BFB0(s32 a, s32 b, void *c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i, s32 j, s32 k);
+void func_8017C384(void *w);
+void func_8020CDA0(s32 se);
+extern u16 *D_800C4BDC;
+extern s32 D_801F1070;
+extern u8 gLocations[][0x24];
+void func_80215494_ovl_171EA0();
+void func_80215780_ovl_171EA0();
+void func_80215444_ovl_171EA0(void);
+
+/* Location info screen update: picks the location (0x5C, or the first one when out of range,
+ * closing the screen) and its kind (0x5E: 0 plain, 1 town, 2 temple), then opens the two windows,
+ * waits for a button, closes them and ends the screen */
+void func_802150C8_ovl_171EA0(void) {
+    u8 *loc = gLocations[0];
+
+    if ((u16)D_8021AA70_ovl_171EA0->h5C < D_801F1070) {
+        loc = gLocations[(u16)D_8021AA70_ovl_171EA0->h5C];
+    } else {
+        D_800E7A30.flags2 |= 2;
+    }
+    if (!(FIELD(loc, u16, 0x1C) & 6)) {
+        D_8021AA70_ovl_171EA0->b5E = 0;
+    } else if (FIELD(loc, u16, 0x1C) & 2) {
+        D_8021AA70_ovl_171EA0->b5E = 1;
+    } else {
+        D_8021AA70_ovl_171EA0->b5E = 2;
+    }
+    D_8021AA70_ovl_171EA0->w60 = (s32)loc;
+    switch (D_8021AA70_ovl_171EA0->b64) {
+        case 0:
+            if (D_8021AA70_ovl_171EA0->w68 == 0) {
+                u8 *w;
+                u8 *w2;
+
+                w = func_8017BFB0(0, 0, func_80215494_ovl_171EA0, 100, 110, 220, 210, 80, 90, 240, 230);
+                D_8021AA70_ovl_171EA0->w68 = (s32)w;
+                w[0x14] |= 3;
+                w2 = func_8017BFB0(0, 0, func_80215780_ovl_171EA0, 80, 40, 240, 190, 60, 20, 260, 210);
+                D_8021AA70_ovl_171EA0->w6C = (s32)w2;
+                w2[0x14] |= 3;
+            }
+            if (D_8021AA70_ovl_171EA0->b65 >= 9) {
+                D_8021AA70_ovl_171EA0->b64 = 1;
+                D_8021AA70_ovl_171EA0->b65 = 0;
+            } else {
+                D_8021AA70_ovl_171EA0->b65++;
+            }
+            break;
+        case 1:
+            if (*D_800C4BDC & 0xC000) {
+                D_8021AA70_ovl_171EA0->b64 = 2;
+                func_8020CDA0(1);
+            }
+            break;
+        case 2:
+            if (D_8021AA70_ovl_171EA0->w68 != 0) {
+                func_8017C384((void *)D_8021AA70_ovl_171EA0->w68);
+                func_8017C384((void *)D_8021AA70_ovl_171EA0->w6C);
+                D_8021AA70_ovl_171EA0->w68 = 0;
+                D_8021AA70_ovl_171EA0->w6C = 0;
+            }
+            if (D_8021AA70_ovl_171EA0->b65 >= 17) {
+                D_8021AA70_ovl_171EA0->b64 = 3;
+                D_8021AA70_ovl_171EA0->b65 = 0;
+            } else {
+                D_8021AA70_ovl_171EA0->b65++;
+            }
+            break;
+        case 3:
+            func_80215444_ovl_171EA0();
+            D_80214E84 = 0;
+            D_800E7A30.flags2 |= 2;
+            break;
+    }
+}
 
 /* Loads the four images from asset 0x218E9B4 (frame, then variants picked by the three parameters) */
 void func_80215378_ovl_171EA0(void) {
