@@ -849,7 +849,54 @@ void func_801BFE28_ovl_1F0A30(u8 *d) {
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFE28_ovl_1F0A30);
 #endif
 
+/* Entry `page` of texture set desc (8-byte header, then per entry an 8-byte header followed by
+ * the colour plane (flag 1), the second plane (flag 2) and a 0x200-byte palette (flag 4)) */
+#ifdef NON_MATCHING
+/* 72/85: the original keeps a separate size call per flag branch and picks the second-plane size with branches; GCC merges the calls and uses xori */
+u8 *func_801BFF84_ovl_1F0A30(u8 *desc, u32 page) {
+    if (desc != NULL) {
+        u8 f = desc[3];
+        u16 w = *(u16 *)(desc + 4);
+        u16 h = *(u16 *)(desc + 6);
+        u32 sz1, sz2;
+        u32 off;
+        u32 i;
+        u8 *e;
+
+        if (f & 2) {
+            sz1 = func_801BE9A8_ovl_1F0A30(3, w) * h;
+            sz2 = 0;
+        } else if (f & 4) {
+            sz1 = func_801BE9A8_ovl_1F0A30(1, w) * h;
+            sz2 = func_801BE9A8_ovl_1F0A30((desc[3] & 1) ? 0 : 1, w) * h;
+        } else {
+            sz1 = func_801BE9A8_ovl_1F0A30(2, w) * h;
+            sz2 = func_801BE9A8_ovl_1F0A30((desc[3] & 1) ? 0 : 1, w) * h;
+        }
+        off = 8;
+        e = desc + 8;
+        for (i = 0; i < desc[2]; i++) {
+            if (i == page) {
+                return e;
+            }
+            off += 8;
+            if (e[3] & 1) {
+                off += sz1;
+            }
+            if (e[3] & 2) {
+                off += sz2;
+            }
+            if (e[3] & 4) {
+                off += 0x200;
+            }
+            e = desc + off;
+        }
+    }
+    return NULL;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFF84_ovl_1F0A30);
+#endif
 
 /* Palette of page `page` of image bank desc (NULL when the page has none) */
 #ifdef NON_MATCHING
