@@ -107,55 +107,37 @@ void func_80215298_ovl_18F100(void) {
     D_80210219 = 0x11;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 bzero(u8 *, s32);                       /* extern */
-extern u8 D_8021B330_ovl_18F100;
+extern u8 D_8021B330_ovl_18F100[];
 
+/* Rebuilds the 9 node flags: 4 for each node with a neighbour (other than the current node) at
+ * level 2+ (1+ while the current node is at level 2); when the current node has such a neighbour
+ * at level 1+, every level-2 node gets 4; the current node gets 0x10 */
 void func_802152F4_ovl_18F100(void) {
-    s32 var_s1;
-    s32 var_s1_2;
-    u8 *temp_v0;
-    u8 *var_s0;
-    u8 *var_s0_2;
+    s32 i;
 
-    var_s0 = &D_8021B330_ovl_18F100;
-    bzero(&D_8021B330_ovl_18F100, 9);
-    var_s1 = 0;
-    do {
-        var_s1 += 1;
-        if (func_80216FF4_ovl_18F100(var_s1, 2) & 0xFF) {
-            *var_s0 |= 4;
+    bzero(D_8021B330_ovl_18F100, 9);
+    for (i = 0; i < 9; i++) {
+        if ((u8)func_80216FF4_ovl_18F100(i, 2)) {
+            D_8021B330_ovl_18F100[i] |= 4;
         }
-        var_s0 += 1;
-    } while (var_s1 < 9);
-    var_s1_2 = 0;
+    }
+    i = 0;
     if (D_8021B299_ovl_18F100[D_801F0B9C] == 2) {
-        var_s0_2 = &D_8021B330_ovl_18F100;
-        do {
-            var_s1_2 += 1;
-            if (func_80216FF4_ovl_18F100(var_s1_2, 1) & 0xFF) {
-                *var_s0_2 |= 4;
+        for (i = 0; i < 9; i++) {
+            if ((u8)func_80216FF4_ovl_18F100(i, 1)) {
+                D_8021B330_ovl_18F100[i] |= 4;
             }
-            var_s0_2 += 1;
-        } while (var_s1_2 < 9);
-        var_s1_2 = 0;
+        }
+        i = 0;
     }
     do {
-        if ((D_8021B299_ovl_18F100[var_s1_2] == 2) && (func_80216FF4_ovl_18F100(D_801F0B9C, 1) & 0xFF)) {
-            (&D_8021B330_ovl_18F100)[var_s1_2] = 4;
+        if (D_8021B299_ovl_18F100[i] == 2 && (u8)func_80216FF4_ovl_18F100(D_801F0B9C, 1)) {
+            D_8021B330_ovl_18F100[i] = 4;
         }
-        var_s1_2 += 1;
-    } while (var_s1_2 < 9);
-    temp_v0 = &(&D_8021B330_ovl_18F100)[D_801F0B9C];
-    *temp_v0 |= 0x10;
+        i++;
+    } while (i < 9);
+    D_8021B330_ovl_18F100[D_801F0B9C] |= 0x10;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/18F100", func_802152F4_ovl_18F100);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/18F100", func_80215438_ovl_18F100);
 
