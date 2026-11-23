@@ -767,8 +767,43 @@ static inline s32 RowBytes201(s32 fmt, u32 w) {
     return ((u32)(w + 31) >> 5) * 8;
 }
 
-#endif
+/* 87/87 instructions, 26 words differ: width/stride/row land in s5/s4 instead of s3/s5 and the format copy goes to a1 */
+/* Converts a texture's pixels in place (32-bit through func_801BED08, 16-bit through func_801BEDC8) */
+void func_801BFE28_ovl_1F0A30(u8 *d) {
+    u32 w = FIELD(d, u16, 4);
+    u32 h = FIELD(d, u16, 6);
+    s32 stride = RowBytes201(d[3], w);
+    u32 x;
+    u32 y;
+    u8 *row;
+
+    if (d[3] == 3) {
+        row = d + 8;
+        for (y = 0; y < h; y++) {
+            u32 *p = (u32 *)row;
+
+            for (x = 0; x < w; x++) {
+                *p = func_801BED08_ovl_1F0A30(*p);
+                p++;
+            }
+            row += stride;
+        }
+    } else if (d[3] == 2) {
+        row = d + 8;
+        for (y = 0; y < h; y++) {
+            u16 *p = (u16 *)row;
+
+            for (x = 0; x < w; x++) {
+                *p = func_801BEDC8_ovl_1F0A30(*p);
+                p++;
+            }
+            row += stride;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFE28_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BFF84_ovl_1F0A30);
 
