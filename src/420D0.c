@@ -54,7 +54,51 @@ inline s32 func_8016C1D0_ovl_040E80(u16 year, u8 era) {
     return r;
 }
 
+extern u8 D_80187000_ovl_040E80[];
+extern u8 D_80187010_ovl_040E80[];
+
+/* Converts d from the 16-month game calendar to the 12-month one (year - 1748) */
+#ifdef NON_MATCHING
+/* 91 vs 87 instructions: the original evaluates (m == 1) & leap as setcc + and; GCC here turns it into branches */
+void func_8016C268_ovl_040E80(Date420 *d) {
+    s32 leap = 0;
+    s16 days = d->day - 1;
+    s32 c;
+    u8 t;
+    u8 m;
+
+    if (func_8016C1D0_ovl_040E80(d->year, 0) == 1) {
+        leap = 1;
+    }
+    d->year -= 1748;
+    for (m = 0; m < d->month - 1; m++) {
+        days += D_80187010_ovl_040E80[m];
+        c = (m == 1) & leap;
+        if (c) {
+            days++;
+        }
+    }
+    for (m = 0;; m++) {
+        t = D_80187000_ovl_040E80[m];
+        c = (m == 2) & leap;
+        days -= t;
+        if (c) {
+            days--;
+        }
+        if (days < 0) {
+            break;
+        }
+    }
+    if (c) {
+        days++;
+    }
+    days += t;
+    d->month = m + 1;
+    d->day = days + 1;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C268_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C3C4_ovl_040E80);
 
