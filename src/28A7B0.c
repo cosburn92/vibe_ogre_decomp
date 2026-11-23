@@ -515,7 +515,55 @@ void func_8022F864_ovl_286BD0(void) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F864_ovl_286BD0);
 #endif
 
+/* Arrow position for slot idx: grid cell k (column 0x60, row 0x70), pushed 18 out every other
+ * 8 frames, plus a bob from D_8023E178 in direction a (0xA0 up, 0xB0 right, 0xC0 left, 0xD0 down) */
+#ifdef NON_MATCHING
+/* 108/114 instructions: as func_8022FB60, the table index is added as index + sp and 8 goes onto p[1] before the table byte; here the 0xB0 and 0xC0 cases also tail-merge */
+void func_8022F998_ovl_286BD0(u8 a, s32 frame, u8 idx, u8 k, u8 *o) {
+    Ofs3 tab = D_8023E178_ovl_286BD0;
+    s32 f;
+    s16 *p;
+
+    p = (s16 *)(o + idx * 4);
+    p[0] = (o + k)[0x60] * 60;
+    f = frame & 7;
+    p[1] = (o + k)[0x70] * 72;
+    if (frame & 8) {
+        switch (a) {
+            case 0xA0:
+                p[1] += 18;
+                break;
+            case 0xB0:
+                p[0] += 18;
+                break;
+            case 0xC0:
+                p[0] -= 18;
+                break;
+            case 0xD0:
+                p[1] -= 18;
+                break;
+        }
+    }
+    switch (a) {
+        case 0xA0:
+            ((s16 *)(o + idx * 4))[0] += f[tab.v];
+            break;
+        case 0xB0:
+            ((s16 *)(o + idx * 4))[1] = f[tab.v] + (((s16 *)(o + idx * 4))[1] + 8);
+            break;
+        case 0xC0:
+            ((s16 *)(o + idx * 4))[0] += 60;
+            ((s16 *)(o + idx * 4))[1] = f[tab.v] + (((s16 *)(o + idx * 4))[1] + 8);
+            break;
+        case 0xD0:
+            ((s16 *)(o + idx * 4))[0] += f[tab.v];
+            ((s16 *)(o + idx * 4))[1] += 72;
+            break;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022F998_ovl_286BD0);
+#endif
 
 /* Cursor position for slot idx: grid cell (column 0x60+k, row 0x70+k) plus a small offset chosen by
  * the high nibble of a */
