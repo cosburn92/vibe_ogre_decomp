@@ -1673,76 +1673,54 @@ void func_80238C4C_ovl_286BD0(u8 *o, u16 idx, PtrTbl28 *t) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238C4C_ovl_286BD0);
 #endif
 
+/* Loads paragraph para (paragraphs end in a blank line) of text chunk id into a new 0x500-byte
+ * buffer, marking its line breaks with 0x81 0x97; w's line table (0x4, new) gets each line's
+ * start and *nlines the line count. Returns the buffer */
 #ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-void *func_80238D14_ovl_286BD0(s32 arg0, s32 arg1, s16 *arg2, void *arg3) {
-    s16 var_s3;
-    s32 temp_v1;
-    s32 var_a2;
-    s32 var_s0;
-    s32 var_s1;
-    u8 *temp_s5;
-    u8 *var_a0;
-    void *temp_v0;
+/* 108/108, 26 words: register allocation only (n/start/dst/src/w get different saved registers) */
+u8 *func_80238D14_ovl_286BD0(s32 id, s32 para, s16 *nlines, u8 *w) {
+    s16 n;
+    s32 start;
+    s32 k;
+    u8 *src;
+    u8 *dst;
+    s32 i;
 
-    var_s3 = 1;
-    var_s1 = 0;
-    var_s0 = 0;
-    temp_s5 = func_80227A18(0x018855FE, arg0);
-    FIELD(arg3, void **, 4) = HMalloc(0x1F40);
-    temp_v0 = HMalloc(0x500);
-    bzero(temp_v0, 0x500);
-    var_a2 = 0;
-    var_a0 = temp_s5;
-    *FIELD(arg3, void **, 4) = temp_v0;
-loop_1:
-    if (FIELD(var_a0, u8, 0) == 0xD) {
-        if ((FIELD(var_a0, u8, 1) == 0xA) && (FIELD(var_a0, u8, 2) == 0xD) && (FIELD(var_a0, u8, 3) == 0xA)) {
-            var_s0 += 1;
-            if (arg1 != var_s0) {
-                var_a0 += 3;
-                if ((arg1 + 1) == var_s0) {
-                    func_80080998(temp_v0, &temp_s5[var_s1], var_a2 - var_s1);
-                    *arg2 = var_s3;
-                } else {
-                    goto block_9;
-                }
+    src = func_80227A18(0x018855FE, id);
+    n = 1;
+    start = 0;
+    k = 0;
+    FIELD(w, u8 **, 4) = HMalloc(0x1F40);
+    dst = HMalloc(0x500);
+    bzero(dst, 0x500);
+    FIELD(w, u8 **, 4)[0] = dst;
+    for (i = 0; i <= 0x0FFFFFFE; i++) {
+        if (src[i + 0] == '\r' && src[i + 1] == '\n' && src[i + 2] == '\r' && src[i + 3] == '\n') {
+            k++;
+            if (para == k) {
+                start = i + 4;
             } else {
-                var_s1 = var_a2 + 4;
-                var_a0 += 3;
-block_9:
-                var_a2 += 3;
-                goto block_15;
-            }
-        } else {
-            if ((FIELD(var_a0, u8, 0) == 0xD) && (FIELD(var_a0, u8, 1) == 0xA)) {
-                if (arg1 == var_s0) {
-                    FIELD(var_a0, u8, 0) = 0x81;
-                    temp_v1 = var_s3 << 0x10;
-                    FIELD(var_a0, u8, 1) = 0x97U;
-                    var_s3 += 1;
-                    *((temp_v1 >> 0xE) + FIELD(arg3, void **, 4)) = temp_v0 + (var_a2 - (var_s1 - 2));
+                if (para + 1 == k) {
+                    func_80080998(dst, src + start, i - start);
+                    *nlines = n;
+                    goto done;
                 }
-                var_a0 += 1;
-                var_a2 += 1;
             }
-            goto block_15;
-        }
-    } else {
-block_15:
-        var_a2 += 1;
-        var_a0 += 1;
-        if (var_a2 > 0x0FFFFFFE) {
-            *arg2 = var_s3;
-        } else {
-            goto loop_1;
+            i += 3;
+        } else if (src[i + 0] == '\r' && src[i + 1] == '\n') {
+            if (para == k) {
+                src[i + 0] = 0x81;
+                src[i + 1] = 0x97;
+                FIELD(w, u8 **, 4)[n] = dst + (i - (start - 2));
+                n++;
+            }
+            i++;
         }
     }
-    HFree(temp_s5);
-    return temp_v0;
+    *nlines = n;
+done:
+    HFree(src);
+    return dst;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238D14_ovl_286BD0);
