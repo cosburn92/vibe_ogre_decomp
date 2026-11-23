@@ -96,7 +96,77 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F40B0_ovl_145210);
 
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4208_ovl_145210);
 
+static inline s32 Cmp8_145(u8 *x, u8 *y) {
+    s32 n;
+
+    for (n = 8; n != 0; n--) {
+        if (*x++ != *y++) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void *func_801F4208_ovl_145210(u8 id);
+
+/* Reference-counted asset cache: finds the kind/key entry (8-byte key msg) and bumps its count,
+ * or takes a free slot and loads the asset for it; hangs on overflow */
+#ifdef NON_MATCHING
+/* 132/136 instructions: the key compare increments the message pointer later, and the free index D_801FDA02 is reloaded after its 0xFF check in the original */
+void func_801F4358_ovl_145210(s32 kind, void *msg) {
+    Ent145 *found = NULL;
+    Ent145 *e;
+    s32 i;
+
+    for (i = 0; i < D_801FDA00_ovl_145210; i++) {
+        if (((Ent145 *)D_801FDA54_ovl_145210)[i].type == (u8)kind && !Cmp8_145(((Ent145 *)D_801FDA54_ovl_145210)[i].key, msg)) {
+            found = &((Ent145 *)D_801FDA54_ovl_145210)[i];
+            break;
+        }
+    }
+    e = found;
+    if (e != NULL) {
+        if (*(u16 *)e->unk0C >= 0xFFFF) {
+            for (;;) {
+            }
+        }
+        (*(u16 *)e->unk0C)++;
+    } else {
+        if (D_801FDA02_ovl_145210 == 0xFF) {
+            for (;;) {
+            }
+        }
+        e = &D_801FDA54_ovl_145210[D_801FDA02_ovl_145210];
+        *(u16 *)e->unk0C = 0;
+        e->value = 0;
+        D_801FDA02_ovl_145210 = e->b0;
+        e->type = 0;
+        bzero(e->key, 8);
+        e->type = kind;
+        *(u16 *)e->unk0C = 1;
+        _bcopy(msg, e->key, 8);
+        switch ((u8)kind) {
+            case 2:
+                e->value = (s32)LoadAsset(((s32 *)msg)[0], ((u8 *)msg)[4], -2);
+                break;
+            case 3:
+                e->value = (s32)LoadAsset(((s32 *)msg)[0], ((u8 *)msg)[4], -3, ((u8 *)msg)[5]);
+                break;
+            case 4:
+                e->value = (s32)LoadAsset(0x0209D322, ((u16 *)msg)[0], -0xA);
+                break;
+            case 5:
+                e->value = (s32)LoadAsset(0x0209D322, ((u16 *)msg)[0], -1);
+                break;
+            case 6:
+                e->value = (s32)func_801F4208_ovl_145210(((u8 *)msg)[0]);
+                break;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F4358_ovl_145210);
+#endif
 
 void func_801F4578_ovl_145210(s32 a, u8 b) {
     Msg8 m;
@@ -117,17 +187,6 @@ void func_801F45D0_ovl_145210(s32 a, u8 b, u8 c) {
     m.b = b;
     m.c = c;
     func_801F4358_ovl_145210(3, p);
-}
-
-static inline s32 Cmp8_145(u8 *x, u8 *y) {
-    s32 n;
-
-    for (n = 8; n != 0; n--) {
-        if (*x++ != *y++) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 /* Value of the type-3 table entry keyed (a, b, c); hangs if there is none */
