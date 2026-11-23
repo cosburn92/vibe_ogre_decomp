@@ -1038,7 +1038,44 @@ void func_8022A488_ovl_27A020(Obj27 *o) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A488_ovl_27A020);
 #endif
 
+extern u8 D_8022CAB8_ovl_27A020[];
+void func_8016DE1C(u8 a, u8 b);
+
+/* Draws the price rows of the marked list entries: a frame (lower for palette-2 entries), the
+ * price label (greyed when above gGoth) and the price */
+#ifdef NON_MATCHING
+/* 124/131 instructions: logic as in the original; the loads of the window position and list pointer, and the frame offset select, are scheduled differently */
+void func_8022A750_ovl_27A020(Obj27 *o) {
+    u8 *win = FIELD(o, u8 *, 0);
+    List27 *l = (List27 *)&o->w18;
+    s16 i;
+    s16 y;
+    s32 x;
+    s32 yy;
+    u32 price;
+    u8 *e;
+
+    gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+    y = FIELD(win, s32, 0x30) + 3;
+    x = (s16)FIELD(win, s32, 0x2C) + FIELD(o, s16, 0xE);
+    for (i = 0; i < 5; i++) {
+        e = (u8 *)l->items[i];
+        if (List27_EntryMark(l, e)) {
+            yy = y + ((((u8 (*)(u8, u8))func_8016DE1C)(e[0x4B], e[0x4F]) == 2) ? 22 : 20);
+            func_802288C0_ovl_27A020(D_8022D104_ovl_27A020 + 0x320, D_8022D100_ovl_27A020 + 0x2828, 0x30, 0x20, 2);
+            func_80228B7C_ovl_27A020(x - 0x1A, yy + 1, 0xC);
+            price = func_8022592C_ovl_27A020(i);
+            func_802288C0_ovl_27A020(D_8022C9D8_ovl_27A020 + (((u32)gGoth < price) << 6), D_8022D120_ovl_27A020, 0x50,
+                                     0x11, 2);
+            func_80228EFC_ovl_27A020(x - 0x50, yy, price, -7);
+            y += 0x24;
+            func_8016DE1C(e[0x4B], e[0x4F]);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A750_ovl_27A020);
+#endif
 
 extern u8 D_8022CAB8_ovl_27A020[];
 void func_80179034(s32 a, s32 x, s32 y);
