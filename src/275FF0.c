@@ -83,7 +83,65 @@ s32 func_80221B60_ovl_275850(u16 msg, u8 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/275FF0", func_80221D8C_ovl_275850);
+u8 *func_801F85C0(f32 *pos, u8 *r);
+extern u8 D_802256B8_ovl_275850[];
+
+s32 func_80221D8C_ovl_275850(u16 msg, u8 *o) {
+    f32 p[4];
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8();
+            break;
+        case 0x100:
+            FIELD(o, s32, 0) = D_80220F68;
+            FIELD(o, s32, 4) = D_80220F6C;
+            func_8020DC80(0x1000);
+            break;
+        case 0x1000:
+            func_80207CE4(FIELD(o, u8 *, 0));
+            func_8020E0B4(-1, 0x1002);
+            break;
+        case 0x1002:
+            if (*FIELD(o, u8 *, 0) != *FIELD(o, u8 *, 4)) {
+                func_8020DC80(0x1003);
+            } else {
+                func_8020E0B4(1, 0x1006);
+            }
+            break;
+        case 0x1003:
+            func_801F7644(FIELD(o, u8 *, 0), p, 0x20);
+            p[1] += 20.0f;
+            FIELD(func_801F85C0(p, D_802256AC_ovl_275850), s32, 0x10) = 10;
+            func_80218104(p[0], p[1], p[2], 100);
+            func_8020E0B4(10, 0x1004);
+            break;
+        case 0x1004:
+            ((u8 *)&D_80220F6C)[0] = *FIELD(o, u8 *, 4);
+            func_801F9DFC(0, *FIELD(o, u8 *, 0), 0x1F);
+            D_80220F68 = FIELD(o, s32, 0);
+            ((u8 *)&D_80220F6C)[1] = 0;
+            func_8020DF00(func_80221860_ovl_275850);
+            func_8020E0B4(3, 0x1006);
+            break;
+        case 0x1006:
+            func_801F9DFC(0, *FIELD(o, u8 *, 4), 0x20);
+            func_801F8E50(*FIELD(o, u8 *, 4), D_802256B2_ovl_275850);
+            func_80207F30(*FIELD(o, u8 *, 4), 5, 0x14);
+            func_80207FA0(FIELD(o, u8 *, 4) + 1, 0xF, 0x12);
+            func_8020E0B4(7, 0x1007);
+            break;
+        case 0x1007:
+            func_801F8E50(*FIELD(o, u8 *, 4), D_802256B8_ovl_275850);
+            func_801F8E50(*FIELD(o, u8 *, 4), D_802256B8_ovl_275850 + 6);
+            func_8020E0B4(0x23, 0x1008);
+            break;
+        case 0x1008:
+            func_8020DD34(0x101);
+            break;
+    }
+    return 0;
+}
 
 void func_8020E0D0();
 extern u8 D_802256C4_ovl_275850[];
