@@ -43,7 +43,66 @@ s32 func_80227E20_ovl_281860(void)
   return D_8022A958_ovl_281860 == ((void *) 0);
 }
 
+s32 ChunkSize(s32 id);
+void *LoadChunkRaw(void *dst, s32 id);
+void *func_80071C04(s32 size);
+s32 ReadU32BE(void *p);
+void DecodeLZ(void *dst, void *src);
+extern u8 D_801976DA;
+
+/* Result of stage k's script: its last word, 0xFF0000nn for an ending code (some codes also set
+ * D_801976DA = 24); 0 otherwise */
+#ifdef NON_MATCHING
+/* 100 vs 101 instructions: the original copies the size before the rounding of size / 4 (GCC here rounds it in place) */
+s32 func_80227E44_ovl_281860(s32 k) {
+    s32 *index = func_80071C04(ChunkSize(0x019A8804));
+    s32 id;
+    u8 *raw;
+    s32 size;
+    s32 *data;
+    s32 last;
+
+    LoadChunkRaw(index, 0x019A8804);
+    id = index[k];
+    HFree(index);
+    raw = func_80071C04(ChunkSize(id));
+    LoadChunkRaw(raw, id);
+    size = ReadU32BE(raw);
+    data = func_80071C04(size);
+    DecodeLZ(data, raw);
+    last = data[size / 4 - 1];
+    HFree(raw);
+    HFree(data);
+    if ((last & 0xFF000000) == 0xFF000000) {
+        switch (last & 0xFF) {
+        case 1:
+            D_801976DA = 24;
+            return -3;
+        case 2:
+            return -6;
+        case 3:
+            D_801976DA = 24;
+            return -5;
+        case 4:
+            D_801976DA = 24;
+            return -4;
+        case 5:
+            D_801976DA = 24;
+            return -7;
+        case 6:
+            D_801976DA = 24;
+            return -8;
+        case 7:
+            return -9;
+        case 8:
+            return -10;
+        }
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227E44_ovl_281860);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/283DF0", func_80227FD8_ovl_281860);
 
