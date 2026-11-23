@@ -14,7 +14,7 @@ extern s32 D_80220F68_ovl_25EE90;
 
 Task271 *func_8020DF00_ovl_25EE90(void *fn);
 s32 func_8021DACC_ovl_25EE90(u16 msg, u8 *o);
-void func_8021D2AC_ovl_25EE90(void);
+s32 func_8021D2AC_ovl_25EE90(u16 msg, u8 *o);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
@@ -28,7 +28,198 @@ void func_8021D280_ovl_25EE90(s32 a) {
     func_8020DF00_ovl_25EE90(func_8021DACC_ovl_25EE90);
 }
 
-INCLUDE_ASM("asm/nonmatchings/271E30", func_8021D2AC_ovl_25EE90);
+extern u8 D_80220EE0_b_ovl_25EE90[];
+void func_8020DFB8_ovl_25EE90(void);
+void bzero(void *p, s32 n);
+u8 *func_802173C4_ovl_25EE90(s32 id);
+u8 *func_80214BE8_ovl_25EE90(s32 id);
+s16 func_801F7128(u8 c);
+void func_8020A4A8_ovl_25EE90(void *a, void *b);
+void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
+void func_801F9DFC(void *a, u8 b, s32 c);
+extern u8 D_800EB240[];
+extern u8 D_800EB290[];
+extern u8 D_80220EE0_ovl_25EE90[];
+void func_80217C84_ovl_25EE90(s32 id, f32 *out);
+f32 func_8020A3C8_ovl_25EE90(f32 *v);
+void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out);
+void func_8020E0B4_ovl_25EE90(s32 a, s32 b);
+void func_8020D814_ovl_25EE90(void *t);
+void func_801C893C();
+
+/* Spell bolt: effect 0x6E flies from the caster's side (x +-95, y -10) to unit 0x10 in 28 steps
+ * with a ground shadow (0x70), leaving trail effects every 4 frames, then bursts (0x6C/0x6D/0x6F)
+ * and damages the target */
+extern u8 D_80220EE0_b_ovl_25EE90[];
+void func_8020DFB8_ovl_25EE90(void);
+void bzero(void *p, s32 n);
+u8 *func_802173C4_ovl_25EE90(s32 id);
+u8 *func_80214BE8_ovl_25EE90(s32 id);
+s16 func_801F7128(u8 c);
+void func_8020A4A8_ovl_25EE90(void *a, void *b);
+void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
+void func_801F9DFC(void *a, u8 b, s32 c);
+extern u8 D_800EB240[];
+extern u8 D_800EB290[];
+extern u8 D_80220EE0_ovl_25EE90[];
+void func_80217C84_ovl_25EE90(s32 id, f32 *out);
+f32 func_8020A3C8_ovl_25EE90(f32 *v);
+void func_8020A2E0_ovl_25EE90(f32 *v, f32 s, f32 *out);
+void func_8020E0B4_ovl_25EE90(s32 a, s32 b);
+void func_8020D814_ovl_25EE90(void *t);
+void func_801C893C();
+
+/* Spell bolt: effect 0x6E flies from the caster's side (x +-95, y -10) to unit 0x10 in 28 steps
+ * with a ground shadow (0x70), leaving trail effects every 4 frames, then bursts (0x6C/0x6D/0x6F)
+ * and damages the target */
+s32 func_8021D2AC_ovl_25EE90(u16 msg, u8 *o) {
+    s32 r = 0;
+
+    switch (msg) {
+        case 0x101:
+            func_8020DFB8_ovl_25EE90();
+            break;
+        case 0x100:
+            bzero(o, 0x4C);
+            FIELD(o, u8 *, 0x1C) = func_802173C4_ovl_25EE90(0x6E);
+            FIELD(o, f32, 0) = FIELD(o, f32, 4) = FIELD(o, f32, 8) = 0.0f;
+            func_8020DC80_ovl_25EE90(0x1002);
+            break;
+        case 0x1002: {
+            u8 *m;
+            s32 c;
+
+            if (func_801F7128(o[0xF]) != 0) {
+                FIELD(o, f32, 0) = 95.0f;
+            } else {
+                FIELD(o, f32, 0) = -95.0f;
+            }
+            FIELD(o, s32, 8) = 0;
+            FIELD(o, f32, 4) = -10.0f;
+            m = FIELD(o, u8 *, 0x1C) + 0x1C;
+            func_8020A4A8_ovl_25EE90(D_80220EE0_ovl_25EE90, m);
+            func_8020A5A0_ovl_25EE90(m, o);
+            c = 0xF1;
+            switch (FIELD(o, s32, 0x18)) {
+                case 0x2D:
+                    c = 0xF3;
+                    break;
+                case 0x2E:
+                    c = 0xF5;
+                    break;
+            }
+            func_801F9DFC(D_800EB290, o[0xF], c);
+            func_8020DC80_ovl_25EE90(0x1003);
+            break;
+        }
+        case 0x1003: {
+            f32 t[3];
+            f32 *d;
+
+            func_80217C84_ovl_25EE90(FIELD(o, s32, 0x10), t);
+            FIELD(o, f32, 0x34) = t[0] - FIELD(o, f32, 0);
+            FIELD(o, f32, 0x38) = t[1] - FIELD(o, f32, 4);
+            FIELD(o, f32, 0x3C) = t[2] - FIELD(o, f32, 8);
+            d = (f32 *)(o + 0x34);
+            FIELD(o, f32, 0x44) = func_8020A3C8_ovl_25EE90(d);
+            func_8020A2E0_ovl_25EE90(d, 1.0f / FIELD(o, f32, 0x44), d);
+            FIELD(o, s32, 0x40) = 0;
+            FIELD(o, f32, 0x28) = FIELD(o, f32, 0);
+            FIELD(o, f32, 0x2C) = FIELD(o, f32, 4);
+            FIELD(o, f32, 0x30) = FIELD(o, f32, 8);
+            FIELD(o, f32, 0x48) = FIELD(o, f32, 0x44) / 28.0f;
+            func_8020E0B4_ovl_25EE90(2, 0x1004);
+            break;
+        }
+        case 0x1004: {
+            u8 *e = func_80214BE8_ovl_25EE90(0x70);
+
+            FIELD(o, u8 *, 0x20) = e;
+            FIELD(e, s32, 0xC) -= 500;
+            func_8020DC80_ovl_25EE90(0x1005);
+        }
+        case 0x1005: {
+            f32 *s = (f32 *)(o + 0x28);
+            u8 *m;
+            f32 v[3];
+            s32 i;
+
+            if (FIELD(o, f32, 0x44) <= (FIELD(o, f32, 0x40) += FIELD(o, f32, 0x48))) {
+                FIELD(o, f32, 0x40) = FIELD(o, f32, 0x44);
+                func_8020DC80_ovl_25EE90(0x1006);
+            }
+            for (i = 0; i < 3; i++) {
+                ((f32 *)o)[i] = s[i + 3] * s[6] + s[i];
+            }
+            m = FIELD(o, u8 *, 0x1C);
+            m += 0x1C;
+            func_8020A4A8_ovl_25EE90(D_80220EE0_ovl_25EE90, m);
+            func_8020A5A0_ovl_25EE90(m, o);
+            m = FIELD(o, u8 *, 0x20);
+            m += 0x1C;
+            func_8020A4A8_ovl_25EE90(D_80220EE0_b_ovl_25EE90, m);
+            v[0] = FIELD(o, f32, 0);
+            *(s32 *)&v[1] = 0;
+            v[2] = FIELD(o, f32, 8);
+            func_8020A5A0_ovl_25EE90(m, v);
+            if (s[7] * 0.5f <= s[6]) {
+                FIELD(o, u16, 0x26) = 1;
+            }
+            if (++FIELD(o, s16, 0x24) >= 4) {
+                D_80220F68_ovl_25EE90 = FIELD(FIELD(o, u8 *, 0x1C), s32, 0x10);
+                func_8020A4A8_ovl_25EE90(FIELD(o, u8 *, 0x1C) + 0x1C, (u8 *)func_8020DF00_ovl_25EE90(func_8021DACC_ovl_25EE90) + 0x24);
+                FIELD(o, s16, 0x24) = 0;
+            }
+            break;
+        }
+        case 0x1006: {
+            u8 *e = func_80214BE8_ovl_25EE90(0x6C);
+            u8 *m;
+            s32 c;
+
+            FIELD(e, s32, 0xC) = -10000;
+            FIELD(e, u16, 0xA) |= 0x9000;
+            m = e + 0x1C;
+            func_8020A4A8_ovl_25EE90(D_80220EE0_ovl_25EE90, m);
+            func_8020A5A0_ovl_25EE90(m, o);
+            e = func_80214BE8_ovl_25EE90(0x6D);
+            FIELD(e, u16, 0xA) |= 0x8000;
+            func_8020A4A8_ovl_25EE90(m, e + 0x1C);
+            e = func_80214BE8_ovl_25EE90(0x6F);
+            FIELD(e, u16, 0xA) |= 0x8000;
+            func_8020A4A8_ovl_25EE90(m, e + 0x1C);
+            func_801C893C(FIELD(o, s16, 0x12), 10);
+            c = 0xF2;
+            switch (FIELD(o, s32, 0x18)) {
+                case 0x2D:
+                    c = 0xF4;
+                    break;
+                case 0x2E:
+                    c = 0xF6;
+                    break;
+            }
+            func_801F9DFC(D_800EB240, o[0xF], c);
+            func_8020E0B4_ovl_25EE90(10, 0x1007);
+            break;
+        }
+        case 0x1007:
+            func_8020D814_ovl_25EE90(FIELD(o, void *, 0x1C));
+            func_8020D814_ovl_25EE90(FIELD(o, void *, 0x20));
+            func_8020DC80_ovl_25EE90(0x1008);
+            break;
+        case 0x1008:
+            break;
+        case 0x1000:
+            r = FIELD(o, u16, 0x26);
+            break;
+        case 0x1001:
+            if (FIELD(o, u16, -0x1C) == 0x1008) {
+                r = 1;
+            }
+            break;
+    }
+    return r;
+}
 
 extern s32 D_80220F6C_ovl_25EE90;
 void func_8020DFB8_ovl_25EE90(void);
