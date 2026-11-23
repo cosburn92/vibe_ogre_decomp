@@ -58,7 +58,7 @@ extern u8 D_801976E8;
 void bzero(void *p, s32 n);
 void *HFree(void *p);
 void func_801B594C_ovl_1F0A30(Size1F *a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
-void func_801BC15C_ovl_1F0A30(s16 a, s16 b, s32 c, s32 d, s32 e);
+f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
 void func_801C5D64_ovl_1F0A30(void);
 void func_801BDC78_ovl_1F0A30(void);
 void func_801C62E4_ovl_1F0A30(s32 a, u8 *b, u8 c);
@@ -371,7 +371,61 @@ void func_801BBC78_ovl_1F0A30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BBE60_ovl_1F0A30);
 
+s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
+
+/* Height of the floor at (x, -z): finds the floor plane under the point (clamping it into the
+ * field when none is found) and projects the point onto it; 0 when there is no plane */
+#ifdef NON_MATCHING
+/* 128/124 instructions: the original merges the branches' last division (z / n) into one delay slot and reuses the 0.0 register */
+f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
+    f32 h = 0.0f;
+    s16 nz = -z;
+    s32 k = func_801BBE60_ovl_1F0A30(x, nz, c, d, e);
+
+    if (k == e) {
+        if (x > 0xAA) {
+            x = 0xAA;
+        }
+        if (x < -0xAA) {
+            x = -0xAA;
+        }
+        if (nz > 0x39) {
+            nz = 0x39;
+        }
+        if (nz < -0x39) {
+            nz = -0x39;
+        }
+        k = func_801BBE60_ovl_1F0A30(x, nz, c, d, k);
+        if (k == e) {
+            return h;
+        }
+    }
+    {
+        f64 *pl = (f64 *)D_801D0770_ovl_1F0A30.buf80 + k * 4;
+        f64 n = pl[0] * pl[0] + pl[1] * pl[1] + pl[2] * pl[2];
+        f64 f = pl[0] * x + pl[2] * nz + pl[3];
+        f64 px;
+        f64 py;
+        f64 pz;
+
+        if (f > 0.0) {
+            py = f * -pl[1] / n;
+            px = f * -pl[0] / n;
+            pz = f * -pl[2] / n;
+        } else {
+            py = -f * pl[1] / n;
+            px = -f * pl[0] / n;
+            pz = -f * pl[2] / n;
+        }
+        if (py != 0.0) {
+            h = (px * px + pz * pz) / py + py;
+        }
+    }
+    return h;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC15C_ovl_1F0A30);
+#endif
 
 void func_801BC35C_ovl_1F0A30(s16 a, s16 b) {
     func_801BC15C_ovl_1F0A30(a, b, D_801D07E8_ovl_1F0A30, D_801D07EC_ovl_1F0A30, D_801D07E4_ovl_1F0A30);
