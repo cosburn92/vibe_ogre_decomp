@@ -51,7 +51,72 @@ INCLUDE_ASM("asm/nonmatchings/1DAAB0", func_801A5190_ovl_1CE070);
 
 INCLUDE_ASM("asm/nonmatchings/1DAAB0", func_801A5300_ovl_1CE070);
 
+typedef struct {
+    /* 0x00 */ s32 sel;
+    /* 0x04 */ u8 unk04[8];
+    /* 0x0C */ s32 top;
+    /* 0x10 */ s32 count;
+    /* 0x14 */ s32 rows;
+    /* 0x18 */ u8 unk18[4];
+} List1DA;
+extern void *D_801BA550_ovl_1CE070;
+extern u8 *D_801BA554_ovl_1CE070;
+extern s32 *D_801BA558_ovl_1CE070;
+extern s32 *D_801BA55C_ovl_1CE070;
+extern s32 D_801BA6EC_ovl_1CE070;
+extern s32 D_801BA6F0_ovl_1CE070;
+extern u8 D_80187030;
+extern s32 D_801B863C_ovl_1CE070[];
+void func_80199460_ovl_1CE070(void);
+void func_80198EEC_ovl_1CE070(void);
+void func_80179060(void);
+void func_8017BDC0(void);
+void *HMalloc(s32 size);
+void bzero(void *p, s32 n);
+void _bcopy(void *src, void *dst, s32 n);
+void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+
+/* Opens the list screen: cursor state, and the 61 entries of D_801B863C (without ids 13 and 14
+ * unless D_80187030 is set) */
+#ifdef NON_MATCHING
+/* 103 vs 104 instructions: the count select and the filter test branch the other way, and the original keeps the table offset and source pointer as separate induction variables */
+void func_801A576C_ovl_1CE070(void) {
+    s32 n;
+    u32 i;
+    s32 *src;
+
+    func_80199460_ovl_1CE070();
+    func_80198EEC_ovl_1CE070();
+    func_80179060();
+    func_8017BDC0();
+    func_8017A704();
+    D_801BA550_ovl_1CE070 = HMalloc(0x1C);
+    bzero(D_801BA550_ovl_1CE070, 0x1C);
+    D_801BA558_ovl_1CE070 = NULL;
+    D_801BA554_ovl_1CE070 = HMalloc(8);
+    bzero(D_801BA554_ovl_1CE070, 8);
+    ((List1DA *)D_801BA550_ovl_1CE070)->sel = -1;
+    ((List1DA *)D_801BA550_ovl_1CE070)->top = 0;
+    ((List1DA *)D_801BA550_ovl_1CE070)->count = 61;
+    ((List1DA *)D_801BA550_ovl_1CE070)->count = D_80187030 == 0 ? 59 : 61;
+    ((List1DA *)D_801BA550_ovl_1CE070)->rows = 8;
+    D_801BA55C_ovl_1CE070 = HMalloc(((List1DA *)D_801BA550_ovl_1CE070)->count * 4);
+    n = 0;
+    i = 0;
+    src = D_801B863C_ovl_1CE070;
+    for (; i < 61; i++, src++) {
+        if (D_80187030 || (u32)(D_801B863C_ovl_1CE070[i] - 13) >= 2) {
+            _bcopy(src, &D_801BA55C_ovl_1CE070[n++], 4);
+        }
+    }
+    D_801BA6EC_ovl_1CE070 = 0;
+    D_801BA6F0_ovl_1CE070 = 0;
+    D_801BA6E1_ovl_1CE070 = 0;
+    func_80073164(0, 1, 1, 0x20, 1, 0x40, 0x1000);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1DAAB0", func_801A576C_ovl_1CE070);
+#endif
 
 void func_801A590C_ovl_1CE070(void) {
 }
