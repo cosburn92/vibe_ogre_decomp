@@ -130,44 +130,65 @@ void func_801AA62C_ovl_0EBBB0(s32 i, s32 a, s32 b, s32 c, f32 *x, f32 *y) {
     *y = sy / 240.0f * (D_800E82C8[i].y2 - D_800E82C8[i].y + 1);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, 29 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-s32 func_8007FEE0(s32 *, s32 *, s32 *); /* extern */
-s32 func_8007FFD0(s32 *);                   /* extern */
-s32 func_80080040(s32 *, s32, s32);         /* extern */
-s32 func_800800C0(s32 *, s32 *, s32 *); /* extern */
-s32 func_80080190(s32 *, f32);              /* extern */
-s32 func_800801D0(s32 *, s32 *);        /* extern */
-f32 func_8009CE20(f32);                             /* extern */
+void func_8007FE50(f32 *dst, f32 *src);           /* copy */
+void func_80080040(f32 *out, f32 *a, f32 *b);     /* out = a - b */
+void func_8007FFD0(f32 *v);                       /* normalise */
+void func_8007FEE0(f32 *out, f32 *a, f32 *b);     /* out = a x b */
+void func_80080190(f32 *v, f32 s);                /* v *= s */
+void func_800801D0(f32 *a, f32 *b);               /* a += b */
+void func_800800C0(f32 *out, f32 *a, f32 *b);     /* out = a + b */
+f32 *func_80080020(f32 *v, f32 x, f32 y, f32 z);  /* set */
+f32 func_8009CE20(f32 x);                         /* tanf */
 
-void func_801AA720_ovl_0EBBB0(f32 *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, s32 *arg5) {
-    s32 sp10;
-    s32 sp20;
-    s32 sp30;
+/* Camera: vertical fov (degrees) at 0, eye at 0x14, look-at at 0x20, up at 0x2C */
+typedef struct {
+    /* 0x00 */ f32 fov;
+    /* 0x04 */ u8 unk04[0x10];
+    /* 0x14 */ f32 eye[3];
+    /* 0x20 */ f32 at[3];
+    /* 0x2C */ f32 up[3];
+} CamF63;
 
-    func_80080040(&sp10, arg0 + 0x20, arg0 + 0x14);
-    func_8007FFD0(&sp10);
-    func_8007FEE0(&sp30, &sp10, arg0 + 0x2C);
-    func_8007FFD0(&sp30);
-    func_8007FEE0(&sp20, &sp10, &sp30);
-    func_8007FFD0(&sp20);
-    func_80080190(&sp10, 1.0f / func_8009CE20(((*arg0 * 0.5f) / 360.0f) * 6.2831855f));
-    func_80080190(&sp20, 2.0f * ((arg2 / arg4) - 0.5f));
-    func_80080190(&sp30, 2.0f * ((((arg1 / arg3) - 0.5f) * arg3) / arg4));
-    func_800801D0(&sp10, &sp20);
-    func_800800C0(arg5, &sp10, &sp30);
-    func_8007FFD0(arg5);
+/* Unit direction of the ray through screen point (x, y) of a w x h view */
+inline void func_801AA720_ovl_0EBBB0(CamF63 *c, f32 x, f32 y, f32 w, f32 h, f32 *dir) {
+    f32 fwd[3];
+    f32 up[3];
+    f32 right[3];
+
+    func_80080040(fwd, c->at, c->eye);
+    func_8007FFD0(fwd);
+    func_8007FEE0(right, fwd, c->up);
+    func_8007FFD0(right);
+    func_8007FEE0(up, fwd, right);
+    func_8007FFD0(up);
+    func_80080190(fwd, 1.0f / func_8009CE20(c->fov * 0.5f / 360.0f * 6.2831855f));
+    func_80080190(up, 2.0f * (y / h - 0.5f));
+    func_80080190(right, 2.0f * ((x / w - 0.5f) * w / h));
+    func_800801D0(fwd, up);
+    func_800800C0(dir, fwd, right);
+    func_8007FFD0(dir);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA720_ovl_0EBBB0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA8A4_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AAE10_ovl_0EBBB0);
+/* Where the ray through screen point (x, y) meets the ground plane (y = 0); 0 when it points
+ * away. A camera on the ground returns its own position. */
+s32 func_801AAE10_ovl_0EBBB0(CamF63 *c, f32 x, f32 y, f32 *out) {
+    f32 dir[3];
+    f32 t;
+
+    if (c->eye[1] == 0.0f) {
+        func_8007FE50(out, c->eye);
+        return 1;
+    }
+    func_801AA720_ovl_0EBBB0(c, x, y, 320.0f, 240.0f, dir);
+    if (!(c->eye[1] * dir[1] >= 0.0f)) {
+        t = -c->eye[1] / dir[1];
+        func_80080020(out, c->eye[0] + t * dir[0], 0.0f, c->eye[2] + t * dir[2]);
+        return 1;
+    }
+    return 0;
+}
 
 /* Opens a scene for this screen and sets its fade parameters; returns the scene slot */
 s32 func_801AB020_ovl_0EBBB0(s32 a, u8 b) {
