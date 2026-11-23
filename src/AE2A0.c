@@ -174,7 +174,75 @@ void func_801C54C4_ovl_087200(u8 a, u8 b) {
 
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C54EC_ovl_087200);
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+
+/* Clamps the two list cursors (0x134, 0x154) and refreshes the selections they drive: kind 2
+ * picks a unit (0x18A), 3 a squad (0x18C), 4 a legion (0x18E) */
+#ifdef NON_MATCHING
+/* same length; base+index operand order in the table lookups and the legion-case branch polarity differ */
+void func_801C5880_ovl_087200(void) {
+    Menu87 *m = D_80196AF8;
+    s32 i;
+    u8 *c;
+
+    for (i = 0; i < 2; i++) {
+        c = (u8 *)m + 0x134 + i * 0x20;
+        if (FIELD(c, u16, 2) == 0) {
+            continue;
+        }
+        switch (FIELD(c, u16, 0)) {
+            case 0:
+            case 1:
+                break;
+            case 2:
+                if (FIELD(c, u16, 6) >= FIELD(m, s32, 0x5D4)) {
+                    FIELD(c, u16, 6) = FIELD(m, s32, 0x5D4) - 1;
+                }
+                FIELD(c, u16, 0x1A) = FIELD(c, u16, 6);
+                FIELD(m, u16, 0x18A) = ((u8 *)m + 0x1A2E)[FIELD(c, u16, 6)];
+                break;
+            case 3:
+                FIELD(c, u16, 0x1C) = FIELD(c, u16, 6);
+                FIELD(m, u16, 0x18C) = ((u8 *)m + 0x1A92)[FIELD(c, u16, 6)];
+                if (c[0x19] == 1) {
+                    FIELD(m, u16, 0x18A) = m->rows[FIELD(m, u16, 0x18C)][FIELD(m, u16, 0x19A)];
+                }
+                break;
+            case 4: {
+                s32 l;
+
+                FIELD(c, u16, 0x1E) = FIELD(c, u16, 6);
+                l = ((u8 *)m + 0x1AB0)[FIELD(c, u16, 6)];
+                FIELD(m, u16, 0x18E) = l;
+                if (c[0x19] != 1) {
+                    if (c[0x19] == 2) {
+                        u8 s = FIELD(m, u8, (u16)l * 14 + FIELD(m, u16, 0x198) + 0x10D6);
+
+                        if (s != 0xFF) {
+                            FIELD(m, u16, 0x18C) = s;
+                        } else {
+                            FIELD(m, u16, 0x18C) = FIELD(m, u16, 0x198) + (u16)l * 5 + 0x80;
+                        }
+                    }
+                } else {
+                    u8 s = FIELD(m, u8, l * 14 + FIELD(m, u16, 0x198) + 0x10D6);
+
+                    if (s != 0xFF) {
+                        FIELD(m, u16, 0x18A) = m->rows[s][FIELD(m, u16, 0x19A)];
+                    } else {
+                        FIELD(m, u16, 0x18A) = s;
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C5880_ovl_087200);
+#endif
 
 /* Direction from the d-pad bits (0 up, 1 down, 2 left, 3 right), -1 if none */
 s32 func_801C5A0C_ovl_087200(void) {
