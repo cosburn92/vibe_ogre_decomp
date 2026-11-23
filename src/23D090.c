@@ -429,7 +429,7 @@ void func_801EA224_ovl_23B220(void) {
     }
 }
 
-/* Every other frame (0x23C odd) entries 0 and 3, otherwise 1 and 2, turn flag 0x10 into 0x20 */
+/* On odd counts (0x23C) the entries with id 0 or 3, on even counts those with id 1 or 2, turn flag 0x10 into 0x20 */
 void func_801EA404_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
     s32 i;
