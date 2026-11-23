@@ -221,103 +221,89 @@ void func_801DEAF4_ovl_101CE0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/132D30", func_801DED50_ovl_101CE0);
 
-#ifdef NON_MATCHING
-/* m2c draft, 500 words from the target; queued for the permuter */
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 func_801DCD40_ovl_101CE0(u8 *, s32);        /* extern */
-s32 func_801DD244_ovl_101CE0(void *);               /* extern */
+s32 func_801DCD40_ovl_101CE0(u8 *u, s32 a);
+s32 func_801DD244_ovl_101CE0(u8 *loc);
 extern u8 D_801F0E0A_ovl_101CE0;
-extern s32 gLocations;
+extern u8 gLocations[][0x24];
+u8 func_801DF4A0_ovl_101CE0(u8 *u);
 
-s32 func_801DEFC0_ovl_101CE0(u8 *arg0) {
-    s32 temp_v1;
-    s32 temp_v1_2;
-    s32 temp_v1_4;
-    s32 temp_v1_6;
-    s32 var_s1;
-    s32 var_s1_2;
-    s32 var_s2;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v1;
-    u16 temp_a0_4;
-    u16 temp_v1_5;
-    u32 temp_v1_3;
-    u8 *temp_a0_2;
-    void *temp_a0;
-    void *temp_a0_3;
+/* Rest timer of unit u (0xB6): while it rests (inactive, stationed in a town or temple, or
+ * following a leader stationed there), counts down by 3 (6 with effect 0x1B) plus 2 outside hours 6-17;
+ * each full 180 recovers the squad. Returns the lowest fatigue reached, or -1 */
+s32 func_801DEFC0_ovl_101CE0(u8 *u) {
+    u8 rest = 0;
+    s32 r = -1;
+    u8 step;
+    s32 t;
+    u8 *loc;
+    u8 *l;
+    s32 m;
 
-    temp_v1 = FIELD(arg0, s32, 0);
-    var_s1 = 0;
-    var_s2 = -1;
-    if ((temp_v1 & 1) && !(temp_v1 & 0x20000) && ((((temp_v1 & 0x40000) || (FIELD(arg0, s32, 0x74) == -1)) && (FIELD(arg0, u8, 4) != 0x1E)) || (((temp_a0 = (FIELD(arg0, s32, 0x74) * 0x24) + &gLocations, ((FIELD(arg0, s32, 0) & 8) == 0)) || !(FIELD(temp_a0, u16, 0x1C) & 2)) && !(FIELD(temp_a0, u16, 0x1C) & 4) && (func_801DD244_ovl_101CE0(temp_a0) == 0)))) {
-        var_v1 = 0 & 0xFF;
-        if ((FIELD(arg0, s32, 0) & 0x40040) == 0x40) {
-            temp_a0_2 = D_801F0CB0_ovl_101CE0[*(D_801969BA + (func_801DA228_ovl_101CE0(arg0) * 0xB))];
-            var_v1 = 0 & 0xFF;
-            if (!(FIELD(temp_a0_2, s32, 0) & 0x40000)) {
-                temp_v1_2 = FIELD(temp_a0_2, s32, 0x74);
-                if (temp_v1_2 != -1) {
-                    temp_a0_3 = (temp_v1_2 * 0x24) + &gLocations;
-                    if (FIELD(arg0, s32, 0) & 8) {
-                        var_v0_2 = FIELD(temp_a0_3, u16, 0x1C) & 2;
-                    } else {
-                        var_v0_2 = FIELD(temp_a0_3, u16, 0x1C) & 4;
-                    }
-                    var_v1 = 0 & 0xFF;
-                    if (var_v0_2 != 0) {
-                        goto block_16;
-                    }
-                } else {
-                    goto block_17;
-                }
-            }
-        }
+    if (!(FIELD(u, u32, 0) & 1)) {
+        goto yes;
+    }
+    if (FIELD(u, u32, 0) & 0x20000) {
+        goto yes;
+    }
+    if (((FIELD(u, u32, 0) & 0x40000) || FIELD(u, s32, 0x74) == -1) && u[4] != 30) {
     } else {
-block_16:
-        var_s1 = 1;
-block_17:
-        var_v1 = var_s1 & 0xFF;
-    }
-    var_v0 = -1;
-    if (var_v1 == 1) {
-        var_s1_2 = 3;
-        if (func_801DCD40_ovl_101CE0(arg0, 0x1B) != 0) {
-            var_s1_2 = 6;
+        loc = gLocations[FIELD(u, s32, 0x74)];
+        if ((FIELD(u, u32, 0) & 8) && (FIELD(loc, u16, 0x1C) & 2)) {
+            goto yes;
         }
-        temp_a0_4 = FIELD(arg0, u16, 0xB6);
-        temp_v1_3 = var_s1_2 & 0xFF;
-        if (temp_a0_4 >= temp_v1_3) {
-            FIELD(arg0, u16, 0xB6) = (u16) (temp_a0_4 - temp_v1_3);
-        } else {
-            FIELD(arg0, u16, 0xB6) = 0xB4U;
-            temp_v1_4 = func_801DF4A0_ovl_101CE0(arg0) & 0xFF;
-            if (temp_v1_4 > -1) {
-                var_s2 = temp_v1_4;
+        if (FIELD(loc, u16, 0x1C) & 4) {
+            goto yes;
+        }
+        if (func_801DD244_ovl_101CE0(loc) != 0) {
+            goto yes;
+        }
+    }
+    if ((FIELD(u, u32, 0) & 0x40040) == 0x40) {
+        l = D_801F0CB0_ovl_101CE0[D_801969BA[func_801DA228_ovl_101CE0(u) * 11]];
+        if (!(FIELD(l, u32, 0) & 0x40000) && FIELD(l, s32, 0x74) != -1) {
+            loc = gLocations[FIELD(l, s32, 0x74)];
+            if (FIELD(u, u32, 0) & 8) {
+                m = FIELD(loc, u16, 0x1C) & 2;
+            } else {
+                m = FIELD(loc, u16, 0x1C) & 4;
+            }
+            if (m != 0) {
+            yes:
+                rest = 1;
             }
         }
-        var_v0 = var_s2;
-        if ((u32) (D_801F0E0A_ovl_101CE0 - 6) >= 0xCU) {
-            temp_v1_5 = FIELD(arg0, u16, 0xB6);
-            if (temp_v1_5 >= 2U) {
-                FIELD(arg0, u16, 0xB6) = (u16) (temp_v1_5 - 2);
+    }
+    if (rest == 1) {
+        step = 3;
+        if (func_801DCD40_ovl_101CE0(u, 0x1B) != 0) {
+            step = 6;
+        }
+        if (FIELD(u, u16, 0xB6) >= step) {
+            FIELD(u, u16, 0xB6) -= step;
+        } else {
+            FIELD(u, u16, 0xB6) = 180;
+            t = func_801DF4A0_ovl_101CE0(u);
+            if (r < t) {
+                r = t;
+            }
+        }
+        if ((u32)(D_801F0E0A_ovl_101CE0 - 6) >= 12) {
+            if (FIELD(u, u16, 0xB6) >= 2) {
+                FIELD(u, u16, 0xB6) -= 2;
             } else {
-                FIELD(arg0, u16, 0xB6) = 0xB4U;
-                temp_v1_6 = func_801DF4A0_ovl_101CE0(arg0) & 0xFF;
-                if (var_s2 < temp_v1_6) {
-                    var_s2 = temp_v1_6;
+                FIELD(u, u16, 0xB6) = 180;
+                t = func_801DF4A0_ovl_101CE0(u);
+                if (r < t) {
+                    r = t;
                 }
             }
-            var_v0 = var_s2;
         }
     }
-    return var_v0;
+    return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/132D30", func_801DEFC0_ovl_101CE0);
-#endif
 
 s32 func_801DCD40_ovl_101CE0(u8 *u, s32 a);
 extern s32 D_801F0DE0_ovl_101CE0;
