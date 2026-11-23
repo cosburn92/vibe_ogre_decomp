@@ -445,7 +445,64 @@ inline void func_80213FC8_ovl_25EE90(Set38 *s, s32 *out) {
     }
 }
 
+void func_8020F260_ovl_25EE90();
+
+#ifdef NON_MATCHING
+/* 84/84, 2 words: i = 0 lands in the branch delay slot in the original, the slots copy after it (as func_80213980) */
+void func_8021404C_ovl_25EE90(void *mdl, void *mtx, void *slots) {
+    s32 pad[2];
+
+    if (((Set38 *)mdl)->n != 0) {
+        u8 **sl = slots;
+        u8 *m = mtx;
+        s32 off = 0;
+        u32 i = 0;
+
+    loop:
+        if (*sl != NULL) {
+            u8 *o;
+            u8 *d;
+            u16 *r;
+
+            FIELD(*sl, void *, 4) = func_8020F260_ovl_25EE90;
+            o = *sl;
+            d = o + 0x14;
+            bzero(d, 0x18);
+            FIELD(o, s16, 0x14) = 2;
+            r = (u16 *)((u8 *)((Set38 *)mdl)->recs + off);
+            if (r[3] != 0) {
+                FIELD(o, u8 *, 0x18) = m;
+                if ((FIELD(o, void *, 0x28) = func_8020BF5C_ovl_25EE90(6, r[3], 0)) == NULL) {
+                    while (1) {
+                    }
+                }
+                if (r[0] != 0) {
+                    if ((FIELD(d, void *, 8) = func_8020BF5C_ovl_25EE90(5, r[0], 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+                FIELD(d, u16, 0x10) = r[2];
+                if (r[1] != 0 && !(r[1] & 0x8000)) {
+                    if ((FIELD(d, void *, 0xC) = func_8020BF5C_ovl_25EE90(4, r[1], 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+            }
+        }
+        m += 0x44;
+        off += 0xA;
+        i++;
+        sl++;
+        if (i < ((Set38 *)mdl)->n) {
+            goto loop;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_8021404C_ovl_25EE90);
+#endif
 
 /* Instantiates model id: bone matrices (0x44 each) plus a slot table, 64-byte aligned */
 void func_8021419C_ovl_25EE90(u8 *m, s32 id) {
