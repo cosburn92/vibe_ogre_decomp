@@ -278,36 +278,25 @@ void func_8017BB50_ovl_040E80(void *timg, u16 width, u16 height, s32 cms, s32 cm
 }
 
 /* Pipe sync, scissor (full screen or letterboxed), pipe sync */
-#ifdef NON_MATCHING
-/* scissor DL: original's branch layout/cross-jump differs */
-void func_8017BD48_ovl_040E80(void) {
-    Gfx *g;
+#define GFX514(w0_, w1_)               \
+    {                                  \
+        Gfx *_g = D_800E9BA0++;        \
+                                       \
+        _g->w0 = (w0_);                \
+        _g->w1 = (w1_);                \
+    }
 
+void func_8017BD48_ovl_040E80(void) {
     if (D_80187020_ovl_040E80) {
-        g = D_800E9BA0++;
-        g->w0 = 0xE7000000;
-        g->w1 = 0;
-        g = D_800E9BA0++;
-        g->w0 = 0xED000000;
-        g->w1 = 0xA00780;
-        g = D_800E9BA0++;
-        g->w0 = 0xE7000000;
-        g->w1 = 0;
+        GFX514(0xE7000000, 0);
+        GFX514(0xED000000, 0xA00780);
+        GFX514(0xE7000000, 0);
     } else {
-        g = D_800E9BA0++;
-        g->w0 = 0xE7000000;
-        g->w1 = 0;
-        g = D_800E9BA0++;
-        g->w0 = 0xED000000;
-        g->w1 = 0x4FC3BC;
-        g = D_800E9BA0++;
-        g->w0 = 0xE7000000;
-        g->w1 = 0;
+        GFX514(0xE7000000, 0);
+        GFX514(0xED000000, 0x4FC3BC);
+        GFX514(0xE7000000, 0);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017BD48_ovl_040E80);
-#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
