@@ -4,7 +4,7 @@
 
 void func_80211C10_ovl_25EE90(u8 *p);
 void func_80211E80_ovl_25EE90(void *p);
-void func_80212220_ovl_25EE90(void *p);
+void func_80212220_ovl_25EE90(u8 *p);
 void func_80212558_ovl_25EE90(void *p);
 typedef struct {
     u32 w0;
@@ -100,7 +100,56 @@ s32 func_80212200_ovl_25EE90(u8 *p) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2664B0", func_80212220_ovl_25EE90);
+extern Gfx D_80220470_ovl_25EE90[];
+
+/* Draws a filled disc (centre alpha 0x44, rim alpha 0x43) under matrix p */
+void func_80212220_ovl_25EE90(u8 *p) {
+    RingPt266 c;
+    RingPt266 pts[128];
+
+    if (FIELD(p, s16, 0x4A) <= 128) {
+        RingPt266 *q = pts;
+
+        GFX266(0xDE000000, (u32)D_80220470_ovl_25EE90);
+        GFX266(0xFA000000, (p[0x40] << 24) | (p[0x41] << 16) | (p[0x42] << 8));
+        guMtxF2L(p, D_801969B0);
+        GFX266(0xDA380000, (u32)D_801969B0);
+        {
+            s32 n = 0;
+            f32 ang;
+            f32 r;
+            f32 step;
+            s32 i;
+
+            c.y = 0;
+            c.x = 0;
+            ang = 0.0f;
+            c.a = p[0x44];
+            r = FIELD(p, s16, 0x48);
+            step = 360.0f / FIELD(p, s16, 0x4A);
+            do {
+                f32 rad = ang * 0.017453292f;
+
+                q->x = r * cosf(rad);
+                q->y = r * sinf(rad);
+                q->a = 0xFF;
+                ang += step;
+                n++;
+                q++;
+            } while (ang < 360.0f);
+            {
+                s32 m = n;
+
+                for (i = 0; i < m; i++) {
+                    pts[i].a = p[0x43];
+                }
+                func_80211900_ovl_25EE90(&c, pts, m, FIELD(p, u16, 0x46));
+            }
+        }
+        GFX266(0xD8380002, 0x40);
+        D_801969B0 += 0x40;
+    }
+}
 
 s32 func_80212468_ovl_25EE90(u8 *p) {
     func_80212220_ovl_25EE90(p + 0x18);
