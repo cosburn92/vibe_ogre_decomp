@@ -45,9 +45,6 @@ INCLUDE_ASM("asm/nonmatchings/2639E0", func_8020EF40_ovl_25EE90);
 void func_8020EF40_ovl_25EE90(void *o);
 
 /* Draws the model at o + 0x18 (setup as func_8020EE30, then func_8020EF40) */
-void func_8020EF40_ovl_25EE90(void *o);
-
-/* Draws the model at o + 0x18 (setup as func_8020EE30, then func_8020EF40) */
 s32 func_8020F134_ovl_25EE90(u8 *o) {
     u8 *m = o + 0x18;
 
