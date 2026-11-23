@@ -128,8 +128,6 @@ BBox205 func_801C1EE8_ovl_1F0A30(void *a, void *b) {
     return bb;
 }
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C1FF4_ovl_1F0A30);
-
 typedef struct {
     /* 0x0 */ u16 id;
     /* 0x2 */ s16 x;
@@ -140,6 +138,52 @@ typedef struct {
     /* 0xC */ u16 u; /* 6.10 fixed point */
     /* 0xE */ u16 v;
 } RawItem205;
+
+s32 func_801BE138(s32 a, s32 b, s32 c, s32 d);
+void func_801C2DDC_ovl_1F0A30(s32 key, s32 *a, s32 *b, s32 *c, s32 *d);
+
+/* Item i of layout `layout` of the resource for (a, b, c, d), unpacked into r like func_801C2178;
+ * the two mirrored layouts map to their sources with flag 0x40 or 0x80; r[8] = i */
+s32 func_801C1FF4_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 layout, u32 i, s32 *r) {
+    s32 key = func_801BE138(a, b, c, d);
+    s32 l0, m0, l1, m1;
+    s32 base;
+    u16 *t;
+    RawItem205 *e;
+
+    func_801C2DDC_ovl_1F0A30(key, &l0, &m0, &l1, &m1);
+    if (layout == l0) {
+        layout = m0;
+        r[5] = 0x40;
+    } else if (layout == l1) {
+        layout = m1;
+        r[5] = 0x80;
+    } else {
+        r[5] = 0;
+    }
+    base = func_801C2C5C_ovl_1F0A30(key);
+    if (base != 0) {
+        t = (u16 *)(base + ((s32 *)base)[layout]);
+    } else {
+        t = NULL;
+    }
+    if (i < *t++) {
+        t += i * 8;
+        e = (RawItem205 *)t;
+        ((s8 *)r)[0x20] = i;
+        r[0] = e->id;
+        r[1] = e->x;
+        r[2] = e->y;
+        r[3] = e->w;
+        r[4] = e->h;
+        r[5] |= e->unkA;
+        ((f32 *)r)[6] = (f32)(e->u >> 10) + (f32)(e->u & 0x3FF) / 1024.0f;
+        ((f32 *)r)[7] = (f32)(e->v >> 10) + (f32)(e->v & 0x3FF) / 1024.0f;
+        return 1;
+    }
+    return 0;
+}
+
 
 /* Item i of layout b in the cached resource a, unpacked into r (s32 fields, then two floats);
  * 0 past the end */
@@ -155,7 +199,7 @@ s32 func_801C2178_ovl_1F0A30(void *a, void *b, s32 i, s32 *r) {
     }
     if ((u32)i < *t++) {
         t += i * 8;
-    e = (RawItem205 *)t;
+        e = (RawItem205 *)t;
         r[0] = e->id;
         r[1] = e->x;
         r[2] = e->y;
