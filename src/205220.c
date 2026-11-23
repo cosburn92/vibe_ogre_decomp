@@ -520,7 +520,94 @@ void func_801C3D64_ovl_1F0A30(void) {
     }
 }
 
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+s32 ChunkSize(s32 id);
+u32 *LoadChunk(s32 id);
+void LoadChunkRaw(void *dst, s32 id);
+void _bcopy(void *src, void *dst, s32 n);
+void *func_80071C04(s32 size);
+u8 *func_8009DF48(s32 id);
+
+/* Loads model id with variant v into the cache (nothing to do when already present): its chunk
+ * table entry, the four chunks it names (two lists, a header with n vertices and a fourth list),
+ * and one buffer holding the per-vertex arrays (n words / n bytes each) */
+#ifdef NON_MATCHING
+/* 163/163, 29 words: scheduling only (the list counts and the variant stores, and the header word 0xC load, are ordered differently) */
+void func_801C3F3C_ovl_1F0A30(s32 id, s32 v) {
+    u8 *c = (u8 *)D_801D0728_ovl_1F0A30;
+    u8 *e;
+    u32 i;
+    s32 n;
+    u32 *tbl;
+    u8 *h;
+    s32 b;
+    s32 w;
+    u8 *p;
+
+    for (i = 0; i < 20; c += 0xB0) {
+        i++;
+        if (FIELD(c, s32, 0) == id && FIELD(c, s32, 0xC) == v) {
+            return;
+        }
+    }
+    e = (u8 *)D_801D0728_ovl_1F0A30;
+    n = 19;
+next:
+    if (FIELD(e, s32, 0) != 0) {
+        e += 0xB0;
+        if (n-- != 0) {
+            goto next;
+        }
+    }
+    FIELD(e, s32, 0) = id;
+    tbl = func_80071C04(ChunkSize(0x3B6CD0));
+    LoadChunkRaw(tbl, 0x3B6CD0);
+    FIELD(e, s32, 4) = tbl[id - 1];
+    FIELD(e, u32 *, 8) = HMalloc(ChunkSize(FIELD(e, s32, 4)));
+    LoadChunkRaw(FIELD(e, u32 *, 8), FIELD(e, s32, 4));
+    HFree(tbl);
+    FIELD(e, u32 *, 0x48) = LoadChunk(FIELD(e, u32 *, 8)[0]);
+    FIELD(e, u32 *, 0x44) = LoadChunk(FIELD(e, u32 *, 8)[1]);
+    h = func_8009DF48(FIELD(e, u32 *, 8)[2]);
+    FIELD(e, u32 *, 0x6C) = LoadChunk(FIELD(e, u32 *, 8)[3]);
+    FIELD(e, s32, 0x50) = *FIELD(e, u32 *, 0x48) >> 2;
+    FIELD(e, s32, 0xC) = v;
+    FIELD(e, s32, 0x10) = v;
+    FIELD(e, s32, 0x14) = v;
+    FIELD(e, s32, 0x4C) = *FIELD(e, u32 *, 0x44) >> 2;
+    FIELD(e, s32, 0x18) = FIELD(h, s32, 0);
+    FIELD(e, s32, 0x20) = FIELD(h, s32, 4);
+    FIELD(e, s32, 0x24) = FIELD(h, s32, 8);
+    b = (FIELD(e, s32, 0x18) + 7) & ~7;
+    w = (FIELD(e, s32, 0x18) * 4 + 7) & ~7;
+    FIELD(e, s32, 0x28) = FIELD(h, s32, 0xC);
+    p = HMalloc(w + b + b + b + b + w + b + w + b);
+    FIELD(e, u8 *, 0x38) = p;
+    FIELD(e, u8 *, 0x2C) = p;
+    FIELD(e, u8 *, 0x54) = p += w;
+    FIELD(e, u8 *, 0x58) = p += b;
+    FIELD(e, u8 *, 0x5C) = p += b;
+    FIELD(e, u8 *, 0x60) = p += b;
+    FIELD(e, u8 *, 0x3C) = p += b;
+    FIELD(e, u8 *, 0x64) = p += w;
+    FIELD(e, u8 *, 0x40) = p += b;
+    FIELD(e, u8 *, 0x68) = p + w;
+    bzero(FIELD(e, u8 *, 0x38), w);
+    bzero(FIELD(e, u8 *, 0x3C), w);
+    bzero(FIELD(e, u8 *, 0x40), w);
+    bzero(FIELD(e, u8 *, 0x58), b);
+    bzero(FIELD(e, u8 *, 0x60), b);
+    bzero(FIELD(e, u8 *, 0x64), b);
+    bzero(FIELD(e, u8 *, 0x68), b);
+    _bcopy(h + 0x20, FIELD(e, u8 *, 0x54), FIELD(e, s32, 0x18));
+    _bcopy(h + FIELD(h, s32, 0x1C), FIELD(e, u8 *, 0x5C), FIELD(e, s32, 0x18));
+    HFree(h);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C3F3C_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C41C8_ovl_1F0A30);
 
