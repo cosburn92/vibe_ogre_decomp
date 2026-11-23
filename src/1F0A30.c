@@ -156,7 +156,7 @@ void *func_801AD60C_ovl_1F0A30(s32 id) {
 
 /* Ages the chunk caches; frees entries whose ttl runs out */
 #ifdef NON_MATCHING
-/* base+offset operand order in the slot address (cf. AD60C) */
+/* 57/57, 2 words: after HFree the original re-forms the slot address as base + offset, GCC here as offset + base */
 void func_801AD6B0_ovl_1F0A30(void) {
     Slot1F *s;
     u32 i;
@@ -171,11 +171,11 @@ void func_801AD6B0_ovl_1F0A30(void) {
         }
     }
     for (i = 0; i < 16; i++) {
-        if ((s = (Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->data != NULL) {
+        if ((s = (Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->data != NULL) {
             if (--s->id == 0) {
                 HFree(s->data);
-                ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->data = NULL;
-                ((Slot1F *)((u8 *)D_801CE8BC_ovl_1F0A30 + 0xC0) + i)->ttl = 0;
+                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->data = NULL;
+                ((Slot1F *)D_801CE8BC_ovl_1F0A30 + i + 16)->ttl = 0;
             }
         }
     }
