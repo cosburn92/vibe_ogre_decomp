@@ -287,7 +287,47 @@ void func_801C234C_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C234C_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C24F8_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+#define CE205C(o) ((u8 *)((o) + (u32)D_801D0728_ovl_1F0A30))
+void bzero(void *p, s32 n);
+
+/* Frees and clears the cache entry for (key a, sub-key b) */
+void func_801C24F8_ovl_1F0A30(s32 a, s32 b) {
+    u32 off;
+    u32 i;
+
+    if (D_801D0728_ovl_1F0A30 != NULL) {
+        for (off = 0; off < 0xDC0; off += 0xB0) {
+            if (FIELD(CE205C(off), s32, 0) == a && FIELD(CE205C(off), s32, 0xC) == b) {
+                for (i = 0; i < FIELD(CE205C(off), u32, 0x18); i++) {
+                    HFree(FIELD(CE205C(off), void **, 0x38)[i]);
+                }
+                for (i = 0; i < FIELD(CE205C(off), u32, 0x18); i++) {
+                    HFree(FIELD(CE205C(off), void **, 0x3C)[i]);
+                }
+                for (i = 0; i < FIELD(CE205C(off), u32, 0x18); i++) {
+                    HFree(FIELD(CE205C(off), void **, 0x40)[i]);
+                }
+                i = 0;
+                {
+                    u32 o = off;
+
+                    for (; i < 10; i++) {
+                        HFree(FIELD(CE205C(o) + i * 4, void *, 0x70));
+                    }
+                }
+                HFree(FIELD(CE205C(off), void *, 0x8));
+                HFree(FIELD(CE205C(off), void *, 0x48));
+                HFree(FIELD(CE205C(off), void *, 0x44));
+                HFree(FIELD(CE205C(off), void *, 0x6C));
+                HFree(FIELD(CE205C(off), void *, 0x2C));
+                bzero((u8 *)D_801D0728_ovl_1F0A30 + off, 0xB0);
+            }
+        }
+    }
+}
 
 /* Scans the two event streams of o's data (offsets at 0x98 and, from 0x58 on, 0x160) for type-1
  * events, keeping the last two values of each in 0xA8/0xAA and 0xAC/0xAE */
