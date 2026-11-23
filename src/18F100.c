@@ -22,62 +22,16 @@ void func_8017C384(void *w);
 extern s32 D_8021B2B4_ovl_18F100;
 /* --- end decls --- */
 
-#ifdef NON_MATCHING
-/* m2c draft, 60 words from the target; queued for the permuter */
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-extern void *D_800E9BA0;
+#include "libultra.h"
+#include "gbi_ultra.h"
+extern Gfx *D_800E9BA0;
 
-void func_80214F80_ovl_18F100(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    s16 temp_a1;
-    s32 temp_t2;
-    s32 temp_t3;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_t3;
-    s32 var_v0;
-    void *temp_t0;
-    void *temp_t1;
-    void *temp_v1_2;
-
-    temp_t0 = D_800E9BA0;
-    D_800E9BA0 = temp_t0 + 8;
-    temp_t1 = temp_t0 + 0x10;
-    FIELD(temp_t0, s32, 0) = 0xE7000000;
-    FIELD(temp_t0, s32, 8) = (s32) ((((arg2 * 4) & ((s32) ~(s16) (arg2 * 4) >> 0x1F) & 0xFFC) << 0xC) | (((arg3 * 4) & ((s32) ~(s16) (arg3 * 4) >> 0x1F) & 0xFFC) | 0xE4000000));
-    temp_a1 = arg0 * 4;
-    D_800E9BA0 = temp_t1;
-    D_800E9BA0 = temp_t0 + 0x18;
-    temp_t2 = arg5 << 5;
-    temp_t3 = arg4 << 5;
-    FIELD(temp_t0, s32, 4) = 0;
-    FIELD(temp_t0, s32, 0xC) = (s32) ((((arg0 * 4) & ((s32) ~temp_a1 >> 0x1F) & 0xFFC) << 0xC) | ((arg1 * 4) & ((s32) ~(s16) (arg1 * 4) >> 0x1F) & 0xFFC));
-    FIELD(temp_t0, s32, 0x10) = 0xE1000000;
-    if (temp_a1 < 0) {
-        temp_v1 = temp_a1 * 8;
-        var_t3 = (temp_t3 - (temp_v1 & -(temp_v1 < 1))) << 0x10;
-    } else {
-        var_t3 = temp_t3 << 0x10;
-    }
-    if (!(arg1 & 0x20000000)) {
-        var_v0 = temp_t2 & 0xFFFF;
-    } else {
-        temp_v0 = (s32) (arg1 << 0x12) >> 0xD;
-        var_v0 = (temp_t2 - (temp_v0 & -(temp_v0 < 1))) & 0xFFFF;
-    }
-    FIELD(temp_t1, s32, 4) = (s32) (var_t3 | var_v0);
-    temp_v1_2 = D_800E9BA0;
-    D_800E9BA0 = temp_v1_2 + 8;
-    FIELD(temp_v1_2, s32, 0) = 0xF1000000;
-    D_800E9BA0 = temp_v1_2 + 0x10;
-    FIELD(temp_v1_2, s32, 4) = 0x04000400;
-    FIELD(temp_v1_2, s32, 8) = 0xE7000000;
-    FIELD(temp_v1_2, s32, 0xC) = 0;
+/* Draws the sprite-sheet rectangle (x0, y0) - (x1, y1) sampled from (s, t) */
+void func_80214F80_ovl_18F100(s32 x0, s32 y0, s32 x1, s32 y1, s32 s, s32 t) {
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, x0 << 2, y0 << 2, x1 << 2, y1 << 2, 0, s << 5, t << 5, 1 << 10, 1 << 10);
+    gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/18F100", func_80214F80_ovl_18F100);
-#endif
 
 typedef struct {
     u8 unk0;
