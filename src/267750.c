@@ -542,8 +542,6 @@ INCLUDE_ASM("asm/nonmatchings/267750", func_802144EC_ovl_25EE90);
 
 /* As func_802143B4 for the other slot layout (value at +0x20): applies frame `frame` of model mdl's keyed tracks (record flag 0x8000) to the slots: each slot
  * gets the value of the last key at or before the frame */
-#ifdef NON_MATCHING
-/* same as func_802143B4 */
 void func_8021463C_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
     u32 i;
 
@@ -553,6 +551,7 @@ void func_8021463C_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 u16 f = FIELD(&mdl->recs[i], u16, 2);
                 u8 *o = (u8 *)slots[i] + 0x14;
 
+                do {
                 if (f & 0x8000) {
                     Key26 *k = FIELD(mdl, Key26 **, 0x14)[f & 0x7FFF];
                     s32 j = 0;
@@ -560,13 +559,17 @@ void func_8021463C_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 loop:
                     if (k[j].frame == -1 && k[j].val == 0) {
                         j--;
-                    } else if (frame == k[j].frame) {
-                        goto found;
-                    } else if (frame < k[j].frame) {
-                        j--;
                     } else {
-                        j++;
-                        goto loop;
+                        s32 c = j;
+
+                        if (frame == k[c].frame) {
+                            goto found;
+                        } else if (frame < k[j].frame) {
+                        j--;
+                        } else {
+                            j++;
+                            goto loop;
+                        }
                     }
                     if (j < 0) {
                         j = 0;
@@ -574,13 +577,11 @@ void func_8021463C_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
                 found:
                     FIELD(o, s32, 0xC) = func_8020EC2C_ovl_25EE90(7, k[j].val);
                 }
+                } while (0);
             }
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/267750", func_8021463C_ovl_25EE90);
-#endif
 
 /* Converts object o to the func_80215654 layout (rebuilds its body from +0x1C) */
 void func_80214774_ovl_25EE90(u8 *o) {
