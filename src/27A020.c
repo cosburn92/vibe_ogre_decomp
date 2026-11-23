@@ -880,7 +880,45 @@ void func_80228D1C_ovl_27A020(s32 x, s32 y, u16 id) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228D1C_ovl_27A020);
 #endif
 
+/* Draws value as 7x9 digit sprites right-aligned in `digits` cells at (x, y) (0 = as many as
+ * needed up to 3; negative = blank leading zeros), then a pipe sync */
+#ifdef NON_MATCHING
+/* 165 vs 169: the original hoists the /10 magic constant and (blank != 0) into registers and keeps one more saved register */
+void func_80228EFC_ovl_27A020(s32 x, s32 y, s32 value, s32 digits) {
+    s32 blank = 0;
+    s32 v = value;
+    s32 n;
+    s32 i;
+
+    if (v < 0) {
+        v = -v;
+    }
+    if (digits == 0) {
+        digits = 1;
+        if (v >= 10) {
+            digits = v >= 100 ? 3 : 2;
+        }
+    } else if (digits < 0) {
+        digits = -digits;
+        blank = 1;
+    }
+    n = v;
+    x += (digits - 1) * 7;
+    for (i = 0; i < digits; i++) {
+        if (!((blank != 0) & (n == 0)) || i == 0) {
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << 2, y << 2, (x + 7) << 2, (y + 9) << 2, 0, (n % 10) * 7 << 5,
+                                    0, 1 << 10, 1 << 10);
+            gDPPipeSync(D_800E9BA0++);
+        }
+        n /= 10;
+        x -= 7;
+    }
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80228EFC_ovl_27A020);
+#endif
 
 #include "gbi_ultra.h"
 extern u8 D_8022CA98_ovl_27A020[];
