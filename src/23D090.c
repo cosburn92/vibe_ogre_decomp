@@ -1382,12 +1382,57 @@ void func_801EC4B0_ovl_23B220(u8 *u) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC6F4_ovl_23B220);
+s32 func_801BEA0C(s32 siz, s32 w);
+typedef struct { u8 pad0[3]; u8 siz; u16 w; u16 h; u8 data[1]; } Img23; /* 8-byte header, then texels */
+/* gSPScisTextureRectangle written through the aligned GfxU23 union (keeps every word store
+ * ahead of the D_800E9BA0 updates, as in the original) */
+#define ScisTexRect23(pkt, xl, yl, xh, yh, tile, s, t, dsdx, dtdy)                                        \
+    {                                                                                                     \
+        GfxU23 *_g = (GfxU23 *)(pkt);                                                                     \
+        _g->words.w0 = _SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(MAX((s16)(xh), 0), 12, 12) |                   \
+                       _SHIFTL(MAX((s16)(yh), 0), 0, 12);                                                 \
+        _g->words.w1 = _SHIFTL((tile), 24, 3) | _SHIFTL(MAX((s16)(xl), 0), 12, 12) |                      \
+                       _SHIFTL(MAX((s16)(yl), 0), 0, 12);                                                 \
+        GU23(G_RDPHALF_1 << 24,                                                                           \
+             _SHIFTL((s) - (((s16)(xl) < 0) ? (((s16)(dsdx) < 0) ? MAX(((s16)(xl) * (s16)(dsdx)) >> 7, 0) \
+                                                              : MIN(((s16)(xl) * (s16)(dsdx)) >> 7, 0))   \
+                                             : 0), 16, 16) |                                              \
+             _SHIFTL((t) - (((yl) < 0) ? (((s16)(dtdy) < 0) ? MAX(((s16)(yl) * (s16)(dtdy)) >> 7, 0)      \
+                                                         : MIN(((s16)(yl) * (s16)(dtdy)) >> 7, 0))        \
+                                       : 0), 0, 16));                                                     \
+        GU23(G_RDPHALF_2 << 24, _SHIFTL((dsdx), 16, 16) | _SHIFTL((dtdy), 0, 16));                        \
+    }
+
+/* Draws image img (16-bit texels, w x h) mirrored left to right at (x, y), loading the 8-bit
+ * mask stored after its texels into TMEM 0x100 alongside, in bands of rows that fit in 2 KB */
+void func_801EC6F4_ovl_23B220(Img23 *img, s16 x, s16 y) {
+    s32 stride = func_801BE9A8(2, img->w);
+    Img23 *mask = (Img23 *)((u8 *)img + (stride * img->h + 8));
+    s32 band = 0x800 / stride;
+    s32 row;
+    s32 n;
+
+    for (row = 0; row < img->h; row += band) {
+        n = band;
+        if (img->h - row < band) {
+            n = img->h - row;
+        }
+        func_801BA0DC(mask->data, 0x100, 0, 4, 1, func_801BEA0C(1, mask->w), mask->h, 0, row,
+                      func_801BEA0C(1, mask->w) - 1, row + n - 1, 0, 0, 0, 0, 0, 0, 0);
+        func_801BA0DC(img->data, 0, 1, 0, 2, func_801BEA0C(2, img->w), img->h, 0, row,
+                      func_801BEA0C(2, img->w) - 1, row + n - 1, 0, 0, 0, 0, 0, 0, 0);
+        GU23(0xE7000000, 0);
+        ScisTexRect23(D_800E9BA0++, x << 2, (y + row) << 2, (x + img->w) << 2, (y + row + n) << 2, 0,
+                      (func_801BEA0C(img->siz, img->w) - 1) << 5, row << 5, -1024, 1024);
+        GU23(0xE7000000, 0);
+        GU23(0xE7000000, 0);
+    }
+}
 
 extern Gfx D_801F0380_ovl_23B220[];
 s32 func_801C8C74(u8 *u);
 s32 func_801C8C90(u8 *u);
-void func_801EC6F4_ovl_23B220(s32 spr, s16 x, s16 y);
+void func_801EC6F4_ovl_23B220(Img23 *img, s16 x, s16 y);
 
 /* Draws the unit sprites of the battle preview: the attacker (doubled with an offset echo when
  * func_801C8C74 says so) and, if present, the target */
@@ -1399,14 +1444,14 @@ void func_801ECAB0_ovl_23B220(void) {
     gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, FIELD(c, u8, 0x653));
     target = &FIELD(c, u8 *, 0x5D4);
     if (func_801C8C74(FIELD(c, u8 *, 0x5D4))) {
-        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) - 10, FIELD(c, s16, 0x5EE) - 5);
-        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) + 10, FIELD(c, s16, 0x5EE));
-        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC) - 3, FIELD(c, s16, 0x5EE) + 5);
+        func_801EC6F4_ovl_23B220(FIELD(c, Img23 *, 0x5D8), FIELD(c, s16, 0x5EC) - 10, FIELD(c, s16, 0x5EE) - 5);
+        func_801EC6F4_ovl_23B220(FIELD(c, Img23 *, 0x5D8), FIELD(c, s16, 0x5EC) + 10, FIELD(c, s16, 0x5EE));
+        func_801EC6F4_ovl_23B220(FIELD(c, Img23 *, 0x5D8), FIELD(c, s16, 0x5EC) - 3, FIELD(c, s16, 0x5EE) + 5);
     } else {
-        func_801EC6F4_ovl_23B220(FIELD(c, s32, 0x5D8), FIELD(c, s16, 0x5EC), FIELD(c, s16, 0x5EE));
+        func_801EC6F4_ovl_23B220(FIELD(c, Img23 *, 0x5D8), FIELD(c, s16, 0x5EC), FIELD(c, s16, 0x5EE));
     }
     if (func_801C8C90(*target)) {
-        func_801EC6F4_ovl_23B220(FIELD(D_801EFE48_ovl_23B220, s32, 0x5F4), FIELD(D_801EFE48_ovl_23B220, s16, 0x608),
+        func_801EC6F4_ovl_23B220(FIELD(D_801EFE48_ovl_23B220, Img23 *, 0x5F4), FIELD(D_801EFE48_ovl_23B220, s16, 0x608),
                                  FIELD(D_801EFE48_ovl_23B220, s16, 0x60A));
     }
     gDPPipeSync(D_800E9BA0++);
