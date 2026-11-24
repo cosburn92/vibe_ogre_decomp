@@ -81,7 +81,7 @@ extern s8 D_801EFE8D_ovl_23B220[][2];
 extern u8 D_801EFE34_ovl_23B220[];
 void func_8016F11C(void *p, s32 n);
 extern s32 D_801EFE70_ovl_23B220[];
-void func_801EB968_ovl_23B220();
+s32 func_801EB968_ovl_23B220();
 void guMtxIdentF(void *m);
 void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
 void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
@@ -913,57 +913,28 @@ void func_801EB6C8_ovl_23B220(s16 a, s16 b, s16 c);
 
 /* Draws object o in a 320x240 orthographic view: its light colour (0x4C), its matrix (o + 4) and
  * shape (0x44-0x48), faded by the title context's alpha */
-#ifdef NON_MATCHING
-/* 125/125 instructions, 85 words differ in scheduling: the original stores the five matrix/light commands as one block after both matrix pointer updates */
-void func_801EB968_ovl_23B220(u8 *o) {
-    gDPPipeSync(D_800E9BA0++);
+typedef union { struct { u32 w0, w1; } words; long long force_align[1]; } GfxU23;
+typedef struct { s32 pad0; f32 mf[4][4]; s16 a, b, c; s16 pad4A; u32 col; } Obj23b;
+#define GU23(w0_, w1_) { GfxU23 *_g = (GfxU23 *)(D_800E9BA0++); _g->words.w0 = (w0_); _g->words.w1 = (u32)(w1_); }
+s32 func_801EB968_ovl_23B220(u8 *o) {
+    Obj23b *ob = (Obj23b *)o;
+
+    GU23(0xE7000000, 0);
     guOrtho(D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
     func_800987E0(D_801969B0 + 0x40);
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xDA380007;
-        _g->w1 = (u32)MTX23++;
-    }
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xDA380002;
-        _g->w1 = (u32)MTX23++;
-    }
-    gSPDisplayList(D_800E9BA0++, D_801F02B8_ovl_23B220);
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xDB0A0000;
-        _g->w1 = FIELD(o, u32, 0x4C);
-    }
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xDB0A0004;
-        _g->w1 = FIELD(o, u32, 0x4C);
-    }
-    guMtxF2L(o + 4, D_801969B0);
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xDA380001;
-        _g->w1 = (u32)D_801969B0;
-    }
-    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, (u8)D_801EFE48_ovl_23B220->h652);
-    func_801EB6C8_ovl_23B220(FIELD(o, s16, 0x44), FIELD(o, s16, 0x46), FIELD(o, s16, 0x48));
-    {
-        Gfx *_g = D_800E9BA0++;
-
-        _g->w0 = 0xD8380002;
-        _g->w1 = 0x40;
-    }
+    GU23(0xDA380007, (D_801969B0 += 0x40) - 0x40);
+    GU23(0xDA380002, (D_801969B0 += 0x40) - 0x40);
+    GU23(0xDE000000, D_801F02B8_ovl_23B220);
+    GU23(0xDB0A0000, ob->col);
+    GU23(0xDB0A0004, ob->col);
+    guMtxF2L(ob->mf, D_801969B0);
+    GU23(0xDA380001, D_801969B0);
+    GU23(0xFA000000, (u8)D_801EFE48_ovl_23B220->h652);
+    func_801EB6C8_ovl_23B220(ob->a, ob->b, ob->c);
+    GU23(0xD8380002, 0x40);
     D_801969B0 += 0x40;
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB968_ovl_23B220);
-#endif
 
 /* Loads unit u's stats and sets up the seven stat bars (length = stat / 150 * 60) */
 #ifdef NON_MATCHING
