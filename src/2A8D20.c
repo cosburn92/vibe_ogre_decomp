@@ -11,7 +11,7 @@ void func_80227B80(void);
 
 
 
-void func_8023BDF8_ovl_2A8D20();
+void func_8023BDF8_ovl_2A8D20(void);
 
 #define SLOT(i) FIELD(D_8022A974 + (i) * 4, u8 *, 0x18)
 extern u8 *D_801CE8BC;
@@ -598,18 +598,17 @@ void func_8023BDDC_ovl_2A8D20(void) {
     func_8023BDF8_ovl_2A8D20();
 }
 
-#ifdef NON_MATCHING
-/* The original keeps a redundant `i = 0` before the first increment. */
-/* Busy-waits briefly. */
+/* Busy-waits briefly. A goto loop: for/while/do loops get loop notes, and GCC then reverses
+ * the unused counter into a count-down or folds the leading i = 0; the original counts up from 0. */
 void func_8023BDF8_ovl_2A8D20(void) {
     s32 i = 0;
 
-    for (i++; i < 28; i++) {
+loop:
+    i++;
+    if (i < 28) {
+        goto loop;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023BDF8_ovl_2A8D20);
-#endif
 
 /* Moves each side's leader (alive, or below 50) into slot 0 (enemy) or 1 (player) */
 void func_8023BE14_ovl_2A8D20(void) {
