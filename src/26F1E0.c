@@ -293,7 +293,7 @@ void func_8021AC40_ovl_25EE90(u16 msg, u8 *o) {
 }
 
 void func_8020A980_ovl_25EE90(void *a, void *b, u8 *out);
-void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+void func_8020A4D0_ovl_25EE90(f32 *s, f32 m[4][4], f32 out[4][4]);
 void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
 s32 func_8020AB8C_ovl_25EE90(s32 a);
 u8 *func_802151CC_ovl_25EE90(s32 id, s32 a, s32 b, s32 c, s32 d, void *fn);
@@ -383,7 +383,7 @@ void func_8021ADE0_ovl_25EE90(u8 *o) {
 
         FIELD(o, u8 *, 0x30) = q;
         FIELD(q, u8 *, 0x54) = D_80220910_ovl_25EE90;
-        func_8020A4D0_ovl_25EE90(D_802209D4_ovl_25EE90, m, q + 0x14);
+        func_8020A4D0_ovl_25EE90((f32 *)D_802209D4_ovl_25EE90, (void *)m, (void *)(q + 0x14));
     }
 }
 #else
@@ -399,7 +399,7 @@ void func_8020E51C_ovl_25EE90(void *p);
 void func_8020D280_ovl_25EE90(void *p);
 void func_80218104_ovl_25EE90(f32 x, f32 y, f32 z, s32 a);
 void func_8020A980_ovl_25EE90(void *a, void *b, u8 *out);
-void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+void func_8020A4D0_ovl_25EE90(f32 *s, f32 m[4][4], f32 out[4][4]);
 void func_8020A5A0_ovl_25EE90(u8 *m, void *pos);
 void func_8021ADE0_ovl_25EE90(u8 *o);
 
@@ -463,7 +463,7 @@ s32 func_8021B040_ovl_25EE90(u16 msg, u8 *o) {
                 v.y = 10.0f;
             }
             func_8020A980_ovl_25EE90(&v, o + 0x10, m);
-            func_8020A4D0_ovl_25EE90(o + 0x40, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0x40), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 0x1C);
             if (FIELD(o, s32, 8) == 0) {
                 u8 *p = FIELD(o, u8 *, 0x28);
@@ -493,7 +493,7 @@ s32 func_8021B040_ovl_25EE90(u16 msg, u8 *o) {
                 v.y = 10.0f;
             }
             func_8020A980_ovl_25EE90(&v, o + 0x10, m);
-            func_8020A4D0_ovl_25EE90(o + 0x40, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0x40), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 0x1C);
             if (FIELD(o, s32, 8) == 0) {
                 u8 *p = FIELD(o, u8 *, 0x28);

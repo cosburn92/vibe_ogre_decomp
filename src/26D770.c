@@ -103,7 +103,7 @@ void func_8020DFB8_ovl_25EE90(void);
 void func_8020D814_ovl_25EE90(void *p);
 void func_8020E51C_ovl_25EE90(void *p);
 void func_80218104_ovl_25EE90(f32 x, f32 y, f32 z, s32 a);
-void func_8020A4D0_ovl_25EE90(void *a, u8 *b, u8 *out);
+void func_8020A4D0_ovl_25EE90(f32 *s, f32 m[4][4], f32 out[4][4]);
 extern u8 D_802206E8_ovl_25EE90[];
 extern u8 D_802206F4_ovl_25EE90[];
 
@@ -165,7 +165,7 @@ s32 func_80218D68_ovl_25EE90(u16 msg, u8 *o) {
             func_80218104_ovl_25EE90(FIELD(o, f32, 8), FIELD(o, f32, 0xC), FIELD(o, f32, 0x10), a);
             m = FIELD(o, u8 *, 0x20) + 0x1C;
             func_8020A980_ovl_25EE90(D_802206E8_ovl_25EE90, D_802206F4_ovl_25EE90, m);
-            func_8020A4D0_ovl_25EE90(o + 0x28, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0x28), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 8);
             FIELD(FIELD(o, u8 *, 0x18), s16, 0x5C) = FIELD(o, s32, 0) + 2;
             FIELD(FIELD(o, u8 *, 0x14), s16, 0x56) = FIELD(o, s32, 0);
@@ -269,7 +269,7 @@ s32 func_80219140_ovl_25EE90(u16 msg, u8 *o) {
             p->start[2] = FIELD(o, f32, 0x20);
             m = FIELD(o, u8 *, 0x30) + 0x1C;
             func_80217680_ovl_25EE90(o, m);
-            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0xC), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 0x18);
             func_8020DC80_ovl_25EE90(0x1004);
             break;
@@ -295,7 +295,7 @@ s32 func_80219140_ovl_25EE90(u16 msg, u8 *o) {
             }
             m = FIELD(o, u8 *, 0x30) + 0x1C;
             func_80217680_ovl_25EE90(o, m);
-            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0xC), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 0x18);
             break;
         }
@@ -313,7 +313,7 @@ s32 func_80219140_ovl_25EE90(u16 msg, u8 *o) {
             }
             m = FIELD(o, u8 *, 0x30) + 0x1C;
             func_80217680_ovl_25EE90(o, m);
-            func_8020A4D0_ovl_25EE90(o + 0xC, m, m);
+            func_8020A4D0_ovl_25EE90((f32 *)(o + 0xC), (void *)m, (void *)m);
             func_8020A5A0_ovl_25EE90(m, o + 0x18);
             if (p->len / 2.0f <= p->t) {
                 FIELD(o, u16, 0x36) = 1;
