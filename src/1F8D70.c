@@ -892,7 +892,79 @@ void func_801BC9F0_ovl_1F0A30(void) {
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC9F0_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BCD0C_ovl_1F0A30);
+extern void *D_800C4BB8;
+extern u8 D_800E7A0C;
+extern u16 *D_800A8204[3];
+void nuGfxTaskAllEndWait(void);
+void *HMalloc(s32 size);
+s32 func_801BEA0C_ovl_1F0A30(s32 fmt, u16 w);
+
+/* Flattens the current 'B5' part sprite into a free frame buffer at the light position and
+ * replaces it with a full-screen 320x240 '64' image copied from there */
+void func_801BCD0C_ovl_1F0A30(void) {
+    u8 *s = CUR_SPR;
+    SprPart1F8 *p = (SprPart1F8 *)(s + 8);
+    s32 ox;
+    s32 oy;
+    u8 fb[2];
+    u16 *dst;
+    s32 n;
+    u8 *out;
+
+    if (*(u16 *)s != 0x4235) {
+        return;
+    }
+    ox = D_801D0774_ovl_1F0A30[0].pos[0];
+    oy = D_801D0774_ovl_1F0A30[0].pos[1];
+    nuGfxTaskAllEndWait();
+    fb[0] = 0;
+    fb[1] = 1;
+    if (D_800E7A0C == 1) {
+        if (D_800C4BB8 == D_800A8204[0]) {
+            fb[0] = 1;
+            fb[1] = 2;
+        } else if (D_800C4BB8 == D_800A8204[1]) {
+            fb[0] = 0;
+            fb[1] = 2;
+        } else if (D_800C4BB8 == D_800A8204[2]) {
+            fb[0] = 0;
+            fb[1] = 1;
+        }
+    }
+    dst = D_800A8204[fb[0]];
+    for (n = 0; n < s[3]; n++) {
+        SprPart1F8 *q = p;
+        u16 *pix = (u16 *)(p + 1);
+        s32 x0 = ox + p->x + 160;
+        s32 y0 = -oy + p->y + 120;
+        s32 stride = func_801BEA0C_ovl_1F0A30(2, p->w);
+        s32 j;
+
+        for (j = 0; j < q->h; j++) {
+            s32 i;
+
+            for (i = 0; i < q->w; i++) {
+                s32 xx = x0 + i;
+                s32 yy = y0 + j;
+
+                if (xx >= 0 && xx < 320 && yy >= 0 && yy < 240) {
+                    dst[yy * 320 + xx] = pix[j * stride + i];
+                }
+            }
+        }
+        p = p->next;
+    }
+    func_801B7CBC_ovl_1F0A30(CUR_SPR);
+    out = HMalloc(0x25808);
+    out[0] = '6';
+    out[1] = '4';
+    out[3] = 2;
+    FIELD(out, u16, 4) = 320;
+    out[2] = 0;
+    FIELD(out, u16, 6) = 240;
+    func_80080998(out + 8, dst, 0x25800);
+    CUR_SPR = out;
+}
 
 s32 func_801BCFE4_ovl_1F0A30(void) {
     return (s32)D_801D0770_ovl_1F0A30.spr;
