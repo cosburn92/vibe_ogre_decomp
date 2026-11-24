@@ -295,9 +295,83 @@ void func_8016BA6C_ovl_040E80(u8 side, u8 idx) {
 INCLUDE_ASM("asm/nonmatchings/40E80", func_8016BA6C_ovl_040E80);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/40E80", func_8016BD20_ovl_040E80);
+extern char *D_8018EA00_ovl_040E80[];
+typedef struct {
+    u32 id[3];
+} List3;
+extern const List3 D_8018FEAC_ovl_040E80;
+void *LoadChunk(s32 id);
+s32 func_8009C7CC(void); /* rand */
+void func_8009C550(char *dst, char *src);
+s32 func_8009C5E0(char *a, char *b);
+void HFree(void *p);
 
-const u32 D_8018FEAC_ovl_040E80[] = { 0x01E34336, 0x01E3497C, 0x01E34F34 };
+/* Names character idx (side 0: player roster, else enemy table): generic classes (< 0x51 and
+ * 0x72-0x74) draw a random name from name list c[0x14] until it is unique among the
+ * other characters of that side (up to 32 tries); other classes get their fixed name */
+#ifdef NON_MATCHING
+/* 0x26C vs 0x260: GCC hoists &lists out of the retry loop and spills it (the original rebuilds
+ * sp + 4 * list each pass); side/idx/tries and the constant 1 land in other saved registers */
+void func_8016BD20_ovl_040E80(u8 side, u8 idx) {
+    u8 *c;
+    s32 tries = 0x20;
+    s32 dup;
+    s32 i;
+
+    if (side == 0) {
+        c = (u8 *)&D_80193BC0_ovl_040E80[idx];
+    } else {
+        c = D_80195560_ovl_040E80[idx];
+    }
+    if (c[0x11] <= 0x50 || (c[0x11] >= 0x72 && c[0x11] <= 0x74)) {
+        while (tries != 0) {
+            u8 *buf;
+            u8 *p;
+            s32 n;
+            {
+                List3 lists = D_8018FEAC_ovl_040E80;
+
+                buf = LoadChunk(lists.id[c[0x14]]);
+            }
+            n = func_8009C7CC() % 256;
+            for (p = buf; n != 0; n--) {
+                while (*p++ != 0) {
+                }
+            }
+            bzero(c, 0x11);
+            func_8009C550((char *)c, (char *)p);
+            HFree(buf);
+            tries--;
+            dup = 0;
+            for (i = 1; i < 100; i++) {
+                if (side == 0 && idx != i && D_80193BC0_ovl_040E80[i].unk11 != 0 &&
+                    func_8009C5E0((char *)c, (char *)&D_80193BC0_ovl_040E80[i]) == 0) {
+                    dup++;
+                    break;
+                }
+            }
+            if (dup == 0) {
+                for (i = 1; i < 100; i++) {
+                    if (side == 1 && idx != i && D_80195560_ovl_040E80[i][0x11] != 0 &&
+                        func_8009C5E0((char *)c, (char *)D_80195560_ovl_040E80[i]) == 0) {
+                        dup++;
+                        break;
+                    }
+                }
+            }
+            if (dup == 0) {
+                tries = 0;
+            }
+        }
+    } else {
+        func_8009C550((char *)c, D_8018EA00_ovl_040E80[c[0x11]]);
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/40E80", func_8016BD20_ovl_040E80);
+#endif
+
+const List3 D_8018FEAC_ovl_040E80 = { { 0x01E34336, 0x01E3497C, 0x01E34F34 } };
 const u32 D_8018FEB8_ovl_040E80 = 0;
 const u32 D_8018FEBC_ovl_040E80[] = { 0x0E446561, 0x74681063, 0x42616861, 0x6D75740F, 0 };
 
