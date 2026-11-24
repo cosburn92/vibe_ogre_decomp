@@ -20,37 +20,36 @@ void func_801D98F4_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s
 void func_801DA180_ovl_213B10(u8 *u, f32 step);
 
 /* Index of the entry after i, or -1 */
-#ifdef NON_MATCHING
-/* Branch layout of the 0x16 case and the final range check differ. */
+/* Both "return i" exits share one block (the ret label); the original jumps to it from the
+ * blank-skip loop and from the final range check */
 u32 func_801D96A0_ovl_213B10(u32 i) {
-    TextBuf *tb = D_801CE8C0;
     u8 c;
 
-    if (i >= tb->len) {
+    if (i >= D_801CE8C0->len) {
         return -1;
     }
-    c = tb->text[i];
+    c = D_801CE8C0->text[i];
     if (c == 0x16) {
-        i = (i + 4) + tb->text[i + 3];
+        u32 k = i + 4;
+
+        i = k + D_801CE8C0->text[i + 3];
     } else if (c == 0x38) {
-        i += tb->text[i + 3];
+        i += D_801CE8C0->text[i + 3];
     } else if (c == 0) {
-        i++;
-        while (D_801CE8C0->text[i] == 0) {
+        do {
             i++;
-        }
-        return i;
+        } while (D_801CE8C0->text[i] == 0);
+        goto ret;
     } else {
         i += D_801E5C70_ovl_213B10[c];
     }
     if (i < D_801CE8C0->len) {
-        return i;
+        goto ret;
     }
     return -1;
+ret:
+    return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/21C970", func_801D96A0_ovl_213B10);
-#endif
 
 /* Index of the entry before n */
 u32 func_801D9748_ovl_213B10(u32 n) {
