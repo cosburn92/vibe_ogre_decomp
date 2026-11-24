@@ -335,22 +335,23 @@ void func_801C69D8_ovl_087200(void) {
     D_80196AF8->b98 = 0;
 }
 
-#ifdef NON_MATCHING
-/* The target indexes base + i each pass; this strength-reduces to a pointer. */
+/* number of used cells (not 0xFF) in the first 9 of row `row` */
 s32 func_801C69E8_ovl_087200(u16 row) {
     s32 i = 0;
     s32 n = 0;
     Menu87 *m = D_80196AF8;
+    u8 *r;
 
-    do {
-        n += m->rows[row][i] != 0xFF;
-        i++;
-    } while (i < 9);
+    /* goto loop: GCC 2.7 would strength-reduce a for/do loop into a pointer */
+    r = (u8 *)m + row * sizeof(m->rows[0]);
+loop:
+    n += (r + i)[0x1180] != 0xFF;
+    i++;
+    if (i < 9) {
+        goto loop;
+    }
     return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/AE2A0", func_801C69E8_ovl_087200);
-#endif
 
 void func_801C6A40_ovl_087200(u8 a, u8 b, u8 c, u8 d, u8 e) {
     Menu87 *m = D_80196AF8;
