@@ -197,8 +197,8 @@ inline void func_801B5CE0_ovl_1F0A30(u16 *p, s16 a, s16 b, s16 c, s16 d) {
     p[0] = a;
     p[1] = b;
     p[4] = c << 6;
-    ((u8 *)p)[0xF] = 0xFF;
     p[5] = d << 6;
+    ((u8 *)p)[0xF] = 0xFF;
 }
 
 #define VTXP1F8 D_80197178
@@ -346,7 +346,69 @@ void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B6970_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B6DB0_ovl_1F0A30);
+/* Draws each part of a 16-bit RGBA multi-part image at its own position as TMEM-strip textured
+ * quads (strips overlap by one row), writing vertices and commands through the given cursors */
+void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img) {
+    typedef struct { u16 h[8]; } V16;
+    V16 *vtx = *(V16 **)a;
+    Gfx *gfx = *(Gfx **)b;
+    Part1F8 *part = (Part1F8 *)(img + 8);
+    s32 i;
+    u8 *timg;
+    s32 rows;
+    V16 *start;
+    s32 h;
+    s32 x;
+    s32 xr;
+    s32 w;
+    s32 row;
+    s32 n;
+
+    for (i = 0; i < img[3]; part = part->next, i++) {
+        Part1F8 *p = part;
+
+        rows = 0x1000 / func_801BE9A8_ovl_1F0A30(2, p->w);
+        start = vtx;
+        h = p->h;
+        rows--;
+        timg = p->data;
+        w = p->w;
+        x = p->x;
+        row = 0;
+        xr = x + w;
+        while (h > 0) {
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, x, -(p->y + row), 0, row);
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, xr, -(p->y + row), w, row);
+            if (rows >= h) {
+                row += h;
+                func_801B5CE0_ovl_1F0A30((u16 *)vtx++, x, -(p->y + row), 0, row);
+                    func_801B5CE0_ovl_1F0A30((u16 *)vtx++, xr, -(p->y + row), w, row);
+                    break;
+            }
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, x, -(p->y + row + rows + 1), 0, row + rows + 1);
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, xr, -(p->y + row + rows + 1), w, row + rows + 1);
+            h -= rows;
+            row += rows;
+        }
+        h = p->h;
+        row = 0;
+        while (start < vtx) {
+            n = rows;
+            if (h < rows) {
+                n = h - 1;
+            }
+            gDPLoadTextureTile(gfx++, timg, G_IM_FMT_RGBA, G_IM_SIZ_16b, func_801BEA0C_ovl_1F0A30(2, p->w), 0,
+                               0, row, func_801BEA0C_ovl_1F0A30(2, p->w) - 1, row + n, 0, 0, 0, 0, 0, 0, 0);
+            row += n;
+            gSPVertex(gfx++, start, 4, 0);
+            gSP2Triangles(gfx++, 0, 2, 3, 0, 0, 3, 1, 0);
+            h -= n;
+            start += 4;
+        }
+    }
+    *(V16 **)a = vtx;
+    *(Gfx **)b = gfx;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7284_ovl_1F0A30);
 
