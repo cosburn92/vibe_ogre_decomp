@@ -1418,12 +1418,14 @@ void func_802312E4_ovl_29A4C0(s32 i, f32 x0, f32 z0, f32 x1, f32 z1, s32 frames,
     m->bE = 0;
 }
 
+int abs(int);
+
 /* First unit of the other side (and not in the 0x88 table) within 20 of u on both x and z, or -1 */
-#ifdef NON_MATCHING
-/* The original copies u from a0 to a2 at entry (so the other unit lands in a0), and it takes abs(dx) before truncating dz. */
 s16 func_802315FC_ovl_29A4C0(BUnit *u) {
     u16 i;
     BUnit *o;
+    f32 fdx;
+    f32 fdz;
     s32 dx;
     s32 dz;
 
@@ -1441,26 +1443,18 @@ s16 func_802315FC_ovl_29A4C0(BUnit *u) {
         if (D_8022A974->units[(s16)i + 28] != NULL) {
             continue;
         }
-        dx = FIELD(o, f32, 0x11C) - FIELD(u, f32, 0x11C);
-        dz = FIELD(o, f32, 0x124) - FIELD(u, f32, 0x124);
-        if (dx < 0) {
-            dx = -dx;
-        }
-        if (dz < 0) {
-            dz = -dz;
-        }
-        if ((dx < 20) & (dz < 20)) {
+        fdx = FIELD(o, f32, 0x11C) - FIELD(u, f32, 0x11C);
+        fdz = FIELD(o, f32, 0x124) - FIELD(u, f32, 0x124);
+        dx = abs((s32)fdx) < 20;
+        dz = abs((s32)fdz) < 20;
+        if (dz & dx) {
             return (s16)i;
         }
     }
     return -1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29C950", func_802315FC_ovl_29A4C0);
-#endif
 
 extern s32 D_80197B14;
-int abs(int);
 
 /* Inlined copy of func_802315FC */
 static inline s16 NearFoe(BUnit *u) {
