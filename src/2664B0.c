@@ -197,7 +197,86 @@ s32 func_80211E60_ovl_25EE90(u8 *p) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211E80_ovl_25EE90);
+typedef struct {
+    f32 mtx[4][4];
+    u8 col[4];
+    u16 f44;
+    u16 w;
+    s16 r;
+    s16 n;
+} Ring266;
+extern f32 D_801D06FC;
+extern f32 D_80220E20_ovl_25EE90[4][4];
+extern Gfx D_80220468_ovl_25EE90[];
+void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
+void func_80098C20(void *m, f32 x, f32 y, f32 z);      /* guTranslate */
+void guMtxCatF(f32 a[4][4], f32 b[4][4], f32 out[4][4]);
+void guMtxXFMF(f32 mf[4][4], f32 x, f32 y, f32 z, f32 *ox, f32 *oy, f32 *oz);
+void func_8020ED20_ovl_25EE90(f32 x, f32 y, f32 z, f32 *ox, f32 *oy);
+
+/* Screen-space ring: projects the ring points (radius 0x48, 0x4A segments) through matrix p to
+ * the screen and draws them as a flat fan around the projected centre */
+void func_80211E80_ovl_25EE90(void *arg) {
+    u8 *p = arg;
+    RingPt266 pts[128];
+    f32 mf[4][4];
+    f32 cx;
+    f32 cy;
+    f32 x;
+    f32 y;
+    f32 z;
+
+    if (FIELD(p, s16, 0x4A) <= 128) {
+        GFX266(0xDE000000, (u32)D_80220410_ovl_25EE90);
+        GFX266(0xFA000000, (p[0x40] << 24) | (p[0x41] << 16) | (p[0x42] << 8) | p[0x43]);
+        if (FIELD(p, u16, 0x44) == 0) {
+            RingPt266 *q;
+            s32 n;
+            f32 ang;
+            f32 r;
+            f32 step;
+            s32 i;
+
+            func_80098B60(mf, D_801D06FC, D_801D06FC, D_801D06FC);
+            q = pts;
+            n = 0;
+            guMtxCatF((f32(*)[4])p, mf, mf);
+            guMtxCatF(mf, D_80220E20_ovl_25EE90, mf);
+            func_8020ED20_ovl_25EE90(mf[3][0], mf[3][1], mf[3][2], &cx, &cy);
+            func_80098C20(D_801969B0, cx, cy, 0.0f);
+            GFX266(0xDA380000, (u32)D_801969B0);
+            ang = 0.0f;
+            step = 360.0f / ((Ring266 *)p)->n;
+            r = ((Ring266 *)p)->r;
+            do {
+                f32 rad = ang * 0.017453292f;
+
+                q->x = r * cosf(rad);
+                q->y = r * sinf(rad);
+                q->a = 0xFF;
+                ang += step;
+                n++;
+                q++;
+            } while (ang < 360.0f);
+            {
+                s32 m = n;
+
+                RingPt266 *a = pts;
+
+                for (i = 0; i < m; i++) {
+                    guMtxXFMF(mf, a->x, a->y, 0, &x, &y, &z);
+                    func_8020ED20_ovl_25EE90(x, y, z, &x, &y);
+                    a->x = x - cx;
+                    a->y = y - cy;
+                    a++;
+                }
+                func_80211900_ovl_25EE90(D_80220468_ovl_25EE90, pts, m, FIELD(p, u16, 0x46));
+            }
+            GFX266(0xD8380002, 0x40);
+            D_801969B0 += 0x40;
+        }
+    }
+}
 
 s32 func_80212200_ovl_25EE90(u8 *p) {
     func_80211E80_ovl_25EE90(p + 0x14);
