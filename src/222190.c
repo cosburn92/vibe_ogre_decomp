@@ -472,12 +472,8 @@ void func_801E104C_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e) {
 
 extern u8 *D_801CE8BC; /* battle message units: 20 of 0xF8 bytes from +0x1C4 */
 
-/* Message line pos for m: the end of every message unit still running (flag 0x2000) */
-extern u8 *D_801CE8BC; /* battle message units: 20 of 0xF8 bytes from +0x1C4 */
-
-/* Message line pos for m: the end of every message unit still running (flag 0x2000) */
-#ifdef NON_MATCHING
-/* 88/87 instructions: the original keeps pos in a2 up to the func_801E0D34 call; here it gets s0 (func_801E11D8, the same code, matches) */
+/* Hit message for m: waits for the running message units (flag 0x2000), then the damage message
+ * (func_801E0D34) and a free message unit's follow-up lines 0x39/0x3A */
 void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
     u8 *busy[6];
     s32 n = 0;
@@ -501,12 +497,13 @@ void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
         }
     }
     if (pos < ((Msg21 *)m)->w94) {
-        line = ((Msg21 *)m)->w94;
+        pos = ((Msg21 *)m)->w94;
     }
-    func_801E0D34_ovl_213B10(m, a, line, c, d, 0, 1, 0, 0);
+    func_801E0D34_ovl_213B10(m, a, pos, c, d, 0, 1, 0, 0);
     line = ((Msg21 *)m)->w94;
+    i = 0;
     base = D_801CE8BC;
-    for (i = 0; i < 20; i++) {
+    for (; i < 20; i++) {
         u = base + 0x1C4 + i * 0xF8;
         if (FIELD(u, s32, 0x48) == 0 && FIELD(u, s32, 0x4C) == 0) {
             FIELD(u, s32, 0x4C) = 1;
@@ -517,9 +514,6 @@ void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
     func_801D9F60_ovl_213B10(0x3A, line + 0x23, (s32)m, i);
     ((Msg21 *)m)->w94 = line + 0x23;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E107C_ovl_213B10);
-#endif
 
 
 /* Counter-attack message for m: waits for the running message units, then the counter line,
