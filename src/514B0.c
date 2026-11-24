@@ -1455,28 +1455,32 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_80181C2C_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_80182578_ovl_040E80);
 
-/* Starts the open/close animation: current rect = from, step = (to - from) / frames */
-#ifdef NON_MATCHING
-/* from-x int kept in a register instead of reloaded with lwc1 */
-void func_80184130_ovl_040E80(Node *n) {
-    f32 t = FIELD(n, u16, 0x1E);
-    f32 dx = (FIELD(n, s32, 0x3C) - FIELD(n, s32, 0x2C)) / t;
-    f32 dy = (FIELD(n, s32, 0x40) - FIELD(n, s32, 0x30)) / t;
-    f32 dw = (FIELD(n, s32, 0x44) - FIELD(n, s32, 0x34)) / t;
-    f32 dh = (FIELD(n, s32, 0x48) - FIELD(n, s32, 0x38)) / t;
+/* Window open/close animation: frame count, from/to rectangles, current rectangle and step */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x1E];
+    /* 0x1E */ u16 frames;
+    /* 0x20 */ u8 unk20[0xC];
+    /* 0x2C */ s32 from[4];
+    /* 0x3C */ s32 to[4];
+    /* 0x4C */ u8 unk4C[0x10];
+    /* 0x5C */ f32 pos[4];
+    /* 0x6C */ f32 step[4];
+} Anim514;
 
-    FIELD(n, f32, 0x5C) = FIELD(n, s32, 0x2C);
-    FIELD(n, f32, 0x60) = FIELD(n, s32, 0x30);
-    FIELD(n, f32, 0x64) = FIELD(n, s32, 0x34);
-    FIELD(n, f32, 0x68) = FIELD(n, s32, 0x38);
-    FIELD(n, f32, 0x6C) = dx;
-    FIELD(n, f32, 0x70) = dy;
-    FIELD(n, f32, 0x74) = dw;
-    FIELD(n, f32, 0x78) = dh;
+/* Starts the open/close animation: current rect = from, step = (to - from) / frames */
+void func_80184130_ovl_040E80(Node *n) {
+    Anim514 *a = (Anim514 *)n;
+    f32 t = a->frames;
+
+    a->step[0] = (a->to[0] - a->from[0]) / t;
+    a->step[1] = (a->to[1] - a->from[1]) / t;
+    a->step[2] = (a->to[2] - a->from[2]) / t;
+    a->step[3] = (a->to[3] - a->from[3]) / t;
+    a->pos[0] = a->from[0];
+    a->pos[1] = a->from[1];
+    a->pos[2] = a->from[2];
+    a->pos[3] = a->from[3];
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_80184130_ovl_040E80);
-#endif
 
 INCLUDE_RODATA("asm/nonmatchings/514B0", D_80190E4C_ovl_040E80);
 
