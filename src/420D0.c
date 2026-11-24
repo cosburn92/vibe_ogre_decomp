@@ -108,13 +108,13 @@ INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C268_ovl_040E80);
 
 /* Converts d from the 12-month calendar back to the 16-month game one (year + 1748) */
 #ifdef NON_MATCHING
-/* 93 vs 89 instructions: as func_8016C268, the original evaluates (m == k) & leap as setcc + and; GCC here turns it into branches */
+/* 89/89 instructions, register choice only, written as func_8016C268 (same a1/a2 swap of m and the month bound) */
 void func_8016C3C4_ovl_040E80(Date420 *d) {
-    s32 leap = 0;
+    s16 leap = 0;
     s16 days = d->day - 1;
-    s32 c;
-    u8 t;
+    u8 c;
     u8 m;
+    s32 t;
 
     if (func_8016C1D0_ovl_040E80(d->year, 1) == 1) {
         leap = 1;
@@ -122,22 +122,25 @@ void func_8016C3C4_ovl_040E80(Date420 *d) {
     d->year += 1748;
     for (m = 0; m < d->month - 1; m++) {
         days += D_80187000_ovl_040E80[m];
-        c = (m == 2) & leap;
+        c = m == 2;
+        c &= leap;
         if (c) {
             days++;
         }
     }
-    for (m = 0;; m++) {
+    m = 0;
+    goto start;
+    do {
+        m++;
+    start:
         t = D_80187010_ovl_040E80[m];
-        c = (m == 1) & leap;
+        c = m == 1;
+        c &= leap;
         days -= t;
         if (c) {
             days--;
         }
-        if (days < 0) {
-            break;
-        }
-    }
+    } while (days >= 0);
     if (c) {
         days++;
     }
