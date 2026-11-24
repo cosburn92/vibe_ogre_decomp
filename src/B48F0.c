@@ -153,7 +153,108 @@ inline void func_801C80A8_ovl_087200(s32 a) {
     func_801C0798_ovl_087200(func_801CC3B8_ovl_087200(5), a);
 }
 
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C8158_ovl_087200);
+extern u8 D_801939D8;
+typedef struct {
+    u16 id[17];
+} WinIdList;
+extern WinIdList D_801EFB20_ovl_087200; /* window ids to close, 0xFFFF-terminated */
+void func_801CC4A0_ovl_087200(u8 *w);
+void func_801C1924_ovl_087200(void);
+void func_801CBD0C_ovl_087200(s16 a, s16 b, u8 f);
+void func_801CDD30_ovl_087200(s32 *p);
+void func_801CFD84_ovl_087200(s32 clear, s32 set);
+void func_801CFDC8_ovl_087200(s32 clear, s32 set);
+void func_801CFE0C_ovl_087200(s32 clear, s32 set);
+
+typedef struct {
+    s16 x;
+    s16 y;
+} Pair16;
+typedef struct {
+    f32 x;
+    f32 y;
+} PairF;
+
+/* Resets the organize screen: clears its state, closes every window whose id is in the
+ * list (and the 0x400/3/5 windows unless 0xA1 is 1), then sets up the default view.
+ * st (the caller passes D_80196AF8) is unused. The float pair at 0x5F0 and the s16 pair at
+ * 0x10C4 are stored as struct members: struct stores don't alias D_80196AF8, so its reload
+ * can move above them, as in the original. */
+void func_801C8158_ovl_087200(u8 *st) {
+    WinIdList ids;
+    s32 i;
+    u8 *w;
+    u16 *p;
+
+    D_801939D8 = 0;
+    D_80196AF8[0x9E] = 1;
+    FIELD(D_80196AF8, s16, 0xA4) = 0;
+    D_80196AF8[0xA2] = 0;
+    func_801CBD0C_ovl_087200(0, 0, 0);
+    D_80196AF8[0x1E22] = 0;
+    D_80196AF8[0x97] = 0;
+    D_80196AF8[0x9C] = 0;
+    D_80196AF8[0x99] = 0;
+    FIELD(D_80196AF8, s16, 0x190) = 0x1E;
+    FIELD(D_80196AF8, s16, 0x19C) = 0xFD;
+    FIELD(D_80196AF8, s16, 0x1A8) = 0;
+    ((PairF *)(D_80196AF8 + 0x5F0))->x = ((PairF *)(D_80196AF8 + 0x5F0))->y = 0.0f;
+    FIELD(D_80196AF8, s16, 0x136) = 0xE;
+    FIELD(D_80196AF8, s16, 0x156) = 0;
+    ((PairF *)(D_80196AF8 + 0x5F0))->x = ((PairF *)(D_80196AF8 + 0x5F0))->y = 0.0f;
+    ids = D_801EFB20_ovl_087200;
+    for (i = 0; i < 10; i++) {
+        w = D_80196AF8 + 0x650 + i * 0x108;
+        p = ids.id;
+        if (w != NULL) {
+            for (; *p != 0xFFFF; p++) {
+                if (*p == FIELD(w, u16, 0xEE)) {
+                    func_801CC4A0_ovl_087200(w);
+                    break;
+                }
+            }
+        }
+    }
+    if (D_80196AF8[0xA1] != 1) {
+        w = func_801CC410_ovl_087200(0x400);
+        if (w != NULL) {
+            func_801CC4A0_ovl_087200(w);
+        }
+        w = func_801CC410_ovl_087200(3);
+        if (w != NULL) {
+            func_801CC4A0_ovl_087200(w);
+        }
+        w = func_801CC410_ovl_087200(5);
+        if (w != NULL) {
+            func_801CC4A0_ovl_087200(w);
+        }
+    }
+    for (i = 0; i < 5; i++) {
+        (D_80196AF8 + i)[0x92] = i;
+    }
+    func_801CDD30_ovl_087200((s32 *)(D_80196AF8 + 0x134));
+    func_801CFD84_ovl_087200(0x83, 0);
+    func_801CFDC8_ovl_087200(0x80, 0);
+    func_801CFE0C_ovl_087200(0x80, 0);
+    D_80196AF8[0x9A] = 0;
+    D_80196AF8[0x1872] = 0;
+    D_80196AF8[0x14D] = 0;
+    D_80196AF8[0x609] = 0;
+    FIELD(D_80196AF8, s16, 0x130) = 1;
+    if (!(D_80196AF8[0xA0] & 2)) {
+        FIELD(D_80196AF8, s16, 0x1BCC) = 1;
+    }
+    D_80196AF8[0x10A9] = 0;
+    ((Pair16 *)(D_80196AF8 + 0x10C4))->x = 0;
+    D_80196AF8[0x10B9] = 0;
+    ((Pair16 *)(D_80196AF8 + 0x10C4))->y = 0;
+    D_80196AF8[0x10A8] = D_80196AF8[0x10B8] = 0;
+    ((PairF *)(D_80196AF8 + 0x5F0))->x = ((PairF *)(D_80196AF8 + 0x5F0))->y = 0.0f;
+    D_80196AF8[0x60B] = 0;
+    FIELD(D_80196AF8, s32, 0x128) = 0;
+    func_801C1924_ovl_087200();
+    func_801C18AC_ovl_087200(0xA, 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801C84BC_ovl_087200);
 
