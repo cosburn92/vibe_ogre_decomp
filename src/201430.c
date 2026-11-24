@@ -428,24 +428,24 @@ u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w) {
     return n << 3;
 }
 
-/* Width rounded up to a whole 64-bit word of texels for pixel size siz */
-#ifdef NON_MATCHING
-/* branch layout of the size chain differs */
+/* Width rounded up to a whole 64-bit word of texels for pixel size siz. The 32b and 16b
+ * cases are separate (identical) branches: written as siz == 3 || siz == 2 GCC makes a range test. */
 u32 func_801BEA0C_ovl_1F0A30(s32 siz, u32 w) {
-    if (siz == 3 || siz == 2) {
-        return ((w + 3) >> 2) << 2;
+    u32 n;
+
+    if (siz == 3) {
+        n = ((w + 3) >> 2) << 2;
+    } else if (siz == 2) {
+        n = ((w + 3) >> 2) << 2;
+    } else if (siz == 1) {
+        n = ((w + 7) >> 3) << 3;
+    } else if (siz != 0) {
+        n = ((w + 31) >> 5) << 5;
+    } else {
+        n = ((w + 15) >> 4) << 4;
     }
-    if (siz == 1) {
-        return ((w + 7) >> 3) << 3;
-    }
-    if (siz != 0) {
-        return ((w + 31) >> 5) << 5;
-    }
-    return ((w + 15) >> 4) << 4;
+    return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BEA0C_ovl_1F0A30);
-#endif
 
 /* Sepia tone of c (alpha kept) */
 u32 func_801BEA70_ovl_1F0A30(Rgba201 in) {
