@@ -241,11 +241,12 @@ extern s16 *D_801D06A0_ovl_1F0A30;
 
 /* Looks up entry b of group a in the D_801D06A0 table (13 halfwords each). Returns its kind
  * (-1 = none); with out, copies the entry: kind -2 is the twelve-value form */
-#ifdef NON_MATCHING
-/* 73/73 instructions, 2 words differ: the group address (table + offset) lands in v1 instead of a0 */
 s16 func_801BE564_ovl_1F0A30(s32 a, s32 b, s16 *out) {
-    s16 *e = (s16 *)((u8 *)D_801D06A0_ovl_1F0A30 + D_801D06A0_ovl_1F0A30[a]) + b * 13;
-    s16 kind = e[0];
+    s16 *e = (s16 *)((u8 *)D_801D06A0_ovl_1F0A30 + D_801D06A0_ovl_1F0A30[a]);
+    s16 kind;
+
+    e += b * 13;
+    kind = e[0];
 
     if (kind != -1) {
         if (out == NULL) {
@@ -283,9 +284,6 @@ s16 func_801BE564_ovl_1F0A30(s32 a, s32 b, s16 *out) {
     }
     return e[0];
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BE564_ovl_1F0A30);
-#endif
 
 u8 func_801BE688_ovl_1F0A30(u32 i) {
     if (i < 160) {
