@@ -1346,7 +1346,7 @@ void func_802312E4_ovl_29A4C0(s32 i, f32 x0, f32 z0, f32 x1, f32 z1, s32 frames,
     if (u == NULL) {
         return;
     }
-    if ((x0 == -1.0f) & (z0 == -1.0f)) {
+    if (x0 == -1.0f && z0 == -1.0f) {
         sx = u->f11C;
         sz = u->f124;
     } else {
