@@ -300,24 +300,26 @@ void func_801F00E4_ovl_22A280(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* u16 result kept in a0 unmasked; return-path masking differs */
+/* Kind of unit u from its items (func_8016FB50), else its weapon (func_801C8FB8), mapped through
+ * func_8016F5E0; the unit's own value (0x33) when neither gives an id or the map yields 8 */
 u8 func_801F0298_ovl_22A280(BattleUnit *u) {
     s32 r;
-    u8 k;
+    s32 k;
 
-    r = func_8016FB50(u->items[0], u->items[1], u->items[2], u->items[3]) & 0xFFFF;
-    if (r != 0 || (r = func_801C8FB8(u) & 0xFFFF) != 0) {
-        k = func_8016F5E0(r);
-        if (k != 8) {
-            return k;
+    r = func_8016FB50(u->items[0], u->items[1], u->items[2], u->items[3]);
+    if (r == 0) {
+        r = func_801C8FB8(u);
+        if (r == 0) {
+            goto none;
         }
     }
-    return u->unk33;
+    k = func_8016F5E0(r);
+    if ((u8)k == 8) {
+    none:
+        k = u->unk33;
+    }
+    return k;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F0298_ovl_22A280);
-#endif
 
 s32 func_801F0310_ovl_22A280(s32 side) {
     u8 *st;
