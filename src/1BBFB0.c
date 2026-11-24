@@ -640,7 +640,103 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80226A1C_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80226E8C_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80227234_ovl_1BA050);
+extern u8 D_800EB1F0[];
+void func_800EA604(void *ch, s32 sound);
+void func_80226A1C_ovl_1BA050(u8 *o);
+
+/* List window input: state 3/5 opens the scroll mode (8) when the list is longer than the window,
+ * 8-10 scroll the top row o[0x41] with up/down (sound, redraw, repeat delay o[0x43]), 14 toggles
+ * o[0x58]; skipped while o[0x10] bit 0 is set or the parent's field 0x26 is busy */
+void func_80227234_ovl_1BA050(u8 *o) {
+    u16 pad;
+    s32 moved;
+
+    if (o[0xD] > 16 || (o[0x10] & 1) || FIELD(*(u8 **)o, u16, 0x26) != 0) {
+        return;
+    }
+    o[0x44] = 0;
+    switch (o[0xD]) {
+    case 8:
+        pad = D_8022A4DE_ovl_1BA050;
+        if (!(pad & 0x10)) {
+            o[0xD] = 10;
+            break;
+        }
+        moved = 0;
+        if (pad & 0x800) {
+            if (o[0x41] != 0) {
+                o[0x41]--;
+                moved = 1;
+            }
+        } else if (pad & 0x400) {
+            if (o[0x41] + o[0x23] < o[0x40]) {
+                o[0x41]++;
+                moved = 1;
+            }
+        }
+        if (moved) {
+            func_800EA604(D_800EB1F0, 2);
+            func_80226A1C_ovl_1BA050(o);
+            o[0x43] = 0;
+            o[0xD]++;
+        }
+        o[0x44] = 1;
+        break;
+    case 9:
+        if (!(D_8022A4DE_ovl_1BA050 & 0x10)) {
+            o[0xD] = 10;
+            break;
+        }
+        if (++o[0x43] >= 3) {
+            o[0xD]--;
+        }
+        o[0x44] = 1;
+        break;
+    case 10:
+        if (D_8022A4DE_ovl_1BA050 & 0x10) {
+            o[0xD] = 8;
+            break;
+        }
+        if (o[0x41] + o[0x23] < o[0x40]) {
+            func_800EA604(D_800EB1F0, 2);
+            o[0x41]++;
+            func_80226A1C_ovl_1BA050(o);
+            o[0xD]++;
+        } else {
+            o[0xD] = o[0x42];
+        }
+        break;
+    case 11:
+        o[0xD]--;
+        break;
+    case 3:
+    case 5:
+        if (D_8022A4D8_ovl_1BA050 & 0x8000) {
+            if (o[0xD] != 5 || !(o[0xF] & 0x80)) {
+                o[0xD] = 6;
+            }
+        } else if (o[0x40] > o[0x23] && !(o[0xF] & 0x40) && (D_8022A4DE_ovl_1BA050 & 0x10)) {
+            o[0x41] = o[0x40] - o[0x23];
+            o[0x42] = o[0xD];
+            o[0xD] = 8;
+        }
+        break;
+    case 14:
+        pad = D_8022A4DA_ovl_1BA050;
+        if (pad & 0x8000) {
+            o[0xD] = 15;
+        } else if (pad & 0x4000) {
+            o[0x58] = 1;
+            o[0xD] = 15;
+        } else if (pad & 0x800) {
+            o[0x58]++;
+        } else if (pad & 0x400) {
+            o[0x58]--;
+        }
+        o[0x58] &= 1;
+        break;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022750C_ovl_1BA050);
 
