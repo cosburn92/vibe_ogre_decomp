@@ -547,13 +547,94 @@ void func_801BBC78_ovl_1F0A30(void) {
     bzero(&D_801D0770_ovl_1F0A30, sizeof(State1F8));
 }
 
+f32 sqrtf(f32);
+
+/* Floor triangle under (x, z): of the n triangles (vertex index triples into the x/y/z s16 vertex
+ * list) whose x/z bounding box holds the point, the one with the smallest summed distance from the
+ * point to its corners; n when there is none */
+typedef struct {
+    u16 v[3];
+} Tri1F8;
+
+u32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s16 *verts, Tri1F8 *tris, u32 n);
+
+#ifdef NON_MATCHING
+/* 5 instructions longer: the original re-reads the first corner's coordinates for each min/max
+ * (lhu for the value, lh for the compare), keeps n in fp and the result in s7, and steps the
+ * triangle pointer unbiased */
+u32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s16 *verts, Tri1F8 *tris, u32 n) {
+    f32 best = 999999.0f;
+    u32 found = n;
+    u32 i;
+
+    for (i = 0; i < n; i++, tris++) {
+        s16 *a = &verts[tris->v[0] * 3];
+        s16 *b = &verts[tris->v[1] * 3];
+        s16 *c = &verts[tris->v[2] * 3];
+        s16 x0;
+        s16 x1;
+        s16 z0;
+        s16 z1;
+        f32 dx[4];
+        f32 dz[4];
+        s32 pad[7];
+        f32 sum;
+        u32 k;
+
+        x0 = a[0];
+        if (b[0] < a[0]) {
+            x0 = b[0];
+        }
+        if (c[0] < x0) {
+            x0 = c[0];
+        }
+        x1 = a[0];
+        if (a[0] < b[0]) {
+            x1 = b[0];
+        }
+        if (x1 < c[0]) {
+            x1 = c[0];
+        }
+        z0 = a[2];
+        if (b[2] < a[2]) {
+            z0 = b[2];
+        }
+        if (c[2] < z0) {
+            z0 = c[2];
+        }
+        z1 = a[2];
+        if (a[2] < b[2]) {
+            z1 = b[2];
+        }
+        if (z1 < c[2]) {
+            z1 = c[2];
+        }
+        if (x < x0 || x1 < x) {
+            continue;
+        }
+        if (z < z0 || z1 < z) {
+            continue;
+        }
+        dx[0] = a[0] - x;
+        dz[0] = a[2] - z;
+        dx[1] = b[0] - x;
+        dz[1] = b[2] - z;
+        dx[2] = c[0] - x;
+        dz[2] = c[2] - z;
+        sum = 0.0f;
+        for (k = 0; k < 3; k++) {
+            sum += sqrtf(dx[k] * dx[k] + dz[k] * dz[k]);
+        }
+        if (sum < best) {
+            best = sum;
+            found = i;
+        }
+    }
+    return found;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BBE60_ovl_1F0A30);
-
-s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
-
-/* Height of the floor at (x, -z): finds the floor plane under the point (clamping it into the
- * field when none is found) and projects the point onto it; 0 when there is no plane */
-s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
+#endif
 
 /* Height of the floor at (x, -z): finds the floor plane under the point (clamping it into the
  * field when none is found) and projects the point onto it; 0 when there is no plane */
@@ -562,7 +643,7 @@ s32 func_801BBE60_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
 f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
     f32 h = 0.0f;
     s16 nz = -z;
-    s32 k = func_801BBE60_ovl_1F0A30(x, nz, c, d, e);
+    s32 k = func_801BBE60_ovl_1F0A30(x, nz, (s16 *)c, (Tri1F8 *)d, e);
 
     if (k == e) {
         if (x > 0xAA) {
@@ -577,7 +658,7 @@ f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e) {
         if (nz < -0x39) {
             nz = -0x39;
         }
-        k = func_801BBE60_ovl_1F0A30(x, nz, c, d, k);
+        k = func_801BBE60_ovl_1F0A30(x, nz, (s16 *)c, (Tri1F8 *)d, k);
         if (k == e) {
             return h;
         }
