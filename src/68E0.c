@@ -59,7 +59,7 @@ void _bcopy(const void *src, void *dst, s32 n);
 
 #define SCENE_PARENT(i) (D_800E82C8[i].parent)
 extern s32 D_800C4C20;
-extern u16 D_800C4C26;
+extern volatile u16 D_800C4C26;
 extern u8 D_800E7A32;
 void func_80077F88(s32 i);
 typedef struct {
@@ -429,8 +429,6 @@ void func_80077200(s32 id) {
     }
 }
 
-#ifdef NON_MATCHING
-/* lhu result is re-masked with andi in the original */
 void func_80077288(void) {
     s32 i;
 
@@ -448,9 +446,6 @@ void func_80077288(void) {
         func_80077F88(i);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80077288);
-#endif
 
 s32 func_80077314(void *owner) {
     s32 i;
