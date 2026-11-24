@@ -494,13 +494,13 @@ typedef struct {
     s32 y;
 } WinPos1BB;
 
-/* Draws window arg0 through func_80225058, then the 80x16 CI4 strip D_8022A4C4 (palette D_8022A4C0)
+/* Draws window win through func_80225058 (data passed through), then the 80x16 CI4 strip D_8022A4C4 (palette D_8022A4C0)
  * at (x, y - 12) with the window's alpha */
-void func_80225DFC_ovl_1BA050(s32 arg0, s32 arg1) {
-    u8 *w = (u8 *)arg0;
-    WinPos1BB *p = (WinPos1BB *)arg0;
+void func_80225DFC_ovl_1BA050(s32 win, s32 data) {
+    u8 *w = (u8 *)win;
+    WinPos1BB *p = (WinPos1BB *)win;
 
-    func_80225058_ovl_1BA050(arg0, arg1);
+    func_80225058_ovl_1BA050(win, data);
     gSPDisplayList(D_800E9BA0++, D_8022A068_ovl_1BA050);
     gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, w[0x19]);
     gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_8022A4C0_ovl_1BA050[0]);
