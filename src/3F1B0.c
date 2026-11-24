@@ -31,7 +31,7 @@ extern SoundChannel D_800EB240_ovl_03F1B0;
 extern SoundChannel D_800EB290_ovl_03F1B0;
 extern u8 D_80104710_ovl_03F1B0[];
 s32 func_80081B08(s32 h);
-void func_80081A54(s32 h, s32 a);
+s32 func_80081A54(s32 h, s32 a);
 void func_80081DF0(void *p);
 s32 func_80081770(s32 a);
 void func_800EA488_ovl_03F1B0(SoundChannel *ch);
@@ -351,11 +351,7 @@ void func_800EA3BC_ovl_03F1B0(SoundChannel *ch) {
     ch->saved[2] = c;
 }
 
-#ifdef NON_MATCHING
-/* saved[0] load scheduled before the param store */
 void func_800EA3E4_ovl_03F1B0(SoundChannel *ch) {
-    s32 v;
-
     if (!func_80081B08(ch->handle)) {
         D_800EB0B0_ovl_03F1B0[0].unk38 = 0;
         func_800EA488_ovl_03F1B0(ch);
@@ -364,21 +360,17 @@ void func_800EA3E4_ovl_03F1B0(SoundChannel *ch) {
     if (ch->unk38 == 0) {
         if (ch->saved[2] != 0) {
             func_80081A54(ch->handle, ch->saved[2]);
-            v = ch->saved[2] + 3;
+            CHF(ch, 0x3C) = ch->saved[2] + 3;
         } else {
             func_80081A54(ch->handle, 1);
-            v = 3;
+            CHF(ch, 0x3C) = 3;
         }
-        CHF(ch, 0x3C) = v;
         ch->unk38 = 2;
         CHF(ch, 0x40) = ch->saved[0];
     } else {
         CHF(ch, 0x40) = ch->saved[0];
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/3F1B0", func_800EA3E4_ovl_03F1B0);
-#endif
 
 /* Loads song saved[0] (1-based) from ROM into the channel buffer and starts it */
 #ifdef NON_MATCHING
