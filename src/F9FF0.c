@@ -6,13 +6,12 @@
 extern u8 D_8019EE48;
 void D_80198BE8(void);
 
-s32 func_8007F648(void *func, s16 x, s16 y, s16 b, u16 c);
 
 void func_8019EE50_ovl_0F9FF0(void) {
 }
 
 s32 func_8019EE58_ovl_0F9FF0(u8 id, u16 a, u16 b, u8 c, u8 flag) {
-    s32 i = func_8007F648(D_80198BE8, 0, 0, 0, 0);
+    s32 i = func_8007F648((s32)D_80198BE8, 0, 0, 0, 0);
 
     D_800E82C8[i].unk88 = b >> 8;
     D_800E82C8[i].unk89 = b;
@@ -31,12 +30,12 @@ s32 func_8019EE58_ovl_0F9FF0(u8 id, u16 a, u16 b, u8 c, u8 flag) {
     return i;
 }
 
-#ifdef NON_MATCHING
+//UNWRAP_BEGIN
 /* Only the prologue saves s1 before s0 in the original. */
-s32 func_8019EF80_ovl_0F9FF0(s32 a, s16 b, u16 c) {
-    s32 i = func_8007F648(D_80198BE8, 0, 0, 0, 0);
+s32 func_8019EF80_ovl_0F9FF0(u16 a, s16 b, u16 c) {
+    s32 i = func_8007F648((s32)D_80198BE8, 0, 0, 0, 0);
 
-    D_800E82C8[i].unk88 = ((u16)a >> 8) | 0x80;
+    D_800E82C8[i].unk88 = (a >> 8) | 0x80;
     D_800E82C8[i].unk89 = a;
     if (b >= 0) {
         D_800E82C8[i].unk8A = 0x40;
@@ -55,9 +54,7 @@ s32 func_8019EF80_ovl_0F9FF0(s32 a, s16 b, u16 c) {
     D_800E82C8[i].unk97 = 0;
     return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F9FF0", func_8019EF80_ovl_0F9FF0);
-#endif
+//UNWRAP_END
 
 //UNWRAP_BEGIN
 /* The original loads the last two stack arguments with lw (32-bit) but schedules like this u16 version. */

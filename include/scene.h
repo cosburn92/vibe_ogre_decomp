@@ -51,4 +51,7 @@ typedef struct {
 
 extern Scene D_800E82C8[];
 
+/* Opens a scene box owned by a (an update function address); defined in A370. */
+s32 func_8007F648(s32 a, s16 x, s16 y, s16 b, u16 c);
+
 #endif /* SCENE_H */

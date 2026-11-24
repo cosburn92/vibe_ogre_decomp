@@ -336,7 +336,6 @@ void func_802264B4_ovl_27A020(void) {
 }
 
 #include "scene.h"
-s32 func_8007F648(void *func, s16 x, s16 y, s16 b, u16 c);
 void D_80198BE8(void);
 
 /* Creates a scene box: image id, kind b (top bit set), position (x, y), size (w, h), z, colour
@@ -344,7 +343,7 @@ void D_80198BE8(void);
 #ifdef NON_MATCHING
 /* 109/109 instructions, 92 words differ: register allocation (the original keeps z in s6 and spills id and col to the frame) */
 s32 func_80226644_ovl_27A020(u8 id, u16 b, u32 x, u32 y, u16 w, u16 col, u32 z, u8 f1, u8 f2) {
-    s32 i = func_8007F648(D_80198BE8, 0, 0, 0, 0);
+    s32 i = func_8007F648((s32)D_80198BE8, 0, 0, 0, 0);
     u8 flags;
 
     bzero(&D_800E82C8[i].unk88, 0x10);
