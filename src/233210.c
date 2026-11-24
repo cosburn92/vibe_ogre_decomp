@@ -618,7 +618,9 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F0A3C_ovl_22A280);
 
 s32 func_801F0C04_ovl_22A280(BattleUnit *u) {
     BattleUnit *list[6];
-    s32 n = func_801F0514_ovl_22A280(list, (-(func_801C8B84(u) == 0) & 6) | 2, u->lane);
+    /* start row 2, or 8 when func_801C8B84 is false; the plain `? 2 : 8` is one instruction
+     * shorter (retail keeps the andi 6 + ori 2) */
+    s32 n = func_801F0514_ovl_22A280(list, (func_801C8B84(u) ? 0 : 6) | 2, u->lane);
 
     if (n != 0) {
         return func_801CA29C(func_801F0A3C_ovl_22A280(u, list, n));
@@ -628,7 +630,7 @@ s32 func_801F0C04_ovl_22A280(BattleUnit *u) {
 
 s32 func_801F0C68_ovl_22A280(BattleUnit *u) {
     BattleUnit *list[6];
-    s32 n = func_801F0514_ovl_22A280(list, (func_801C8B84(u) == 0) << 3, u->lane);
+    s32 n = func_801F0514_ovl_22A280(list, func_801C8B84(u) ? 0 : 8, u->lane);
 
     if (n != 0) {
         return func_801CA29C(func_801F0A3C_ovl_22A280(u, list, n));
@@ -638,7 +640,7 @@ s32 func_801F0C68_ovl_22A280(BattleUnit *u) {
 
 s32 func_801F0CC4_ovl_22A280(BattleUnit *u) {
     BattleUnit *list[6];
-    s32 n = func_801F0514_ovl_22A280(list, (func_801C8B84(u) == 0) << 3, u->lane);
+    s32 n = func_801F0514_ovl_22A280(list, func_801C8B84(u) ? 0 : 8, u->lane);
 
     if (n == 0) {
         return -1;
@@ -655,7 +657,7 @@ s32 func_801F0D24_ovl_22A280(BattleUnit *self, u8 mode) {
     s32 n;
     s32 i;
 
-    n = func_801F0514_ovl_22A280(list, (func_801C8B84(self) == 0) << 3, self->lane);
+    n = func_801F0514_ovl_22A280(list, func_801C8B84(self) ? 0 : 8, self->lane);
     if (n == 0) {
         return -1;
     }
