@@ -233,6 +233,24 @@
                        (lrt) << G_TEXTURE_IMAGE_FRAC)                                             \
     }
 
+#define gDPLoadTextureTile_4b(pkt, timg, fmt, width, height, uls, ult, lrs, lrt, pal, cms, cmt, masks, \
+                              maskt, shifts, shiftt)                                              \
+    {                                                                                             \
+        gDPSetTextureImage(pkt, fmt, G_IM_SIZ_8b, ((width) >> 1), timg);                          \
+        gDPSetTile(pkt, fmt, G_IM_SIZ_8b, (((((lrs) - (uls) + 1) >> 1) + 7) >> 3), 0,             \
+                   G_TX_LOADTILE, 0, cmt, maskt, shiftt, cms, masks, shifts);                     \
+        gDPLoadSync(pkt);                                                                         \
+        gDPLoadTile(pkt, G_TX_LOADTILE, (uls) << (G_TEXTURE_IMAGE_FRAC - 1),                      \
+                    (ult) << G_TEXTURE_IMAGE_FRAC, (lrs) << (G_TEXTURE_IMAGE_FRAC - 1),           \
+                    (lrt) << G_TEXTURE_IMAGE_FRAC);                                               \
+        gDPPipeSync(pkt);                                                                         \
+        gDPSetTile(pkt, fmt, G_IM_SIZ_4b, (((((lrs) - (uls) + 1) >> 1) + 7) >> 3), 0,             \
+                   G_TX_RENDERTILE, pal, cmt, maskt, shiftt, cms, masks, shifts);                 \
+        gDPSetTileSize(pkt, G_TX_RENDERTILE, (uls) << G_TEXTURE_IMAGE_FRAC,                       \
+                       (ult) << G_TEXTURE_IMAGE_FRAC, (lrs) << G_TEXTURE_IMAGE_FRAC,              \
+                       (lrt) << G_TEXTURE_IMAGE_FRAC)                                             \
+    }
+
 /* F3DEX2 vertex and triangle commands */
 #define G_VTX 0x01
 #define G_TRI2 0x06

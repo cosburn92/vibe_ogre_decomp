@@ -1345,7 +1345,67 @@ void func_801EBF58_ovl_23B220(u8 id) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBF58_ovl_23B220);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EC00C_ovl_23B220);
+typedef struct {
+    /* 0x0 */ u8 *font; /* 16-colour palette, then a 256-wide CI4 sheet of 16x16 cells */
+    /* 0x4 */ u8 *text;
+    /* 0x8 */ s16 x;
+    /* 0xA */ s16 y;
+} Caption23;
+
+/* Font cell of a caption character: A-Z are cells 0-25, a-z cells 32-57, anything else cell 58 */
+static inline s32 FontCell23(u8 c) {
+    if (c >= 'A' && c <= 'Z') {
+        return c - 'A';
+    }
+    if (c >= 'a' && c <= 'z') {
+        return c - 'A';
+    }
+    return 58;
+}
+
+/* Draws the title caption, one 16x16 CI4 font cell per character (see FontCell23),
+ * '_' skipped, at alpha ctx->0x653, each letter's left/right kerning from D_801EFE8C */
+void func_801EC00C_ovl_23B220(void) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    Caption23 *cap = (Caption23 *)&c->img5C8;
+    u8 *s;
+    s32 x;
+    s32 y;
+    s32 ch;
+    s16 idx;
+    s32 k;
+    s32 row;
+    s32 ss;
+    s32 tt;
+    s32 *ps = &ss; /* the cell's s/t live in stack slots, s written through this pointer */
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, c->img5C8);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, FIELD(c, u8, 0x653));
+    s = cap->text;
+    x = cap->x;
+    y = cap->y;
+    while (*s != 0) {
+        ch = *s++;
+        k = (ch - 'A') * 2; /* byte offset of the character's (left, right) kerning pair */
+        idx = FontCell23(ch);
+        *ps = (s16)(idx % 16) * 16;
+        row = idx / 16;
+        *(&tt) = row * 16;
+        x -= ((s8 *)D_801EFE8C_ovl_23B220)[k];
+        if (k != 60) { /* '_' is a gap */
+            gDPLoadTextureTile_4b(D_800E9BA0++, cap->font + 0x20, G_IM_FMT_CI, 256, 0, ss, tt,
+                                  ss + 16, tt + 16, 0, 0, 0, 0, 0, 0, 0);
+            gDPPipeSync(D_800E9BA0++);
+            gSPScisTextureRectangle(D_800E9BA0++, x << 2, y << 2, (x + 16) << 2, (y + 16) << 2, 0,
+                                    ss << 5, tt << 5, 1024, 1024);
+            gDPPipeSync(D_800E9BA0++);
+        }
+        x += 16 - ((s8 *)D_801EFE8D_ovl_23B220)[k];
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
 
 s32 func_801C8C90(u8 *u);
 
