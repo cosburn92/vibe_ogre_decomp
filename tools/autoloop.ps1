@@ -56,6 +56,10 @@ these forms, which are pre-approved; anything else will be refused:
   diff:     wsl bash -lc "cd /mnt/c/Users/Connor/dev/ogredecomp && sh tools/objcmp.sh SEG FUNC ROM SIZE"
   sizes:    wsl bash -lc "cd /mnt/c/Users/Connor/dev/ogredecomp && sh tools/sizecheck.sh SEG"
   git:      git status / log / diff / add / commit / checkout -- . / clean -fd src
+  text:     grep, sed, head, tail, cat, wc, cut, sort, uniq, awk, diff, paste
+  scripts:  python3 build/autoloop/<name>.py (write helpers there, not elsewhere)
+You are already in the repo root: never cd before a git command (that
+combination is always refused, even with git pre-approved).
 Keep reads small: pipe big asm/diff output through head or grep.
 '@
 $prompt = $prompt.Replace("MIN", "$Min").Replace("MAX", "$Max")
