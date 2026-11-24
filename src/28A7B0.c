@@ -864,12 +864,11 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802311B0_ovl_286BD0);
 
 /* Clips the ten window rects to the 12x8 view whose corner is (x - 2, y - 2); rects outside it get
  * 0xFF clips */
-#ifdef NON_MATCHING
-/* 81 vs 85 instructions: the original evaluates the four overlap tests as setcc/negu/and; GCC here branches on each (same issue as 420D0 func_8016C268) */
 void func_80231D58_ovl_286BD0(s16 x, s16 y) {
     u8 x0 = 0;
     u8 y0 = 0;
     u8 i;
+    s32 inside;
 
     if (x >= 2) {
         x0 = x - 2;
@@ -883,7 +882,18 @@ void func_80231D58_ovl_286BD0(s16 x, s16 y) {
         if (r == NULL) {
             break;
         }
-        if (!((r[2] >= x0) & (r[3] >= y0) & (x0 + 12 >= r[0]) & (y0 + 8 >= r[1]))) {
+        /* inside: the rect overlaps the view */
+        inside = r[2] >= x0;
+        if (r[3] < y0) {
+            inside = 0;
+        }
+        if (x0 + 12 < r[0]) {
+            inside = 0;
+        }
+        if (y0 + 8 < r[1]) {
+            inside = 0;
+        }
+        if (!inside) {
             r[4] = 0xFF;
             r[6] = 0xFF;
             r[5] = 0xFF;
@@ -908,9 +918,6 @@ void func_80231D58_ovl_286BD0(s16 x, s16 y) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80231D58_ovl_286BD0);
-#endif
 
 void func_80231EAC_ovl_286BD0(u8 k, u8 *a, u8 *b) {
     switch (k) {
