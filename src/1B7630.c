@@ -381,10 +381,6 @@ u8 *func_8021A208_ovl_1B2670(u8 *t, u32 index) {
     return out;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021AAE8_ovl_1B2670);
-
-INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B040_ovl_1B2670);
-
 extern u8 D_80187C59[][0x48]; /* gClassTable[].baseClass */
 void *LoadChunk(s32 id);
 u8 func_8016F5E0(u16 id);
@@ -412,6 +408,93 @@ typedef struct {
     /* 0x4C */ u8 *bytes4C;
     /* 0x50 */ void *res50;
 } SprRec;
+void *func_8021AAE8_ovl_1B2670(void *t, u32 page, void *pal, s32 flags);
+
+INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021AAE8_ovl_1B2670);
+
+typedef struct {
+    /* 0x00 */ u32 cell;
+    /* 0x04 */ s32 x;
+    /* 0x08 */ s32 y;
+    /* 0x0C */ u32 w;
+    /* 0x10 */ u32 h;
+    /* 0x14 */ u32 z;
+    /* 0x18 */ f32 u;
+    /* 0x1C */ f32 v;
+} SprPart;
+
+/* part[i] and img[i] overlap past the first part, as in the original */
+typedef struct {
+    /* 0x00 */ u32 idx;
+    /* 0x04 */ u32 n;
+    /* 0x08 */ SprPart part[1];
+    /* 0x28 */ void *img[1];
+} SprFrame;
+
+/* Fills out with frame idx of record r: per part a 0x20-byte entry (cell, x, y, three sizes and
+ * two 6.10 fixed-point coordinates) and the part's image converted with a palette chosen by the
+ * cell's kind byte (0: id-table kind, 1: entry byte, 2: func_8016F5E0 of e). */
+#ifdef NON_MATCHING
+/* Same size; register allocation only: the original keeps sel in s3 and the cell index in s4
+ * (swapped here), and shifts the 6.10 value's integer part in place. */
+SprFrame *func_8021B040_ovl_1B2670(SprFrame *out, SprRec *r, s32 cls, s32 b, s32 c, s32 d, s32 e, u32 idx) {
+    u32 *tbl = r->res44;
+    u8 *p;
+    u32 i;
+    u32 k;
+    u32 sel = 0;
+    u16 v;
+    u16 *q;
+    u8 *img;
+
+    if (idx >= tbl[0] >> 2) {
+        return NULL;
+    }
+    out->idx = idx;
+    p = (u8 *)tbl + tbl[idx];
+    out->n = *(u16 *)p;
+    p += 2;
+    for (i = 0; i < out->n; i++) {
+        out->part[i].cell = k = *(u16 *)p;
+        out->part[i].x = *(s16 *)(p + 2);
+        out->part[i].y = *(s16 *)(p + 4);
+        out->part[i].w = *(u16 *)(p + 6);
+        out->part[i].h = *(u16 *)(p + 8);
+        out->part[i].z = *(u16 *)(p + 10);
+        v = *(u16 *)(p + 12);
+        out->part[i].u = (s32)(v >> 10) + (s32)(v & 0x3FF) / 1024.0f;
+        v = *(u16 *)(p + 14);
+        out->part[i].v = (s32)(v >> 10) + (s32)(v & 0x3FF) / 1024.0f;
+        p += 16;
+        switch (r->bytes48[k]) {
+        case 0:
+            if (D_80187C59[cls][0] == b) {
+                q = (u16 *)((c * 2 + cls * 4 + d) * 2 + (s32)D_8021C9E0_ovl_1B2670);
+            } else {
+                q = (u16 *)((c * 2 + b * 4 + d) * 2 + (s32)D_8021C9E0_ovl_1B2670);
+            }
+            sel = *q >> 12;
+            break;
+        case 1:
+            sel = D_8021C9E4_ovl_1B2670[e];
+            break;
+        case 2:
+            sel = func_8016F5E0(e);
+            break;
+        }
+        img = LoadChunk(r->chunks[k + 4]);
+        if (sel >= img[2]) {
+            sel = 0;
+        }
+        out->img[i] = func_8021AAE8_ovl_1B2670(img, sel, (u8 *)r->res50 + (r->bytes4C[k] << 9), 0);
+        HFree(img);
+    }
+    return out;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B040_ovl_1B2670);
+#endif
+
 
 /* Fills record o for class cls (or for b when cls is not b's base class), variant c/d and
  * entry e: looks up the id in the shared table, loads its chunk list and the four chunks it
