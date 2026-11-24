@@ -266,23 +266,24 @@ void func_8022EB0C_ovl_286BD0(void) {
 }
 
 #ifdef NON_MATCHING
-/* Struct-base addressing and branch order differ. */
-u8 *func_8022EC34_ovl_286BD0(s32 n) {
-    Sel28 *s = &D_8023DF10_ovl_286BD0;
+/* Saved game slot n with the selection record (D_8023DF10) spliced in at index sel: returns the
+ * record itself for n == sel, otherwise slot n (one lower past sel), or NULL past the last slot.
+ * One instruction differs: the empty-slot test is a beql with the NULL in its delay slot, where
+ * the original has a plain beq. A result variable gives the beq but moves t/off to a0/a1. */
+TimeStamp *func_8022EC34_ovl_286BD0(u8 n) {
+    s32 off;
 
-    if (s->active == 0) {
-        D_8023DF10_ovl_286BD0.sel = -1;
+    if (D_8023DF10_ovl_286BD0.active == 0) {
+        D_8023DF16_ovl_286BD0 = -1;
     }
-    if (D_8023DF10_ovl_286BD0.sel == (u8)n) {
-        return (u8 *)s;
+    if (D_8023DF16_ovl_286BD0 == n) {
+        return (TimeStamp *)&D_8023DF10_ovl_286BD0;
     }
-    if (D_8023DF10_ovl_286BD0.sel != -1 && D_8023DF10_ovl_286BD0.sel < (u8)n) {
+    if (D_8023DF16_ovl_286BD0 != -1 && D_8023DF16_ovl_286BD0 < n) {
         n--;
     }
-    if (D_80197810[(u8)n * 6] == 0xFF) {
-        return NULL;
-    }
-    return &D_80197810[(u8)n * 6];
+    off = n * 6;
+    return D_80197810[off] == 0xFF ? NULL : (TimeStamp *)&D_80197810[off];
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022EC34_ovl_286BD0);
