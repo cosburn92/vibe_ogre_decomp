@@ -1331,7 +1331,102 @@ INCLUDE_ASM("asm/nonmatchings/233210", func_801F5AC4_ovl_22A280);
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F6068_ovl_22A280);
 
+/* Combination candidate (5 bytes, unaligned) */
+typedef struct {
+    /* 0x0 */ u8 id;
+    /* 0x1 */ u8 a;
+    /* 0x2 */ u8 b;
+    /* 0x3 */ u8 used;
+    /* 0x4 */ u8 index;
+} Combo22;
+
+u8 func_8020B150(u8 id);
+u8 func_801BE0A8(u8 id);
+void func_801CCD4C(void *base, s32 n, s32 size, void *cmp);
+s32 func_801CD390(u8 *keys, s32 n);
+u8 func_801CD2A0(u8 *keys, s32 n);
+s32 func_801CD30C(u8 *keys, s32 n, u8 *out);
+s32 func_801F68A4_ovl_22A280(u8 *a, u8 *b);
+s32 func_801F68B4_ovl_22A280(u8 *a, u8 *b);
+extern u8 D_801ADACC[];
+void bzero(void *, s32);
+
+#ifdef NON_MATCHING
+/* same size, 7 instructions differ: the original schedules the j = 0 before each combination call
+ * after the argument setup and key copies */
+/* Fills in the two keys of each of the n entries, keeps those whose second key is 1, 3 or 5, and
+ * narrows them down three times (sorted by key b, then key a, then id) through the combination
+ * tables; marks the entries used and returns the result (0xFF when fewer than two remain) */
+u8 func_801F6504_ovl_22A280(Combo22 *e, u32 n, u8 *out) {
+    Combo22 sel[3];
+    Combo22 sel2[3];
+    u8 keys[8];
+    u8 res;
+    u32 i;
+    u32 k;
+    u8 j;
+    u8 r;
+    u8 m;
+    s32 v;
+
+    for (i = 0; i < n; i++) {
+        e[i].a = func_8020B150(e[i].id);
+        e[i].b = func_801BE0A8(e[i].id);
+        e[i].used = 0;
+        e[i].index = i;
+    }
+    k = 0;
+    for (i = 0; i < n; i++) {
+        if (e[i].b == 1 || e[i].b == 3 || e[i].b == 5) {
+            sel[k++] = e[i];
+        }
+    }
+    if (k < 2) {
+        return 0xFF;
+    }
+    func_801CCD4C(sel, k, 5, func_801F68B4_ovl_22A280);
+    keys[0] = sel[0].b;
+    keys[1] = sel[1].b;
+    keys[2] = sel[2].b;
+    j = 0;
+    i = 0;
+    r = func_801CD390(keys, k);
+    bzero(sel2, 0xF);
+    for (; i < k; i++) {
+        if ((r >> i) & 1) {
+            sel2[j++] = sel[i];
+        }
+    }
+    if (j < 2) {
+        return 0xFF;
+    }
+    k = j;
+    func_801CCD4C(sel2, k, 5, func_801F68A4_ovl_22A280);
+    keys[0] = sel2[0].a;
+    keys[1] = sel2[1].a;
+    keys[2] = sel2[2].a;
+    j = 0;
+    i = 0;
+    m = func_801CD2A0(keys, k);
+    for (; i < k; i++, m >>= 1) {
+        if (m & 1) {
+            keys[j++] = sel2[i].id;
+            e[sel2[i].index].used = 1;
+        }
+    }
+    if (j < 2) {
+        return 0xFF;
+    }
+    func_801CCD4C(keys, j, 1, D_801ADACC);
+    v = func_801CD30C(keys, j, &res);
+    if (out != NULL) {
+        *out = res;
+    }
+    return v;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F6504_ovl_22A280);
+#endif
 
 s32 func_801F67D4_ovl_22A280(BattleUnit *u, u32 f) {
     s32 r = 0;
