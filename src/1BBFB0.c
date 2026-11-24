@@ -486,7 +486,30 @@ INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80224E74_ovl_1BA050);
 
 INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80225058_ovl_1BA050);
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_80225DFC_ovl_1BA050);
+extern u8 D_8022A068_ovl_1BA050[];
+
+typedef struct {
+    u8 pad[0x2C];
+    s32 x;
+    s32 y;
+} WinPos1BB;
+
+/* Draws window arg0 through func_80225058, then the 80x16 CI4 strip D_8022A4C4 (palette D_8022A4C0)
+ * at (x, y - 12) with the window's alpha */
+void func_80225DFC_ovl_1BA050(s32 arg0, s32 arg1) {
+    u8 *w = (u8 *)arg0;
+    WinPos1BB *p = (WinPos1BB *)arg0;
+
+    func_80225058_ovl_1BA050(arg0, arg1);
+    gSPDisplayList(D_800E9BA0++, D_8022A068_ovl_1BA050);
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0, 0, 0, w[0x19]);
+    gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_8022A4C0_ovl_1BA050[0]);
+    gDPLoadTextureBlock_4b(D_800E9BA0++, D_8022A4C0_ovl_1BA050[1], G_IM_FMT_CI, 80, 16, 0, 2, 2, 7, 4, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, p->x * 4, (p->y - 12) * 4, (p->x + 72) * 4, (p->y + 4) * 4, 0, 0, 0,
+                            1 << 10, 1 << 10);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 ScriptRes *func_80226164_ovl_1BA050(u32 i) {
     if (i >= 4) {
