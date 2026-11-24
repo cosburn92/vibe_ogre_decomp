@@ -205,4 +205,43 @@
 #define gSPTextureRectangle(pkt, xl, yl, xh, yh, tile, s, t, dsdx, dtdy)                          {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(xh, 12, 12) | _SHIFTL(yh, 0, 12));              _g->w1 = (_SHIFTL(tile, 24, 3) | _SHIFTL(xl, 12, 12) | _SHIFTL(yl, 0, 12));                   gImmp1(pkt, G_RDPHALF_1, (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16)));                           gImmp1(pkt, G_RDPHALF_2, (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16)));                 }
 #define gSPScisTextureRectangle(pkt, xl, yl, xh, yh, tile, s, t, dsdx, dtdy)                      {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                                                                                                                     _g->w0 = _SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(MAX((s16)(xh), 0), 12, 12) |                              _SHIFTL(MAX((s16)(yh), 0), 0, 12);                                                   _g->w1 = _SHIFTL((tile), 24, 3) | _SHIFTL(MAX((s16)(xl), 0), 12, 12) |                                 _SHIFTL(MAX((s16)(yl), 0), 0, 12);                                                   gImmp1(pkt, G_RDPHALF_1,                                                                             (_SHIFTL(((s) - (((s16)(xl) < 0)                                                                                   ? (((s16)(dsdx) < 0)                                                                                 ? (MAX((((s16)(xl) * (s16)(dsdx)) >> 7), 0))                                                  : (MIN((((s16)(xl) * (s16)(dsdx)) >> 7), 0)))                                          : 0)),                                                                            16, 16) |                                                                             _SHIFTL(((t) - (((yl) < 0)                                                                                        ? (((s16)(dtdy) < 0)                                                                                 ? (MAX((((s16)(yl) * (s16)(dtdy)) >> 7), 0))                                                  : (MIN((((s16)(yl) * (s16)(dtdy)) >> 7), 0)))                                          : 0)),                                                                            0, 16)));                                                                     gImmp1(pkt, G_RDPHALF_2, (_SHIFTL((dsdx), 16, 16) | _SHIFTL((dtdy), 0, 16)));             }
 
+#define G_IM_SIZ_4b_TILE_BYTES G_IM_SIZ_4b_BYTES
+#define G_IM_SIZ_8b_TILE_BYTES G_IM_SIZ_8b_BYTES
+#define G_IM_SIZ_16b_TILE_BYTES G_IM_SIZ_16b_BYTES
+#define G_IM_SIZ_32b_TILE_BYTES 2
+
+#define gDPLoadTextureTile(pkt, timg, fmt, siz, width, height, uls, ult, lrs, lrt, pal, cms, cmt,   \
+                           masks, maskt, shifts, shiftt)                                          \
+    {                                                                                             \
+        gDPSetTextureImage(pkt, fmt, siz, width, timg);                                           \
+        gDPSetTile(pkt, fmt, siz, (((((lrs) - (uls) + 1) * siz##_TILE_BYTES) + 7) >> 3), 0,       \
+                   G_TX_LOADTILE, 0, cmt, maskt, shiftt, cms, masks, shifts);                     \
+        gDPLoadSync(pkt);                                                                         \
+        gDPLoadTile(pkt, G_TX_LOADTILE, (uls) << G_TEXTURE_IMAGE_FRAC, (ult) << G_TEXTURE_IMAGE_FRAC, \
+                    (lrs) << G_TEXTURE_IMAGE_FRAC, (lrt) << G_TEXTURE_IMAGE_FRAC);                \
+        gDPPipeSync(pkt);                                                                         \
+        gDPSetTile(pkt, fmt, siz, (((((lrs) - (uls) + 1) * siz##_LINE_BYTES) + 7) >> 3), 0,       \
+                   G_TX_RENDERTILE, pal, cmt, maskt, shiftt, cms, masks, shifts);                 \
+        gDPSetTileSize(pkt, G_TX_RENDERTILE, (uls) << G_TEXTURE_IMAGE_FRAC,                       \
+                       (ult) << G_TEXTURE_IMAGE_FRAC, (lrs) << G_TEXTURE_IMAGE_FRAC,              \
+                       (lrt) << G_TEXTURE_IMAGE_FRAC)                                             \
+    }
+
+/* F3DEX2 vertex and triangle commands */
+#define G_VTX 0x01
+#define G_TRI2 0x06
+#define gSPVertex(pkt, v, n, v0)                                                                  \
+    {                                                                                             \
+        Gfx *_g = (Gfx *)(pkt);                                                                   \
+        _g->w0 = _SHIFTL(G_VTX, 24, 8) | _SHIFTL((n), 12, 8) | _SHIFTL((v0) + (n), 1, 7);         \
+        _g->w1 = (unsigned int)(v);                                                               \
+    }
+#define _gsSP1Triangle_w1(v0, v1, v2) (_SHIFTL((v0) * 2, 16, 8) | _SHIFTL((v1) * 2, 8, 8) | _SHIFTL((v2) * 2, 0, 8))
+#define gSP2Triangles(pkt, v00, v01, v02, flag0, v10, v11, v12, flag1)                            \
+    {                                                                                             \
+        Gfx *_g = (Gfx *)(pkt);                                                                   \
+        _g->w0 = _SHIFTL(G_TRI2, 24, 8) | _gsSP1Triangle_w1(v00, v01, v02);                       \
+        _g->w1 = _gsSP1Triangle_w1(v10, v11, v12);                                                \
+    }
+
 #endif /* GBI_ULTRA_H */

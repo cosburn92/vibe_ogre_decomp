@@ -62,7 +62,11 @@ f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
 void func_801C5D64_ovl_1F0A30(void);
 void func_801BDC78_ovl_1F0A30(void);
 void func_801C62E4_ovl_1F0A30(s32 a, u8 *b, u8 c);
-extern u8 D_80197178[];
+/* 16-byte Vtx */
+typedef struct {
+    u16 v[8];
+} Vtx1F8;
+extern Vtx1F8 *D_80197178; /* vertex pool cursor */
 extern void *D_800E9BA0;
 /* 0x40-byte fixed-point matrix */
 typedef struct {
@@ -145,7 +149,7 @@ typedef struct {
 } Gfx;
 #include "gbi_ultra.h"
 s32 func_801BE9A8_ovl_1F0A30(s32 fmt, s32 w);
-s32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
+u32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
 void func_801BA0DC_ovl_1F0A30(void *timg, s32 a, s32 b, s32 fmt, s32 siz, s32 stride, s32 height, s32 uls,
                               s32 ult, s32 lrs, s32 lrt, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
 
@@ -188,7 +192,7 @@ void func_801B5CAC_ovl_1F0A30(Size1F *s, s32 a, s32 b) {
     func_801B594C_ovl_1F0A30(s, 0, 0, s->w, s->h, a, b);
 }
 
-void func_801B5CE0_ovl_1F0A30(u16 *p, s16 a, s16 b, s16 c, s16 d) {
+inline void func_801B5CE0_ovl_1F0A30(u16 *p, s16 a, s16 b, s16 c, s16 d) {
     bzero(p, 0x10);
     p[0] = a;
     p[1] = b;
@@ -197,7 +201,66 @@ void func_801B5CE0_ovl_1F0A30(u16 *p, s16 a, s16 b, s16 c, s16 d) {
     p[5] = d << 6;
 }
 
+#define VTXP1F8 D_80197178
+
+/* Draws a 16-bit RGBA image centred on the origin as textured quads, in strips of as many rows
+ * as fit in TMEM: first the vertex pairs along the strip edges, then a tile load and two
+ * triangles per strip */
+#ifdef NON_MATCHING
+/* Same size; w, -w/2 and the 0xFF alpha constant get s8/s6/s7 instead of s7/s8/s6, which also reorders a few vertex stores */
+void func_801B5D58_ovl_1F0A30(ImgRef1F8 *pp) {
+    u8 *img = pp->img;
+    s32 bpr;
+    s32 h;
+    u32 w;
+    s32 hh;
+    s32 hw;
+    s32 nhw;
+    u8 *timg;
+    s32 rows;
+    s32 row;
+    s32 n;
+    u8 *start;
+
+    bpr = func_801BE9A8_ovl_1F0A30(2, ((Size1F *)img)->w);
+    h = ((Size1F *)img)->h;
+    start = (u8 *)VTXP1F8;
+    w = ((Size1F *)img)->w;
+    timg = img + 8;
+    hh = ((Size1F *)img)->h >> 1;
+    rows = 0x1000 / bpr;
+    hw = w >> 1;
+    nhw = -hw;
+    for (row = 0; h > 0; h -= rows, row += rows) {
+        func_801B5CE0_ovl_1F0A30((u16 *)VTXP1F8++, nhw, hh - row, 0, row);
+        func_801B5CE0_ovl_1F0A30((u16 *)VTXP1F8++, hw, hh - row, w, row);
+        if (rows >= h) {
+            row += h;
+            func_801B5CE0_ovl_1F0A30((u16 *)VTXP1F8++, nhw, hh - row, 0, row);
+            func_801B5CE0_ovl_1F0A30((u16 *)VTXP1F8++, hw, hh - row, w, row);
+            break;
+        }
+    }
+    h = ((Size1F *)img)->h;
+    row = 0;
+    while (start + 0x20 < (u8 *)VTXP1F8) {
+        n = rows;
+        if (h < rows) {
+            n = h;
+        }
+        h -= n;
+        gDPLoadTextureTile(((Gfx *)D_800E9BA0)++, timg, G_IM_FMT_RGBA, G_IM_SIZ_16b,
+                           func_801BEA0C_ovl_1F0A30(2, w), 0, 0, row, func_801BEA0C_ovl_1F0A30(2, w) - 1,
+                           row + n - 1, 0, 0, 0, 0, 0, 0, 0);
+        row += n;
+        gSPVertex(((Gfx *)D_800E9BA0)++, start, 4, 0);
+        gSP2Triangles(((Gfx *)D_800E9BA0)++, 0, 2, 3, 0, 0, 3, 1, 0);
+        start += 0x20;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B5D58_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B619C_ovl_1F0A30);
 
@@ -226,7 +289,7 @@ inline void func_801B7888_ovl_1F0A30(ImgRef1F8 *pp) {
     s32 pad[2];
 
     if (((ImgHdr1F8 *)img)->magic == 0x4235) {
-        u8 *dst = D_80197178;
+        u8 *dst = (u8 *)&D_80197178;
         void *gp = &D_800E9BA0;
 
         if (img[2] == 1) {
@@ -1126,7 +1189,7 @@ extern u8 D_800E7A0C;
 extern u16 *D_800A8204[3];
 void nuGfxTaskAllEndWait(void);
 void *HMalloc(s32 size);
-s32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
+u32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
 
 /* Flattens the current 'B5' part sprite into a free frame buffer at the light position and
  * replaces it with a full-screen 320x240 '64' image copied from there */
