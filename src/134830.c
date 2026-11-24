@@ -3,6 +3,9 @@
 /* 134830 */
 
 extern s32 D_801ED4A4_ovl_101CE0[];
+extern char *D_801ED494_ovl_101CE0[];
+extern u8 D_8019EE40[];
+extern u16 *D_800C4C4C;
 /* --- end decls --- */
 
 #ifndef FIELD
@@ -21,16 +24,19 @@ typedef struct {
     /* 0x24 */ s32 w;
     /* 0x28 */ s32 h;
     /* 0x2C */ u8 *win;
-    /* 0x30 */ s32 unk30;
+    /* 0x30 */ u8 *win2;
     /* 0x34 */ u8 *text;
     /* 0x38 */ s32 a;
     /* 0x3C */ s32 b;
     /* 0x40 */ s32 c;
-    /* 0x44 */ u8 unk44[8];
+    /* 0x44 */ char *opt0;
+    /* 0x48 */ char *opt1;
     /* 0x4C */ s32 lenA;
     /* 0x50 */ s32 lenB;
     /* 0x54 */ s32 lenC;
-    /* 0x58 */ u8 unk58[9];
+    /* 0x58 */ s32 len0;
+    /* 0x5C */ s32 len1;
+    /* 0x60 */ u8 sel;
     /* 0x61 */ u8 d;
 } Dialog134;
 extern Dialog134 D_801ED540_ovl_101CE0;
@@ -73,7 +79,79 @@ s32 func_801E00F0_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2) {
     return 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/134830", func_801E027C_ovl_101CE0);
+s32 func_801E0F30_ovl_101CE0(s32 a);
+void func_801E0DBC_ovl_101CE0(u8 *o, s32 *r);
+void func_801E0868_ovl_101CE0(u8 *o, s32 i);
+
+/* Two-choice dialog step: opens dialog id (message window plus a choice window whose two
+ * labels come from the id's table entry) on the first call; then left/right (0x800/0x400)
+ * moves the choice, confirm returns 1 (D_8019EE40 = the choice), cancel returns 3, else 2 */
+s32 func_801E027C_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 sel, s32 d, s32 x2) {
+    s32 r[8];
+
+    if (D_801ED540_ovl_101CE0.id == -1) {
+        s32 k;
+
+        D_801ED540_ovl_101CE0.d = d;
+        D_801ED540_ovl_101CE0.id = id;
+        D_801ED540_ovl_101CE0.a = a;
+        D_801ED540_ovl_101CE0.b = b;
+        D_801ED540_ovl_101CE0.c = c;
+        k = func_801E0F30_ovl_101CE0(id);
+        D_801ED540_ovl_101CE0.opt0 = D_801ED494_ovl_101CE0[D_801ED4A4_ovl_101CE0[k + 1]];
+        D_801ED540_ovl_101CE0.opt1 = D_801ED494_ovl_101CE0[D_801ED4A4_ovl_101CE0[k + 2]];
+        D_801F0B40_ovl_101CE0 = 0;
+        D_801ED540_ovl_101CE0.sel = sel != 0;
+        D_801ED540_ovl_101CE0.x2 = x2;
+        func_801E09DC_ovl_101CE0(&D_801ED540_ovl_101CE0);
+        func_801E0DBC_ovl_101CE0((u8 *)&D_801ED540_ovl_101CE0, r);
+        D_801ED540_ovl_101CE0.win = func_8017BFB0(4, 0, func_801E0594_ovl_101CE0, D_801ED540_ovl_101CE0.x,
+                                                  D_801ED540_ovl_101CE0.y, D_801ED540_ovl_101CE0.w,
+                                                  D_801ED540_ovl_101CE0.h, D_801ED540_ovl_101CE0.x2,
+                                                  D_801ED540_ovl_101CE0.y2, D_801ED540_ovl_101CE0.w2,
+                                                  D_801ED540_ovl_101CE0.h2);
+        D_801ED540_ovl_101CE0.win2 = func_8017BFB0(4, 0, func_801E0868_ovl_101CE0, r[0], r[1], r[2], r[3], r[4],
+                                                   r[5], r[6], r[7]);
+        return 2;
+    }
+    if (FIELD(D_801ED540_ovl_101CE0.win, u16, 0x26) == 0 && FIELD(D_801ED540_ovl_101CE0.win2, u16, 0x26) == 0) {
+        if ((*D_800C4BDC & D_801F0CA0_ovl_101CE0[0]) || (*D_800C4BDC & D_801F0CA0_ovl_101CE0[1])) {
+            func_8017C384(D_801ED540_ovl_101CE0.win);
+            func_8017C384(D_801ED540_ovl_101CE0.win2);
+            D_801ED540_ovl_101CE0.id = -1;
+            if (*D_800C4BDC & D_801F0CA0_ovl_101CE0[0]) {
+                s32 se;
+
+                if (D_801ED540_ovl_101CE0.sel == 0) {
+                    D_8019EE40[0] = 0;
+                    se = 6;
+                } else {
+                    D_8019EE40[0] = 1;
+                    se = 1;
+                }
+                func_8020CDA0(se);
+                return 1;
+            }
+            func_8020CDA0(1);
+            return 3;
+        } else {
+            u16 pad = *D_800C4C4C;
+
+            if (pad & 0x800) {
+                if (D_801ED540_ovl_101CE0.sel != 0) {
+                    D_801ED540_ovl_101CE0.sel = 0;
+                    func_8020CDA0(2);
+                }
+            } else if (pad & 0x400) {
+                if (D_801ED540_ovl_101CE0.sel != 1) {
+                    D_801ED540_ovl_101CE0.sel = 1;
+                    func_8020CDA0(2);
+                }
+            }
+        }
+    }
+    return 2;
+}
 
 #include "libultra.h"
 #include "gbi_ultra.h"
