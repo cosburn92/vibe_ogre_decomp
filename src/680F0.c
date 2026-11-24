@@ -32,7 +32,7 @@ typedef struct {
     u8 unk88[0x100];
     s32 size;
 } BgJob_680F0;
-void func_801999E8_ovl_066E10(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
+s32 func_801999E8_ovl_066E10(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
 void bzero(void *p, s32 n);
 /* --- end decls --- */
 
@@ -255,7 +255,7 @@ void func_8019974C_ovl_066E10(void) {
 }
 
 /* Reports which frame buffer pair is current (o[0], o[1]) */
-void func_8019994C_ovl_066E10(u8 *o) {
+inline void func_8019994C_ovl_066E10(u8 *o) {
     nuGfxTaskAllEndWait();
     o[0] = 0;
     o[1] = 1;
@@ -273,7 +273,78 @@ void func_8019994C_ovl_066E10(u8 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/680F0", func_801999E8_ovl_066E10);
+typedef struct {
+    u8 unk00[0x7E];
+    u8 step;
+} Seq680;
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+} BgTile680;
+typedef struct {
+    u8 unk00[0x68];
+    void *img;
+    u8 unk6C[0xC];
+    s16 w;
+    s16 h;
+} BgState680;
+void HuDecode(void *src, void *dst);
+void func_8008AFA0(void (*func)(void *));
+
+/* Sets up a background image job (same code as 20FDC0 func_801CE064): w x h pixels in 16x16
+ * tiles, decodes the "HU" data (freeing it if a == 1) and hooks func_8019951C as the per-frame
+ * step. Returns -1 if a JPEG job is still busy */
+s32 func_801999E8_ovl_066E10(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b) {
+    u8 o[2];
+    s16 n;
+    s16 k;
+    s16 i;
+    s16 j;
+
+    if (D_8019A660_ovl_066E10 == NULL) {
+        D_8019A660_ovl_066E10 = HMalloc(0x190);
+        bzero(D_8019A660_ovl_066E10, 0x190);
+        ((u8 *)D_8019A660_ovl_066E10)[0x81] = 0;
+    } else if (((u8 *)D_8019A660_ovl_066E10)[0x81] == 0) {
+        return -1;
+    }
+    n = (w >> 4) * (h >> 4);
+    if (b == 0) {
+        FIELD(D_8019A660_ovl_066E10, void *, 0x74) = HMallocBack(w * h * 2 + 8);
+    } else {
+        FIELD(D_8019A660_ovl_066E10, void *, 0x74) = HMalloc(w * h * 2);
+    }
+    func_8019994C_ovl_066E10(o);
+    FIELD(D_8019A660_ovl_066E10, void *, 0x64) = D_800A8204[o[0]];
+    FIELD(D_8019A660_ovl_066E10, BgTile680 *, 0x60) = HMalloc(n * 8);
+    FIELD(D_8019A660_ovl_066E10, void *, 0x5C) = D_800A8204[o[1]];
+    ((u8 *)D_8019A660_ovl_066E10)[0x80] = b;
+    ((BgState680 *)D_8019A660_ovl_066E10)->img = HMalloc(n * 0x300);
+    ((BgState680 *)D_8019A660_ovl_066E10)->w = w;
+    ((BgState680 *)D_8019A660_ovl_066E10)->h = h;
+    ((Seq680 *)D_8019A660_ovl_066E10)->step = 0;
+    FIELD(D_8019A660_ovl_066E10, s16, 0x7C) = type;
+    FIELD(D_8019A660_ovl_066E10, u8 *, 0x6C) = data;
+    ((u8 *)D_8019A660_ovl_066E10)[0x7F] = a;
+    k = 0;
+    for (i = 0; i < (h >> 4); i++) {
+        for (j = 0; j < (w >> 4); j++) {
+            FIELD(D_8019A660_ovl_066E10, BgTile680 *, 0x60)[k].x = j * 64;
+            FIELD(D_8019A660_ovl_066E10, BgTile680 *, 0x60)[k].y = i * 64;
+            FIELD(D_8019A660_ovl_066E10, BgTile680 *, 0x60)[k].w = 0x400;
+            FIELD(D_8019A660_ovl_066E10, BgTile680 *, 0x60)[k].h = 0x400;
+            k++;
+        }
+    }
+    HuDecode(FIELD(D_8019A660_ovl_066E10, u8 *, 0x6C), FIELD(D_8019A660_ovl_066E10, void *, 0x68));
+    if (((u8 *)D_8019A660_ovl_066E10)[0x7F] == 1) {
+        HFree(FIELD(D_8019A660_ovl_066E10, u8 *, 0x6C) - 8);
+    }
+    func_8008AFA0((void (*)(void *))func_8019951C_ovl_066E10);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/680F0", func_80199D10_ovl_066E10);
 
@@ -306,7 +377,7 @@ s32 func_8019A088_ovl_066E10(u8 *data, u8 a, u8 b) {
         ((BgJob_680F0 *)D_8019A660_ovl_066E10)->size = *(u16 *)(r + 4) * *(u16 *)(r + 6) * 2 + 0x18;
         q = p;
         p += 8;
-        func_801999E8_ovl_066E10(q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
+        func_801999E8_ovl_066E10((s8)q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
         return 1;
     }
 }
