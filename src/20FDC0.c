@@ -908,135 +908,144 @@ s32 func_801CE064_ovl_1F0A30(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b) {
     return 0;
 }
 
-typedef struct BgPart20F {
-    u8 unk0[4];
-    u16 w;
-    u16 h;
-    s32 size;
-    struct BgPart20F *next;
-} BgPart20F;
+/* Image header at the start of a background file and of each part's data */
 typedef struct {
-    u8 unk00[0x60];
-    BgTile20F *tiles;
-    void *fb;
-    void *img;
-    u8 *data;
-    u8 *out;
-    u8 *buf;
-    s16 w;
-    s16 h;
-    s16 type;
-    u8 step;
-    u8 a;
-    u8 b;
-    u8 busy;
-    u8 freeSrc;
-    u8 unk83;
-    u8 *parts[0x41];
-    s32 size;
-} BgJobFull20F;
+    /* 0x0 */ u8 unk0[2];
+    /* 0x2 */ u8 type;
+    /* 0x3 */ u8 count; /* parts that follow (file header only) */
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+} BgHdr20F;
+/* Part header: followed by size bytes (an image header and its data) */
+typedef struct BgPart20F {
+    /* 0x0 */ u8 unk0[2];
+    /* 0x2 */ u8 type;
+    /* 0x3 */ u8 unk3;
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+    /* 0x8 */ s32 size;
+    /* 0xC */ struct BgPart20F *next;
+} BgPart20F;
+/* The JPEG job state at D_801D06E0 as this function sees it */
+typedef struct {
+    /* 0x000 */ u8 unk00[0x60];
+    /* 0x060 */ void *tiles;
+    /* 0x064 */ u8 unk64[4];
+    /* 0x068 */ void *img;
+    /* 0x06C */ u8 unk6C[8];
+    /* 0x074 */ u8 *out;
+    /* 0x078 */ u8 unk78[6];
+    /* 0x07E */ u8 step;
+    /* 0x07F */ u8 unk7F[2];
+    /* 0x081 */ u8 n;   /* parts decoded so far */
+    /* 0x082 */ u8 own; /* 1: the file (data[0]) is freed at the end */
+    /* 0x083 */ u8 unk83;
+    /* 0x084 */ u8 *data[65]; /* [0] the file, [1..] each decoded part */
+    /* 0x188 */ s32 size;
+} BgSeq20F;
+#define BGSEQ20F ((BgSeq20F *)D_801D06E0_ovl_1F0A30)
 
-/* NON_MATCHING: 2 instructions short; the header-copy loop keeps its cursor in one register where the
- * original computes it in a1 and copies it (and the count) each pass; s4/s5/s6 allocation differs */
-#ifdef NON_MATCHING
-/* Finishes the background job: runs it to step 6 and frees its buffers. A single image returns
- * its pixels; a multi-part image starts decoding the next part (returns 0), and once every part
- * is decoded links them into one block (header + part list) and returns it */
+/* Finishes the current JPEG part. While parts remain, it starts the decode of the next one and
+ * returns 0. After the last part it packs the file header and every decoded part (part header +
+ * pixels, linked through next) into fresh blocks, frees the job and returns the first block;
+ * a single-image job returns its output buffer directly. */
 s32 func_801CE38C_ovl_1F0A30(void) {
-    u8 hdr[8];
-    BgPart20F e[64];
-    BgPart20F *prev = NULL;
-    u8 *first = NULL;
-    u8 *out;
-    u8 *data;
+    BgHdr20F hdr;
+    BgPart20F parts[64];
+    BgSeq20F *s;
+    BgHdr20F *file;
     u8 count;
     u8 i;
-    u8 *p;
-    BgPart20F *cur;
-    s32 size;
-    s32 extra;
-    u8 t;
-    u16 w;
-    u16 h;
+    s32 bytes;
+    s32 sz;
+    BgPart20F *blk;
+    BgPart20F *last;
+    u8 *ret;
 
+    last = NULL;
+    ret = NULL;
     while (D_801D06E0_ovl_1F0A30->step != 6) {
         nuGfxTaskAllEndWait();
         func_801CDDC8_ovl_1F0A30();
     }
     func_8008AFA0(NULL);
     nuGfxTaskAllEndWait();
-    HFree(((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->img);
-    HFree(((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->tiles);
-    out = ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->buf;
-    if (((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->busy == 0) {
-        void *job = D_801D06E0_ovl_1F0A30;
+    HFree(BGSEQ20F->img);
+    HFree(BGSEQ20F->tiles);
+    file = (BgHdr20F *)BGSEQ20F->out;
+    if (BGSEQ20F->n == 0) {
+        s = BGSEQ20F;
         D_801D06E0_ovl_1F0A30 = NULL;
-        HFree(job);
-        return (s32)out;
+        HFree(s);
+        return (s32)file;
     }
-    ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->parts[((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->busy] = out;
-    ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->busy++;
-    ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->step++;
-    data = ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->parts[0];
-    count = data[3];
-    if (count < ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->busy) {
-        func_80080998(hdr, data, 8);
-        p = data + 8;
+    /* data[n] = file, spelled as an int sum: the indexed form adds index + base, the original base + index */
+    *(u8 **)((s32)BGSEQ20F + (BGSEQ20F->n << 2) + 0x84) = (u8 *)file;
+    ((u8 *)D_801D06E0_ovl_1F0A30)[0x81]++;
+    ((u8 *)D_801D06E0_ovl_1F0A30)[0x7E]++;
+    file = (BgHdr20F *)BGSEQ20F->data[0];
+    count = file->count;
+    if (count < BGSEQ20F->n) {
+        u8 *q;
+
+        func_80080998(&hdr, file, 8);
+        q = (u8 *)(file + 1);
         for (i = 0; i < count; i++) {
-            func_80080998(&e[i], p, 0x10);
-            p += ((BgPart20F *)p)->size + 0x10;
+            last = (BgPart20F *)q;
+            func_80080998(&parts[i], q, 16);
+            q = (u8 *)last + (last->size + 16);
         }
-        if (((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->freeSrc == 1) {
-            HFree(((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->parts[0]);
+        if (BGSEQ20F->own == 1) {
+            HFree(BGSEQ20F->data[0]);
         }
-        extra = 8;
-        hdr[2] = 1;
-        for (i = 0; i < count; extra = 0, i++) {
-            size = e[i].w * e[i].h * 2;
-            extra += 0x10;
-            extra += size;
-            cur = HMallocBack(extra);
+        sz = 8;
+        hdr.type = 1;
+        for (i = 0; i < count; i++) {
+            bytes = parts[i].w * parts[i].h * 2;
+            blk = HMallocBack((sz += 0x10) + bytes);
             if (i == 0) {
-                func_80080998(cur, hdr, 8);
-                first = (u8 *)cur;
-                prev = cur = (BgPart20F *)(first + 8);
+                func_80080998(blk, &hdr, 8);
+                ret = (u8 *)blk;
+                blk = (BgPart20F *)(ret + 8);
+                last = blk;
             } else {
-                prev->next = cur;
-                prev = cur;
+                last->next = blk;
+                last = blk;
             }
-            e[i].size = size;
-            func_80080998(cur, &e[i], 0x10);
-            func_80080998(cur + 1, ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->parts[i + 1], size);
-            HFree(((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->parts[i + 1]);
+            parts[i].size = bytes;
+            func_80080998(blk, &parts[i], 16);
+            func_80080998(blk + 1, *(u8 **)((i * 4) + (s32)BGSEQ20F + 0x88), bytes);
+            HFree(*(u8 **)((i * 4) + (s32)BGSEQ20F + 0x88));
+            sz = 0;
         }
-        prev->next = NULL;
+        last->next = NULL;
         HFree(D_801D06E0_ovl_1F0A30);
         D_801D06E0_ovl_1F0A30 = NULL;
-        return (s32)first;
-    } else {
-        ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->size = 8;
-        count = data[3];
-        p = data + 8;
-        for (i = 0; i < count; i++) {
-            cur = (BgPart20F *)p;
-            p += 0x10;
-            t = p[2];
-            w = *(u16 *)(p + 4);
-            h = *(u16 *)(p + 6);
-            p += 8;
-            ((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->size += cur->w * cur->h * 2 + 0x10;
-            if (((BgJobFull20F *)D_801D06E0_ovl_1F0A30)->busy == i + 1) {
-                func_801CE064_ovl_1F0A30((s8)t, w, h, p, 0, 1);
-                return 0;
-            }
-            p += cur->size - 8;
-        }
-        return 0;
+        return (s32)ret;
     }
+    BGSEQ20F->size = 8;
+    ret = (u8 *)(file + 1);
+    count = file->count;
+    for (i = 0; i < count; i++) {
+        s32 type;
+        s32 w;
+        s32 h;
+
+        last = (BgPart20F *)ret;
+        ret += 0x10;
+        type = ((BgHdr20F *)ret)->type;
+        w = ((BgHdr20F *)ret)->w;
+        h = ((BgHdr20F *)ret)->h;
+        BGSEQ20F->size += last->w * last->h * 2 + 0x10;
+        ret += 8;
+        if (BGSEQ20F->n == i + 1) {
+            func_801CE064_ovl_1F0A30((s8)type, w, h, ret, 0, 1);
+            return 0;
+        }
+        ret += last->size - 8;
+    }
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CE38C_ovl_1F0A30);
-#endif
 
 /* Background image: "HU" data is decoded straight away; anything else is a JPEG job
  * (state block at D_801BA6D0) and returns 1 */
