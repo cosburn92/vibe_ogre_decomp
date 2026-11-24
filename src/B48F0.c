@@ -227,7 +227,7 @@ void func_801C9D4C_ovl_087200(void) {
 void func_801C9F44_ovl_087200(void) {
     if (func_801D8B58_ovl_087200()) {
         D_80196AF8[0xA0] |= 0x82;
-        func_801C18AC_ovl_087200((-(FIELD(D_80196AF8, s16, 0x122) != 0) & 9) | 8, 0, 0);
+        func_801C18AC_ovl_087200(FIELD(D_80196AF8, s16, 0x122) != 0 ? 9 : 8, 0, 0);
     } else if (FIELD(D_80196AF8, s16, 0x122) != 0 && func_801D8AE0_ovl_087200()) {
         D_80196AF8[0xA0] |= 0x81;
         FIELD(D_80196AF8, s16, 0x120) = 7;
