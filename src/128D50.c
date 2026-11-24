@@ -195,7 +195,137 @@ u8 func_801D4A74_ovl_101CE0(u8 *sq) {
 
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D4B28_ovl_101CE0);
 
+extern u8 D_801F1080_ovl_101CE0[][0xC0];
+extern u16 D_80190EBC[];
+extern s16 D_8019532C[];
+
+#ifdef NON_MATCHING
+/* 167/167 instructions: GCC strength-reduces the member loop (pointer induction variable,
+ * i == 0 becomes a pointer compare); the original keeps index i and recomputes s + i */
+/* Initialises the map object for squad idx: hides it, checks which members are alive and sets
+ * the flag word (0x10 = some member alive, 0x100 = leader alive) */
+void func_801D4F3C_ovl_101CE0(s32 idx) {
+    SquadRec *s = &gSquads[idx];
+    u8 *o;
+    u32 fl = 0;
+    s32 alive;
+    s32 dead;
+    s32 enemy;
+    s32 i;
+    s32 c;
+    u16 v;
+    u8 *r;
+
+    s->flags &= ~4;
+    o = D_801F1080_ovl_101CE0[idx];
+    bzero(o, 0xC0);
+    alive = 0;
+    dead = 0;
+    enemy = idx >= 30;
+    if (s->flags & 1) {
+        r = s->rest;
+        for (i = 0; i < 5; i++) {
+            c = r[i];
+            if (c != 0) {
+                if (c >= 100) {
+                    if (enemy) {
+                        v = D_8019532C[c];
+                    } else {
+                        v = D_80190EBC[c];
+                    }
+                    if (v != 0) {
+                        alive = 1;
+                    } else {
+                        r[i] = 0;
+                    }
+                } else {
+                    if (enemy) {
+                        v = D_80195578[c].h0;
+                    } else {
+                        v = D_80193BD8[c].h0;
+                    }
+                    if (v != 0) {
+                        alive = 1;
+                    }
+                }
+                if (!alive && i == 0) { dead = 1; }
+            }
+        }
+    }
+    if (alive) {
+        fl |= 0x10;
+    }
+    if (!dead) {
+        fl |= 0x100;
+    }
+    fl |= 0x40020;
+    if (!(s->flags & 0x80)) {
+        fl |= 8;
+    } else {
+        fl &= ~0x20;
+    }
+    FIELD(o, u32, 0) = fl;
+    o[4] = idx;
+    FIELD(o, s32, 0x8) = 0;
+    FIELD(o, s32, 0xC) = 0;
+    FIELD(o, s32, 0x10) = 0;
+    FIELD(o, s32, 0x14) = 0;
+    FIELD(o, s32, 0x18) = 0;
+    FIELD(o, s32, 0x1C) = 0;
+    o[0x20] = 0;
+    FIELD(o, s32, 0x24) = 0;
+    FIELD(o, s32, 0x28) = 0;
+    FIELD(o, s32, 0x2C) = 0;
+    FIELD(o, s32, 0x30) = 0;
+    FIELD(o, s32, 0x34) = 0;
+    FIELD(o, s32, 0x38) = 0;
+    FIELD(o, s32, 0x3C) = 0;
+    FIELD(o, s32, 0x40) = 0;
+    FIELD(o, s32, 0x44) = 0;
+    FIELD(o, s32, 0x48) = 0;
+    FIELD(o, s32, 0x4C) = 0;
+    FIELD(o, s32, 0x50) = 0;
+    FIELD(o, s32, 0x54) = 0;
+    FIELD(o, s32, 0x58) = 0;
+    FIELD(o, s32, 0x5C) = 0;
+    FIELD(o, s32, 0x60) = 0;
+    FIELD(o, s32, 0x64) = 0;
+    FIELD(o, s32, 0x68) = 0;
+    FIELD(o, s32, 0x6C) = 0;
+    FIELD(o, s32, 0x70) = ((s32 (*)(void *))func_801D4928_ovl_101CE0)(s);
+    FIELD(o, s32, 0x74) = -1;
+    FIELD(o, s32, 0x78) = 0;
+    FIELD(o, s32, 0x7C) = -1;
+    FIELD(o, s32, 0x80) = -1;
+    FIELD(o, s32, 0x84) = -1;
+    FIELD(o, s32, 0x88) = 0;
+    FIELD(o, s32, 0x8C) = 0;
+    o[0x90] = 0;
+    o[0x91] = 0;
+    o[0x92] = 0;
+    FIELD(o, s32, 0x94) = 0;
+    o[0x98] = 0;
+    FIELD(o, f32, 0x9C) = -1.0f;
+    FIELD(o, s32, 0xA0) = 0;
+    FIELD(o, s32, 0xA4) = 0;
+    FIELD(o, s32, 0xA8) = 0;
+    FIELD(o, s32, 0xAC) = 0;
+    FIELD(o, s32, 0xB0) = 0;
+    o[0xB4] = 0;
+    o[0xB5] = 0xFF;
+    FIELD(o, s16, 0xB6) = 0;
+    o[0xB8] = 0;
+    o[0xB9] = 0;
+    o[0xBA] = 0;
+    o[0xBB] = 0;
+    o[0xBC] = 0;
+    o[0xBD] = 0;
+    o[0xBE] = 0;
+    o[0xBF] = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/128D50", func_801D4F3C_ovl_101CE0);
+#endif
 
 void func_801D51D8_ovl_101CE0(MapUnit12 *u) {
     SquadRec *s = &gSquads[u->squad];
