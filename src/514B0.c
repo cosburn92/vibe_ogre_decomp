@@ -540,26 +540,26 @@ void func_8017C2FC_ovl_040E80(Node *n) {
 
 /* Starts a window open: when the window has no size change, begin from an 8-px strip on the
  * edge nearer the screen centre (160x120, or 320x240 in high resolution) */
-#ifdef NON_MATCHING
-/* window open strip: centre selection compiles as one branch, original uses two conditional assignments */
 void func_8017C384_ovl_040E80(Win514 *w) {
-    s32 cx = 160;
-    s32 cy = 120;
+    s32 cx;
+    s32 cy;
+    s32 c;
     s32 d0;
     s32 d1;
+    s32 lo;
+    s32 hi;
 
-    if (D_80187020_ovl_040E80 != 0) {
-        cx = 320;
-    }
-    if (D_80187020_ovl_040E80 != 0) {
-        cy = 240;
-    }
+    cx = D_80187020_ovl_040E80 ? 320 : 160;
+    cy = D_80187020_ovl_040E80 ? 240 : 120;
     if (w->from[0] == w->to[0] && w->from[1] == w->to[1] && w->from[2] == w->to[2] && w->from[3] == w->to[3]) {
-        d0 = w->from[0] - cx;
+        c = cx;
+        lo = w->from[0];
+        hi = w->from[2];
+        d0 = lo - c;
         if (d0 < 0) {
             d0 = -d0;
         }
-        d1 = w->from[2] - cx;
+        d1 = hi - c;
         if (d1 < 0) {
             d1 = -d1;
         }
@@ -570,11 +570,14 @@ void func_8017C384_ovl_040E80(Win514 *w) {
             w->cur[0] = w->from[2] - 8;
             w->cur[2] = w->from[2];
         }
-        d0 = w->from[1] - cy;
+        c = cy;
+        lo = w->from[1];
+        hi = w->from[3];
+        d0 = lo - c;
         if (d0 < 0) {
             d0 = -d0;
         }
-        d1 = w->from[3] - cy;
+        d1 = hi - c;
         if (d1 < 0) {
             d1 = -d1;
         }
@@ -594,9 +597,6 @@ void func_8017C384_ovl_040E80(Win514 *w) {
     w->step = 2;
     w->h26 = 0x8000;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C384_ovl_040E80);
-#endif
 
 /* Window fill render state with alpha a (opaque when 0xFF) */
 #ifdef NON_MATCHING
