@@ -126,21 +126,19 @@ s32 func_80197B70_ovl_06E660(SpriteAnim *a) {
 INCLUDE_ASM("asm/nonmatchings/6E660", func_80197B70_ovl_06E660);
 #endif
 
-#ifdef NON_MATCHING
-/* Only register choice when computing the two section pointers differs. */
 void func_80197D20_ovl_06E660(void) {
     u16 *tmp = HMalloc(ChunkSize(0x315736));
+    u32 o;
 
     LoadChunkRaw(tmp, 0x315736);
     D_8019A798_ovl_06E660 = HMalloc(tmp[0x16 / 2]);
     _bcopy(tmp, D_8019A798_ovl_06E660, tmp[0x16 / 2]);
-    D_8019A790_ovl_06E660 = (u8 *)D_8019A798_ovl_06E660 + D_8019A798_ovl_06E660[0];
-    D_8019A794_ovl_06E660 = (u8 *)D_8019A798_ovl_06E660 + D_8019A798_ovl_06E660[2];
+    o = D_8019A798_ovl_06E660[0];
+    D_8019A790_ovl_06E660 = (u8 *)D_8019A798_ovl_06E660 + o;
+    o = D_8019A798_ovl_06E660[2];
+    D_8019A794_ovl_06E660 = (u8 *)D_8019A798_ovl_06E660 + o;
     HFree(tmp);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/6E660", func_80197D20_ovl_06E660);
-#endif
 
 void func_80197DB8_ovl_06E660(void) {
     HFree(D_8019A798_ovl_06E660);
