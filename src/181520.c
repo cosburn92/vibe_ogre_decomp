@@ -33,8 +33,6 @@ void func_801DFF80(void);
 void func_8017BED4(void);
 
 /* Steps *alphaPtr towards unk10 over unk14 frames; returns 1 once it arrives */
-#ifdef NON_MATCHING
-/* Branch layout differs (the original returns 1 via a jump with the constant in the delay slot). */
 s32 func_80216AE0_ovl_17F9C0(void) {
     s16 *p = D_8021AF00_ovl_17F9C0->alphaPtr;
     s16 target = D_8021AF00_ovl_17F9C0->unk10;
@@ -56,18 +54,16 @@ s32 func_80216AE0_ovl_17F9C0(void) {
     }
     *p += step;
     if (step < 0) {
-        if (target < *p) {
-            return 0;
+        if (*p <= target) {
+            *p = target;
+            return 1;
         }
-    } else if (*p < target) {
-        return 0;
+    } else if (*p >= target) {
+        *p = target;
+        return 1;
     }
-    *p = target;
-    return 1;
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/181520", func_80216AE0_ovl_17F9C0);
-#endif
 
 void func_80098B60(f32 mf[4][4], f32 x, f32 y, f32 z); /* guScaleF */
 void func_80098D00(f32 mf[4][4], f32 x, f32 y, f32 z); /* guTranslateF */
