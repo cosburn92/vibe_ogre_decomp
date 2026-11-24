@@ -25,7 +25,7 @@ void func_801707F4(void);
 f32 func_801BC35C(s16 a, s16 b);
 void func_801D9FBC_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f);
 void func_801D9F60_ovl_213B10(s32 a, s32 b, s32 c, s32 d);
-void func_801E0D34_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
+void func_801E0D34_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, u8 f, s32 g, s32 h, s32 k);
 u8 *func_801E14FC_ovl_213B10(s32 enemy);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 typedef struct {
@@ -394,14 +394,69 @@ void func_801E0ACC_ovl_213B10(u8 *m, s32 pos, u8 kind) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E0ACC_ovl_213B10);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E0D34_ovl_213B10);
+void func_801D9FF0_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+s32 func_801C8C74(u8 *u);
+s32 func_801CA29C(u8 *u);
+s32 func_801C9FB4(s32 a, s32 b);
+
+/* Damage message for unit message m from line pos on: the attack line (0x10 on a plain hit, 0xC
+ * or 0x32 otherwise, plus the 0x17 line when h is set), then the hp loss c: when the unit shows
+ * hp thirds (func_801C8C74) and one or more were lost, the lost-thirds lines 0x13/0x15; then the
+ * hit messages (func_801E08A8) while it survives or the item-use message (func_801E0ACC) */
+void func_801E0D34_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, u8 f, s32 g, s32 h, s32 k) {
+    s32 n;
+    s32 before;
+    s32 after;
+    s32 bits;
+
+    if (func_801C8E9C(m) == 0) {
+        n = func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), g ? 0x11 : 0x19, 0) + a;
+        if (g == 0) {
+            func_801D9FF0_ovl_213B10(0x10, pos, (s32)m, 0xFF, c >> 8, c & 0xFF, d);
+        } else {
+            func_801D9FF0_ovl_213B10(k ? 0x32 : 0xC, pos, (s32)m, 0xFF, c >> 8, c & 0xFF, d);
+            if (h) {
+                func_801D9FF0_ovl_213B10(0x17, pos, 0, 0x5D, d, D_801CE8C0[0x821], func_801CA29C(m));
+            }
+        }
+    } else {
+        n = 6;
+        func_801D9FF0_ovl_213B10(k ? 0x32 : 0xC, pos, (s32)m, 0xFF, c >> 8, c & 0xFF, d);
+        if (h) {
+            func_801D9FF0_ovl_213B10(0x17, pos, 0, 0x5D, d, D_801CE8C0[0x821], func_801CA29C(m));
+        }
+    }
+    if (func_801C8C74(m)) {
+        if (c < FIELD(m, u16, 0x20)) {
+            after = func_801C9FB4(FIELD(m, u16, 0x20) - c, FIELD(m, u16, 0x22));
+            before = func_801C9FB4(FIELD(m, u16, 0x20), FIELD(m, u16, 0x22));
+            FIELD(m, u16, 0x20) -= c;
+            if (before != after) {
+                bits = ((1 << before) - 1) ^ ((1 << after) - 1);
+                func_801D9F60_ovl_213B10(0x13, pos + n, (s32)m, bits);
+                n += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1D, 0);
+                func_801D9F60_ovl_213B10(0x15, pos + n, (s32)m, bits);
+            }
+            if (after != 0) {
+                func_801E08A8_ovl_213B10(m, pos + n, g, f);
+            }
+        } else {
+            func_801E0ACC_ovl_213B10(m, pos + n, f);
+        }
+    } else if (c < FIELD(m, u16, 0x20)) {
+        FIELD(m, u16, 0x20) -= c;
+        func_801E08A8_ovl_213B10(m, pos + n, g, f);
+    } else {
+        func_801E0ACC_ovl_213B10(m, pos + n, f);
+    }
+}
 
 void func_801E1014_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, u8 f) {
-    func_801E0D34_ovl_213B10(a, b, c, d, e, f, 1, 0, 0);
+    func_801E0D34_ovl_213B10((u8 *)a, b, c, d, e, f, 1, 0, 0);
 }
 
 void func_801E104C_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e) {
-    func_801E0D34_ovl_213B10(a, b, c, d, e, 0, 0, 0, 0);
+    func_801E0D34_ovl_213B10((u8 *)a, b, c, d, e, 0, 0, 0, 0);
 }
 
 s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32);
@@ -439,7 +494,7 @@ void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
     if (pos < ((Msg21 *)m)->w94) {
         line = ((Msg21 *)m)->w94;
     }
-    func_801E0D34_ovl_213B10((s32)m, a, line, c, d, 0, 1, 0, 0);
+    func_801E0D34_ovl_213B10(m, a, line, c, d, 0, 1, 0, 0);
     line = ((Msg21 *)m)->w94;
     base = D_801CE8BC;
     for (i = 0; i < 20; i++) {
@@ -457,7 +512,6 @@ void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E107C_ovl_213B10);
 #endif
 
-void func_801D9FF0_ovl_213B10(s32 a, s32 b, u8 *c, s32 d, s32 e, s32 f, s32 g);
 
 /* Counter-attack message for m: waits for the running message units, then the counter line,
  * its damage, and a free message unit's follow-up */
@@ -488,7 +542,7 @@ void func_801E11D8_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 e) {
         if (pos < ((Msg21 *)m)->w94) {
             pos = ((Msg21 *)m)->w94;
         }
-        func_801D9FF0_ovl_213B10(0xC, pos, m, 0xFF, 0xFF, 0xFF, c);
+        func_801D9FF0_ovl_213B10(0xC, pos, (s32)m, 0xFF, 0xFF, 0xFF, c);
         line = pos + (func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x11, 0) + a);
         func_801D9F60_ovl_213B10(0xD, line, (s32)m, 0xFF);
         line += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x12, 0);
@@ -505,7 +559,7 @@ void func_801E11D8_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 e) {
         ((Msg21 *)m)->w94 = line + 0x23;
         return;
     }
-    func_801D9FF0_ovl_213B10(0xC, pos, m, 0xFF, 0xFF, 0xFF, c);
+    func_801D9FF0_ovl_213B10(0xC, pos, (s32)m, 0xFF, 0xFF, 0xFF, c);
 }
 
 void func_801E145C_ovl_213B10(Msg21 *m, s32 a, s32 b, s32 d, s32 e) {
