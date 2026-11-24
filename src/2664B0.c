@@ -21,8 +21,8 @@ typedef struct {
 } Model266;
 /* --- end decls --- */
 
-INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211900_ovl_25EE90);
 
+#define _SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
@@ -43,7 +43,111 @@ extern Gfx D_80220410_ovl_25EE90[];
 extern Gfx D_80220460_ovl_25EE90[];
 f32 cosf(f32 x);
 f32 sinf(f32 x);
-void func_80211900_ovl_25EE90(Gfx *dl, RingPt266 *pts, s32 n, u16 w);
+void func_80211900_ovl_25EE90(Gfx *dl, RingPt266 *pts, s32 n, s32 w);
+
+typedef struct {
+    s16 ob[3];
+    u16 flag;
+    s16 tc[2];
+    u8 cn[4];
+} Vtx266;
+extern Vtx266 *D_80197178;
+
+/* Emits centre c and the n+1 ring points (closing back on pts[0]) as vertices in plane w
+ * (0: xy, 1: xz, 2: yz), then draws them as triangle fans of up to 30 vertices */
+#ifdef NON_MATCHING
+/* same length; pts and the hoisted case-1 constant swap t4/t5, and the outer loop's
+ * D_800E9BA0 load is scheduled after n + 1 instead of before */
+void func_80211900_ovl_25EE90(Gfx *dl, RingPt266 *pts, s32 n, s32 w) {
+    RingPt266 *c = (RingPt266 *)dl;
+    RingPt266 *p;
+    Vtx266 *vp;
+    s32 i;
+    s32 k;
+
+    switch (w) {
+    case 0:
+        D_80197178->ob[0] = c->x;
+        D_80197178->ob[1] = c->y;
+        D_80197178->ob[2] = 0;
+        break;
+    case 1:
+        D_80197178->ob[0] = c->x;
+        D_80197178->ob[1] = 0;
+        D_80197178->ob[2] = c->y;
+        break;
+    case 2:
+        D_80197178->ob[0] = 0;
+        D_80197178->ob[1] = c->y;
+        D_80197178->ob[2] = c->x;
+        break;
+    default:
+        for (;;) {
+        }
+    }
+    D_80197178->tc[0] = 0;
+    D_80197178->tc[1] = 0;
+    FIELD(D_80197178, u8, 0xC) = 0;
+    FIELD(D_80197178, u8, 0xD) = 0;
+    FIELD(D_80197178, u8, 0xE) = 0;
+    FIELD(D_80197178, u8, 0xF) = c->a;
+    GFX266(0x01001002, (u32)D_80197178);
+    vp = ++D_80197178;
+    for (i = 0; i <= n; i++) {
+        k = 0;
+        if (i < n) {
+            k = i;
+        }
+        p = (RingPt266 *)(k * 6 + (s32)pts);
+        switch (w) {
+        case 0:
+            D_80197178->ob[0] = p->x;
+            D_80197178->ob[1] = p->y;
+            D_80197178->ob[2] = 0;
+            break;
+        case 1:
+            D_80197178->ob[0] = p->x;
+            D_80197178->ob[1] = 0;
+            D_80197178->ob[2] = p->y;
+            break;
+        case 2:
+            D_80197178->ob[0] = 0;
+            D_80197178->ob[1] = p->y;
+            D_80197178->ob[2] = p->x;
+            break;
+        default:
+            for (;;) {
+            }
+        }
+        D_80197178->tc[0] = 0;
+        D_80197178->tc[1] = 0;
+        FIELD(D_80197178, u8, 0xC) = 0;
+        FIELD(D_80197178, u8, 0xD) = 0;
+        FIELD(D_80197178, u8, 0xE) = 0;
+        FIELD(D_80197178, u8, 0xF) = p->a;
+        D_80197178++;
+    }
+    n++;
+    while (n >= 2) {
+        i = n;
+        if (n >= 30) {
+            i = 30;
+        }
+        n -= i - 1;
+        k = i;
+        GFX266(_SHIFTL(1, 24, 8) | _SHIFTL(k, 12, 8) | _SHIFTL(k + 1, 1, 7), (u32)vp);
+        vp += k - 1;
+        for (; k >= 2;) {
+            s32 j = k - 1;
+
+            GFX266(_SHIFTL(5, 24, 8) | (_SHIFTL(0 * 2, 16, 8) | _SHIFTL(j * 2, 8, 8) | _SHIFTL(k * 2, 0, 8)), 0);
+            k = j;
+        }
+    }
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211900_ovl_25EE90);
+#endif
 
 /* Draws a ring (radius 0x48, 0x4A segments, colour 0x40) under matrix p */
 #ifdef NON_MATCHING
@@ -177,13 +281,6 @@ s32 func_80212488_ovl_25EE90(Model266 *o) {
     return 0;
 }
 
-typedef struct {
-    s16 ob[3];
-    u16 flag;
-    s16 tc[2];
-    u8 cn[4];
-} Vtx266;
-extern Vtx266 *D_80197178;
 extern Gfx D_80220520_ovl_25EE90[];
 void bzero(void *p, s32 n);
 
