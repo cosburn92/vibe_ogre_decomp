@@ -6,3 +6,4 @@ D_80220EE0_b_ovl_25EE90 = D_80220EE0_ovl_25EE90; /* base matrix, second name use
 D_8022A720_rects_ovl_1BA050 = D_8022A720_ovl_1BA050; /* rectangle list (count + 8-byte rects) viewed as one struct by func_802296B0 */
 D_801ABDD8_ovl_0EBBB0 = D_801ABE08_ovl_0EBBB0 - 0x30; /* sun colour table [angle][2][4][3], first half overlaps the D_801ABD58 label */
 D_800A8740_root = D_800A8740; /* asset cache root stored as an array element by LoadAsset */
+D_80196A2C_hours_ovl_040E80 = D_80196A2C_ovl_040E80; /* clock hours as a plain u16, second name used by func_8016C9FC */

@@ -16,6 +16,7 @@ typedef struct {
     u8 day;
 } Date420;
 extern Clock420 D_80196A2C_ovl_040E80;
+extern u16 D_80196A2C_hours_ovl_040E80;
 extern u8 D_80196A30_ovl_040E80[];
 extern u8 D_80196A34_ovl_040E80;
 extern u8 D_80196A35_ovl_040E80;
@@ -263,8 +264,8 @@ void NewGameInit(void) {
     memset(D_80197810_ovl_040E80, 0xFF, 0x2D6);
 }
 
-#ifdef NON_MATCHING
-/* the inlined NewGameInit keeps &D_80193678 in s2; the original re-materialises it for the store */
+/* NewGameInit inlined. The caller's 07:00 store goes through a second name for the clock
+ * (linker_scripts/aliases.ld); through the same symbol GCC keeps the clock address in s2 across the calls. */
 static inline void func_8016C9FC_newGame(void) {
     func_8016CB08_ovl_040E80(D_80196A28_ovl_040E80);
     *(u16 *)D_80196A30_ovl_040E80 = 0xFB;
@@ -291,11 +292,8 @@ static inline void func_8016C9FC_newGame(void) {
 void func_8016C9FC_ovl_040E80(void) {
     func_8016C9FC_newGame();
     ProfileFlagSet(0x19, 1);
-    D_80196A2C_ovl_040E80.hours = 7;
+    D_80196A2C_hours_ovl_040E80 = 7;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/420D0", func_8016C9FC_ovl_040E80);
-#endif
 
 void func_8016CB08_ovl_040E80(void *p) {
     osSetTime(0);
