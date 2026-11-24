@@ -672,7 +672,113 @@ s32 func_8023BF5C_ovl_2A8D20(s32 id, s32 *pa, s32 *pb, u8 *u) {
     return 1;
 }
 
+s32 func_801C8C74(u8 *u);
+f32 func_801BC35C(s16 x, s16 z);
+void *memset(void *p, s32 c, u32 n);
+extern s32 D_801CE8FC;
+extern u8 D_8022F2CC[];
+
+/* Places the (up to three) members of unit u in free battle slots: allocates and clears each slot,
+ * sets its stats and position (height from the map unless mode 4), writes the slot numbers to out
+ * and returns the first one */
+#ifdef NON_MATCHING
+/* 0x30C of 0x32C: GCC cross-jumps the first two slot-number arms (the original keeps all three
+ * separate), and the original spills out/side to the stack and keeps the constant 1 in s8 */
+s32 func_8023C0B0_ovl_2A8D20(s32 *out, u8 *u, s32 side, u16 d, s32 e, s32 f, u8 g) {
+    s32 mode = 0;
+    s32 first = 0;
+    s32 i;
+    s32 k;
+    u8 *o;
+    u8 **m;
+    s32 *p;
+    s16 hp;
+
+    if (func_801C8C74(u) == 1) {
+        mode = 1;
+    } else if (func_801C8C90(u) == 1) {
+        mode = 2;
+    } else if (e == 0x87) {
+        if (g == 1) {
+            mode = 4;
+        }
+    } else if (e == 0xA1) {
+        mode = 2;
+    } else if (e == 0x88) {
+        mode = 2;
+    }
+    m = (u8 **)u;
+    p = out;
+    for (i = 0; i < 3; i++, m++, p++) {
+        if (*m == NULL) {
+            continue;
+        }
+        for (k = 0; k < 28; k++) {
+            if (SLOT(k) == NULL) {
+                break;
+            }
+        }
+        *p = k;
+        if (i == 0) {
+            first = k;
+        }
+        o = HMalloc(0x150);
+        SLOT(k) = o;
+        bzero(o, 0x150);
+        if (mode == 2 && i == 1) {
+            FIELD(o, s32, 0xE4) = k & 0xFF;
+            hp = 60;
+        } else if (mode == 4) {
+            FIELD(o, s32, 0xE4) = k & 0xFF;
+            hp = 60;
+        } else {
+            FIELD(o, s32, 0xE4) = k & 0xFF;
+            hp = 10;
+        }
+        if (e != -1) {
+            FIELD(o, s32, 0xE8) = e;
+        }
+        FIELD(o, s16, 0x138) = hp;
+        if (f != -1) {
+            FIELD(o, s32, 0xEC) = f;
+        }
+        o[0x13D] = 1;
+        FIELD(o, s16, 0x134) = hp;
+        FIELD(o, s32, 0xF0) = -1;
+        FIELD(o, s32, 0xF4) = 0;
+        FIELD(o, s32, 0xF8) = 0;
+        FIELD(o, s32, 0x12C) = 0;
+        FIELD(o, u8 *, 0xE0) = D_8022F2CC;
+        FIELD(o, u16, 0x13A) = d;
+        FIELD(o, s32, 0x12C) = 0;
+        FIELD(o, f32, 0x130) = 1.0f;
+        FIELD(o, s32, 0x128) = 0;
+        o[0x145] = 1;
+        o[0x13C] = D_801CE8FC;
+        memset(o, 0xFF, 0x10);
+        bzero(o + 0x10, 0x10);
+        o[0x146] = d;
+        o[0x141] = 0;
+        FIELD(o, f32, 0x11C) = FIELD(*m, s16, 0x28);
+        FIELD(o, f32, 0x124) = FIELD(*m, s16, 0x2C);
+        if (mode != 4) {
+            FIELD(o, f32, 0x120) = (s16)func_801BC35C(FIELD(o, f32, 0x11C), FIELD(o, f32, 0x124));
+        } else {
+            FIELD(o, f32, 0x120) = FIELD(*m, s16, 0x2A);
+        }
+        for (k = 0; k < 3; k++) {
+            FIELD(o, f32, 0x104 + k * 4) = 1.0f;
+            FIELD(o, s32, 0x110 + k * 4) = 0;
+            o[0x142 + k] = 0xFF;
+        }
+        o[0x149] = i;
+        o[0x147] = side;
+    }
+    return first;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C0B0_ovl_2A8D20);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023C3DC_ovl_2A8D20);
 
