@@ -472,20 +472,31 @@ Node *func_8017C074_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C074_ovl_040E80);
 #endif
 
-#ifdef NON_MATCHING
-/* Stores match; the stack arguments are loaded earlier than in the original. */
-void func_8017C24C_ovl_040E80(u8 *p, s32 a, s16 b, s16 c, s16 d, s16 e) {
-    FIELD(p, s32, 0x10) = a;
-    FIELD(p, s32, 0x3C) = b;
-    FIELD(p, u16, 0x28) = 3;
-    FIELD(p, s32, 0x40) = c;
-    FIELD(p, u16, 0x26) = 0x8000;
-    FIELD(p, s32, 0x44) = d;
-    FIELD(p, s32, 0x48) = e;
+/* Opening window rectangles (x0, y0, x1, y1) */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x10];
+    /* 0x10 */ s32 w10;
+    /* 0x14 */ u8 unk14[4];
+    /* 0x18 */ s16 fade;
+    /* 0x1A */ u8 unk1A[0xC];
+    /* 0x26 */ u16 h26;
+    /* 0x28 */ s16 step;
+    /* 0x2A */ u8 unk2A[2];
+    /* 0x2C */ s32 from[4];
+    /* 0x3C */ s32 cur[4];
+    /* 0x4C */ s32 to[4];
+} Win514;
+
+/* Sets the window's current rectangle (x0, y0, x1, y1) and w10, step 3, flags 0x8000 */
+void func_8017C24C_ovl_040E80(Win514 *w, s32 a, s16 x0, s16 y0, s16 x1, s16 y1) {
+    w->w10 = a;
+    w->cur[0] = x0;
+    w->cur[1] = y0;
+    w->step = 3;
+    w->h26 = 0x8000;
+    w->cur[2] = x1;
+    w->cur[3] = y1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C24C_ovl_040E80);
-#endif
 
 #ifdef NON_MATCHING
 /* stack argument load is scheduled first in the original */
@@ -530,17 +541,6 @@ void func_8017C2FC_ovl_040E80(Node *n) {
         HFree(n);
     }
 }
-
-/* Opening window rectangles (x0, y0, x1, y1) */
-typedef struct {
-    /* 0x00 */ u8 unk00[0x26];
-    /* 0x26 */ s16 h26;
-    /* 0x28 */ s16 step;
-    /* 0x2A */ u8 unk2A[2];
-    /* 0x2C */ s32 from[4];
-    /* 0x3C */ s32 cur[4];
-    /* 0x4C */ s32 to[4];
-} Win514;
 
 /* Starts a window open: when the window has no size change, begin from an 8-px strip on the
  * edge nearer the screen centre (160x120, or 320x240 in high resolution) */
