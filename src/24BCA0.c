@@ -408,7 +408,7 @@ u8 *func_801F83EC_ovl_24BCA0(AnimReq *r, s32 i) {
     return o + 0x1C;
 }
 
-u8 *func_801F847C_ovl_24BCA0(AnimReq *r, u8 x) {
+inline u8 *func_801F847C_ovl_24BCA0(AnimReq *r, u8 x) {
     u8 *o = D_80209740_ovl_24BCA0[r->kind & 3](r->id, x);
 
     func_801F81C4_ovl_24BCA0(o, r->flags);
@@ -706,7 +706,70 @@ void func_801F93BC_ovl_24BCA0(u8 a, u8 *b, s32 c) {
     func_801F91BC_ovl_24BCA0(tmp, b, c);
 }
 
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F940C_ovl_24BCA0);
+/* Spawns animation r as n instances (third spawner table, D_80209740) at the n positions pos:
+ * kind 0 places each, kinds 1-2 also orient each (copied matrix or the default direction) */
+u8 *func_801F940C_ovl_24BCA0(f32 *pos, u8 *b, u8 n) {
+    AnimReq *r = (AnimReq *)b;
+    s16 i;
+
+    switch (r->kind & 3) {
+    case 0: {
+        u8 *m = func_801F847C_ovl_24BCA0(r, n);
+
+        for (i = 0; i < n; i++) {
+            FIELD(*(u8 **)m + i * 0x18, f32, 0) = pos[i * 3 + 0];
+            FIELD(*(u8 **)m + i * 0x18, f32, 4) = pos[i * 3 + 1];
+            FIELD(*(u8 **)m + i * 0x18, f32, 8) = pos[i * 3 + 2];
+        }
+        return m - 0x1C;
+    }
+    case 1: {
+        u8 *m = func_801F847C_ovl_24BCA0(r, n);
+
+        for (i = 0; i < n; i++) {
+            u8 k = r->kind;
+            u8 *base = *(u8 **)m;
+            Dir24B dir = D_8020A230_ovl_24BCA0;
+            f32 *p = (f32 *)(i * 12 + (s32)pos);
+            u8 *q = (u8 *)(i * 0x40 + (s32)base);
+
+            if (k & 0x40) {
+                func_8020A4A8(D_80220EE0, q);
+            } else {
+                if (k & 0x80) {
+                    dir.v[0] = (-p[0] < 0.0f) ? -1.0f : 1.0f;
+                }
+                func_80217680(dir.v, q);
+            }
+            func_8020A5A0(q, p);
+        }
+        return m - 0x1C;
+    }
+    case 2: {
+        u8 *m = func_801F847C_ovl_24BCA0(r, n);
+
+        for (i = 0; i < n; i++) {
+            u8 k = r->kind;
+            u8 *base = *(u8 **)m;
+            Dir24B dir = D_8020A230_ovl_24BCA0;
+            f32 *p = (f32 *)(i * 12 + (s32)pos);
+            u8 *q = (u8 *)(i * 0x40 + (s32)base);
+
+            if (k & 0x40) {
+                func_8020A4A8(D_80220EE0, q);
+            } else {
+                if (k & 0x80) {
+                    dir.v[0] = (-p[0] < 0.0f) ? -1.0f : 1.0f;
+                }
+                func_80217680(dir.v, q);
+            }
+            func_8020A5A0(q, p);
+        }
+        return m - 0x1C;
+    }
+        }
+    return NULL;
+}
 
 void func_801F9848_ovl_24BCA0(u16 id) {
     FIELD(func_802174C0(id), u16, 0xA) |= 0x8000;
