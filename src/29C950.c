@@ -1459,7 +1459,118 @@ s16 func_802315FC_ovl_29A4C0(BUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/29C950", func_802315FC_ovl_29A4C0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_802316C0_ovl_29A4C0);
+extern s32 D_80197B14;
+int abs(int);
+
+/* Inlined copy of func_802315FC */
+static inline s16 NearFoe(BUnit *u) {
+    u16 i;
+    BUnit *o;
+    f32 fdx;
+    f32 fdz;
+    s32 dx;
+    s32 dz;
+
+    for (i = 0; i < 28; i++) {
+        o = D_8022A974->units[(s16)i];
+        if (o == NULL) {
+            continue;
+        }
+        if (o == u) {
+            continue;
+        }
+        if (FIELD(o, u8, 0x147) == FIELD(u, u8, 0x147)) {
+            continue;
+        }
+        if (D_8022A974->units[(s16)i + 28] != NULL) {
+            continue;
+        }
+        fdx = FIELD(o, f32, 0x11C) - FIELD(u, f32, 0x11C);
+        fdz = FIELD(o, f32, 0x124) - FIELD(u, f32, 0x124);
+        dx = abs((s32)fdx) < 20;
+        dz = abs((s32)fdz) < 20;
+        if (dz & dx) {
+            return (s16)i;
+        }
+    }
+    return -1;
+}
+
+/* Per-frame unit moves: steps each unit by its objs[] delta (freeing it when the count runs out),
+ * pairs units that come within 20 of a foe (0x88 table), then sets each pair's spacing or drops it */
+void func_802316C0_ovl_29A4C0(void) {
+    u16 i;
+    BObj *m;
+    BUnit *u;
+    BUnit *a;
+    s16 *l;
+    s16 k;
+    s32 dx;
+    s32 dz;
+    f32 fx;
+    f32 fz;
+    f32 d;
+    s32 n;
+
+    for (i = 0; i < 28; i++) {
+        m = D_8022A974->objs[(s16)i];
+        if (m == NULL) {
+            continue;
+        }
+        u = D_8022A974->units[(s16)i];
+        if (D_8018FC19 == 2 && (D_80197B14 & 8)) {
+            k = NearFoe(u);
+            if (k != -1 && ((Battle *)(k * 4 + (s32)D_8022A974))->units[28] == NULL) {
+                u8 *p = HMalloc(4);
+                ((Battle *)(k * 4 + (s32)D_8022A974))->units[28] = (BUnit *)p;
+                p[3] = i;
+            }
+        }
+        if (m->bE == 0) {
+            u->f11C += m->f0;
+            u->f124 += m->f8;
+            if (D_8018FC19 == 2 && (u->b145 & 1)) {
+                u->f120 = func_801BC35C(u->f11C, u->f124);
+            } else if (D_8018FC19 == 0 && (u->b145 & 1)) {
+                u->f120 = func_8023D178(u->f11C, u->f124);
+            }
+            m->hC--;
+        }
+        if (m->hC == 0) {
+            HFree(m);
+            D_8022A974->objs[(s16)i] = NULL;
+        }
+        if (D_8018FC19 == 2 && (u->b145 & 1)) {
+            u->f120 = func_801BC35C(u->f11C, u->f124);
+        }
+    }
+    for (i = 0; i < 28; i++) {
+        l = (s16 *)((Battle *)((s16)i * 4 + (s32)D_8022A974))->units[28];
+        if (l == NULL) {
+            continue;
+        }
+        a = D_8022A974->units[(s16)i];
+        u = D_8022A974->units[((u8 *)l)[3]];
+        if (a == NULL || u == NULL) {
+            HFree(l);
+            ((Battle *)((s16)i * 4 + (s32)D_8022A974))->units[28] = NULL;
+        } else {
+            fz = abs((s32)(a->f124 - u->f124));
+            fx = abs((s32)(a->f11C - u->f11C));
+            if ((fz < 20.0f) & (fx < 20.0f)) {
+                d = sqrtf(fx * fx + fz * fz);
+                n = (20 - (s16)d) / 2;
+                *l = n;
+                if (a->f124 - u->f124 < 0.0f) {
+                    *l = -n;
+                }
+            } else {
+                HFree(l);
+                ((Battle *)((s16)i * 4 + (s32)D_8022A974))->units[28] = NULL;
+            }
+        }
+    }
+}
 
 void func_80231B2C_ovl_29A4C0(s32 i, u8 v) {
     if (D_8022A974->objs[i] != NULL) {
