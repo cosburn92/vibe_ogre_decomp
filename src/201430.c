@@ -410,26 +410,23 @@ s32 func_801BE978_ovl_1F0A30(s32 a, s32 b, s32 c) {
 }
 
 /* Texture line size in bytes for pixel size siz (G_IM_SIZ_*) and width w, 8-byte aligned */
-#ifdef NON_MATCHING
-/* branch layout of the size chain differs */
 u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w) {
+    u32 n;
+
     if (siz == 3) {
         return ((w + 3) >> 2) << 4;
     }
     if (siz == 2) {
-        w = (w + 3) >> 2;
+        n = (w + 3) >> 2;
     } else if (siz == 1) {
-        w = (w + 7) >> 3;
+        n = (w + 7) >> 3;
     } else if (siz != 0) {
-        w = (w + 31) >> 5;
+        n = (w + 31) >> 5;
     } else {
-        w = (w + 15) >> 4;
+        n = (w + 15) >> 4;
     }
-    return w << 3;
+    return n << 3;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BE9A8_ovl_1F0A30);
-#endif
 
 /* Width rounded up to a whole 64-bit word of texels for pixel size siz */
 #ifdef NON_MATCHING

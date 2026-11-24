@@ -149,6 +149,7 @@ typedef struct {
     u32 w1;
 } Gfx;
 #include "gbi_ultra.h"
+/* Declared s32 (the definition returns u32): 0x1000 / bpr in func_801B6DB0_ovl_1F0A30 is a signed div in the original. */
 s32 func_801BE9A8_ovl_1F0A30(s32 fmt, s32 w);
 u32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
 void func_801BA0DC_ovl_1F0A30(void *timg, s32 a, s32 b, s32 fmt, s32 siz, s32 stride, s32 height, s32 uls,

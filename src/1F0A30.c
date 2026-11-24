@@ -188,7 +188,7 @@ void func_801AD6B0_ovl_1F0A30(void) {
 }
 
 s32 func_801BE978_ovl_1F0A30(s32 a, s32 w, s32 h);
-s32 func_801BE9A8_ovl_1F0A30(s32 a, s32 w);
+u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w);
 
 /* Returns portrait k as a 2bpp-unpacked 90x15 image, building and caching it (16 slots at 0xC0:
  * {data, key, ttl}) from row block k of chunk 0x391270 */
