@@ -818,48 +818,34 @@ void func_801BFBA0_ovl_1F0A30(u8 *tex) {
     }
 }
 
-#ifdef NON_MATCHING
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
-
-/* 87/87 instructions, 26 words differ: width/stride/row land in s5/s4 instead of s3/s5 and the format copy goes to a1 */
 /* Converts a texture's pixels in place (32-bit through func_801BED08, 16-bit through func_801BEDC8) */
 void func_801BFE28_ovl_1F0A30(u8 *d) {
-    u32 w = FIELD(d, u16, 4);
-    u32 h = FIELD(d, u16, 6);
+    u32 w = *(u16 *)(d + 4);
+    u32 h = *(u16 *)(d + 6);
     s32 stride = RowBytes201(d[3], w);
+    u8 *row;
+    u8 *row2;
     u32 x;
     u32 y;
-    u8 *row;
 
     if (d[3] == 3) {
         row = d + 8;
         for (y = 0; y < h; y++) {
-            u32 *p = (u32 *)row;
-
             for (x = 0; x < w; x++) {
-                *p = func_801BED08_ovl_1F0A30(*p);
-                p++;
+                ((u32 *)row)[x] = func_801BED08_ovl_1F0A30(((u32 *)row)[x]);
             }
             row += stride;
         }
     } else if (d[3] == 2) {
-        row = d + 8;
+        row2 = d + 8;
         for (y = 0; y < h; y++) {
-            u16 *p = (u16 *)row;
-
             for (x = 0; x < w; x++) {
-                *p = func_801BEDC8_ovl_1F0A30(*p);
-                p++;
+                ((u16 *)row2)[x] = func_801BEDC8_ovl_1F0A30(((u16 *)row2)[x]);
             }
-            row += stride;
+            row2 += stride;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BFE28_ovl_1F0A30);
-#endif
 
 /* Entry `page` of texture set desc (8-byte header, then per entry an 8-byte header followed by
  * the colour plane (flag 1), the second plane (flag 2) and a 0x200-byte palette (flag 4)) */
