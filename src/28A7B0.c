@@ -1700,11 +1700,10 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238A00_ovl_286BD0);
 #endif
 
 /* Copies block idx (0x500 bytes) into o and rebases its sub-block pointers into o */
-#ifdef NON_MATCHING
-/* loop count test is blez (signed) in the original; register order differs */
+/* n is an s16 (not s32): the count test is a signed blez */
 void func_80238C4C_ovl_286BD0(u8 *o, u16 idx, PtrTbl28 *t) {
-    s32 n = o[0x5F4];
     u8 *src = t->ptrs[idx];
+    s16 n = o[0x5F4];
     s32 i;
 
     bzero(o, 0x500);
@@ -1713,9 +1712,6 @@ void func_80238C4C_ovl_286BD0(u8 *o, u16 idx, PtrTbl28 *t) {
         *(u8 **)(o + 0x530 + i * 4) = o + (t->ptrs[idx + i] - t->ptrs[idx]);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238C4C_ovl_286BD0);
-#endif
 
 /* Loads paragraph para (paragraphs end in a blank line) of text chunk id into a new 0x500-byte
  * buffer, marking its line breaks with 0x81 0x97; w's line table (0x4, new) gets each line's
