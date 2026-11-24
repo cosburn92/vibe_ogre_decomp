@@ -150,8 +150,8 @@ void func_801F40B0_ovl_145210(s32 v) {
     }
 }
 
-u8 *func_801F4734_ovl_145210(s16 a);
-u8 *func_801F477C_ovl_145210(s16 a);
+u8 *func_801F4734_ovl_145210(u16 a);
+u8 *func_801F477C_ovl_145210(u16 a);
 void func_801F4A6C_ovl_145210(u8 *src, u8 *img, u16 alt, u16 *dst, s32 n);
 void func_801F4A34_ovl_145210(u8 *src, u8 *dst, s32 n);
 /* Builds the three palette sets of portrait id: one 0x1E20 block holding 3 colour tables (0x100
@@ -330,7 +330,7 @@ INCLUDE_ASM("asm/nonmatchings/145290", func_801F4638_ovl_145210);
 #endif
 
 /* Sends message 4 for a; returns whatever func_801F4358 left in v0 (no return statement) */
-u8 *func_801F4734_ovl_145210(s16 a) {
+u8 *func_801F4734_ovl_145210(u16 a) {
     s16 msg[4];
     s16 *p = msg;
 
@@ -340,7 +340,7 @@ u8 *func_801F4734_ovl_145210(s16 a) {
 }
 
 /* Sends message 5 for a; returns whatever func_801F4358 left in v0 (no return statement) */
-u8 *func_801F477C_ovl_145210(s16 a) {
+u8 *func_801F477C_ovl_145210(u16 a) {
     s16 msg[4];
     s16 *p = msg;
 
@@ -709,8 +709,8 @@ void func_801F5550_ovl_145210(u8 *a, void *b, s32 c, s32 d, s32 e, s32 f) {
         q[0x20] = q[0x1A];
         q[0x21] = q[0x1B];
         q[0x22] = q[0x1C];
-        s3 = ((u8 *(*)(u16))func_801F477C_ovl_145210)(FIELD(q, u16, 0x18));
-        s2 = ((u8 *(*)(u16))func_801F4734_ovl_145210)(FIELD(q, u16, 0x18) + q[0x1A]);
+        s3 = func_801F477C_ovl_145210(FIELD(q, u16, 0x18));
+        s2 = func_801F4734_ovl_145210(FIELD(q, u16, 0x18) + q[0x1A]);
         func_801F503C_ovl_145210(s2, s3, q + 0x10);
         func_801F40B0_ovl_145210((s32)s3);
         func_801F40B0_ovl_145210((s32)s2);
