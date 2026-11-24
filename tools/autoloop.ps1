@@ -34,7 +34,8 @@ For each function:
    Also a valid pick: cleaning up pseudo-asm in C that already matches, i.e.
    operators used to reproduce the instructions instead of saying what the
    code does (`~f() >> 31` for f() >= 0, a signed `/` or `%` spelled out with
-   a negative fixup and shifts, `(a == x) | (a == y)` for ||, `x ^ x` for 0,
+   a negative fixup and shifts, `(a == x) | (a == y)` for || (only when the right side has no call or
+   volatile read, which || could skip), `x ^ x` for 0,
    comma-sequenced assignments, m2c names like temp_v0/var_a1). Bit operations
    that are the code's real job (flags, masks, packing, unsigned shifts) stay.
    Rewrite it as plain control flow and arithmetic that still matches; commit as

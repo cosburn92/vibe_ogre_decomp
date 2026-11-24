@@ -4,7 +4,8 @@ produces the same instructions from the plain version:
 
   signed div fixup  `if (v < 0) v += 7; v >> 3`  ->  v / 8 (and v % 8 for the remainder)
   sign bit          `~f() >> 31`, `+ (x >> 31)`  ->  f() >= 0, x < 0
-  cmp | cmp         `(a == 1) | (a == 2)`        ->  a == 1 || a == 2
+  cmp | cmp         `(a == 1) | (a == 2)`        ->  a == 1 || a == 2 (if the right side has
+                                                     no call or volatile read: || may skip it)
   x ^ x             `h ^= h`                     ->  h = 0
   comma seq         `(a = f(), b = g(), a + b)`  ->  separate statements
   m2c names         temp_v0_7, var_a1_13         ->  names that say what the value is
