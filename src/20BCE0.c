@@ -1176,7 +1176,7 @@ s32 func_801CC37C_ovl_1F0A30(void) {
             enemy++;
         }
     }
-    return (player == 0) | (enemy == 0);
+    return player == 0 || enemy == 0;
 }
 
 /* 1 when one side is gone or no active unit has +0x6C < +0x70 (likely: battle round finished) */
