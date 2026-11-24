@@ -40,6 +40,7 @@ typedef union {
 
 void guMtxIdentF(f32 mf[4][4]);
 void guMtxF2L(f32 mf[4][4], Mtx *m);
+void guOrtho(Mtx *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
 f32 sqrtf(f32 x);
 f32 sinf(f32 x);
 f32 cosf(f32 x);
