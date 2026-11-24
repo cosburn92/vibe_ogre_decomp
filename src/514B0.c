@@ -967,28 +967,16 @@ void func_8017EC84_ovl_040E80(Node *n, s32 k);
 
 /* Like func_8017EF24 with the func_8017EC84 drawer: creates the box node, sets its inner
  * rectangle and the two colour bytes c/d, and returns it */
-#ifdef NON_MATCHING
-/* 72/72 instructions, 3 words differ: prologue scheduling (the original loads h2 before or-ing kind with 0x1000) */
 Node *func_8017F214_ovl_040E80(s32 a, u16 kind, s32 c, s32 d, s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2,
                               s16 h2) {
-    Node *n = func_8017C074_ovl_040E80(kind | 0x1000, 0, func_8017EC84_ovl_040E80, x, y, w, h);
+    Node *n = Box514(kind | 0x1000, func_8017EC84_ovl_040E80, x, y, w, h, x2, y2, w2, h2);
 
-    FIELD(n, s16, 0x18) = 0;
-    FIELD(n, s32, 0x3C) = x2;
-    FIELD(n, s32, 0x40) = y2;
-    FIELD(n, s32, 0x44) = w2;
-    FIELD(n, s32, 0x48) = h2;
-    FIELD(n, s16, 0x28) = 1;
-    FIELD(n, u16, 0x26) = 0x8000;
     func_801807F4_ovl_040E80(n, a | 0x20000);
     FIELD(n, u8, 0x23) = c;
     FIELD(n, u8, 0x22) = c;
     FIELD(n, u8, 0x24) = d;
     return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F214_ovl_040E80);
-#endif
 
 /* The last node in the list with this id, or NULL. */
 Node *func_8017F334_ovl_040E80(u16 id) {
