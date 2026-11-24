@@ -41,7 +41,7 @@ void func_801B74CC_ovl_087200();
 void bzero(void *p, s32 n);
 void func_801CC72C_ovl_087200(u8 *w, void (*f)(), void (*g)(), s32 a, s32 b, s32 c, s32 d);
 void func_801CC5B4_ovl_087200(u8 *w, s32 a, s32 b, s32 c, s32 d);
-void func_801C67B0_ovl_087200(u16 sq);
+void func_801C67B0_ovl_087200(s32 sq);
 void func_801B4AF4_ovl_087200();
 void func_801B577C_ovl_087200();
 s32 func_801CC3B8_ovl_087200(s32 id);
@@ -739,13 +739,10 @@ void func_801CAF18_ovl_087200(u16 sa, u16 a, u16 sb, u16 b) {
 
 /* Swaps formation cells a and b of squad sq (the leader follows its cell), clears flag 4 of every
  * member, then refreshes the squad's front-row count (0x1D) and its display */
-#ifdef NON_MATCHING
-/* 74 vs 72: the squad id stays in a0 in the original; here it is moved to s0 at entry and the swap pointers land in different registers */
 void func_801CB0FC_ovl_087200(s32 sq, s32 a, s32 b) {
-    u8 *s = D_80196AF8 + (u16)sq * 0x36 + 0x117C;
+    u8 *s = D_80196AF8 + ((u16)sq * 0x36 + 0x117C);
     u8 *pb = s + (u16)b;
     u8 t = pb[4];
-    s32 i;
 
     if (t == 0xFF) {
         u8 *pa = s + (u16)a;
@@ -764,19 +761,10 @@ void func_801CB0FC_ovl_087200(s32 sq, s32 a, s32 b) {
     } else if (s[3] == (u16)b) {
         s[3] = a;
     }
-    for (i = 0; i < 9; i++) {
-        u8 m = (D_80196AF8 + (u16)sq * 0x36)[0x1180 + i];
-
-        if (m != 0xFF) {
-            D_80196AF8[m * 2 + 0x1872] &= 0xFB;
-        }
-    }
+    ClearMemberFlag4(sq);
     s[0x1D] = func_801D06F4_ovl_087200((u16)sq);
     func_801C67B0_ovl_087200((u16)sq);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB0FC_ovl_087200);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CB21C_ovl_087200);
 
