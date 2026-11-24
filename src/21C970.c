@@ -153,21 +153,22 @@ void func_801DA064_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s
 }
 
 /* Deletes the entry at i, adding its +1 byte to the entry that moves into its place */
-#ifdef NON_MATCHING
-/* Loop and pointer reloads differ. */
 void func_801DA0A4_ovl_213B10(u32 i) {
-    u8 *p = &D_801CE8C0->text[i];
-    u8 c = p[0];
-    u8 extra = p[1];
+    u8 c = D_801CE8C0->text[i];
+    u8 extra = D_801CE8C0->text[i + 1];
     u32 n;
     u32 j;
 
-    if (c == 0x16) {
-        n = p[3] + 4;
-    } else if (c == 0x38) {
-        n = p[3];
-    } else {
+    switch (c) {
+    case 0x16:
+        n = D_801CE8C0->text[i + 3] + 4;
+        break;
+    case 0x38:
+        n = D_801CE8C0->text[i + 3];
+        break;
+    default:
         n = D_801E5C70_ovl_213B10[D_801CE8C0->text[i]];
+        break;
     }
     for (j = i; j < D_801CE8C0->len - n; j++) {
         D_801CE8C0->text[j] = D_801CE8C0->text[j + n];
@@ -175,9 +176,6 @@ void func_801DA0A4_ovl_213B10(u32 i) {
     D_801CE8C0->len -= n;
     D_801CE8C0->text[i + 1] += extra;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/21C970", func_801DA0A4_ovl_213B10);
-#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
