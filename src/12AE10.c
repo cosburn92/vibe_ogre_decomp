@@ -254,7 +254,7 @@ void func_801D6A84_ovl_101CE0(u8 *u, s32 unused, u8 *o, f32 *tgt) {
                 FIELD(o, f32, 0x1C) -= 1.0f;
             }
         }
-        if ((dx == 0.0f) & (dz == 0.0f)) {
+        if (dx == 0.0f && dz == 0.0f) {
             FIELD(o, f32, 0x1C) = FIELD(u, f32, 0x18);
         }
         n = FIELD(o, s32, 0x88);
