@@ -333,25 +333,24 @@ s32 func_801CD19C_ovl_1F0A30(s32 a, s32 b, u32 dir) {
 
 /* Walks the combination trie (section 1) over n sorted elements; returns the last participant
  * mask reached (0 if none) */
-#ifdef NON_MATCHING
-/* Logic complete; prologue scheduling and register choice differ. */
 s32 CombinationMatch(u8 *e, s32 n) {
     u8 *node = D_801D06D4_ovl_1F0A30;
-    u8 *base = node;
-    s32 r = 0;
-    u8 *end;
+    u8 *base;
+    s32 r;
+    u32 i = 0;
     u8 k = node[0];
 
+    r = 0;
     if (k != 0xFF) {
-        end = e + n;
+        base = node;
         do {
-            if (k == *e) {
+            if (k == e[i]) {
                 if (node[1] != 0) {
                     r = node[1];
                 }
-                e++;
+                i++;
                 node = base + *(u16 *)(node + 2);
-                if (!(e < end)) {
+                if (i >= n) {
                     break;
                 }
             } else {
@@ -362,9 +361,6 @@ s32 CombinationMatch(u8 *e, s32 n) {
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationMatch);
-#endif
 
 /* Walks the 6-byte-node trie (section 1b) over n elements; returns the last result id reached
  * (0xFF if none) and stores the matching secondary value in *out */
