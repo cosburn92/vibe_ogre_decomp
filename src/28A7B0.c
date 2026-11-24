@@ -1574,26 +1574,27 @@ u8 *func_802351F0_ovl_286BD0(u8 **out) {
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80235254_ovl_286BD0);
 
-#ifdef NON_MATCHING
-/* Argument setup order differs. */
+/* Draws the window text lines from t[0x5F4] up to t[0x5F5] - 1 (prim alpha from +0x19) while the window is shown */
 void func_80235914_ovl_286BD0(Win28 *w) {
     u8 *t = w->text;
-    u8 last;
 
     if (w->alpha != 0) {
-        last = t[0x5F5] - 1;
-        if (t[0x5F4] < last) {
+        u8 last = t[0x5F5] - 1;
+        s32 y = w->y - 4;
+        s32 x = w->x + 4;
+        s32 width = w->w - 12;
+        u8 first = t[0x5F4];
+        u8 a = t[0x5F1];
+
+        if (first < last) {
             Gfx *g = D_800E9BA0++;
 
             g->w0 = 0xFA000000;
             g->w1 = ((u8 *)w)[0x19] | 0xFFFFFF00;
-            func_8017D6D0(w, t[0x5F1], t[0x5F4], last, w->y - 4, w->x + 4, w->w - 12);
+            func_8017D6D0(w, a, first, last, y, x, width);
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80235914_ovl_286BD0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802359B4_ovl_286BD0);
 
