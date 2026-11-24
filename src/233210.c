@@ -206,7 +206,7 @@ s32 BattleAlignmentChange(BattleUnit *a, BattleUnit *b) {
     u32 j;
     s32 v;
 
-    if ((a == NULL) | (b == NULL)) {
+    if (a == NULL || b == NULL) {
         return 0;
     }
     if (func_801C8AEC() != 0 || func_801C8AFC() != 0 || (u32)(a->unk48 - 0x51) < 3 || func_801C8B68(a) != 0 ||
