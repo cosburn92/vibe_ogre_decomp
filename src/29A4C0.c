@@ -271,7 +271,67 @@ void func_8022B62C_ovl_29A4C0(u8 *img) {
     SepiaImg29(img, hdr[3], FIELD(hdr, u16, 6), FIELD(hdr, u16, 4));
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B6F4_ovl_29A4C0);
+/* inlined copy of func_8022B56C */
+static inline void SepiaBank29(u8 *bank) {
+    u8 *e = bank + 8;
+    s32 k;
+
+    for (k = 0; k < bank[3]; k++) {
+        u8 *hdr = e;
+
+        SepiaImg29(hdr + 0x10, 2, FIELD(hdr, u16, 6), FIELD(hdr, u16, 4));
+        e = FIELD(hdr, u8 *, 0xC);
+    }
+}
+
+/* inlined copy of func_8022B62C */
+static inline void SepiaOne29(u8 *img) {
+    u8 *hdr = img;
+
+    img += 8;
+    SepiaImg29(img, hdr[3], FIELD(hdr, u16, 6), FIELD(hdr, u16, 4));
+}
+
+extern u8 *D_801D0770;
+extern u8 *volatile D_801D07A0;
+void func_801C45E0(void);
+void func_801C22D0(s32 a);
+void func_8022BD74_ovl_29A4C0(void);
+
+#define IMG29(k) FLD(D_8022A974, u8 *, 0x1C04 + (k) * 4)
+
+/* Sepia-filters the backdrop (a "64" single image or a sprite bank) and the overlay bank, or
+ * outside mode 2 the 20 battle images ("64"/"74" single images, else banks); then redraws */
+void func_8022B6F4_ovl_29A4C0(void) {
+    s32 k;
+
+    if (D_8018FC19 == 2) {
+        if (D_801D0770[0] == 0x36 && D_801D0770[1] == 0x34) {
+            SepiaOne29(D_801D0770);
+        } else {
+            SepiaBank29(D_801D0770);
+        }
+        if (D_801D07A0 != NULL) {
+            SepiaBank29(D_801D07A0);
+        }
+    } else {
+        for (k = 0; k < 20; k++) {
+            if (IMG29(k) != NULL) {
+                if (IMG29(k)[0] == 0x36 && IMG29(k)[1] == 0x34) {
+                    SepiaOne29(IMG29(k));
+                }
+                if (IMG29(k)[0] == 0x37 && IMG29(k)[1] == 0x34) {
+                    SepiaOne29(IMG29(k));
+                } else {
+                    SepiaBank29(IMG29(k));
+                }
+            }
+        }
+    }
+    func_801C45E0();
+    func_801C22D0(1);
+    func_8022BD74_ovl_29A4C0();
+}
 
 typedef struct {
     s16 x[4];
