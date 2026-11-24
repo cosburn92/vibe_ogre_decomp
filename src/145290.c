@@ -649,8 +649,8 @@ void func_801F5504_ovl_145210(u32 i) {
     D_801FDA60_ovl_145210 = t.v[i];
 }
 
-s8 func_801F40A0_ovl_145210(u8 cls);
-#define IsLarge145(c) (((s32 (*)(u8))func_801F40A0_ovl_145210)(c)) /* returns c == 0x87 */
+s32 func_801F40A0_ovl_145210(s32 a);
+#define IsLarge145(c) func_801F40A0_ovl_145210(c) /* returns c == 0x87 */
 extern u8 *D_801FCD2C_ovl_145210[];
 void func_801F9EC8_ovl_145210();
 
@@ -730,12 +730,119 @@ void func_801F5550_ovl_145210(u8 *a, void *b, s32 c, s32 d, s32 e, s32 f) {
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F5550_ovl_145210);
 #endif
 
+typedef struct {
+    u8 unk00[8];
+    u16 cls;
+    u8 pal;
+    u8 b0B;
+    u8 large;
+    u8 unk0D[7];
+} Part145; /* size 0x14 */
+
+typedef struct {
+    u8 unk00[0x10];
+    Part145 part[2];
+} MapEnt145;
+
+/* Map entry a's animation step. Mode 2 flips the shown sprite part and sets state 3; mode 3
+ * counts frames on the key table and, on a new key frame (queued at the tail) or a changed
+ * class/position (queued at the head), rebuilds the hidden part and queues the entry */
+#ifdef NON_MATCHING
+/* same size (0x300): GCC keeps 0x87 in s3 across the func_801F4030 call where the original
+ * reloads it for each compare, and adds 0x10 to the part offset before the base (original:
+ * base + offset, then 0x10) */
+void func_801F57D0_ovl_145210(u8 *a, u8 mode) {
+    s32 r;
+    Part145 *p;
+    u8 *t;
+    u8 pal;
+    u8 b8;
+    s16 i;
+    s32 k;
+
+    switch (mode) {
+        case 2:
+            a[0] = 3;
+            a[0xC] ^= 1;
+            break;
+        case 1:
+            break;
+        case 3:
+            r = 0;
+            if (!(a[1] & 2)) {
+                a[7]++;
+            }
+            if (a[2] != 0x87) {
+                k = a[5];
+            } else {
+                k = 8;
+            }
+            t = D_801FCD2C_ovl_145210[k];
+            if (a[7] >= t[a[6] * 2]) {
+                a[6]++;
+                a[7] = 0;
+                r = 1;
+                if (t[a[6] * 2] == 0 && t[a[6] * 2 + 1] == 0xFF) {
+                    a[6] = 0;
+                }
+            } else if (FIELD(a, u16, 8) != FIELD(a, u16, 2) || FIELD(a, u16, 0xA) != FIELD(a, u16, 4)) {
+                r = 2;
+            }
+            if (r != 0) {
+                a[0xD] = a[0xC] ^ 1;
+                p = &((MapEnt145 *)a)->part[a[0xD]];
+                pal = 8;
+                if (a[2] != 0x87) {
+                    pal = a[5];
+                }
+                p->pal = D_801FCD2C_ovl_145210[pal][a[6] * 2 + 1] & 0xF;
+                p->cls = ((s32 (*)(s32, s32))func_801F4030_ovl_145210)(a[2], a[3]);
+                b8 = 0;
+                if (a[2] != 0x87) {
+                    b8 = a[4];
+                }
+                p->b0B = b8;
+                p->large = func_801F40A0_ovl_145210(a[2]);
+                if (r == 1) {
+                    i = D_801FDA68_ovl_145210 - 1;
+                    if (i < 0) {
+                        i = D_801FDA58_ovl_145210 - 1;
+                    }
+                    if (D_801FDA6A_ovl_145210 == i) {
+                        for (;;) {
+                        }
+                    }
+                    ((u8 **)D_801FDA5C_ovl_145210)[D_801FDA6A_ovl_145210++] = a;
+                    if (D_801FDA6A_ovl_145210 >= D_801FDA58_ovl_145210) {
+                        D_801FDA6A_ovl_145210 = 0;
+                    }
+                } else {
+                    D_801FDA68_ovl_145210--;
+                    if (D_801FDA68_ovl_145210 < 0) {
+                        D_801FDA68_ovl_145210 = D_801FDA58_ovl_145210 - 1;
+                    }
+                    if (D_801FDA6A_ovl_145210 == D_801FDA68_ovl_145210) {
+                        for (;;) {
+                        }
+                    }
+                    ((u8 **)D_801FDA5C_ovl_145210)[D_801FDA68_ovl_145210] = a;
+                }
+                a[0] = 1;
+            }
+            a[8] = a[2];
+            a[9] = a[3];
+            a[0xA] = a[4];
+            a[0xB] = a[5];
+            break;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/145290", func_801F57D0_ovl_145210);
+#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s8 func_801F40A0_ovl_145210(u8);                    /* extern */
 extern s32 D_801F3658;
 extern u8 *D_801FCD2C_ovl_145210[];
 
