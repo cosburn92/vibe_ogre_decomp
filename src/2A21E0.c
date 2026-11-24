@@ -234,7 +234,9 @@ void *func_80232EE8_ovl_29A4C0(s32 id, u32 *idx, u8 *outPal, s32 side, u8 kind) 
                     flag = func_801C2304() & 1;
                 }
                 if (FIELD(D_8022A974, u8 *, 0x1CA4) != NULL) {
-                    flag &= -(*FIELD(D_8022A974, u8 *, 0x1CA4) != 3);
+                    if (*FIELD(D_8022A974, u8 *, 0x1CA4) == 3) {
+                        flag = 0;
+                    }
                 }
                 res = func_801C15E0(img, kind < img[2] ? kind : 0, pal, r->p24 + n, flag);
                 HFree(img);
