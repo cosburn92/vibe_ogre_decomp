@@ -314,7 +314,83 @@ inline void func_801AA720_ovl_0EBBB0(CamF63 *c, f32 x, f32 y, f32 w, f32 h, f32 
     func_8007FFD0(dir);
 }
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801AA8A4_ovl_0EBBB0);
+/* Height grid header: cell counts, then x / height / z ranges */
+typedef struct {
+    /* 0x00 */ u16 w;
+    /* 0x02 */ u16 h;
+    /* 0x04 */ f32 x0;
+    /* 0x08 */ f32 x1;
+    /* 0x0C */ f32 y0;
+    /* 0x10 */ f32 y1;
+    /* 0x14 */ f32 z0;
+    /* 0x18 */ f32 z1;
+} GridHdrF63;
+
+typedef struct {
+    /* 0x00 */ GridHdrF63 *grids[10];
+    /* 0x28 */ u8 pad28[4];
+    /* 0x2C */ u8 grid;
+    /* 0x2D */ u8 pad2D[0xA8 - 0x2D];
+} SceneGridsF63;
+extern SceneGridsF63 D_800E8328[];
+
+f32 func_8009C780(f32 x, f32 z);
+f32 sqrtf(f32 x);
+f32 func_801A63FC_ovl_0EBBB0(s32 slot, f32 x, f32 z);
+void func_801A7130_ovl_0EBBB0(s32 a, s32 b);
+s32 func_801A7150_ovl_0EBBB0(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, f32 *out);
+s32 func_801AAE10_ovl_0EBBB0(CamF63 *c, f32 x, f32 y, f32 *out);
+
+/* Where the ray through screen point (x, y) of camera c meets scene slot's height grid; falls back
+ * to the ground plane (and returns 0) when the grid walk misses */
+s32 func_801AA8A4_ovl_0EBBB0(s32 slot, CamF63 *c, f32 x, f32 y, f32 *out) {
+    GridHdrF63 *g = D_800E8328[slot].grids[D_800E8328[slot].grid];
+    f32 dx = g->x1 - g->x0;
+    f32 dy = g->y1 - g->y0;
+    f32 dz = g->z1 - g->z0;
+    f32 dir[3];
+    f32 a[3];
+    f32 b[3];
+    f32 len;
+    f32 d1;
+    f32 h;
+
+    func_801AA720_ovl_0EBBB0(c, x, y, 320.0f, 240.0f, dir);
+    if (dir[0] == 0.0f && dir[2] == 0.0f) {
+        if (dir[1] == 0.0f) {
+            return 0;
+        }
+        if (out[0] < g->x0 || g->x1 < out[0] || out[2] < g->z0 || g->z1 < out[2]) {
+            return 0;
+        }
+        out[0] = c->eye[0];
+        out[2] = c->eye[2];
+        h = func_801A63FC_ovl_0EBBB0(slot, out[0], out[2]);
+        out[1] = h;
+        d1 = dir[1];
+        if ((d1 < 0.0f && h < c->eye[1]) || (d1 > 0.0f && c->eye[1] < h)) {
+            return 1;
+        }
+        return 0;
+    }
+    len = func_8009C780(dir[0], dir[2]);
+    func_80080190(dir, sqrtf(dx * dx + dz * dz) / len);
+    a[0] = (c->eye[0] - g->x0) / dx * (f32)(g->w - 1);
+    a[1] = (c->eye[1] - g->y0) / dy * 65279.0f;
+    a[2] = (c->eye[2] - g->z0) / dz * (f32)(g->h - 1);
+    b[0] = (c->eye[0] + dir[0] - g->x0) / dx * (f32)(g->w - 1);
+    b[1] = (c->eye[1] + dir[1] - g->y0) / dy * 65279.0f;
+    b[2] = (c->eye[2] + dir[2] - g->z0) / dz * (f32)(g->h - 1);
+    func_801A7130_ovl_0EBBB0(slot, g->w - 1);
+    if (!func_801A7150_ovl_0EBBB0(a[0], a[1], a[2], b[0], b[1], b[2], out)) {
+        func_801AAE10_ovl_0EBBB0(c, x, y, out);
+        return 0;
+    }
+    out[0] = out[0] / (f32)(g->w - 1) * dx + g->x0;
+    out[1] = out[1] / 65279.0f * dy + g->y0;
+    out[2] = out[2] / (f32)(g->h - 1) * dz + g->z0;
+    return 1;
+}
 
 /* Where the ray through screen point (x, y) meets the ground plane (y = 0); 0 when it points
  * away. A camera on the ground returns its own position. */
