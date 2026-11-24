@@ -131,6 +131,7 @@ u8 func_8016D3A4(u8 a, u8 cls);
 f32 func_801F1B98_ovl_22A280(BattleUnit *a, BattleUnit *b);
 s32 func_8016F9F0(u16 id);
 f32 func_801F1884_ovl_22A280(BattleUnit *a, BattleUnit *b);
+extern u8 D_801976DD;
 
 /* Bonus from the unit's weapon-like item (func_801C8FB8) */
 static inline s16 BattleUnitWeaponBonus(BattleUnit *u) {
@@ -687,7 +688,7 @@ inline s32 func_801F139C_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return r;
 }
 
-s32 func_801F1444_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+inline s32 func_801F1444_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     s32 r = 0;
 
     if (func_801C8D84(a)) {
@@ -842,7 +843,64 @@ f32 func_801F1884_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     return p - pen;
 }
 
+#ifdef NON_MATCHING
+/* same size, 17 instructions differ: r lives in s0 (set before the calls) where the original keeps it in v1
+ * and re-zeroes it after func_801C8B68, which also swaps the s0/s1 prologue saves */
+/* b's modifier when attacked by a: the (element - 1, battle mode) table for b, the mode bonus, the
+ * affinity/alignment term, the item bonus against a and the matchup bonus, minus the 0x3E penalty */
+f32 func_801F1B98_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 k;
+    u32 e;
+    u32 m;
+    u8 t;
+    s32 r;
+    f32 p;
+    s32 pen;
+
+    if (a == NULL) {
+        return 0.0f;
+    }
+    k = func_8016E470(a->attack, a->items[0], a->items[1], a->items[2], a->items[3]);
+    e = func_8016DBD8(b->unk48, b->cls);
+    e = (e - 1) % 7;
+    m = 15;
+    if (!(D_801976D9.mode & 0x80)) {
+        m = D_801976D9.mode;
+    }
+    m %= 27;
+    p = D_801F6910_ovl_22A280[e][m];
+    t = (D_801976D9.mode & 0x80) ? 15 : D_801976D9.mode;
+    r = 0;
+    if (t != 15 && t != 19) {
+        goto done;
+    }
+    if (func_801C8B84(b) && (D_801976DD & 8)) {
+        r = 3;
+        goto done;
+    }
+    if (func_801C8B68(b) == 0) {
+        goto done;
+    }
+    r = (D_801976E9 & 8) ? 3 : 0;
+done:
+    p += r;
+    p += func_801F1274_ovl_22A280(k, b);
+    p += func_801F1444_ovl_22A280(a, b);
+    p += func_801F14E8_ovl_22A280(b);
+    if (b == NULL || b->unk3E < 70) {
+        pen = 0;
+    } else if (b->unk3E < 80) {
+        pen = 5;
+    } else if (b->unk3E < 90) {
+        pen = 18;
+    } else {
+        pen = 40;
+    }
+    return p - pen;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1B98_ovl_22A280);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1F04_ovl_22A280);
 
