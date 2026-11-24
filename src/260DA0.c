@@ -1,6 +1,7 @@
 #include "common.h"
 #include "chunk.h"
 #include "heap.h"
+#include "rescache.h"
 
 /* 260DA0 */
 
@@ -9,13 +10,6 @@ extern s32 D_80220D48_ovl_25EE90;
 extern s32 D_80220D44_ovl_25EE90;
 extern s16 D_80220D40_ovl_25EE90;
 
-typedef struct {
-    /* 0x0 */ u16 h0;
-    /* 0x2 */ u16 kind;
-    /* 0x4 */ s32 id;
-    /* 0x8 */ s32 w8;
-    /* 0xC */ void *data;
-} CacheEnt;
 typedef struct {
     /* 0x0 */ u16 h0;
     /* 0x2 */ u16 h2;
@@ -29,11 +23,7 @@ typedef struct {
     /* 0x8 */ u8 unk8[4];
     /* 0xC */ Rec10b *recs;
 } RecSet;
-void *func_8020BF5C_ovl_25EE90(s32 kind, s32 id, s32 c);
-void func_8020BF94_ovl_25EE90(void *p);
-CacheEnt *func_8020BFE8_ovl_25EE90(void);
 void *func_8020C380_ovl_25EE90(s32 kind, s32 id);
-void func_8020C130_ovl_25EE90(u16 a, s32 b, s32 c);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
@@ -149,7 +139,7 @@ void func_8020C4EC_ovl_25EE90(void *mv) {
 /* Kind-3 resource id: cached copy, or loaded into a new cache entry */
 void *func_8020C644_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(3, id, 0);
@@ -162,11 +152,11 @@ void *func_8020C644_ovl_25EE90(s32 id) {
             r = func_8020C380_ovl_25EE90(3, id);
             if (r != NULL) {
                 func_8020C4EC_ovl_25EE90(r);
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 3;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             } else {
                 for (;;) {
                 }
@@ -178,7 +168,7 @@ void *func_8020C644_ovl_25EE90(s32 id) {
 
 inline void *func_8020C704_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(4, id, 0);
@@ -190,11 +180,11 @@ inline void *func_8020C704_ovl_25EE90(s32 id) {
         if (e != NULL) {
             r = func_8020C380_ovl_25EE90(4, id);
             if (r != NULL) {
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 4;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             } else {
                 for (;;) {
                 }
@@ -206,7 +196,7 @@ inline void *func_8020C704_ovl_25EE90(s32 id) {
 
 inline void *func_8020C7B8_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(5, id, 0);
@@ -218,11 +208,11 @@ inline void *func_8020C7B8_ovl_25EE90(s32 id) {
         if (e != NULL) {
             r = func_8020C380_ovl_25EE90(5, id);
             if (r != NULL) {
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 5;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             }
         }
     }
@@ -231,7 +221,7 @@ inline void *func_8020C7B8_ovl_25EE90(s32 id) {
 
 inline void *func_8020C860_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(6, id, 0);
@@ -243,11 +233,11 @@ inline void *func_8020C860_ovl_25EE90(s32 id) {
         if (e != NULL) {
             r = func_8020C380_ovl_25EE90(6, id);
             if (r != NULL) {
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 6;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             }
         }
     }
@@ -256,7 +246,7 @@ inline void *func_8020C860_ovl_25EE90(s32 id) {
 
 inline void *func_8020C908_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(7, id, 0);
@@ -268,11 +258,11 @@ inline void *func_8020C908_ovl_25EE90(s32 id) {
         if (e != NULL) {
             r = func_8020C380_ovl_25EE90(7, id);
             if (r != NULL) {
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 7;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             }
         }
     }
@@ -281,7 +271,7 @@ inline void *func_8020C908_ovl_25EE90(s32 id) {
 
 inline void *func_8020C9B0_ovl_25EE90(s32 id) {
     void *r = NULL;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     if (id > 0) {
         r = func_8020BF5C_ovl_25EE90(8, id, 0);
@@ -293,11 +283,11 @@ inline void *func_8020C9B0_ovl_25EE90(s32 id) {
         if (e != NULL) {
             r = func_8020C380_ovl_25EE90(8, id);
             if (r != NULL) {
-                e->h0 = 1;
+                e->count = 1;
                 e->data = r;
                 e->kind = 8;
                 e->id = id;
-                e->w8 = 0;
+                e->arg = 0;
             }
         }
     }
@@ -309,7 +299,7 @@ inline void *func_8020C9B0_ovl_25EE90(s32 id) {
 /* 106/106: r and the cache entry swap s0/s1; the default hang loop's jump is placed differently */
 void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
     void *r;
-    CacheEnt *e;
+    ResCacheEntry *e;
 
     switch (kind) {
         case 4:
@@ -323,11 +313,11 @@ void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
                     if (e != NULL) {
                         r = func_8020C380_ovl_25EE90(4, id);
                         if (r != NULL) {
-                            e->h0 = 1;
+                            e->count = 1;
                             e->data = r;
                             e->kind = 4;
                             e->id = id;
-                            e->w8 = 0;
+                            e->arg = 0;
                         } else {
                         for (;;) {
                         }
@@ -347,11 +337,11 @@ void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
                     if (e != NULL) {
                         r = func_8020C380_ovl_25EE90(7, id);
                         if (r != NULL) {
-                            e->h0 = 1;
+                            e->count = 1;
                             e->data = r;
                             e->kind = 7;
                             e->id = id;
-                            e->w8 = 0;
+                            e->arg = 0;
                         }
                     }
                 }
@@ -368,11 +358,11 @@ void *func_8020CA58_ovl_25EE90(u16 kind, s32 id) {
                     if (e != NULL) {
                         r = func_8020C380_ovl_25EE90(8, id);
                         if (r != NULL) {
-                            e->h0 = 1;
+                            e->count = 1;
                             e->data = r;
                             e->kind = 8;
                             e->id = id;
-                            e->w8 = 0;
+                            e->arg = 0;
                         }
                     }
                 }

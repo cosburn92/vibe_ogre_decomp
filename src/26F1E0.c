@@ -1,5 +1,6 @@
 #include "common.h"
 #include "heap.h"
+#include "rescache.h"
 
 /* 26F1E0 */
 
@@ -237,7 +238,6 @@ s32 func_8021A9C8_ovl_25EE90(u16 msg, Spawner26F *o) {
 }
 
 void func_8020FFA0_ovl_25EE90();
-void func_8020C074_ovl_25EE90(s32 a);
 
 /* Scrolling-texture parts handler: 0 sets the parts up (draw routine, texture handle, 16x16
  * window), 1 releases the texture, 2 scrolls the window by one texel */
@@ -272,7 +272,7 @@ void func_8021AC40_ovl_25EE90(u16 msg, u8 *o) {
 
         for (i = 0; FIELD(o, u8 **, 0x58)[i] == NULL; i++) {
         }
-        func_8020C074_ovl_25EE90(FIELD(FIELD(o, u8 **, 0x58)[i], s32, 0x34));
+        func_8020C074_ovl_25EE90(FIELD(FIELD(o, u8 **, 0x58)[i], void *, 0x34));
         break;
     }
     case 2: {

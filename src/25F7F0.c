@@ -1,4 +1,5 @@
 #include "common.h"
+#include "rescache.h"
 
 /* ovl_25EE90 (25F7F0) */
 
@@ -30,8 +31,6 @@ void func_8020B29C_ovl_25EE90(void);
 void func_8020B304_ovl_25EE90(void);
 void func_8020B6B4_ovl_25EE90(void);
 void func_8020B6C0_ovl_25EE90(void);
-void func_8020B870_ovl_25EE90(void);
-void func_8020B9D0_ovl_25EE90(void);
 void func_8020C1F0_ovl_25EE90(void);
 void func_8020C22C_ovl_25EE90(void);
 void func_8020D0E0_ovl_25EE90(void);

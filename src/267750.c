@@ -1,5 +1,6 @@
 #include "common.h"
 #include "heap.h"
+#include "rescache.h"
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
 /* 267750 */
@@ -53,11 +54,9 @@ typedef struct {
     /* 0xC */ Rec10 *recs;
 } Set38;
 void func_8020C9B0_ovl_25EE90(s16 a);
-void func_8020C130_ovl_25EE90(s32 a, s16 b, s32 c);
 s32 func_8020D174_ovl_25EE90();
 s32 func_8020E4C4_ovl_25EE90();
 void func_8020CDF4_ovl_25EE90(Cnt26 *c);
-void func_8020C074_ovl_25EE90(Cnt26 *c);
 void func_8020D024_ovl_25EE90(Cnt26 *c, u16 a, s32 b, u16 d, s32 e);
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -320,7 +319,6 @@ inline void func_802138FC_ovl_25EE90(Set38 *s, s32 *out) {
     }
 }
 
-void *func_8020BF5C_ovl_25EE90(s32 kind, s32 id, s32 c);
 void func_8020F134_ovl_25EE90();
 
 /* Binds model mdl's bone slots: draw routine, bone matrix (0x44 each) and the cached kind-6 mesh,
@@ -460,7 +458,7 @@ static inline void BindSlotsKind(void *mdl, void *mtx, void *slots, s32 kind, s3
                 }
                 FIELD(d, u16, 0x10) = r[2];
                 if (!(r[1] & 0x8000)) {
-                    if ((FIELD(d, void *, 0xC) = func_8020BF5C_ovl_25EE90((u16)kind, r[1] + base, 0)) == NULL) {
+                    if ((FIELD(d, void *, 0xC) = func_8020BF5C_ovl_25EE90(kind, r[1] + base, 0)) == NULL) {
                         while (1) {
                         }
                     }
