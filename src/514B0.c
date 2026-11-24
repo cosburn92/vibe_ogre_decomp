@@ -91,7 +91,7 @@ void func_8019A864(void);
 s32 func_8019D65C(void);
 extern u16 D_800C4C26;
 Node *func_8017C074_ovl_040E80(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h);
-void func_801807F4_ovl_040E80(Node *n, s32 a);
+void func_801807F4_ovl_040E80(Node *n, u32 a);
 void func_8017C584_ovl_040E80();
 void func_8017EAE8_ovl_040E80();
 void func_80221354(void);
@@ -1216,7 +1216,163 @@ void func_801805D0_ovl_040E80(u8 *dst, s32 b, s32 line, s32 d) {
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801805D0_ovl_040E80);
 #endif
 
+typedef struct {
+    /* 0x000 */ u8 text[0x500];
+    /* 0x500 */ u8 unk500[0x30];
+    /* 0x530 */ u8 *line[0x30];
+    /* 0x5F0 */ u8 kind;
+    /* 0x5F1 */ u8 top;
+    /* 0x5F2 */ u8 b5F2;
+    /* 0x5F3 */ u8 b5F3;
+    /* 0x5F4 */ u8 rows;
+    /* 0x5F5 */ u8 count;
+    /* 0x5F6 */ u8 height;
+    /* 0x5F7 */ u8 b5F7;
+    /* 0x5F8 */ s16 h5F8;
+    /* 0x5FA */ s16 h5FA;
+    /* 0x5FC */ u8 b5FC;
+    /* 0x5FD */ u8 b5FD;
+    /* 0x5FE */ u8 b5FE;
+    /* 0x5FF */ u8 unk5FF;
+    /* 0x600 */ s32 arg;
+} List514; /* size 0x604 */
+
+extern s32 D_801939DC_ovl_040E80[3];
+extern char D_8018FDC4_ovl_040E80[];
+extern char D_8018FDE4_ovl_040E80[];
+extern char D_80193A78_ovl_040E80[];
+s32 sprintf(char *buf, const char *fmt, ...);
+
+/* Builds the list-box text state at n+0xD0: the message for kind a >> 16 (1: name check, next stage
+ * or message id, 2: id from table 9, 3-5: type (a >> 12) & 0xF with n+0xE0), then splits it into
+ * lines at "@n" / 0x8197 (up to 48) and stops at "@\" / 0x818F */
+#ifdef NON_MATCHING
+/* same length; register allocation differs (the param and the state pointer swap s0/s1, the line
+ * pointer and counter use other temps) and the character is copied with move where the original
+ * zero-extends it with andi 0xFFFF */
+void func_801807F4_ovl_040E80(Node *n, u32 a) {
+    u8 buf[0x500];
+    List514 *s;
+    u32 hi;
+    s32 type;
+    u8 *p;
+    s32 lines;
+    s32 i;
+
+    type = (a >> 12) & 0xF;
+    FIELD(n, List514 *, 0xD0) = HMalloc(sizeof(List514));
+    bzero(buf, 0x500);
+    s = FIELD(n, List514 *, 0xD0);
+    hi = a >> 16;
+    s->arg = a;
+    a &= 0xFFF;
+    s->kind = 0;
+    s->b5F3 = 0x80;
+    s->rows = type != 11 ? 3 : 2;
+    s->height = 15;
+    s->b5FE = 2;
+    s->h5F8 = 0;
+    s->h5FA = 0;
+    for (lines = 0; lines < 3; lines++) {
+        ((s32 *)&FIELD(n, u8, 0xD4))[lines] = D_801939DC_ovl_040E80[lines];
+    }
+    switch (hi << 16) {
+        case 0x30000:
+        case 0x40000:
+        case 0x50000:
+            func_801805D0_ovl_040E80(buf, type, a, FIELD(n, s32, 0xE0));
+            break;
+        case 0x10000:
+            switch (a) {
+                case 1:
+                    sprintf(buf, D_8018FDC4_ovl_040E80, D_80193A78_ovl_040E80);
+                    break;
+                case 0:
+                    break;
+                case 2:
+                    sprintf(buf, D_8018FDE4_ovl_040E80);
+                    break;
+                default:
+                    if (a >= 100) {
+                        func_801805D0_ovl_040E80(buf, 7, a - 100, 0);
+                    } else {
+                        func_801805D0_ovl_040E80(buf, 20, a, 0);
+                    }
+                    break;
+            }
+            break;
+        case 0x20000:
+            func_801805D0_ovl_040E80(buf, 9, a, 0);
+            s->kind = 6;
+            s->height = 16;
+            break;
+    }
+    _bcopy(buf, s, 0x500);
+    p = s->text;
+    lines = 1;
+    i = 0;
+    s->line[0] = p;
+    s->b5F7 = 0;
+    FIELD(n, u8, 0x25) = 1;
+    do {
+        s32 c = p[0];
+        s32 b = p[1];
+        u16 nx = b;
+        u16 w = c;
+
+        if (w < 0x81 || (u32)(c - 0xA0) < 0x40 || w >= 0xFD) {
+            if (w == '@' && nx == 'n') {
+                goto newline;
+            }
+            if (w == '@' && nx == 0x5C) {
+                goto end;
+            }
+            p++;
+            i++;
+        } else {
+            s32 x = (c << 8) | nx;
+
+            if (x == 0x818F) {
+                goto end;
+            }
+            if (x != 0x8197) {
+                goto other;
+            }
+        newline:
+            p[0] = 0;
+            p += 2;
+            s->line[lines] = p;
+            lines++;
+            FIELD(n, u8, 0x25)++;
+            i += 2;
+            if (lines >= 0x30) {
+                i = 0x500;
+            }
+            continue;
+        end:
+            p[0] = 0;
+            p += 2;
+            i += 2;
+            s->b5F7 = 1;
+            FIELD(n, u8, 0x22) = 0;
+            continue;
+        other:
+            p += 2;
+            i += 2;
+        }
+    } while (i < 0x500);
+    if (hi << 16 == 0x20000) {
+        s->rows = FIELD(n, u8, 0x25);
+    }
+    s->count = lines;
+    s->top = 0;
+    s->b5FC = 0;
+    s->b5FD = 0;
+    s->b5F2 = 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801807F4_ovl_040E80);
+#endif
 
 /* Fills the 4 vertices at +0x90 for a textured quad from (x0, y0) to (x1, y1) in screen coords */
 void func_80180B1C_ovl_040E80(Vtx514 *v, s16 x0, s16 y0, s16 x1, s16 y1) {
