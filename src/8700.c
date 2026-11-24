@@ -575,8 +575,6 @@ AssetNode *func_800798AC(AssetNode *node, u32 handle) {
 }
 
 /* Extracts archive member index (or every member) of node's chunk */
-#ifdef NON_MATCHING
-/* Only the final `D_800C4BC0 = D_800AF0C4->size` uses v0 where the original uses v1. */
 void func_80079950(AssetNode *node, u32 index) {
     ArchiveStream stream;
     ArchiveRequest req;
@@ -613,11 +611,18 @@ void func_80079950(AssetNode *node, u32 index) {
         D_800AF0C4->size = req.size;
         D_800AF0C4->type = 1;
     }
-    D_800C4BC0 = D_800AF0C4->size;
+    {
+        /* Same as in func_80079AFC: identical stores in both arms put the size in v1 */
+        AssetSub *ctx = D_800AF0C4;
+        u32 size = ctx->size;
+
+        if (ctx) {
+            D_800C4BC0 = size;
+        } else {
+            D_800C4BC0 = size;
+        }
+    }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/8700", func_80079950);
-#endif
 
 /* Decompresses node's chunk (LZ) into sub 0 */
 /* Only the final `D_800C4BC0 = D_800AF0C4->size` uses v0 where the original uses v1. */
