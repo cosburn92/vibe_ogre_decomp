@@ -1,6 +1,7 @@
 #include "common.h"
 #include "heap.h"
 #include "scene.h"
+#include "gu.h"
 
 typedef struct {
     s32 data[0x16];
@@ -146,13 +147,14 @@ typedef struct {
     /* 0x04 */ void *p1;
     /* 0x08 */ u8 (*mtx)[0x40];
 } FbSet181;
+typedef Gfx181 Gfx;
+#include "gbi_ultra.h"
 extern Gfx181 *D_800E9BA0;
 extern FbSet181 *D_800E9BE0;
 extern u16 D_800C4BE4;
 extern u16 D_800C4C24;
 extern u16 D_800E7A0E;
 extern u8 D_8021ABC0_ovl_17F9C0[];
-void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
 void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
 #define CAMF(i) (((f32 *)D_8018F58C->data)[i])
 
@@ -168,7 +170,7 @@ void func_80216F3C_ovl_17F9C0(void) {
     CAMF(12) = 1.0f;
     CAMF(13) = 0.0f;
     D_800E7A0E = D_800C4BE4;
-    guOrtho(D_800E9BE0->mtx[D_800C4BE4], -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+    guOrtho((Mtx *)D_800E9BE0->mtx[D_800C4BE4], -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
     {
         Gfx181 *_g = D_800E9BA0++;
 
@@ -192,7 +194,49 @@ void func_80216F3C_ovl_17F9C0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/181520", func_80217114_ovl_17F9C0);
+extern u8 D_8021ABE8_ovl_17F9C0[];
+extern u8 D_8021AED4_ovl_17F9C0[]; /* tiles per shard */
+extern u8 D_8021AE48_ovl_17F9C0[]; /* screen tile (5 columns of 64x32) per shard tile */
+extern Gfx *D_8021DE98_ovl_17F9C0[];
+
+/* Draws the 41 shards of the shattering screen: each shard's matrix, then for every tile it covers
+ * the matching 64x32 block of the 320-wide RGBA16 screen image (ctx->arg) and the tile's mesh */
+void func_80217114_ovl_17F9C0(void) {
+    f32 mf[4][4];
+    s16 i;
+    s16 j;
+    s16 n = 0;
+    u8 k;
+    s32 col;
+    s32 row;
+    u16 uls;
+    u16 ult;
+
+    gSPDisplayList(D_800E9BA0++, D_8021ABE8_ovl_17F9C0);
+    gDPSetEnvColor(D_800E9BA0++, 0xFF, 0xFF, 0xFF, D_8021AF00_ovl_17F9C0->alpha);
+    for (i = 0; i < 41; i++) {
+        func_80216C08_ovl_17F9C0(mf, i);
+        guMtxF2L(mf, (Mtx *)D_800E9BE0->mtx[D_800C4BE4]);
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xDA380003;
+            _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000;
+        }
+        for (j = 0; j < D_8021AED4_ovl_17F9C0[i]; j++) {
+            gDPPipeSync(D_800E9BA0++);
+            k = D_8021AE48_ovl_17F9C0[n];
+            col = k % 5;
+            row = k / 5;
+            uls = col * 64;
+            ult = row * 32;
+            gDPLoadTextureTile(D_800E9BA0++, D_8021AF00_ovl_17F9C0->arg, G_IM_FMT_RGBA, G_IM_SIZ_16b, 320, 240, uls,
+                               ult, uls + 63, ult + 31, 0, G_TX_CLAMP, G_TX_CLAMP, 6, 5, G_TX_NOLOD, G_TX_NOLOD);
+            gDPSetTileSize(D_800E9BA0++, G_TX_RENDERTILE, 0, 0, 63 << G_TEXTURE_IMAGE_FRAC, 31 << G_TEXTURE_IMAGE_FRAC);
+            gSPDisplayList(D_800E9BA0++, D_8021DE98_ovl_17F9C0[n++]);
+        }
+    }
+}
 
 inline void func_80217474_ovl_17F9C0(s32 arg) {
     D_8021AF00_ovl_17F9C0 = HMalloc(sizeof(Ovl17F9C0Ctx));
