@@ -201,7 +201,75 @@ void func_801E9130_ovl_23B220(s32 i, s32 k) {
     FIELD(e, u16, 0x16) += FIELD(e, s32, 8);
 }
 
+s32 func_801BE9A8(s32 siz, s32 w);
+
+/* Blends slot i's portrait into entry k's image at the slot position: each pixel whose mask
+ * byte a is nonzero becomes a sepia tint of its luminance (220/180/120 percent), mixed a/255
+ * over the destination pixel */
+#ifdef NON_MATCHING
+/* One instruction long: the /300 multiplier constant is hoisted out of the pixel loop (the
+ * original loads it per pixel), so the source row stride lands on the stack instead of the
+ * destination pixel base and the registers differ from there */
+void func_801E92D4_ovl_23B220(s32 i, s32 k) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    u8 *e = (u8 *)c + (i * 0x18 + 0x1AC);
+    u8 *src = FIELD(e, u8 *, 0);
+    s32 x = FIELD(e, s16, 0x14);
+    u8 *dst = c->ent[k].img;
+    s32 y = FIELD(e, s16, 0x16);
+    s32 sstride;
+    s32 dstride;
+    s32 mstride;
+    u8 *mask;
+    u8 *sp;
+    u16 *dp;
+    s32 row;
+    s32 col;
+
+    sstride = func_801BE9A8(2, FIELD(src, u16, 4));
+    dstride = func_801BE9A8(2, FIELD(dst, u16, 4));
+    mask = src + FIELD(src, u16, 6) * sstride;
+    mstride = func_801BE9A8(1, FIELD(mask, u16, 0xC));
+    sp = FIELD(e, u8 *, 0) + 8;
+    mask += 0x10;
+    dp = (u16 *)((u8 *)c->ent[k].img + 8);
+    for (row = 0; row < FIELD(src, u16, 6); row++) {
+        if (y + row >= 0 && y + row < FIELD(dst, u16, 6)) {
+            u16 *s = (u16 *)sp;
+            u8 *m = mask;
+
+            for (col = 0; col < FIELD(src, u16, 4); col++, m++) {
+                s32 dx = col + x;
+
+                if (dx >= 0 && dx < FIELD(dst, u16, 4)) {
+                    u32 a = *m;
+
+                    if (a != 0) {
+                        u32 r = (*s >> 8) & 0xF8;
+                        u32 g = (*s >> 3) & 0xF8;
+                        u32 b = (*s << 2) & 0xF8;
+                        u32 l = (r * 30 + g * 59 + b * 11) / 300;
+                        u16 q;
+
+                        r = l * 220 / 100;
+                        g = l * 180 / 100;
+                        b = l * 120 / 100;
+                        q = dp[(y + row) * dstride / 2 + x + col];
+                        dp[(y + row) * dstride / 2 + x + col] = ((((((q >> 8) & 0xF8) * (255 - a) + r * a) / 255) << 8) & 0xF800) +
+                             ((((((q >> 3) & 0xF8) * (255 - a) + g * a) / 255) << 3) & 0x7C0) +
+                             ((((((q << 2) & 0xF8) * (255 - a) + b * a) / 255) >> 2) & 0x3E);
+                    }
+                }
+                s++;
+            }
+            sp += sstride;
+            mask += mstride;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E92D4_ovl_23B220);
+#endif
 
 void _bcopy(void *src, void *dst, s32 n);
 u8 *func_801C8FE8(s32);
