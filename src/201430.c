@@ -16,7 +16,7 @@ extern void *D_801D06AC_ovl_1F0A30;
 extern u8 D_801CEEC0_ovl_1F0A30[][4];
 u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w);
 u8 *func_801BFF84_ovl_1F0A30(u8 *desc, u32 page);
-void func_801C0F50_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 e);
+void *func_801C0F50_ovl_1F0A30(u8 *chunk, s32 v, u8 *pal, u8 *out, s32 mode);
 
 
 
@@ -955,7 +955,7 @@ INCLUDE_ASM("asm/nonmatchings/201430", func_801C00E0_ovl_1F0A30);
 INCLUDE_ASM("asm/nonmatchings/201430", func_801C01D4_ovl_1F0A30);
 
 void func_801C0F34_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d) {
-    func_801C0F50_ovl_1F0A30(a, b, c, d, 0);
+    func_801C0F50_ovl_1F0A30((u8 *)a, b, (u8 *)c, (u8 *)d, 0);
 }
 
 INCLUDE_ASM("asm/nonmatchings/201430", func_801C0F50_ovl_1F0A30);

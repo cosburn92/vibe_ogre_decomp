@@ -467,7 +467,91 @@ void func_801C2E40_ovl_1F0A30(s32 key, u8 *out) {
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C2EB0_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/205220", func_801C33F8_ovl_1F0A30);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
+void *func_801C0F50_ovl_1F0A30(u8 *chunk, s32 v, u8 *pal, u8 *out, s32 mode);
+void *func_801C15E0_ovl_1F0A30(u8 *chunk, s32 v, u8 *pal, u8 *out, s32 mode);
+
+/* Returns the loaded part `part->index` of cached model key/variant v, loading it on first use:
+ * part flags 0xC0 select a shared slot past the model's own parts (0x40: +0, 0x80: +5) and set
+ * mode bit 4. Mode bit 2 picks the textured lists (bit 1: 0x40/0x68, else 0x38/0x60), otherwise
+ * 0x3C/0x64. A "TU" chunk is decoded with the part's palette and freed; a "46" chunk is kept as
+ * is. The part's use count is reset to 15. Optionally writes the part's byte from list 0x58. */
+void *func_801C33F8_ovl_1F0A30(s32 key, u8 *part, u32 v, u8 *out) {
+    u32 n;
+    u8 mode;
+
+    mode = D_801CEF00_ovl_1F0A30;
+
+    for (n = 0; n < 20; n++) {
+        u8 *e = (u8 *)D_801D0728_ovl_1F0A30 + n * 0xB0;
+
+        if (FIELD(e, s32, 0) == key && FIELD(e, s32, 0xC) == v) {
+            s32 k = FIELD(part, s32, 0);
+            s32 idx = k;
+            u8 *c;
+
+            if (FIELD(part, u32, 0x14) & 0xC0) {
+                mode |= 4;
+                if (FIELD(part, u32, 0x14) & 0x40) {
+                    k = FIELD(e, s32, 0x1C) + part[0x20];
+                } else {
+                    k = FIELD(e, s32, 0x1C) + part[0x20] + 5;
+                }
+            }
+            if (out != NULL) {
+                *out = FIELD(e, u8 *, 0x58)[idx];
+            }
+            if (mode & 2) {
+                if (mode & 1) {
+                    if (FIELD(e, void **, 0x40)[k] == NULL) {
+                        c = LoadChunk(FIELD(e, u32 *, 8)[idx + 4]);
+                        if (FIELD(c, u16, 0) == 0x5554) {
+                            FIELD(e, void **, 0x40)[k] = func_801C15E0_ovl_1F0A30(c, v < c[2] ? v : 0,
+                                FIELD(e, u8 *, 0x6C) + (FIELD(e, u8 *, 0x5C)[idx] << 9),
+                                FIELD(e, u8 *, 0x58) + idx, mode);
+                            HFree(c);
+                        } else if (FIELD(c, u16, 0) == 0x3634) {
+                            FIELD(e, void **, 0x40)[k] = c;
+                        }
+                    }
+                    FIELD(e, u8 *, 0x68)[k] = 15;
+                    return FIELD(e, void **, 0x40)[k];
+                } else {
+                    if (FIELD(e, void **, 0x38)[k] == NULL) {
+                        c = LoadChunk(FIELD(e, u32 *, 8)[idx + 4]);
+                        if (FIELD(c, u16, 0) == 0x5554) {
+                            FIELD(e, void **, 0x38)[k] = func_801C15E0_ovl_1F0A30(c, v < c[2] ? v : 0,
+                                FIELD(e, u8 *, 0x6C) + (FIELD(e, u8 *, 0x5C)[idx] << 9),
+                                FIELD(e, u8 *, 0x58) + idx, mode);
+                            HFree(c);
+                        } else if (FIELD(c, u16, 0) == 0x3634) {
+                            FIELD(e, void **, 0x38)[k] = c;
+                        }
+                    }
+                    FIELD(e, u8 *, 0x60)[k] = 15;
+                    return FIELD(e, void **, 0x38)[k];
+                }
+            } else {
+                if (FIELD(e, void **, 0x3C)[k] == NULL) {
+                    c = LoadChunk(FIELD(e, u32 *, 8)[idx + 4]);
+                    if (FIELD(c, u16, 0) == 0x5554) {
+                        FIELD(e, void **, 0x3C)[k] = func_801C0F50_ovl_1F0A30(c, v < c[2] ? v : 0,
+                            FIELD(e, u8 *, 0x6C) + (FIELD(e, u8 *, 0x5C)[idx] << 9),
+                            FIELD(e, u8 *, 0x58) + idx, mode);
+                        HFree(c);
+                    } else if (FIELD(c, u16, 0) == 0x3634) {
+                        FIELD(e, void **, 0x3C)[k] = c;
+                    }
+                }
+                FIELD(e, u8 *, 0x64)[k] = 15;
+                return FIELD(e, void **, 0x3C)[k];
+            }
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/205220", func_801C3750_ovl_1F0A30);
 
