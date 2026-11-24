@@ -10,7 +10,8 @@ extern s32 D_801ED4A4_ovl_101CE0[];
 #endif
 typedef struct {
     /* 0x00 */ s32 id;
-    /* 0x04 */ u8 unk04[8];
+    /* 0x04 */ s32 unk04;
+    /* 0x08 */ s32 lines;
     /* 0x0C */ s32 x2;
     /* 0x10 */ s32 y2;
     /* 0x14 */ s32 w2;
@@ -20,19 +21,24 @@ typedef struct {
     /* 0x24 */ s32 w;
     /* 0x28 */ s32 h;
     /* 0x2C */ u8 *win;
-    /* 0x30 */ u8 unk30[8];
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ u8 *text;
     /* 0x38 */ s32 a;
     /* 0x3C */ s32 b;
     /* 0x40 */ s32 c;
-    /* 0x44 */ u8 unk44[0x1D];
-    /* 0x61 */ s8 d;
+    /* 0x44 */ u8 unk44[8];
+    /* 0x4C */ s32 lenA;
+    /* 0x50 */ s32 lenB;
+    /* 0x54 */ s32 lenC;
+    /* 0x58 */ u8 unk58[9];
+    /* 0x61 */ u8 d;
 } Dialog134;
 extern Dialog134 D_801ED540_ovl_101CE0;
 extern s32 D_801F0B40_ovl_101CE0;
 extern u16 *D_801F0CA0_ovl_101CE0;
 extern u16 *D_800C4BDC;
 void func_801E09DC_ovl_101CE0(Dialog134 *d);
-void func_801E0594_ovl_101CE0();
+void func_801E0594_ovl_101CE0(u8 *o, s32 i);
 u8 *func_8017BFB0(s32 kind, s32 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 void func_8017C384(u8 *w);
 void func_8020CDA0(s32 se);
@@ -69,8 +75,6 @@ s32 func_801E00F0_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2) {
 
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E027C_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/134830", func_801E0594_ovl_101CE0);
-
 #include "libultra.h"
 #include "gbi_ultra.h"
 void _bcopy(void *src, void *dst, s32 n);
@@ -85,10 +89,106 @@ extern s32 D_801ED598_ovl_101CE0;
 extern s32 D_801ED59C_ovl_101CE0;
 extern u8 D_801ED5A0_ovl_101CE0;
 extern u8 D_801ED5A4_ovl_101CE0;
+s32 func_8017B550(u8 c);
+void func_80201384(s32 a, s32 b, s32 c, s32 d);
+void func_8020D780(s32 x, s32 y);
+void func_8020DAA8(s32 x, s32 y);
+typedef struct { u8 pad[0x18]; s16 page; } Page134;
+
+/* Draws dialog window o's message: D_801ED540.lines lines of its text, where the SJIS codes
+ * 0x8194, 0x8190 and 0x8193 are replaced by strings a, b and c and 0x8197 ends a line; then,
+ * if the dialog has a choice marker (d = 1 or 2), its frame and marker */
+void func_801E0594_ovl_101CE0(u8 *o, s32 i) {
+    Dialog134 *s = &D_801ED540_ovl_101CE0;
+    Page134 *p = (Page134 *)(i * 2 + (s32)o);
+
+    if (p->page != 0) {
+        s32 x = FIELD(o, s32, 0x2C);
+        s32 y = FIELD(o, s32, 0x30);
+        s32 line;
+        s32 n;
+        s32 ty;
+        u8 *t;
+        u8 *start;
+        char *dst;
+        char buf[0x100];
+
+        D_800E9BA0->w0 = 0xE7000000;
+        D_800E9BA0->w1 = 0;
+        D_800E9BA0++;
+        line = 0;
+        func_8017C4B4(p->page);
+        t = s->text;
+        ty = y + 4;
+        for (start = t; line < s->lines; line++) {
+            bzero(buf, 0x100);
+            dst = buf;
+            n = 0;
+            while (1) {
+                if (func_8017B550(*t)) {
+                    s32 c = t[1] | (t[0] << 8);
+
+                    if (c == 0x8197) {
+                        _bcopy(start, dst, n);
+                        t += 2;
+                        break;
+                    }
+                    if (c == 0x8194) {
+                        _bcopy(start, dst, n);
+                        start += n + 2;
+                        dst += n;
+                        _bcopy((void *)s->a, dst, s->lenA);
+                        dst += s->lenA;
+                        n = 0;
+                        t++;
+                    } else if (c == 0x8190) {
+                        _bcopy(start, dst, n);
+                        start += n + 2;
+                        dst += n;
+                        _bcopy((void *)s->b, dst, s->lenB);
+                        dst += s->lenB;
+                        n = 0;
+                        t++;
+                    } else if (c == 0x8193) {
+                        _bcopy(start, dst, n);
+                        start += n + 2;
+                        dst += n;
+                        _bcopy((void *)s->c, dst, s->lenC);
+                        dst += s->lenC;
+                        n = 0;
+                        t++;
+                    } else {
+                        n += 2;
+                        t++;
+                    }
+                } else if (*t == 0) {
+                    _bcopy(start, dst, n);
+                    break;
+                } else {
+                    n++;
+                }
+                t++;
+            }
+            func_80179034(buf, s->x2 + 4, ty);
+            ty += 15;
+            start = t;
+        }
+        if (s->d != 0) {
+            func_80201384(FIELD(o, s32, 0x7C), FIELD(o, s32, 0x80) - 12, FIELD(o, s32, 0x84), FIELD(o, s32, 0x88));
+            D_800E9BA0->w0 = 0xE3001001;
+            D_800E9BA0->w1 = 0x8000;
+            D_800E9BA0++;
+            if (s->d == 1) {
+                func_8020D780(x + 6, y - 10);
+            } else if (s->d == 2) {
+                func_8020DAA8(x + 6, y - 10);
+            }
+        }
+    }
+}
 
 /* Draws window o's page i: its two text lines and the blinking cursor (column in the low nibble
  * of D_801ED5A4, row D_801ED5A0), then steps the cursor blink */
-typedef struct { u8 pad[0x18]; s16 page; } Page134;
 void func_801E0868_ovl_101CE0(u8 *o, s32 i) {
     Page134 *p = (Page134 *)(i * 2 + (s32)o);
 
