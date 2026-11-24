@@ -286,27 +286,28 @@ s32 func_8023A164_ovl_2A8D20(s32 i) {
     return 1;
 }
 
-f32 func_8009CFB0(f32);                             /* extern */
+f32 func_8009CFB0(f32);                             /* atanf */
 
-f32 func_8023A270_ovl_2A8D20(void *arg0, f32 arg1, f32 arg2) {
-    f32 temp_fv0;
-    f32 var_fv1;
+/* Heading in degrees (0..360) from point (x, z) to unit o's position (0x11C, 0x124) */
+f32 func_8023A270_ovl_2A8D20(void *o, f32 x, f32 z) {
+    f32 oz;
+    f32 deg;
 
-    temp_fv0 = FIELD(arg0, f32, 0x124);
-    if (temp_fv0 < arg2) {
-        var_fv1 = (f32) (((f64) func_8009CFB0((FIELD(arg0, f32, 0x11C) - arg1) / (temp_fv0 - arg2)) * 180.0) / 3.141592653589793);
-    } else if (arg2 < temp_fv0) {
-        var_fv1 = (f32) ((((f64) func_8009CFB0((FIELD(arg0, f32, 0x11C) - arg1) / (temp_fv0 - arg2)) * 180.0) / 3.141592653589793) + 180.0);
+    oz = FIELD(o, f32, 0x124);
+    if (oz < z) {
+        deg = func_8009CFB0((FIELD(o, f32, 0x11C) - x) / (oz - z)) * 180.0 / 3.141592653589793;
+    } else if (z < oz) {
+        deg = func_8009CFB0((FIELD(o, f32, 0x11C) - x) / (oz - z)) * 180.0 / 3.141592653589793 + 180.0;
     } else {
-        var_fv1 = -90.0f;
-        if (FIELD(arg0, f32, 0x11C) < arg1) {
-            var_fv1 = 90.0f;
+        deg = -90.0f;
+        if (FIELD(o, f32, 0x11C) < x) {
+            deg = 90.0f;
         }
     }
-    if (var_fv1 < 0.0f) {
-        var_fv1 += 360.0f;
+    if (deg < 0.0f) {
+        deg += 360.0f;
     }
-    return var_fv1;
+    return deg;
 }
 
 INCLUDE_ASM("asm/nonmatchings/2A8D20", func_8023A370_ovl_2A8D20);
