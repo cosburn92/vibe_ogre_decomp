@@ -667,7 +667,7 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
 /* Ground height at (x, z) in scene slot's height grid: the grid cell's two triangles are
  * interpolated (16-bit heights over 0xC-0x10); maps without flag 0x10 use func_801A63FC */
 #ifdef NON_MATCHING
-/* 180 vs 181: the grid pointer and row index swap s1/s2 and the original copies the incremented index into ix's register */
+/* same size; as in func_801A63FC, the a0 argument move is scheduled after the index update instead of first */
 f32 func_801A66C8_ovl_0EBBB0(s32 slot, f32 x, f32 z) {
     u8 *g = (u8 *)D_800E82C8[slot].slotsB[D_800E82C8[slot].unk8D];
     f32 fx;
@@ -693,9 +693,8 @@ f32 func_801A66C8_ovl_0EBBB0(s32 slot, f32 x, f32 z) {
     dz = fz - iz;
     dx = fx - ix;
     if (dz - dx >= 0.0f) {
-        iz++;
-        c = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
-        v = dx * (b - c) - (fz - iz) * (a - c) + c;
+        { s32 t = ix; ix = iz + 1; c = func_801A69A4_ovl_0EBBB0((u16 *)g, t, ix); }
+        v = dx * (b - c) - (fz - ix) * (a - c) + c;
     } else {
         ix++;
         c = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
