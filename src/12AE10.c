@@ -631,12 +631,124 @@ s32 func_801DA52C_ovl_101CE0(MapUnit *u) {
     return ret;
 }
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA59C_ovl_101CE0);
-
 extern u16 D_80190EBC[];
 extern u8 D_80191010[];
 extern u16 D_8019532C[];
 extern u8 D_80195480[];
+
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+/* Whether squad sq still has a member alive; clears the stone flag (4) on fallen members. On
+ * stages 0x2D-0x2E (squads 30-31) and elsewhere for squad 30, a fallen leader takes the whole
+ * squad down with him. Members 100+ use the separate hp/status tables. */
+s32 func_801DA59C_ovl_101CE0(s32 sq) {
+    s32 i;
+    s32 m;
+    s32 ret;
+    s32 player;
+
+    if (!(D_8018F481 >= 0x2D && D_8018F481 <= 0x2E)) {
+        if (sq == 30) {
+            m = gSquads[sq].members[0];
+            if (D_80195560[m].hp == 0 || (D_80195560[m].status & 4)) {
+                for (i = 0; i < 5; i++) {
+                    m = gSquads[sq].members[i];
+                    if (m != 0) {
+                        if (m >= 100) {
+                            D_8019532C[m] = 0;
+                        } else {
+                            D_80195560[m].hp = 0;
+                        }
+                    }
+                }
+                return 0;
+            }
+        }
+    } else if (sq >= 30 && sq <= 31) {
+        m = gSquads[sq].members[0];
+        if (D_80195560[m].hp == 0 || (D_80195560[m].status & 4)) {
+            for (i = 0; i < 5; i++) {
+                m = gSquads[sq].members[i];
+                if (m != 0) {
+                    if (m >= 100) {
+                        D_8019532C[m] = 0;
+                    } else {
+                        D_80195560[m].hp = 0;
+                    }
+                }
+            }
+            return 0;
+        }
+    }
+    ret = 0;
+    player = sq < 30;
+    for (i = 0; i < 5; i++) {
+        m = gSquads[sq].members[i];
+        if (m == 0) {
+            continue;
+        }
+        if (m >= 100) {
+            if (player) {
+                if (D_80190EBC[m] != 0) {
+                    ret = 1;
+                } else {
+                    D_80191010[m] &= ~4;
+                }
+            } else {
+                if (D_8019532C[m] != 0) {
+                    ret = 1;
+                } else {
+                    D_80195480[m] &= ~4;
+                }
+            }
+        } else if (player) {
+            if (D_80193BC0[m].c.hp != 0) {
+                ret = 1;
+            } else {
+                D_80193BC0[m].c.status &= ~4;
+            }
+        } else {
+            if (D_80195560[m].hp != 0) {
+                ret = 1;
+            } else {
+                D_80195560[m].status &= ~4;
+                if (i == 0 && !(gSquads[sq].flags & 0x80)) {
+                    return 0;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 
 /* Whether squad sq is wiped out: no member that is alive and not petrified (members 100+ are
  * the special units, kept in separate hp/status tables) */
