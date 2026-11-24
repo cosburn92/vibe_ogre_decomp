@@ -30,7 +30,9 @@ typedef struct {
 } BUnit;
 
 typedef struct {
-    /* 0x0 */ u8 unk0[0xC];
+    /* 0x0 */ f32 f0;
+    /* 0x4 */ u8 unk4[4];
+    /* 0x8 */ f32 f8;
     /* 0xC */ s16 hC;
     /* 0xE */ u8 bE;
 } BObj;
@@ -1341,7 +1343,80 @@ s16 func_80231238_ovl_29A4C0(BUnit *u, f32 x, f32 z, f32 tx, f32 tz) {
     return r;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29C950", func_802312E4_ovl_29A4C0);
+void *HMalloc(s32 size);
+
+/* Starts moving unit i from (x0, z0) (-1, -1 = where it stands) to (x1, z1): frames == 1 jumps
+ * there; otherwise the per-frame step goes to objs[i], over `frames` frames, or at `speed` */
+void func_802312E4_ovl_29A4C0(s32 i, f32 x0, f32 z0, f32 x1, f32 z1, s32 frames, s32 speed) {
+    BUnit *u = D_8022A974->units[i];
+    BObj *m;
+    s16 done;
+    f32 sx;
+    f32 sz;
+
+    if (u == NULL) {
+        return;
+    }
+    if ((x0 == -1.0f) & (z0 == -1.0f)) {
+        sx = u->f11C;
+        sz = u->f124;
+    } else {
+        sx = x0;
+        sz = z0;
+        u->f11C = sx;
+        u->f124 = sz;
+    }
+    if (frames == 1) {
+        u->f11C = x1;
+        u->f124 = z1;
+        if (D_8018FC19 == 2 && (u->b145 & 1)) {
+            u->f120 = func_801BC35C(u->f11C, z1);
+        }
+        return;
+    }
+    done = 0;
+    if (sx < x1 + 0.1 && x1 - 0.1 < sx) {
+        u->f11C = x1;
+        done = 1;
+    }
+    if (sz < z1 + 0.1 && z1 - 0.1 < sz) {
+        u->f124 = z1;
+        done += 2;
+    }
+    if (done == 3) {
+        return;
+    }
+    m = D_8022A974->objs[i];
+    if (m == NULL) {
+        m = HMalloc(0x10);
+        D_8022A974->objs[i] = m;
+    }
+    if (speed != 0) {
+        f32 dx = x1 - sx;
+        f32 dz = z1 - sz;
+        f32 d = dx * dx + dz * dz;
+        s16 n;
+
+        if (d != 0.0f) {
+            d = sqrtf(d);
+            d = 1000.0 / speed * d;
+            n = d;
+            m->hC = n;
+            m->f0 = dx / n;
+            m->f8 = dz / n;
+        } else {
+            m->f0 = 0.0f;
+            m->f8 = 0.0f;
+            m->hC = 1;
+            return;
+        }
+    } else {
+        m->f0 = (x1 - sx) / frames;
+        m->f8 = (z1 - sz) / frames;
+        m->hC = frames;
+    }
+    m->bE = 0;
+}
 
 /* First unit of the other side (and not in the 0x88 table) within 20 of u on both x and z, or -1 */
 #ifdef NON_MATCHING
