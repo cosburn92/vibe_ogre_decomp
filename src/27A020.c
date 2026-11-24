@@ -985,7 +985,37 @@ void func_802291A0_ovl_27A020(s32 x, s32 y, s32 mode) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802293B4_ovl_27A020);
+/* Image chunk header: pixels follow at +8, then the palette */
+typedef struct {
+    /* 0x00 */ u8 unk0[3];
+    /* 0x03 */ u8 siz;
+    /* 0x04 */ u16 w;
+    /* 0x06 */ u16 h;
+} Img27;
+Img27 *func_801AD60C(s32 id);
+s32 func_801BE9A8(s32 siz, s32 w);
+s32 func_801BE978(s32 siz, s32 w, s32 h);
+
+/* Draws icon `icon` (an 8-row band of the 0x321B8C icon strip, CI8 with a 256-colour palette)
+ * 0x38 wide at screen position (x, y); -1 draws nothing */
+void func_802293B4_ovl_27A020(s32 x, s32 y, s16 icon) {
+    Img27 *img;
+    u8 *tex;
+    s32 row;
+
+    if (icon != -1) {
+        img = func_801AD60C(0x321B8C);
+        row = icon * 8;
+        tex = (u8 *)img + (func_801BE9A8(img->siz, img->w) * row + 8);
+        gDPPipeSync(D_800E9BA0++);
+        gDPLoadTLUT_pal256(D_800E9BA0++, (u8 *)img + (func_801BE978(1, img->w, img->h) + 8));
+        gDPLoadTextureBlock(D_800E9BA0++, tex, G_IM_FMT_CI, G_IM_SIZ_8b, img->w, 8, 0, 0, 0, 0, 0, 0, 0);
+        gDPPipeSync(D_800E9BA0++);
+        gSPScisTextureRectangle(D_800E9BA0++, x << 2, y << 2, (x + 0x38) << 2, (y + 8) << 2, 0, 0, 0, 1 << 10,
+                                1 << 10);
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_802297D8_ovl_27A020);
 
@@ -1241,7 +1271,6 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022A95C_ovl_27A020);
 #endif
 
 void func_802297D8_ovl_27A020(u8 *e, s16 x, s32 y, s16 mark);
-void func_802293B4_ovl_27A020(s32 x, s32 y, s32 icon);
 
 /* Draws the list entries that carry a mark: entry palette, background slot, the entry row,
  * and the mark icon (12 for idle, 4 for flagged) */
