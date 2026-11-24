@@ -237,7 +237,58 @@ void func_8007896C(s16 x0, s16 y0, s16 x1, s16 y1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/8700", func_80078C6C);
+/* Fills (x0, y0) - (x1, y1) of the frame buffer with the RGBA5551 colour, after clearing the same
+ * rectangle of the z buffer when depth clearing is on (func_8007338C). The y0 clamp uses the
+ * screen width, as in func_8007896C. */
+void func_80078C6C(u16 color, s16 x0, s16 y0, s16 x1, s16 y1) {
+    if (x0 < 0) {
+        x0 = 0;
+    } else if (x0 >= 320) {
+        x0 = 319;
+    }
+    if (y0 < 0) {
+        y0 = 0;
+    } else if (y0 >= 320) {
+        y0 = 319;
+    }
+    if (x1 < 0) {
+        x1 = 0;
+    } else if (x1 >= 320) {
+        x1 = 319;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    } else if (y1 >= 240) {
+        y1 = 239;
+    }
+    GFX87(0xE7000000, 0);
+    GFX87(0xE200001C, 0);
+    GFX87(0xE7000000, 0);
+    GFX87(0xE7000000, 0);
+    GFX87(0xE7000000, 0);
+    GFX87(0xE3000A01, 0x300000);
+    GFX87(0xE7000000, 0);
+    if (func_8007338C()) {
+        GFX87(0xFE000000, (u32)D_800C4B20 - 0x80000000);
+        GFX87(0xFF10013F, (u32)D_800C4B20 - 0x80000000);
+        GFX87(0xF7000000, 0xFFFCFFFC);
+        GFX87(0xE7000000, 0);
+        GFX87(0xF6000000 | _SHIFTL(x1, 14, 10) | _SHIFTL(y1, 2, 10), _SHIFTL(x0, 14, 10) | _SHIFTL(y0, 2, 10));
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+    }
+    GFX87(0xFF10013F, (u32)D_800E8210 - 0x80000000);
+    GFX87(0xF7000000, (color << 16) | color);
+    GFX87(0xE7000000, 0);
+    GFX87(0xF6000000 | _SHIFTL(x1, 14, 10) | _SHIFTL(y1, 2, 10), _SHIFTL(x0, 14, 10) | _SHIFTL(y0, 2, 10));
+    GFX87(0xE7000000, 0);
+    GFX87(0xE7000000, 0);
+    GFX87(0xE7000000, 0);
+    GFX87(0xE3000A01, 0);
+    GFX87(0xE7000000, 0);
+}
 
 /* Distance from the matrix's origin to pos, scaled to a fog/LOD value */
 u16 func_80079028(f32 mf[4][4], f32 *pos, f32 range) {
