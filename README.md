@@ -70,6 +70,9 @@ helpers (`src/20BCE0.c`, `src/201430.c`, `src/205220.c`, `src/24BCA0.c`), the ta
 so it still works when earlier code has shifted. `python3 tools/try.py SEG FUNC variants.c` builds
 each candidate body (separated by `//----` lines) and keeps the closest. Run both inside WSL.
 Functions that are close but not matching are kept as `#ifdef NON_MATCHING` C with a note.
+`tools/ilint.py` checks that every prototype and call of a function agrees with its C definition
+across files (needs `pip install libclang`; run it on `src` with the Makefile's `-I`/`-D` flags,
+as its docstring shows). Shared prototypes belong in a header under `include/`, not in each file.
 
 ### Data, rodata and BSS
 
