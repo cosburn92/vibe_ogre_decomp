@@ -668,21 +668,19 @@ void func_80203524_ovl_14EBE0(void *a, s32 b, u8 c) {
 INCLUDE_ASM("asm/nonmatchings/151F40", func_80203558_ovl_14EBE0);
 
 /* Draws digit cell n % 9 (blank row when n is 0) at (x + 7, y) after its frame */
-#ifdef NON_MATCHING
-/* 130/130 instructions, 6 words differ: the original keeps the quotient and remainder of n % 9 in d's register */
 void func_80203D9C_ovl_14EBE0(s32 x, s32 y, s32 n) {
     s32 d = n % 9;
 
-    d -= d != 0;
+    if (d != 0) {
+        d--;
+    }
     func_80200DD0_ovl_14EBE0(x, y + 3, 0x46);
     gDPPipeSync(D_800E9BA0++);
+    /* t is 0x200, or 0x540 for the blank row; a plain `? 0x540 : 0x200` is one instruction shorter */
     gSPScisTextureRectangle(D_800E9BA0++, (x + 7) << 2, y << 2, (x + 13) << 2, (y + 9) << 2, 0,
-                            d * 7 << 5, (-(n == 0) & 0x340) | 0x200, 1 << 10, 1 << 10);
+                            d * 7 << 5, (n == 0 ? 0x340 : 0) | 0x200, 1 << 10, 1 << 10);
     gDPPipeSync(D_800E9BA0++);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/151F40", func_80203D9C_ovl_14EBE0);
-#endif
 
 void func_80203FA4_ovl_14EBE0(s32 a, s32 b) {
     Gfx *g;
