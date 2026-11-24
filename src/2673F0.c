@@ -88,7 +88,6 @@ s32 func_802129BC_ovl_25EE90(u8 *o) {
 }
 
 /* Draws the object with its fade (+0x40 of its owner, 0..1) as prim alpha */
-#ifdef NON_MATCHING
 s32 func_80212A04_ovl_25EE90(Obj267 *o) {
     Mdl267 *m = (Mdl267 *)o->sub;
 
@@ -97,9 +96,6 @@ s32 func_80212A04_ovl_25EE90(Obj267 *o) {
     func_80212840_ovl_25EE90(m);
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2673F0", func_80212A04_ovl_25EE90);
-#endif
 
 /* Same with the object's own colour (0x31/0x33/0x35) and the owner's fade as alpha */
 #ifdef NON_MATCHING
