@@ -25,6 +25,7 @@ void bzero(void *p, s32 n);
 s32 func_80186210(s32 flag);
 s32 func_8016FEF4(s32 flag);
 void func_801B2B78_ovl_101CE0(u32 *unit);
+void func_80214F80(); /* location window opener in the overlay at 0x80214F80 (171EA0) */
 #include "tables.h"
 
 typedef struct {
@@ -803,7 +804,7 @@ s32 func_801DC4EC_ovl_101CE0(void) {
     return -1;
 }
 
-void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
+inline void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
     u16 fl = D_801951CC[loc].flags;
 
     if (fl & 2) {
@@ -890,7 +891,7 @@ void InventoryAdd(u16 v, u8 flag) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", InventoryAdd);
 #endif
 
-void func_801DC910_ovl_101CE0(void) {
+inline void func_801DC910_ovl_101CE0(void) {
     s32 i;
 
     for (i = 0; i < 50; i++) {
@@ -898,7 +899,72 @@ void func_801DC910_ovl_101CE0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DC95C_ovl_101CE0);
+/* Picks the location screen mode for loc (fixed on some stages, else from the location flags),
+ * refreshes the map units and opens the location window */
+void func_801DC95C_ovl_101CE0(u16 loc) {
+    u8 stage = D_8018F481;
+    s32 mode;
+    s8 value;
+    u8 side;
+
+    if (stage == 0x2D && loc == 7) {
+        mode = 4;
+    } else if (stage == 0x2E && loc == 7) {
+        mode = 4;
+    } else if (stage == 0x32 && loc == 6) {
+        mode = 5;
+    } else if (stage == 0x14 && loc == 11) {
+        mode = 5;
+    } else if (stage == 0x15 && loc == 11) {
+        mode = 5;
+    } else if (stage == 0x25 && loc == 6) {
+        mode = 6;
+    } else if (stage == 0x26 && loc == 6) {
+        mode = 6;
+    } else if (D_801951CC[loc].flags & 0x800) {
+        mode = 10;
+    } else if (D_801951CC[loc].flags & 0x400) {
+        mode = 9;
+    } else if (D_801951CC[loc].flags & 0x20) {
+        mode = 0;
+    } else if (D_801951CC[loc].flags & 0x40) {
+        mode = 1;
+    } else {
+        mode = (D_801951CC[loc].flags & 0x80) ? 3 : 2;
+    }
+
+    if (D_8018F481 == 0x27) {
+        if (loc == 0) {
+            mode = 6;
+        } else if (loc == 1) {
+            mode = 7;
+        } else {
+            mode = 8;
+        }
+    } else if ((D_8018F481 >= 0x2F && D_8018F481 <= 0x30) || (D_8018F481 >= 0x3C && D_8018F481 <= 0x3D)) {
+        if (loc == 0) {
+            mode = 4;
+        } else {
+            mode = 7;
+            if (loc == 5) {
+                mode = 8;
+            }
+        }
+    } else if (D_8018F481 == 0x33) {
+        if (loc == 0) {
+            mode = 5;
+        } else {
+            mode = 7;
+            if (loc == 3) {
+                mode = 8;
+            }
+        }
+    }
+
+    LocationGetStageValue(loc, &value, &side);
+    func_801DC910_ovl_101CE0();
+    func_80214F80(loc, mode, value, side);
+}
 
 /* Packs the squad's items to the front */
 void func_801DCC48_ovl_101CE0(SquadRec *sq) {
