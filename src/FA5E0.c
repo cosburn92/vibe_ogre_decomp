@@ -245,32 +245,28 @@ void func_801AEB2C_ovl_0FA5E0(void) {
 }
 
 /* Width of a string in pixels, stopping at '@'; glyph width 11 marks a two-byte character */
-#ifdef NON_MATCHING
-/* original reloads *s at the loop top; GCC reuses the test load */
 s32 func_801AEBA4_ovl_0FA5E0(u8 *s) {
-    s32 w = 0;
+    s32 i;
+    s32 w;
     u8 c;
     u8 v;
 
-    while (*s != 0) {
-        c = *s;
+    w = 0;
+    for (i = 0; s[i] != 0; i++) {
+        c = s[i];
         v = func_801793E4(c, 0);
         if (v == 11) {
-            s++;
+            i++;
             w += 11;
         } else {
             if (c == '@') {
-                return w;
+                break;
             }
             w += v;
         }
-        s++;
     }
     return w;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801AEBA4_ovl_0FA5E0);
-#endif
 
 /* Loads the 18 LZ images listed in chunk 0x1D61984 into o+0x19C and clears the rest of the state */
 void func_801AEC40_ovl_0FA5E0(Widget3390 *o) {
