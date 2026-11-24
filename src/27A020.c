@@ -765,20 +765,15 @@ s16 func_8022857C_ovl_27A020(void) {
 }
 
 /* Task pool: 5 entries chained through `next`, all idle */
-#ifdef NON_MATCHING
-/* pool count load and HMalloc result registers differ */
 void func_802285B0_ovl_27A020(void) {
     Task27 *p;
     s32 i;
-    s32 n;
 
     D_8022D0F2_ovl_27A020 = 5;
-    p = HMalloc(0x118);
-    n = D_8022D0F2_ovl_27A020;
-    D_8022C890_ovl_27A020 = p;
-    D_8022D148_ovl_27A020 = p;
-    for (i = 0; i < n; i++) {
-        p[i].fn = NULL;
+    D_8022C890_ovl_27A020 = HMalloc(0x118);
+    D_8022D148_ovl_27A020 = D_8022C890_ovl_27A020;
+    for (i = 0; i < D_8022D0F2_ovl_27A020; i++) {
+        D_8022D148_ovl_27A020[i].fn = NULL;
     }
     p = D_8022D148_ovl_27A020;
     for (i = 1; i < D_8022D0F2_ovl_27A020; i++) {
@@ -787,9 +782,6 @@ void func_802285B0_ovl_27A020(void) {
     }
     p->next = 0xFFFF;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/27A020", func_802285B0_ovl_27A020);
-#endif
 
 void func_80228650_ovl_27A020(void) {
     if (D_8022C890_ovl_27A020 != NULL) {
