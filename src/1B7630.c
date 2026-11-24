@@ -565,7 +565,101 @@ SprRec *func_8021B31C_ovl_1B2670(SprRec *o, s32 cls, s32 b, s32 c, s32 d, s32 e)
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B31C_ovl_1B2670);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B5EC_ovl_1B2670);
+extern u8 D_8021C800_ovl_1B2670[]; /* record length by record type */
+SprFrame *func_8021B040_ovl_1B2670(SprFrame *out, SprRec *r, s32 cls, s32 b, s32 c, s32 d, s32 e, u32 idx);
+SprRec *func_8021B31C_ovl_1B2670(SprRec *o, s32 cls, s32 b, s32 c, s32 d, s32 e);
+
+typedef struct {
+    /* 0x00 */ u32 n;
+    /* 0x04 */ u32 v[16];
+    /* 0x44 */ u32 id[16];
+} SprList; /* size 0x84 */
+
+typedef struct {
+    /* 0x000 */ SprList l[2];
+    /* 0x108 */ u32 nFrames;
+    /* 0x10C */ SprFrame frames[16];
+} SprSet; /* size 0x3CC */
+
+/* Builds a sprite set for class cls: reads the two record lists of the loaded table (offsets at
+ * 0x14 and 0x0), keeps each type-1 record's frame id and half its second byte, and loads every
+ * distinct frame once; then frees the table */
+void *func_8021B5EC_ovl_1B2670(s32 cls, s32 b, s32 c, s32 d, s32 e) {
+    SprRec rec;
+    SprRec *r;
+    SprSet *o;
+    u8 *base;
+    u8 *p;
+    u8 n;
+    u32 i;
+
+    r = func_8021B31C_ovl_1B2670(&rec, cls, b, c, d, e);
+    if (r == NULL) {
+        return NULL;
+    }
+    o = HMalloc(sizeof(SprSet));
+    bzero(o, sizeof(SprSet));
+    base = r->res40;
+    {
+        u32 j;
+
+        p = base + *(u32 *)(base + 0x14);
+        n = *p++;
+        for (i = 0; i < n; i++) {
+            if (*p == 1) {
+                o->l[0].id[o->l[0].n] = p[1];
+                o->l[0].v[o->l[0].n] = p[2] >> 1;
+                for (j = 0; j < o->nFrames; j++) {
+                    if (o->frames[j].idx == p[1]) {
+                        break;
+                    }
+                }
+                if (j >= o->nFrames) {
+                    func_8021B040_ovl_1B2670(&o->frames[o->nFrames], r, cls, b, c, d, e, p[1]);
+                    o->nFrames++;
+                }
+                o->l[0].n++;
+            }
+            p += D_8021C800_ovl_1B2670[*p];
+        }
+    }
+    {
+        u32 j;
+
+        p = base + *(u32 *)base;
+        n = *p++;
+        for (i = 0; i < n; i++) {
+            if (*p == 1) {
+                o->l[1].id[o->l[1].n] = p[1];
+                o->l[1].v[o->l[1].n] = p[2] >> 1;
+                for (j = 0; j < o->nFrames; j++) {
+                    if (o->frames[j].idx == p[1]) {
+                        break;
+                    }
+                }
+                if (j >= o->nFrames) {
+                    func_8021B040_ovl_1B2670(&o->frames[o->nFrames], r, cls, b, c, d, e, p[1]);
+                    o->nFrames++;
+                }
+                o->l[1].n++;
+            }
+            p += D_8021C800_ovl_1B2670[*p];
+        }
+    }
+    {
+        u32 k;
+
+        for (k = 0; k < r->count; k++) {
+            HFree(((void **)r->words)[k]);
+        }
+    }
+    HFree(r->chunks);
+    HFree(r->res44);
+    HFree(r->res40);
+    HFree(r->res50);
+    HFree(r->buf);
+    return o;
+}
 
 /* Loads the shared table chunk (two sections) and creates the two default entries */
 void **func_8021B93C_ovl_1B2670(void) {
