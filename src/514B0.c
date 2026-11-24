@@ -1417,7 +1417,28 @@ void func_801814AC_ovl_040E80(u8 *obj, s32 i, u8 *dst, u8 n) {
     *dst = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_80181504_ovl_040E80);
+/* Draws the 16x8 marker image (sheet image + 0x1460, palette + 0x1A0) from (x, y) to (x1, y + 8);
+ * coordinates and texel steps double in high resolution */
+void func_80181504_ovl_040E80(s32 x, s32 y, s32 x1) {
+    s32 step = 10;
+    s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
+
+    if (D_80187020_ovl_040E80) {
+        step = 9;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x1A0);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    D_800E9BA0->w0 = 0xD7000002;
+    D_800E9BA0->w1 = 0x80008000;
+    D_800E9BA0++;
+    func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0x1460, 16, 8, 0, 0, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, x << shift, y << shift, x1 << shift, (y + 8) << shift, 0, 0, 0,
+                            1 << step, 1 << step);
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_801818A0_ovl_040E80);
 
