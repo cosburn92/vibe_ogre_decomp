@@ -699,20 +699,23 @@ AssetSub *func_80079CB4(AssetSub *sub, u32 index) {
     return sub;
 }
 
-#ifdef NON_MATCHING
-/* Register choice: the original reloads *link instead of keeping it in a register. */
+/* Returns the link that holds handle's node, or the empty link where it would be inserted */
 AssetNode **func_80079D60(AssetNode **link, u32 handle) {
-    if (*link == NULL || handle == (*link)->handle) {
-        return link;
+    AssetNode *n;
+
+    while (*link != NULL) {
+        n = *link;
+        if (handle == n->handle) {
+            break;
+        }
+        if (n->handle < handle) {
+            link = &n->right;
+        } else {
+            link = &n->left;
+        }
     }
-    if ((*link)->handle < handle) {
-        return func_80079D60(&(*link)->right, handle);
-    }
-    return func_80079D60(&(*link)->left, handle);
+    return link;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/8700", func_80079D60);
-#endif
 
 AssetNode *func_80079D98(AssetNode *node) {
     if (node != NULL) {
