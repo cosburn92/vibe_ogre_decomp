@@ -554,7 +554,111 @@ void func_80226CC0_ovl_27A020(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_80226DA8_ovl_27A020);
+typedef struct {
+    s32 m[16];
+} Mtx27; /* size 0x40 */
+typedef struct {
+    s16 v[8];
+} Vtx27; /* size 0x10 */
+/* This frame's buffers */
+typedef struct {
+    /* 0x00 */ void *p0;
+    /* 0x04 */ void *p4;
+    /* 0x08 */ Mtx27 *mtx;
+    /* 0x0C */ void *pC;
+    /* 0x10 */ Vtx27 *vtx;
+} FbSet27;
+/* Battle-screen state block (0xA0 bytes): two sprite layers, then viewport adjustments */
+typedef struct {
+    /* 0x00 */ u8 *spr;
+    /* 0x04 */ u8 unk04[0x2C];
+    /* 0x30 */ u8 *spr2;
+    /* 0x34 */ u8 unk34[0x50];
+    /* 0x84 */ s16 transX; /* viewport adjustments, 1/4 pixel */
+    /* 0x86 */ s16 transY;
+    /* 0x88 */ s16 scaleX;
+    /* 0x8A */ s16 scaleY;
+    /* 0x8C */ u8 unk8C[0x14];
+} Battle27;
+extern Battle27 D_801D0770;
+extern u16 D_800C4BE4;
+extern u16 D_800E79E0;
+extern Mtx27 *D_801969B0;
+extern Vtx27 *D_80197178;
+typedef struct {
+    s16 vscale[4];
+    s16 vtrans[4];
+} Vp27; /* a viewport; the draw sets this one but loads the one after it (D_8022C870) */
+extern Vp27 D_8022C860_ovl_27A020;
+extern Vp27 D_8022C870_ovl_27A020;
+extern u8 D_801CEAA8;
+extern u8 D_801CEAA9;
+extern u8 D_801CEAAA;
+s32 func_801B5934(void);
+s32 func_801B5940(void);
+void func_801B8F2C(u8 *o);
+void func_801BB58C(u8 *pp);
+void func_801BB87C(u8 *pp);
+void func_8020E4A0(void);
+void func_8020E3A0(u16 a);
+void func_801B574C(u8 a);
+void func_801B0300(void);
+void func_8022BF68_ovl_27A020(void);
+
+#define GFX27(w0_, w1_)         \
+    {                           \
+        Gfx *_g = D_800E9BA0++; \
+                                \
+        _g->w0 = (w0_);         \
+        _g->w1 = (w1_);         \
+    }
+
+/* Shop frame draw: points the matrix/vertex cursors at this frame's pools, sets the viewport from
+ * the battle-screen block, draws both sprite layers and the scene, then a full-screen black
+ * rectangle with the shop's fade alpha, and advances the pool counts by what was used */
+void func_80226DA8_ovl_27A020(FbSet27 *fb) {
+    D_801969B0 = fb->mtx + D_800C4BE4;
+    D_80197178 = fb->vtx + D_800E79E0;
+    GFX27(0xE7000000, 0);
+    D_8022C860_ovl_27A020.vtrans[0] = D_801D0770.transX + 0x280;
+    D_8022C860_ovl_27A020.vtrans[1] = D_801D0770.transY + 0x1E0;
+    D_8022C860_ovl_27A020.vscale[0] = D_801D0770.scaleX + 0x280;
+    D_8022C860_ovl_27A020.vscale[1] = D_801D0770.scaleY + 0x1E0;
+    GFX27(0xDC080008, (u32)&D_8022C870_ovl_27A020);
+    if (func_801B5934()) {
+        func_801B8F2C((u8 *)&D_801D0770.spr);
+        func_801BB58C((u8 *)&D_801D0770.spr);
+    }
+    func_8020E4A0();
+    func_8020E3A0(1);
+    func_801B574C(D_801CEAA8);
+    func_8022BF68_ovl_27A020();
+    GFX27(0xE7000000, 0);
+    GFX27(0xE7000000, 0);
+    GFX27(0xE3000A01, 0); /* 1-cycle */
+    GFX27(0xE7000000, 0);
+    func_801B0300();
+    func_801B574C(D_801CEAA9);
+    if (func_801B5940()) {
+        func_801B8F2C((u8 *)&D_801D0770.spr2);
+        func_801BB87C((u8 *)&D_801D0770.spr2);
+    }
+    func_8020E3A0(2);
+    func_801B574C(D_801CEAAA);
+    GFX27(0xDC080008, (u32)&D_8022C870_ovl_27A020);
+    GFX27(0xE7000000, 0);
+    GFX27(0xFCFFFFFF, 0xFFFDF6FB); /* shade colour */
+    GFX27(0xE200001C, 0x00504240); /* translucent surface */
+    GFX27(0xFA000000, D_8022C5C0_ovl_27A020[5]);
+    GFX27(0xE7000000, 0);
+    GFX27(0xE44FC3BC, 0);
+    GFX27(0xE1000000, 0);
+    GFX27(0xF1000000, 0);
+    GFX27(0xE7000000, 0);
+    GFX27(0xE7000000, 0);
+    D_800C4BE4 += D_801969B0 - (fb->mtx + D_800C4BE4);
+    D_800E79E0 += D_80197178 - (fb->vtx + D_800E79E0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/27A020", func_80227130_ovl_27A020);
 
