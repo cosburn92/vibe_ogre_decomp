@@ -1,4 +1,5 @@
 #include "common.h"
+#include "tables.h"
 
 /* ovl_06E660 */
 
@@ -539,23 +540,101 @@ INCLUDE_ASM("asm/nonmatchings/6E660", func_80198A4C_ovl_06E660);
 
 INCLUDE_ASM("asm/nonmatchings/6E660", func_80198FA4_ovl_06E660);
 
-INCLUDE_ASM("asm/nonmatchings/6E660", func_80199354_ovl_06E660);
-
 typedef struct {
-    /* 0x00 */ u8 unk00[8];
-    /* 0x08 */ void *p08;
-    /* 0x0C */ u8 unk0C[0xC];
+    /* 0x00 */ u32 id;
+    /* 0x04 */ u32 handle;
+    /* 0x08 */ u32 *p08;
+    /* 0x0C */ u32 kind;
+    /* 0x10 */ u32 unk10;
+    /* 0x14 */ u32 unk14;
     /* 0x18 */ u32 count;
-    /* 0x1C */ u8 unk1C[0xC];
-    /* 0x28 */ void *p28;
-    /* 0x2C */ u8 unk2C[8];
+    /* 0x1C */ u32 unk1C;
+    /* 0x20 */ u32 unk20;
+    /* 0x24 */ u32 unk24;
+    /* 0x28 */ u8 *p28;
+    /* 0x2C */ u8 *p2C;
+    /* 0x30 */ u8 unk30[4];
     /* 0x34 */ void **parts;
-    /* 0x38 */ u8 unk38[8];
+    /* 0x38 */ u8 *p38;
+    /* 0x3C */ u8 *p3C;
     /* 0x40 */ void *p40;
     /* 0x44 */ void *p44;
-    /* 0x48 */ u8 unk48[8];
+    /* 0x48 */ u8 *p48;
+    /* 0x4C */ u8 *p4C;
     /* 0x50 */ void *p50;
 } Model6E;
+
+void *LoadChunk(s32 handle);
+u8 func_8016F5E0(u16 id);
+void bzero(void *, s32);
+
+static inline u16 ModelId(s32 a, s32 b, s32 c, s32 d) {
+    return *(u16 *)(((gClassTable[a].baseClass == b ? c * 2 + a * 4 : c * 2 + b * 4) + d) * 2 + (s32)D_8019A790_ovl_06E660);
+}
+
+#ifdef NON_MATCHING
+/* same size, 6 instructions differ: the original computes the kind (id >> 12) in v1 and the palette table
+ * address in v0, swapped here */
+/* Model header for class a (or its base class b), variant c/d, palette e: looks the model id up in the
+ * id table, loads the model chunk, its four sub-chunks and a work buffer split into five parts */
+Model6E *func_80199354_ovl_06E660(Model6E *out, s32 a, s32 b, s32 c, s32 d, s32 e) {
+    u32 *idx;
+    u32 *hdr;
+    u32 *data;
+    u32 n;
+    s32 rows;
+    s32 ptrs;
+    s32 total;
+
+    out->id = ModelId(a, b, c, d) & 0xFFF;
+    if (out->id == 0) {
+        return NULL;
+    }
+    idx = HMalloc(ChunkSize(0x3B6CD0));
+    LoadChunkRaw(idx, 0x3B6CD0);
+    out->handle = idx[out->id - 1];
+    hdr = HMalloc(ChunkSize(out->handle));
+    out->p08 = hdr;
+    if (hdr == NULL) {
+        HFree(idx);
+        return NULL;
+    }
+    LoadChunkRaw(hdr, out->handle);
+    HFree(idx);
+    out->p44 = LoadChunk(out->p08[0]);
+    out->p40 = LoadChunk(out->p08[1]);
+    data = LoadChunk(out->p08[2]);
+    out->p50 = LoadChunk(out->p08[3]);
+    out->kind = ModelId(a, b, c, d) >> 12;
+    out->unk10 = *(u8 *)((s32)D_8019A794_ovl_06E660 + e);
+    out->unk14 = func_8016F5E0(e);
+    out->count = data[0];
+    out->unk1C = data[1];
+    out->unk20 = data[2];
+    out->unk24 = data[3];
+    n = out->count;
+    rows = (n + 7) & ~7;
+    ptrs = (n * 4 + 7) & ~7;
+    total = ptrs + rows + rows + rows + rows;
+    out->p28 = HMalloc(total);
+    out->p2C = out->p28 + total;
+    out->parts = (void **)out->p28;
+    out->p48 = (u8 *)out->parts + ptrs;
+    out->p3C = out->p48 + rows;
+    out->p4C = out->p3C + rows;
+    out->p38 = out->p4C + rows;
+    bzero(out->parts, ptrs);
+    bzero(out->p3C, rows);
+    bzero(out->p38, rows);
+    _bcopy(data + 8, out->p48, out->count);
+    _bcopy((u8 *)data + data[7], out->p4C, out->count);
+    HFree(data);
+    return out;
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/6E660", func_80199354_ovl_06E660);
+#endif
+
 Model6E *func_80199354_ovl_06E660(Model6E *out, s32 a, s32 b, s32 c, s32 d, s32 e);
 s32 func_80198FA4_ovl_06E660(SpriteEntry *dst, Model6E *m, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
 void func_80199E00_ovl_06E660(SpriteTable *t);
