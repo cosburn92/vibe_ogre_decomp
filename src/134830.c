@@ -80,7 +80,7 @@ s32 func_801E00F0_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 d, s32 x2) {
 }
 
 s32 func_801E0F30_ovl_101CE0(s32 a);
-void func_801E0DBC_ovl_101CE0(u8 *o, s32 *r);
+void func_801E0DBC_ovl_101CE0(Dialog134 *d, s32 *r);
 void func_801E0868_ovl_101CE0(u8 *o, s32 i);
 
 /* Two-choice dialog step: opens dialog id (message window plus a choice window whose two
@@ -104,7 +104,7 @@ s32 func_801E027C_ovl_101CE0(s32 id, s32 a, s32 b, s32 c, s32 sel, s32 d, s32 x2
         D_801ED540_ovl_101CE0.sel = sel != 0;
         D_801ED540_ovl_101CE0.x2 = x2;
         func_801E09DC_ovl_101CE0(&D_801ED540_ovl_101CE0);
-        func_801E0DBC_ovl_101CE0((u8 *)&D_801ED540_ovl_101CE0, r);
+        func_801E0DBC_ovl_101CE0(&D_801ED540_ovl_101CE0, r);
         D_801ED540_ovl_101CE0.win = func_8017BFB0(4, 0, func_801E0594_ovl_101CE0, D_801ED540_ovl_101CE0.x,
                                                   D_801ED540_ovl_101CE0.y, D_801ED540_ovl_101CE0.w,
                                                   D_801ED540_ovl_101CE0.h, D_801ED540_ovl_101CE0.x2,
@@ -437,35 +437,39 @@ void func_801E09DC_ovl_101CE0(Dialog134 *d) {
     }
 }
 
-/* Lays out the two-line prompt of window o: line lengths, and the button and text rects in r */
+/* Lays out the choice window of dialog d: label lengths, and the button and text rects in r
+ * (the label widths w0/w1 are never zeroed before TextLen134 adds to them, as in retail) */
 #ifdef NON_MATCHING
-/* 93/93 instructions, 10 words differ: the original keeps right - 22 - w - 16 as three steps and stores the second length after loading both widths */
-void func_801E0DBC_ovl_101CE0(u8 *o, s32 *r) {
+/* 93/93 instructions, same code: only a0/a1 are swapped between x and the w1/y temporaries */
+void func_801E0DBC_ovl_101CE0(Dialog134 *d, s32 *r) {
     s32 w0;
     s32 w1;
     s32 w;
     s32 x;
     s32 y;
     s32 m;
+    s32 right;
 
-    FIELD(o, s32, 0x58) = TextLen134(FIELD(o, u8 *, 0x44), &w0);
-    FIELD(o, s32, 0x5C) = TextLen134(FIELD(o, u8 *, 0x48), &w1);
-    {
-        s32 right = FIELD(o, s32, 0x14);
-
-        w = w0 < w1 ? w1 : w0;
-        x = right - 0x16 - w - 0x10;
-        y = FIELD(o, s32, 0x18);
-        m = (x + right) / 2;
-        *r++ = m - 2;
-        *r++ = y + 1;
-        *r++ = m + 2;
-        *r++ = y + 3;
-        *r++ = x;
-        *r++ = y + 1;
-        *r++ = right;
-        *r = y + 0x25;
+    d->len0 = TextLen134((u8 *)d->opt0, &w0);
+    d->len1 = TextLen134((u8 *)d->opt1, &w1);
+    right = d->w2;
+    x = right - 0x16;
+    w = w0;
+    if (w < w1) {
+        w = w1;
     }
+    x -= w;
+    x -= 0x10;
+    y = d->h2;
+    m = (x + right) / 2;
+    *r++ = m - 2;
+    *r++ = y + 1;
+    *r++ = m + 2;
+    *r++ = y + 3;
+    *r++ = x;
+    *r++ = y + 1;
+    *r++ = right;
+    *r = y + 0x25;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E0DBC_ovl_101CE0);
