@@ -447,7 +447,65 @@ void func_801A4A38_ovl_0EBBB0(void) {
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4A38_ovl_0EBBB0);
 #endif
 
+f64 func_8009C9A0(f64);
+extern u32 D_8018F530;
+extern u8 D_8018F557;
+extern u8 D_8018F558;
+extern u8 D_8018F559;
+
+/* Fog for the scene: brightness 0.35 * sin(angle 0x12C) + 0.55 clamped to 0.55..0.9 scales the
+ * base fog colour (channels scaled by D_8018F530 / 65536, at least 0x20); fog range D_8018F542..D_8018F544 */
+#ifdef NON_MATCHING
+/* same size; in the fog colour word the green and blue channels swap v1/a0 and the blue shift is scheduled later */
+void func_801A4CE0_ovl_0EBBB0(void) {
+    f32 f;
+    u32 r;
+    u32 g;
+    u32 b;
+    s32 fm;
+    s32 fo;
+    u8 cr;
+    u8 cg;
+    u8 cb;
+
+    f = func_8009C9A0(FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C) * 0.017453292519943295) * 0.35f + 0.55f;
+    if (f > 0.9f) {
+        f = 0.9f;
+    } else if (f < 0.55f) {
+        f = 0.55f;
+    }
+    r = D_8018F557 * f;
+    g = D_8018F558 * f;
+    b = D_8018F559 * f;
+    fm = 128000 / (D_8018F544 - D_8018F542);
+    fo = (500 - D_8018F542) * 256 / (D_8018F544 - D_8018F542);
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xE7000000; _g->w1 = 0; }
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xDB080000; _g->w1 = (fm << 16) | (fo & 0xFFFF); }
+    {
+        Gfx *_g = D_800E9BA0++;
+        u32 w;
+        _g->w0 = 0xF8000000;
+        cr = (r * D_8018F530) >> 16;
+        if (cr < 0x20) {
+            cr = 0x20;
+        }
+        w = cr << 24;
+        cg = (g * D_8018F530) >> 16;
+        if (cg < 0x20) {
+            cg = 0x20;
+        }
+        cb = (b * D_8018F530) >> 16;
+        w |= cg << 16;
+        if (cb < 0x20) {
+            cb = 0x20;
+        }
+        _g->w1 = w | (cb << 8) | 0xFF;
+    }
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xE7000000; _g->w1 = 0; }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4CE0_ovl_0EBBB0);
+#endif
 
 #include "gbi_ultra.h"
 typedef struct {
