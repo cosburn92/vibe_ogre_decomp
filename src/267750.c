@@ -821,7 +821,8 @@ void func_802143B4_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots) {
 }
 
 #ifdef NON_MATCHING
-/* 81 vs 84: after the end-marker test the original recomputes &k[j] and re-reads its frame; GCC here reuses the first load */
+/* 83 vs 84, written like func_802143B4: the original hoists the end-marker -1 into s6 before the
+ * slot loop (shifting the saved registers by one); with kind and add in the loop GCC keeps it inside */
 void func_802144EC_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots, u16 kind, s32 add) {
     u32 i;
 
@@ -837,16 +838,20 @@ void func_802144EC_ovl_25EE90(s32 frame, Set38 *mdl, s32 *slots, u16 kind, s32 a
                     s32 j = 0;
 
                 loop:
-                    if (k[j].frame != -1 || k[j].val != 0) {
-                        if (frame == k[j].frame) {
+                    if (k[j].frame == -1 && k[j].val == 0) {
+                        j--;
+                    } else {
+                        s32 c = j;
+
+                        if (frame == k[c].frame) {
                             goto found;
-                        }
-                        if (frame >= k[j].frame) {
+                        } else if (frame < k[j].frame) {
+                        j--;
+                        } else {
                             j++;
                             goto loop;
                         }
                     }
-                    j--;
                     if (j < 0) {
                         j = 0;
                     }
