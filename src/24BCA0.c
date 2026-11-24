@@ -415,7 +415,7 @@ u8 *func_801F847C_ovl_24BCA0(AnimReq *r, u8 x) {
     return o + 0x1C;
 }
 
-u8 *func_801F8518_ovl_24BCA0(AnimReq *r, s32 x) {
+inline u8 *func_801F8518_ovl_24BCA0(AnimReq *r, s32 x) {
     u8 *o = D_8020974C_ovl_24BCA0[r->kind & 3](r->id, 8, x, 8, x);
 
     func_801F81C4_ovl_24BCA0(o, r->flags);
@@ -663,8 +663,6 @@ u8 *func_801F9060_ovl_24BCA0(u8 c, AnimReq *r, s32 i) {
 }
 
 /* As func_801F85C0 for the timed spawners (D_8020974C, duration c): kind 0 places, kind 2 orients */
-#ifdef NON_MATCHING
-/* 128/128: in the placement case the spawned object lands in a2 instead of a0 */
 u8 *func_801F91BC_ovl_24BCA0(u8 *a, u8 *b, s32 c) {
     f32 *pos = (f32 *)a;
     AnimReq *r = (AnimReq *)b;
@@ -676,9 +674,7 @@ u8 *func_801F91BC_ovl_24BCA0(u8 *a, u8 *b, s32 c) {
 
     switch ((u8)k) {
     case 0:
-        o = D_8020974C_ovl_24BCA0[k](r->id, 8, c, 8, c);
-        func_801F81C4_ovl_24BCA0(o, r->flags);
-        m = o + 0x1C;
+        m = func_801F8518_ovl_24BCA0(r, c);
         ((f32 *)m)[0] = pos[0];
         ((f32 *)m)[1] = pos[1];
         ((f32 *)m)[2] = pos[2];
@@ -702,9 +698,6 @@ u8 *func_801F91BC_ovl_24BCA0(u8 *a, u8 *b, s32 c) {
     }
     return NULL;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F91BC_ovl_24BCA0);
-#endif
 
 void func_801F93BC_ovl_24BCA0(u8 a, u8 *b, s32 c) {
     u8 tmp[16];
