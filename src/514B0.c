@@ -599,39 +599,18 @@ void func_8017C384_ovl_040E80(Win514 *w) {
 }
 
 /* Window fill render state with alpha a (opaque when 0xFF) */
-#ifdef NON_MATCHING
-/* display list pointer/global store scheduling differs around the alpha branch */
+/* prim colour (255, 255, 255, a), no perspective, point filtering, opaque or translucent render mode, combine */
 void func_8017C4B4_ovl_040E80(u32 a) {
-    Gfx *g;
-    u32 w0;
-    u32 w1;
-
-    g = D_800E9BA0++;
-    g->w0 = 0xFA000000;
-    g->w1 = a | 0xFFFFFF00;
-    g = D_800E9BA0++;
-    g->w0 = 0xE3000C00;
-    g->w1 = 0;
-    g = D_800E9BA0++;
-    g->w0 = 0xE3001201;
-    g->w1 = 0;
+    GFX514(0xFA000000, a | 0xFFFFFF00);
+    GFX514(0xE3000C00, 0);
+    GFX514(0xE3001201, 0);
     if (a == 0xFF) {
-        w0 = 0xE200001C;
-        w1 = 0x0F0A7008;
+        GFX514(0xE200001C, 0x0F0A7008);
     } else {
-        w0 = 0xE200001C;
-        w1 = 0x00504240;
+        GFX514(0xE200001C, 0x00504240);
     }
-    g = D_800E9BA0++;
-    g->w0 = w0;
-    g->w1 = w1;
-    g = D_800E9BA0++;
-    g->w0 = 0xFC119623;
-    g->w1 = 0xFF2FFFFF;
+    GFX514(0xFC119623, 0xFF2FFFFF);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C4B4_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C584_ovl_040E80);
 
