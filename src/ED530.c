@@ -1348,88 +1348,94 @@ s32 func_801A7D44_ovl_0EBBB0(f32 a, f32 b) {
     return 1;
 }
 
-/* Value of a keyframe curve at time t */
-#ifdef NON_MATCHING
-/* Same size; t and the end-segment length / loop bound swap $f4 and $f14 (and the previous key's
- * time takes $f4 instead of $f10) */
+/* Value of a keyframe curve at time t (same code as 267750 func_80212DE0). One float x serves
+ * as the segment length, the loop bounds and the Hermite offset */
 f32 func_801A7D9C_ovl_0EBBB0(Curve *c, f32 t) {
     CurveKey *k;
-    CurveKey *last;
-    f32 kt;
-    f32 kv;
-    f32 kin;
-    f32 pt;
-    f32 pv;
-    f32 pout;
-    f32 slope;
-    f32 period;
+    CurveKey *p;
     s32 lo;
     s32 hi;
     s32 mid;
-    f32 dt;
+    f32 x;
+    f32 slope;
+    f32 period;
+    f32 t1;
+    f32 v1;
+    f32 in1;
+    f32 t0;
+    f32 v0;
+    f32 out0;
+    f32 inv;
+    f32 s2;
+    f32 s3;
+    f32 inv2;
+    f32 h1;
+    f32 h2;
+    f32 h10;
+    f32 h11;
 
     if (c == NULL || c->n == 0) {
         return 0.0f;
     }
     if (t < c->keys[0].t) {
         switch (c->pre) {
-            case 0:
+        case 0:
+            return c->keys[0].v;
+        case 1:
+            if (c->n == 1) {
                 return c->keys[0].v;
-            case 1:
-                if (c->n == 1) {
-                    return c->keys[0].v;
-                }
-                k = c->keys;
-                dt = k[1].t - k[0].t;
-                if (c->slopeMode == 1 && dt != 0.0) {
-                    slope = (k[1].v - k[0].v) / dt;
-                } else {
-                    slope = k[0].in;
-                }
-                return k[0].v - (k[0].t - t) * slope;
-            case 2:
-                dt = c->keys[0].t;
-                if (c->n == 1) {
-                    return c->keys[0].v;
-                }
-                period = c->keys[c->n - 1].t - dt;
-                while (t < dt) {
-                    t += period;
-                }
-                break;
-            default:
-                return 0.0f;
+            }
+            k = c->keys;
+            x = k[1].t - k[0].t;
+            if (c->slopeMode == 1 && x != 0.0) {
+                slope = (k[1].v - k[0].v) / x;
+            } else {
+                slope = k[0].in;
+            }
+            return k[0].v - (k[0].t - t) * slope;
+        case 2:
+            x = c->keys[0].t;
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            period = c->keys[c->n - 1].t - x;
+            while (t < x) {
+                t += period;
+            }
+            break;
+        default:
+            return 0.0f;
         }
     }
     if (c->keys[c->n - 1].t <= t) {
         switch (c->post) {
-            case 0:
-                return c->keys[c->n - 1].v;
-            case 1:
-                if (c->n == 1) {
-                    return c->keys[0].v;
-                }
-                k = &c->keys[c->n - 2];
-                last = &c->keys[c->n - 1];
-                dt = last->t - k->t;
-                if (c->slopeMode == 1 && dt != 0.0) {
-                    slope = (last->v - k->v) / dt;
-                } else {
-                    slope = last->out;
-                }
-                return last->v + (t - last->t) * slope;
-            case 2:
-                dt = c->keys[c->n - 1].t;
-                if (c->n == 1) {
-                    return c->keys[0].v;
-                }
-                period = dt - c->keys[0].t;
-                while (dt < t) {
-                    t -= period;
-                }
-                break;
-            default:
-                return 0.0f;
+        case 0:
+            return c->keys[c->n - 1].v;
+        case 1:
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            k = &c->keys[c->n - 2];
+            p = &c->keys[c->n - 1];
+            x = p->t - k->t;
+            if (c->slopeMode == 1 && x != 0.0) {
+                slope = (p->v - k->v) / x;
+            } else {
+                slope = p->out;
+            }
+            return p->v + (t - p->t) * slope;
+        case 2:
+            x = c->keys[c->n - 1].t;
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            period = x - c->keys[0].t;
+            while (x < t) {
+                t -= period;
+            }
+            break;
+        default:
+            return 0.0f;
         }
     }
     lo = 1;
@@ -1444,39 +1450,38 @@ f32 func_801A7D9C_ovl_0EBBB0(Curve *c, f32 t) {
         }
     }
     k = &c->keys[lo];
-    kt = k->t;
-    if (t == kt) {
+    t1 = k->t;
+    if (t == t1) {
         return k->v;
     }
-    kv = k->v;
-    kin = k->in;
+    v1 = k->v;
+    in1 = k->in;
     k--;
-    pt = k->t;
-    pv = k->v;
-    pout = k->out;
+    t0 = k->t;
+    v0 = k->v;
+    out0 = k->out;
     switch (k->interp) {
-        case 0:
-            return pv;
-        case 1:
-            return pv + (kv - pv) * (t - pt) / (kt - pt);
-        case 2: {
-            f32 inv = 1.0 / (kt - pt);
-            f32 s = t - pt;
-            f32 s2 = s * s;
-            f32 inv2 = inv * inv;
-            f32 a = s2 * s * inv2; /* u^3 * d */
-            f32 h2 = 2.0 * a * inv; /* 2u^3 */
-            f32 h3 = s2 * 3.0 * inv2; /* 3u^2 */
-            f32 b = s2 * inv; /* u^2 * d */
-
-            return (h2 - h3) * pv + pv + kv * (-h2 + h3) + pout * (a - b - b + s) + kin * (a - b);
-        }
+    case 0:
+        return v0;
+    case 1:
+        return v0 + (v1 - v0) * (t - t0) / (t1 - t0);
+    case 2:
+        inv = 1.0 / (t1 - t0);
+        x = t - t0;
+        s2 = x * x;
+        s3 = s2 * x;
+        inv2 = inv * inv;
+        s3 *= inv2;
+        h1 = 2.0 * s3 * inv;
+        h2 = 3.0 * s2 * inv2;
+        s2 *= inv;
+        h11 = s3 - s2;
+        h10 = h11 - s2 + x;
+        return (h1 - h2) * v0 + v0 + v1 * (-h1 + h2) + out0 * h10 + in1 * h11;
+    default:
+        return 0.0f;
     }
-    return 0.0f;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7D9C_ovl_0EBBB0);
-#endif
 
 
 /* Loads the two scrolling 32x32 water textures (tiles 0 and 1, both 0x02093576 entry 4) at
