@@ -1055,7 +1055,7 @@ static inline void AttachPart(u8 *p, u8 *o) {
     s8 hand[6];
     s32 k;
 
-    if ((p != NULL) & (o != NULL)) {
+    if (p != NULL && o != NULL) {
         u8 *owner = FIELD(o, u8 *, 0x40);
 
         if (func_801C8C90_ovl_1F0A30(owner) == 0 || FIELD(owner, u8 *, 4) != o) {
