@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 /* ovl_286BD0 (28A7B0) */
@@ -63,8 +65,6 @@ extern Sel28 D_8023DF10_ovl_286BD0;
 extern u8 D_80197810[];
 extern u8 D_8023E5A0_ovl_286BD0[];
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void bzero(void *p, s32 n);
 u8 *func_80227A18(s32 id, s32 n);
 void func_80238EC4_ovl_286BD0(void *p);
@@ -107,8 +107,6 @@ extern void *D_8018FC0C;
 extern u8 D_8022A980;
 extern u8 D_800EB0B0[];
 
-void *LoadChunkRaw(void *dst, u32 handle);
-void *LoadChunk(u32 handle);
 void *func_8016FBE0(u8 cls, u8 variant, void *out);
 void func_800EA6B0();
 void func_80227778(s32 a);
@@ -1631,9 +1629,6 @@ void func_80238910_ovl_286BD0(u8 *dst, u8 n, u8 b) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80238910_ovl_286BD0);
 #endif
 
-void *func_80071C04(s32 size);
-s32 ChunkSize(u32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 
 /* Loads text id (LZ, from directory chunk 0x018855FE) and splits it at CR LF into lines (o + 4);

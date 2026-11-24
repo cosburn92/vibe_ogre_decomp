@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 260DA0 */
 
@@ -7,7 +9,6 @@ extern s32 D_80220D48_ovl_25EE90;
 extern s32 D_80220D44_ovl_25EE90;
 extern s16 D_80220D40_ovl_25EE90;
 
-void *HMalloc(s32 size);
 typedef struct {
     /* 0x0 */ u16 h0;
     /* 0x2 */ u16 kind;
@@ -28,7 +29,6 @@ typedef struct {
     /* 0x8 */ u8 unk8[4];
     /* 0xC */ Rec10b *recs;
 } RecSet;
-void HFree(void *p);
 void *func_8020BF5C_ovl_25EE90(s32 kind, s32 id, s32 c);
 void func_8020BF94_ovl_25EE90(void *p);
 CacheEnt *func_8020BFE8_ovl_25EE90(void);
@@ -52,8 +52,6 @@ void func_8020C22C_ovl_25EE90(void) {
 }
 
 extern s32 D_80220210_ovl_25EE90[];
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
 
 /* Loads entry k (> 0) of index chunk D_80220210[set] into the shared buffer unless it is already
  * there; hangs on a bad index or size */
@@ -86,7 +84,6 @@ inline void func_8020C250_ovl_25EE90(u16 set, s32 k) {
     }
 }
 
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 
 /* Loads entry id of resource set `kind` (func_8020C250) and returns an LZ-decoded copy */

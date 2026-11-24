@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
 /* 267750 */
@@ -51,7 +52,6 @@ typedef struct {
     /* 0x8 */ u8 unk8[4];
     /* 0xC */ Rec10 *recs;
 } Set38;
-void HFree(void *p);
 void func_8020C9B0_ovl_25EE90(s16 a);
 void func_8020C130_ovl_25EE90(s32 a, s16 b, s32 c);
 s32 func_8020D174_ovl_25EE90();
@@ -70,7 +70,6 @@ void *func_8020C644_ovl_25EE90(s32 id);
 u16 func_8020CC00_ovl_25EE90(void *mdl);
 void func_80213980_ovl_25EE90(void *mdl, void *mtx, void *slots);
 void func_8021404C_ovl_25EE90(void *mdl, void *mtx, void *slots);
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
 /* --- end decls --- */

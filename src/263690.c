@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 263690 */
 
@@ -14,8 +15,6 @@ typedef struct {
 extern Slot263 *D_80220E14_ovl_25EE90;
 extern u16 D_80220E10_ovl_25EE90;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void bzero(void *p, s32 n);
 void func_8020C074_ovl_25EE90(s32 h);
 s32 func_8020CA58_ovl_25EE90(u16 id);

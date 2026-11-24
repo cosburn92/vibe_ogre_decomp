@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
@@ -48,7 +50,6 @@ void *func_8017B5E0_ovl_040E80(void) {
 extern Gfx *D_800E9BA0;
 extern u8 D_80187020_ovl_040E80;
 extern s32 D_801977C8_ovl_040E80;
-void HFree(void *p);
 void func_8016C814_ovl_040E80(u8 *p);
 void func_801A101C(void);
 void func_801B7FA0(u8 *p);
@@ -82,7 +83,6 @@ extern u8 ovl_071280_ROM_END[];
 extern u8 ovl_071280_VRAM[];
 void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
-void RomRead(void *rom, void *dst, s32 size);
 void bzero(void *p, s32 n);
 void func_80073164(u8 relative, s16 a, s16 b, s16 c, s16 d, s16 e, s16 f);
 void func_8019A7A0(void);
@@ -301,7 +301,6 @@ void func_8017BD48_ovl_040E80(void) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-Node *HMallocBack(s32 size);
 void func_800987E0(void *m); /* guMtxIdent */
 void *func_8009DE40(s32 id);
 void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
@@ -1081,7 +1080,6 @@ INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F554_ovl_040E80);
 
-void *LoadChunk(s32 id);
 
 /* Copies line `line` (0-based, CR LF separated) of Shift-JIS text chunk id to dst, ending it with
  * CR LF; returns the end of the copied text */

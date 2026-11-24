@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 261C90 */
 
@@ -18,8 +19,6 @@ extern u16 D_80220D50_ovl_25EE90;
 extern u32 D_80220D54_ovl_25EE90;
 extern Block26 *D_80220D58_ovl_25EE90;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void func_801ADB00(void *p);
 void func_801ADADC(void *p);
 void func_801ADADC(void *p);

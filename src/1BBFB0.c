@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 typedef struct { u8 b[0x76]; } ScriptObj;   /* 4 x 0x76 at D_8022A2E8 */
 typedef struct { s32 used; u8 b[0x58]; } ScriptRes; /* 4 x 0x5C at D_8022A4E0 */
@@ -80,7 +82,6 @@ extern u8 D_8022A820_ovl_1BA050;
 extern u8 D_80229F9C_ovl_1BA050[];
 extern u8 D_8022A834_ovl_1BA050;
 extern s16 D_8022A832_ovl_1BA050;
-void HFree(void *p);
 void func_80220F64_ovl_1BA050(u16 a, u8 b);
 u8 *func_8017C074(u16 a, u8 b, void *fn, s16 c, s16 d, s16 e, s16 f);
 void func_80229BD4_ovl_1BA050(void);
@@ -90,8 +91,6 @@ extern ScriptObjFn D_8022A020_ovl_1BA050[];
 extern void *D_8022A260_ovl_1BA050[];
 extern void *D_8022A654_ovl_1BA050;
 extern u8 D_8022A658_ovl_1BA050[];
-void *HMalloc(s32 size);
-void *LoadChunk(s32 id);
 void _bcopy(void *src, void *dst, s32 n);
 typedef struct {
     u32 w0;
@@ -108,8 +107,6 @@ extern s16 D_8022A72A_ovl_1BA050;
 void func_80227234_ovl_1BA050(u8 *p);
 void func_80226E8C_ovl_1BA050(ScriptRes *r);
 void func_802292DC_ovl_1BA050(s16 *p);
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
 void *func_8017BFB0(u16 kind, u8 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 void func_80229B98_ovl_1BA050();
 extern u8 D_8022A821_ovl_1BA050;

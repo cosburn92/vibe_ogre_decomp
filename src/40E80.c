@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* ovl_040E80 (40E80): unit roster and strategy helpers */
 
@@ -300,11 +302,9 @@ typedef struct {
     u32 id[3];
 } List3;
 extern const List3 D_8018FEAC_ovl_040E80;
-void *LoadChunk(s32 id);
 s32 func_8009C7CC(void); /* rand */
 void func_8009C550(char *dst, char *src);
 s32 func_8009C5E0(char *a, char *b);
-void HFree(void *p);
 
 /* Names character idx (side 0: player roster, else enemy table): generic classes (< 0x51 and
  * 0x72-0x74) draw a random name from name list c[0x14] until it is unique among the

@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* ROM chunk loader. Chunks are addressed by handle: the table at ROM 0x594280 holds each
  * chunk's size (at handle & 0x0FFFFFFF) and the data follows at 0x594284 + handle. */
@@ -10,11 +12,6 @@ extern u32 gChunkSizeCacheHandle;
 extern u32 D_800C47E0;
 
 void PiDmaRead(u32 rom_addr, void *buf_ptr, u32 size);
-void *HMalloc(s32 size);
-void *HMallocBack(s32 size);
-void *HFree(void *p);
-void *func_80071C04(s32 size);
-u32 ReadU32BE(u8 *p);
 u32 DecodeLZ(u8 *dst, u8 *src);
 
 /* DMA from ROM; reads shorter than 16 bytes go through an aligned stack buffer */

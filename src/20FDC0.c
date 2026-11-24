@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "nusys.h"
 
 /* 20FDC0 */
@@ -16,13 +18,9 @@ extern Seq20F *D_801D06E0_ovl_1F0A30;
 
 void func_801CCA5C_ovl_1F0A30();
 void bzero(void *p, s32 n);
-void *HFree(void *p);
 void nuGfxTaskAllEndWait(void);
 s32 func_801CE38C_ovl_1F0A30(void);
 extern u8 *D_801D06D8_ovl_1F0A30;
-s32 ChunkSize(s32 id);
-void *HMalloc(s32 size);
-void *LoadChunkRaw(void *dst, s32 id);
 extern u8 D_800E7A0C;
 extern void *D_800C4BB8;
 extern void *D_800A8204[3];

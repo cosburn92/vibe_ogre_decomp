@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 extern u8 D_800EB0B0[];
 extern s32 D_8022A8A8_ovl_281860[];
@@ -28,7 +30,6 @@ extern StFC10 *D_8018FC10;
 extern u8 *D_8022A974_ovl_281860;
 void func_800EA838(void *p);
 void func_800EA884(s32 a);
-void HFree(void *p);
 void MusSetMasterVolume(s32 flags, s32 volume);
 
 
@@ -72,7 +73,6 @@ void func_800EA86C(s32 ch, s32 v);
 void func_800EA89C(s32 ch, s32 v);
 void func_800EA8B4(s32 ch, s32 v);
 extern s32 D_800EB2E0[];
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void func_8022681C_ovl_281860(s32 a, s32 b);
 extern u8 D_801976DC;
@@ -414,12 +414,8 @@ typedef struct {
     s32 size;
 } Arc16_282;
 extern Arc16_282 D_8022ABA8_ovl_281860;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
-void *func_80071C04(s32 size);
 
 /* Loads entry k of the index chunk id and unpacks it (LHa archive or LZ) */
 #ifdef NON_MATCHING

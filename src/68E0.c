@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "scene.h"
 extern u16 D_800C49D0;
 extern void *D_800AF0B0;
@@ -30,7 +31,6 @@ void func_80173BA0(void *p);
 void *func_80173B60(void *p);
 void osSyncPrintf(const char *fmt, ...);
 void _bcopy(const void *src, void *dst, s32 n);
-void HFree(void *p);
 
 
 
@@ -41,7 +41,6 @@ extern s32 D_800C4C20;
 extern u16 D_800C4C26;
 extern u8 D_800E7A32;
 void func_80077F88(s32 i);
-void *HMallocBack(s32 size);
 /* --- end decls --- */
 
 /* Scene system init: clears the six scene slots and the input state, seeds the random generator */

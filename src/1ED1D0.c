@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "nusys.h"
 
 /* 1ED1D0 */
@@ -39,7 +40,6 @@ extern u32 D_800A9E70;
 extern volatile u32 D_800E79A4;
 extern u8 D_801B9998_ovl_1CE070[];
 void BgDecodeHu(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 extern u64 D_8009F540[];
 extern u64 jpegTextStart[];

@@ -1,8 +1,8 @@
 #include "common.h"
+#include "heap.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
-void HFree(void *p);
 s32 func_801C8AC0(s32 a);
 s32 func_801C8AA4(s32 a);
 s32 func_801CA1C4(s32 lane, s32 row);
@@ -328,7 +328,6 @@ typedef struct {
 f32 func_8020A3C8(f32 *v);
 void func_8020A418(f32 *v);
 void func_80217E1C(s32 n, f32 *a, f32 *b, f32 *out);
-void *HMalloc(s32 size);
 
 /* Sets up curve c from `from` to `to` with n samples: unit direction, length, and the distance and
  * height keys (height arc * h, rising to 20 at the end when flag 0x10) */

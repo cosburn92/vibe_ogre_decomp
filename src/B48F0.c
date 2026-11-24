@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
@@ -43,7 +44,6 @@ void func_801CC5B4_ovl_087200(u8 *w, s32 a, s32 b, s32 c, s32 d);
 void func_801C67B0_ovl_087200(u16 sq);
 void func_801B4AF4_ovl_087200();
 void func_801B577C_ovl_087200();
-void HFree(void *p);
 s32 func_801CC3B8_ovl_087200(s32 id);
 void func_801C0798_ovl_087200(s16 a, s32 b);
 void func_801A43F4_ovl_087200();

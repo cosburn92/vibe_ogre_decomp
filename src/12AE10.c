@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* ovl_101CE0 (12AE10): map/stage logic (chaos frame, inventory) */
 
@@ -91,7 +93,6 @@ extern void *D_801EB28C_ovl_101CE0;
 
 void func_80079618();
 void func_8017C384(s32 h);
-void *HFree(void *p);
 void func_801B2D2C_ovl_101CE0(MapUnit *u);
 typedef struct {
     /* 0x0 */ u16 id;
@@ -1309,8 +1310,6 @@ void func_801DDDA8_ovl_101CE0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DDDF8_ovl_101CE0);
 
-void *LoadChunk(s32 id);
-void *HMalloc(s32 size);
 void _bcopy(void *src, void *dst, s32 n);
 s32 LoadAsset(u32 handle, ...);
 s32 func_8017BFB0(s32 a, s32 b, void *func, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3);

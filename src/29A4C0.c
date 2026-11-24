@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
@@ -33,8 +34,6 @@ extern Battle29 *D_8022A974;
 extern s8 D_801CFC70;
 extern u8 D_801D082C;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void func_8022BB58_ovl_29A4C0(s32 a, s32 b);
 void func_801C22E8(s32 a);
 #define FLD(p, T, off) (*(T *)((u8 *)(p) + (off)))

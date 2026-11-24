@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 2A21E0 */
 
@@ -24,18 +26,11 @@ extern Rec2A *D_802395B0_ovl_29A4C0;
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 extern u8 *D_8022A974;
 
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
-void HFree(void *p);
 void nuGfxTaskAllEndWait(void);
 Rec2A *func_80232C28_ovl_29A4C0(s32 id, s32 kind);
 void func_801BFBA0(void *p);
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void *LoadChunk(s32 id);
 void _bcopy(void *src, void *dst, s32 n);
-void *func_80071C04(s32 size);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 s32 func_801C2304(void);
 void *func_801C15E0(u8 *img, u32 pal, u8 *palData, u8 *out, s32 flag);

@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 27A020 */
 
@@ -50,7 +52,6 @@ extern u16 D_8022D0F0_ovl_27A020;
 extern Task27 *D_8022D148_ovl_27A020;
 extern Obj27 *D_8022CB20_ovl_27A020;
 
-void *HFree(void *p);
 s32 func_8016E1DC(s32 a, s32 b);
 void func_80226980_ovl_27A020(void);
 void func_801CBF44(void);
@@ -71,13 +72,11 @@ extern void *D_8022D120_ovl_27A020;
 extern s32 D_800C6D60;
 extern s8 *D_800C47F0[];
 extern u16 D_800E9BE4[];
-void *HMalloc(s32 size);
 void func_8017BED4(void);
 void func_8022A95C_ovl_27A020(Obj27 *o);
 void func_8022A750_ovl_27A020(Obj27 *o);
 void func_8022AAA4_ovl_27A020(Obj27 *o);
 void func_8022AC5C_ovl_27A020(Obj27 *o);
-void *LoadChunk(s32 id);
 void func_8017BDC0(void);
 typedef struct {
     s16 *list;

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* SRAM save system: a RAM copy of the whole 32KB SRAM, two save slots, a suspend save and a
  * common block, each with a "QuestOG3" signature and two checksums. */
@@ -40,8 +41,6 @@ extern u8 D_800A83BC;  /* cache dirty */
 extern u8 D_800AEFD0[3];
 extern u8 nuScPreNMIFlag;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void bzero(void *p, s32 n);
 void _bcopy(void *src, void *dst, s32 n);
 s32 _bcmp(void *a, void *b, s32 n);

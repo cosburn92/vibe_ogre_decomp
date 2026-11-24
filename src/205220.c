@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 20-entry cache keyed by id (0 = free), 0xB0 bytes each. */
 typedef struct {
@@ -43,8 +45,6 @@ extern u8 D_801CEEE0_ovl_1F0A30[]; /* event length by type */
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 void func_800EA6B0(void *ch, s32 a, s32 b);
 void func_800EA604(void *ch, s32 sound);
-void *HMalloc(s32 size);
-void HFree(void *p);
 void bzero(void *p, s32 size);
 
 
@@ -523,11 +523,7 @@ void func_801C3D64_ovl_1F0A30(void) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 ChunkSize(s32 id);
-u32 *LoadChunk(s32 id);
-void LoadChunkRaw(void *dst, s32 id);
 void _bcopy(void *src, void *dst, s32 n);
-void *func_80071C04(s32 size);
 u8 *func_8009DF48(s32 id);
 
 /* Loads model id with variant v into the cache (nothing to do when already present): its chunk

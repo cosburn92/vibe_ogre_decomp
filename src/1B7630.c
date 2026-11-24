@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 1B7630 */
 
@@ -13,10 +15,6 @@ typedef struct {
 extern TblHdr *D_8021C9E8_ovl_1B2670;
 extern u8 *D_8021C9E0_ovl_1B2670;
 extern u8 *D_8021C9E4_ovl_1B2670;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void *HMalloc(s32 size);
-void HFree(void *p);
 void bzero(void *p, s32 n);
 void _bcopy(const void *src, void *dst, s32 n);
 void *func_8021B5EC_ovl_1B2670(s32 a, s32 b, s32 c, s32 d, s32 e);

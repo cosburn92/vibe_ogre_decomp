@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 2B8610 */
 
@@ -16,7 +17,6 @@ void func_8024387C_ovl_2AE3C0(u8 *u, s32 i, s32 a, s32 id, s32 b, u8 slot, s16 c
 extern u8 *D_801CE8C0;
 extern u8 D_8022A7F0;
 
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void func_801BE71C(void);
 void func_801C1D90(void);

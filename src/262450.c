@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* Task records (0x9C bytes) in a pool with a free list (D_80220E8E = first free index). */
 typedef struct Task {
@@ -23,7 +24,6 @@ extern Task *D_80220D84_ovl_25EE90;
 extern Task *D_80220D88_ovl_25EE90;
 extern Task *D_80220D8C_ovl_25EE90;
 extern Task *D_80220FE8_ovl_25EE90; /* current task */
-void HFree(void *p);
 Task *func_8020DD60_ovl_25EE90(void (*fn)(), Task *t);
 
 
@@ -36,7 +36,6 @@ void func_8020DCAC_ovl_25EE90(Task *t, u16 a);
 /* --- end decls --- */
 
 extern s32 D_80220D80_ovl_25EE90;
-void *HMalloc(s32 size);
 /* Allocates the task pool (24 tasks plus a 24-entry pointer list) and chains the free list */
 void func_8020D8A0_ovl_25EE90(void) {
     s32 i;

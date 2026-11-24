@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 283DF0 */
 
@@ -8,7 +10,6 @@ extern void *D_8022A958_ovl_281860;
 extern void *D_8022A95C_ovl_281860;
 extern u16 D_800C4B28;
 
-void *HFree(void *p);
 void func_80227FD8_ovl_281860(s32 a, s32 b);
 extern u8 *D_8023DE34;
 extern u8 D_80197778[];
@@ -43,19 +44,11 @@ s32 func_80227E20_ovl_281860(void)
   return D_8022A958_ovl_281860 == ((void *) 0);
 }
 
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void *func_80071C04(s32 size);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 extern u8 D_801976DA;
 
 /* Result of stage k's script: its last word, 0xFF0000nn for an ending code (some codes also set
  * D_801976DA = 24); 0 otherwise */
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void *func_80071C04(s32 size);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 extern u8 D_801976DA;
 
@@ -108,10 +101,6 @@ s32 func_80227E44_ovl_281860(s32 k) {
     return 0;
 }
 
-void *HMalloc(s32 size);
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 extern u16 D_80196F60[];
 

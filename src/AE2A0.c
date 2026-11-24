@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* AE2A0 */
 

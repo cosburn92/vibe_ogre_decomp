@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 29C950 */
 
@@ -64,7 +66,6 @@ void func_80227FD8(s32 a, s32 b);
 void func_8023998C(void);
 void func_8023A98C(void);
 void func_80227010(void);
-void *HFree(void *p);
 void func_801CCA5C();
 u8 func_80233968_ovl_29A4C0(s32 a, s16 b, s32 c, u8 d, u8 *r, u8 *g, u8 *bl);
 u8 func_8019F174(u8 a);
@@ -72,10 +73,6 @@ u8 func_801C1AA4(s32 a, s32 b, u8 c, s16 d, s16 e, s32 f, u8 *r, u8 *g, u8 *bl);
 void func_8019F2C0(u8 a);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 extern s16 *D_8022A97C;
-void *HMalloc(s32 size);
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-u32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_802329B0_ovl_29A4C0(void);
 void func_8019F354(u8 a);
@@ -1336,7 +1333,6 @@ s16 func_80231238_ovl_29A4C0(BUnit *u, f32 x, f32 z, f32 tx, f32 tz) {
     return r;
 }
 
-void *HMalloc(s32 size);
 
 /* Starts moving unit i from (x0, z0) (-1, -1 = where it stands) to (x1, z1): frames == 1 jumps
  * there; otherwise the per-frame step goes to objs[i], over `frames` frames, or at `speed` */

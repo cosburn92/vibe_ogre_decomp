@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 151F40 */
 
@@ -35,8 +37,6 @@ extern u8 D_8018F480;
 void func_80200F70_ovl_14EBE0(void *pal, void *img, u16 w, u16 h, u16 mode);
 void func_80200DD0_ovl_14EBE0(void *a, s32 b, s32 c);
 void func_80179018(void);
-void *LoadChunk(u32 handle);
-void *HFree(void *p);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 extern u8 *D_80213778_ovl_14EBE0;
 extern u8 *D_80213670_ovl_14EBE0;

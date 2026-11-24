@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* ovl_281860: scene state functions */
 
@@ -40,7 +42,6 @@ extern u8 D_8022A998_ovl_281860;
 extern u8 D_8022A99A_ovl_281860;
 
 void bzero(void *p, s32 n);
-void *HFree(void *p);
 void nuGfxTaskAllEndWait(void);
 void func_8017A714(void);
 void func_80178C90(void);
@@ -103,7 +104,6 @@ extern u8 ovl_22A280_ROM_END[];
 extern u8 ovl_22A280_VRAM[];
 void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
-void RomRead(void *rom, void *dst, s32 size);
 void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
 extern u8 D_8022A980_ovl_281860;
 void func_801D0840(void);

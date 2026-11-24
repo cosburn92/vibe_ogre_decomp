@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 /* ovl_06E660 */
@@ -18,11 +20,7 @@ extern u16 *D_8019A798_ovl_06E660;
 extern void *D_8019A790_ovl_06E660;
 extern void *D_8019A794_ovl_06E660;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void _bcopy(void *src, void *dst, s32 n);
-u32 ChunkSize(u32 handle);
-void *LoadChunkRaw(void *dst, u32 handle);
 u8 *func_80197DE4_ovl_06E660(u8 *desc, u32 index);
 void func_801997D0_ovl_06E660(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 mode);
 

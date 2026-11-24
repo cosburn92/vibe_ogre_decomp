@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 s32 ProfileFlagTest(s16 flag);
 void ProfileFlagSet(s32 flag, s32 value);
@@ -35,8 +37,6 @@ extern u8 D_80197B01_ovl_040E80;
 extern u8 D_80197B02_ovl_040E80;
 extern u8 D_80197B03_ovl_040E80;
 extern u16 D_80197B04_ovl_040E80;
-void HFree(void *p);
-void RomRead(void *rom, void *dst, s32 size);
 void func_80171B94_ovl_040E80(void);
 extern u8 D_801936A6_ovl_040E80;
 
@@ -324,10 +324,6 @@ extern s16 D_80197B06_ovl_040E80;
 void func_80171B94_ovl_040E80(void);
 s32 func_80171ED8_ovl_040E80(void);
 void func_8016B774_ovl_040E80(void);
-s32 ChunkSize(s32 id);
-void *func_80071C04(s32 size);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 extern u8 D_8018F320_ovl_040E80;
 extern u8 D_8018F321_ovl_040E80;
@@ -458,7 +454,6 @@ s32 func_80171ED8_ovl_040E80(void) {
 
 extern s32 D_80197B14_ovl_040E80;
 extern u8 D_80197B02_ovl_040E80;
-void *LoadChunk(s32 id);
 typedef struct {
     s32 w[25];
 } MsgState46;
@@ -492,7 +487,6 @@ INCLUDE_ASM("asm/nonmatchings/46090", func_80171FE0_ovl_040E80);
 #endif
 
 extern s32 D_80197B14_ovl_040E80;
-void *LoadChunk(s32 id);
 
 /* Starts the current message: mode 0/1 builds it (two ways), mode 2 loads message D_80197B01 of
  * script D_80197B00 */
@@ -576,7 +570,6 @@ void func_80172368_ovl_040E80(void) {
 extern s16 D_8018F1A0_ovl_040E80;
 extern s16 D_80197B60_ovl_040E80;
 void func_80080998(void *dst, void *src, s32 n);
-void *LoadChunkRaw(void *dst, s32 id);
 
 /* Reloads the message scripts for the current chapter (D_801936A8), resetting the message
  * state but keeping its id (0x08), option word (0x60) and the 0x40-byte work area (0x20) */

@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 extern u16 D_800C4C26;
 extern u16 D_800E9C0A[];
@@ -73,7 +75,6 @@ void func_8022681C(s32 a, s32 b);
 void func_80227348(void);
 void nuGfxTaskAllEndWait(void);
 void func_8022F264(void);
-void HFree(void *p);
 
 extern u8 D_8018FAE4_ovl_040E80[];
 extern u8 D_8018FAF8_ovl_040E80[];
@@ -171,7 +172,6 @@ extern u8 ovl_22A280_ROM_END[];
 extern u8 ovl_22A280_VRAM[];
 void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
-void RomRead(void *rom, void *dst, s32 size);
 void bzero(void *p, s32 n);
 extern u8 D_8018FAE0_ovl_040E80;
 extern u8 D_8018FBDC_ovl_040E80;
@@ -204,7 +204,6 @@ extern u8 D_8022A999;
 extern u8 D_8022A980;
 extern Rec8_4D D_80190C80_ovl_040E80;
 extern void *D_80197AF0_ovl_040E80;
-void *HMalloc(s32 size);
 void func_80178E60_ovl_040E80(s32 id, Rec8_4D *out);
 void func_80226F88(void);
 void func_801C58F0(void);

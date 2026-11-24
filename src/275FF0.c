@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 275FF0 */
 
@@ -23,8 +24,6 @@ void func_801F8E50(u8 id, u8 *s);
 void func_801F8E90(u8 id, u8 *s);
 /* --- end decls --- */
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void *func_8020D1F8(void *fn);
 void func_8020D280(void *p);
 s32 func_801C8B84(u8 *u);

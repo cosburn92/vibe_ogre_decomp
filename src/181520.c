@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "scene.h"
 
 typedef struct {
@@ -23,8 +24,6 @@ extern u8 D_801F365D;
 extern u8 D_800E7A90[];
 extern s32 D_801F3620;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void func_800EA604(void *ch, s32 sound);
 s32 func_80216AE0_ovl_17F9C0(void);
 void func_80216F3C_ovl_17F9C0(void);

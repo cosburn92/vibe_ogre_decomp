@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 23B3E0 */
 
@@ -18,8 +19,6 @@ extern u16 D_801F0534_ovl_23B220;
 extern Task23 *D_801F0560_ovl_23B220;
 extern s32 D_801F0538_ovl_23B220;
 
-void *HFree(void *p);
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 /* --- end decls --- */
 

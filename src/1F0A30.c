@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 1F0A30 */
 
@@ -79,7 +81,6 @@ void func_801CA680_ovl_1F0A30(s32 a);
 s32 func_8016FEF4(s32 flag);
 void func_801AF730_ovl_1F0A30(void *a, s32 b);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-void HFree(void *p);
 u16 func_801794C8(s32 a);
 void func_8017C4B4(s16 a);
 void func_80179034(s32 a, s32 x, s32 y);
@@ -101,7 +102,6 @@ s32 func_801BE6BC_ovl_1F0A30(void *p);
 s32 func_801BE6DC_ovl_1F0A30(void *p);
 s32 func_801BE6FC_ovl_1F0A30(void *p);
 void func_801B464C_ovl_1F0A30(s32 a, f32 x, f32 y, f32 z, s32 b);
-void *LoadChunk(s32 id);
 typedef struct {
     u8 b[0x38];
 } PChar1F;
@@ -499,7 +499,6 @@ void func_801AEE18_ovl_1F0A30(u8 *o, s32 sel) {
     func_8017CBE8(o, &unit);
 }
 
-void *HMalloc(s32 size);
 u8 *func_8017BFB0(u16 kind, s32 b, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2);
 
 /* Opens the tactics window (flags k) from rectangle (x, y, w, h), sized to the options available */
@@ -621,7 +620,6 @@ void func_801AF730_ovl_1F0A30(void *s, s32 right) {
 void func_8017C2FC(void *w);
 void func_8009C550(char *dst, char *src);
 u8 *func_8017C074(s32 a, s32 b, void *fn, s32 x0, s32 y0, s32 x1, s32 y1);
-void *HMalloc(s32 size);
 void _bcopy(void *src, void *dst, s32 n);
 s32 strlen(char *s);
 void func_801B0284_ovl_1F0A30(u8 *o, s32 i);

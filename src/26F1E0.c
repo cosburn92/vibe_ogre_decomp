@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 26F1E0 */
 
@@ -394,7 +395,6 @@ extern s32 D_80220F74_ovl_25EE90;
 extern s32 D_80220F78_ovl_25EE90;
 extern void *D_801D0770;
 void *func_801BCFE4(void);
-void *HFree(void *p);
 void func_8020E51C_ovl_25EE90(void *p);
 void func_8020D280_ovl_25EE90(void *p);
 void func_80218104_ovl_25EE90(f32 x, f32 y, f32 z, s32 a);

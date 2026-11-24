@@ -1,4 +1,5 @@
 #include "common.h"
+#include "chunk.h"
 
 /* Scene manager: the main scene-stack loop and the overlay loader */
 
@@ -88,7 +89,6 @@ void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
 void osViSetSpecialFeatures(u32 func);
 void nuGfxTaskAllEndWait(void);
-void RomRead(void *rom, void *dst, s32 size);
 s32 AddHeap(u32 start, u32 size);
 void func_80070F14(void);
 void func_80072398(void);

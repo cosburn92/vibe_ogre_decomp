@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 261E90 */
 
@@ -24,10 +25,8 @@ extern void *D_80220D60_ovl_25EE90;
 extern u16 D_80220D64_ovl_25EE90;
 extern Node26 *D_80220D6C_ovl_25EE90;
 
-void *HFree(void *p);
 extern s32 D_80220D68_ovl_25EE90;
 extern Node26 *D_80220D70_ovl_25EE90;
-void *HMalloc(s32 size);
 /* --- end decls --- */
 
 /* Node pool: 32 entries of 0x94 bytes chained through `next` */

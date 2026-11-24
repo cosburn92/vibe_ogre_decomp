@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* Block header; the block's data follows it. Free blocks sit in a per-heap binary tree keyed by free size. */
 typedef struct HeapNode {
@@ -105,7 +107,6 @@ extern u8 D_800A8215;
 extern u8 D_800AEDF0[];
 extern u8 D_800AEE30[];
 extern u16 D_800AEE70;
-void *HMallocBack(s32 size);
 void func_800737A0(void);
 void func_8007382C(void);
 void guPerspective(void *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
@@ -163,7 +164,6 @@ void func_800E9C20(void);
 void osAiSetFrequency(u32 f);
 void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
-void RomRead(void *rom, void *dst, s32 size);
 void MusSetMasterVolume(s32 flags, s32 volume);
 void func_8008A1B0(void);
 void func_80089C60(void);
@@ -245,8 +245,6 @@ u8 func_8016CD30(void);
 extern u8 D_80186358[];
 extern u8 D_80186610[];
 void func_80081908(s32 a, s32 b);
-void *HMalloc(s32 size);
-void *HFree(void *p);
 s32 HFindHeap(u32 p);
 void func_80071950(HeapNode *n);
 void func_800719E8(HeapNode **slot, HeapNode *n);

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "nusys.h"
 
 extern u8 *D_8019A660_ovl_066E10;
@@ -32,7 +33,6 @@ typedef struct {
     s32 size;
 } BgJob_680F0;
 void func_801999E8_ovl_066E10(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 /* --- end decls --- */
 

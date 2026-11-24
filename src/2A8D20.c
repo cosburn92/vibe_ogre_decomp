@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "tables.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -6,7 +7,6 @@
 extern u8 *D_8022A974;
 extern u8 *D_8022A978;
 extern u8 D_8022A980;
-void HFree(void *p);
 void func_80227B80(void);
 
 
@@ -16,7 +16,6 @@ void func_8023BDF8_ovl_2A8D20();
 #define SLOT(i) FIELD(D_8022A974 + (i) * 4, u8 *, 0x18)
 extern u8 *D_801CE8BC;
 u8 func_8016FF5C(u8 a, u8 b);
-void *HMalloc(s32 size);
 s32 func_801C8B68(u8 *u);
 s32 func_801C8C90(u8 *u);
 u8 func_801C1AA4(s32 a, s32 b, u8 c, s16 d, s16 e, s32 f, u8 *g, u8 *h, u8 *i);

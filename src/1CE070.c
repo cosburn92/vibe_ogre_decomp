@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 1CE070 */
 
@@ -28,7 +30,6 @@ extern s32 D_800C4B20;
 extern u8 D_801BA710[];
 extern u8 D_80243DB0[];
 
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void func_8019898C_ovl_1CE070(SizeCE *s, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f);
 u8 func_8016CD30(void);
@@ -65,7 +66,6 @@ extern u8 *D_801B8088_ovl_1CE070;
 extern u8 *D_801B808C_ovl_1CE070; /* = D_801B8088[1] */
 extern u8 *D_801B8084_ovl_1CE070; /* = D_801B8080[1] */
 extern u8 D_800E7A0C;
-void *HMalloc(s32 size);
 void guMtxCatF(void *a, void *b, void *c);
 void nuGfxTaskAllEndWait(void);
 void func_80072738(s32 a);
@@ -75,7 +75,6 @@ void osViSetSpecialFeatures(u32 f);
 void func_8016CD50(s32 a);
 extern u8 *D_800A8204[];
 extern u8 *D_800C4BB8;
-void HFree(void *p);
 u8 *func_80199ECC_ovl_1CE070(u8 *t, u32 page);
 typedef struct {
     void *name;
@@ -84,9 +83,6 @@ typedef struct {
     s32 size;
 } Arc16_1CE070;
 extern Arc16_1CE070 D_801B99A0_ovl_1CE070;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))

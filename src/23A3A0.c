@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 /* ovl_23A3A0: creates enemy units and squads */
@@ -143,9 +145,6 @@ extern u8 D_801936A8;
 extern u8 D_801953F0[];
 extern Arc23A D_801D16B0_ovl_23A3A0;
 extern PlayerChar23A D_80193BC0[];
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void HFree(void *p);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 void func_80080998(void *dst, void *src, s32 n);
 void func_80172394(void);

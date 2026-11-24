@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* Field access by offset, for widget records whose layouts are not mapped yet. */
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -24,7 +26,6 @@ extern u16 D_800C4C26;
 void nuGfxTaskAllEndWait(void);
 void func_801AEDEC_ovl_0FA5E0(Widget3390 *p);
 void func_801AEE94_ovl_0FA5E0(s32 i, void *v);
-void HFree(void *p);
 
 
 
@@ -52,7 +53,6 @@ s32 func_8009C7CC(void);
 s32 func_801793E4(s32 c, s32 b);
 void func_801B01FC_ovl_0FA5E0(u8 *p);
 void func_801B2FF8_ovl_0FA5E0(void **p);
-void HFree(void *p);
 typedef struct {
     /* 0x00 */ u16 flags;
     /* 0x02 */ u8 flags2;
@@ -95,9 +95,6 @@ void func_801AE090_ovl_0FA5E0(void);
 void func_801AEC40_ovl_0FA5E0(Widget3390 *p);
 extern s32 D_801B4894_ovl_0FA5E0[]; /* bits per pixel by format */
 void _bcopy(const void *src, void *dst, s32 n);
-void *HMalloc(s32 size);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 typedef struct {
     u32 w0;

@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 1F8D70 */
 
@@ -56,7 +58,6 @@ extern u8 D_801976DC;
 extern u8 D_801976E8;
 
 void bzero(void *p, s32 n);
-void *HFree(void *p);
 void func_801B594C_ovl_1F0A30(Size1F *a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
 f32 func_801BC15C_ovl_1F0A30(s16 x, s16 z, s32 c, s32 d, s32 e);
 void func_801C5D64_ovl_1F0A30(void);
@@ -1491,10 +1492,6 @@ extern s16 D_801D075A_ovl_1F0A30;
 extern s16 D_801D075C_ovl_1F0A30;
 extern s16 D_801D075E_ovl_1F0A30;
 extern s16 D_801D0760_ovl_1F0A30;
-void *LoadChunk(s32 id);
-void *func_80071C04(s32 size);
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 void func_801C5CE0_ovl_1F0A30(void);
 

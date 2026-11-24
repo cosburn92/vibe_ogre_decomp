@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 26C1F0 */
 
@@ -163,7 +164,6 @@ void func_80217DE4_ovl_25EE90(s32 unused, void *dst) {
     _bcopy(((u8 **)func_801C8FE8())[0] + 0x44, dst, 0x50);
 }
 
-void *HMalloc(s32 size);
 
 /* Natural cubic spline through (x[i], y[i]), i < n: second derivatives into z (tridiagonal
  * solve with scratch h = steps, u = diagonal / slopes) */

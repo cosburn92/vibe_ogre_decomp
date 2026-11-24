@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* ED530 */
 
@@ -51,7 +52,6 @@ extern f32 D_800C4AD8[];
 
 void nuGfxTaskAllEndWait(void);
 void func_80079618();
-void *HFree(void *p);
 void func_801A499C_ovl_0EBBB0(void);
 f32 func_8009D3E0(f32 x);
 void func_80197FA4(s32 a, s32 b, u8 c);

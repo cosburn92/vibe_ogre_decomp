@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 23D090 */
 
@@ -94,9 +96,6 @@ typedef struct {
     s32 size;
 } Arc16_23D;
 extern Arc16_23D D_801F0490_ovl_23B220;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 void func_801EFB24_ovl_23B220(u8 *data, s32 a, s32 b);

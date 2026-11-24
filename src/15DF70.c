@@ -1,14 +1,14 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* 15DF70 */
 
 extern void *D_80213EE8_ovl_14EBE0;
 
-void *HFree(void *p);
 extern u8 D_801F36A0;
 extern s32 D_801F401C;
 extern u8 D_80213EA4_ovl_14EBE0[];
-void *LoadChunk(s32 id);
 extern s32 D_80213EA0_ovl_14EBE0;
 extern u8 D_80213EEC_ovl_14EBE0;
 extern s32 D_80213EF0_ovl_14EBE0;

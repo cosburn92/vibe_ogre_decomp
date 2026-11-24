@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 128D50 */
 
@@ -347,7 +348,6 @@ extern u8 D_80195480[];
 extern u8 D_80195560[][0x34];
 extern u32 *D_801F0CB0_ovl_101CE0[];
 void func_801B2D2C_ovl_101CE0(u32 *o);
-void HFree(void *p);
 
 extern s32 D_801F367C_ovl_101CE0;
 extern u8 gLegions[][11];

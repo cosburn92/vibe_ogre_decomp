@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "scene.h"
 
 typedef struct {
@@ -212,8 +214,6 @@ void osCreateThread(void *t, s32 id, void (*entry)(void *), void *arg, void *sp,
 void osStartThread(void *t);
 s32 osRecvMesg(void *mq, void *msg, s32 flag);
 u32 DecodeLZ(u8 *dst, u8 *src);
-void *HMalloc(s32 size);
-void *HFree(void *p);
 s32 get_header(ArcFile *f, LzHeader *h);
 void func_8007AF3C(s32 alloc);
 void func_8007C204(void);
@@ -235,7 +235,6 @@ extern char D_800AE334[];
 s32 osSendMesg(void *mq, void *msg, s32 flag);
 void osSyncPrintf(const char *fmt, ...);
 u16 func_8007C25C(u8 n);
-u32 ReadU32BE(u8 *p);
 
 
 

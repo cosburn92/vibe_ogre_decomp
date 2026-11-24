@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 extern u8 D_80193C12_ovl_040E80;
@@ -25,11 +27,6 @@ typedef struct {
 } ClassSpriteInfo;
 extern ClassSpriteInfo D_8018ECE0_ovl_040E80[];
 
-s32 ChunkSize(s32 handle);
-void *LoadChunkRaw(void *dst, s32 handle);
-void *LoadChunk(s32 handle);
-void *HMalloc(s32 size);
-void HFree(void *p);
 void *LoadAsset();
 
 

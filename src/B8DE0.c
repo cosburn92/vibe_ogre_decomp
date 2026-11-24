@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* ovl_087200 (B8DE0): ten animation slots */
 
@@ -34,7 +35,6 @@ typedef struct {
 
 extern AnimState *D_80196AF8;
 
-void *HFree(void *p);
 void _bcopy(void *src, void *dst, s32 n);
 void func_801CC84C_ovl_087200(s16 i);
 

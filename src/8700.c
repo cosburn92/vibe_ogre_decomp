@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* Camera/viewport display-list helpers and the asset cache.
  *
@@ -70,14 +72,8 @@ extern AssetNode *D_800AF0C0; /* last node found */
 extern AssetSub *D_800AF0C4;  /* last sub found */
 extern u32 D_800C4BC0;        /* size of the last asset */
 
-void *HMalloc(s32 size);
-void *HMallocBack(s32 size);
-void *HFree(void *p);
 void bzero(void *p, s32 n);
 f32 sqrtf(f32);
-s32 ChunkSize(s32 handle);
-void *LoadChunkRaw(void *dst, s32 handle);
-u32 ReadU32BE(u8 *p);
 u32 DecodeLZ(u8 *dst, u8 *src);
 u32 func_801AB720(void *src);
 void func_801AB74C(void *dst, void *src);

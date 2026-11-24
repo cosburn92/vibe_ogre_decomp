@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 extern struct { u8 a; u8 b; } D_801CECF0_ovl_1F0A30[];
@@ -12,7 +14,6 @@ extern u8 *D_801D06A4_ovl_1F0A30;
 extern struct { s16 x; s16 y; s16 z; } *D_801D06A8_ovl_1F0A30;
 extern void *D_801D06AC_ovl_1F0A30;
 extern u8 D_801CEEC0_ovl_1F0A30[][4];
-void HFree(void *p);
 u32 func_801BE9A8_ovl_1F0A30(s32 siz, u32 w);
 u8 *func_801BFF84_ovl_1F0A30(u8 *desc, u32 page);
 void func_801C0F50_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d, s32 e);
@@ -331,10 +332,6 @@ extern u8 *D_801D0738_ovl_1F0A30;
 extern u8 *D_801D06F4_ovl_1F0A30;
 extern u8 *D_801D073C_ovl_1F0A30;
 extern u8 *D_801D0830_ovl_1F0A30;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-void *func_80071C04(s32 size);
-void *HMalloc(s32 size);
 void _bcopy(void *src, void *dst, s32 n);
 typedef struct {
     u16 off[15];

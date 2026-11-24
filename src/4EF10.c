@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 typedef struct TextNode {
     /* 0x00 */ struct TextNode *next;
@@ -25,7 +27,6 @@ extern s16 D_80190F74_ovl_040E80;
 extern s16 D_80190F76_ovl_040E80;
 extern TextNode *D_80190F4C_ovl_040E80; /* most recently used */
 extern TextNode *D_80190F48_ovl_040E80; /* least recently used */
-void *HFree(void *p);
 void func_8017907C_ovl_040E80(s32 a);
 void func_80179354_ovl_040E80(void);
 void func_80179F04_ovl_040E80(void);
@@ -78,9 +79,6 @@ extern s32 D_80190F78_ovl_040E80;
 extern u8 *D_8018FC70_ovl_040E80;
 extern u8 *D_8018FC74_ovl_040E80;
 void *func_8009DD28(s32 id);
-s32 ChunkSize(s32 id);
-void *HMallocBack(s32 size);
-void RomRead(void *rom, void *dst, s32 size);
 void bzero(void *p, s32 n);
 
 /* Text system init: n glyph cache nodes in an LRU chain, then the glyph bitmap (0x200), the two
@@ -95,9 +93,6 @@ extern s32 D_80190F78_ovl_040E80;
 extern u8 *D_8018FC70_ovl_040E80;
 extern u8 *D_8018FC74_ovl_040E80;
 void *func_8009DD28(s32 id);
-s32 ChunkSize(s32 id);
-void *HMallocBack(s32 size);
-void RomRead(void *rom, void *dst, s32 size);
 void bzero(void *p, s32 n);
 
 /* Text system init: n glyph cache nodes in an LRU chain, then the glyph bitmap (0x200), the two

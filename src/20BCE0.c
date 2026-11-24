@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 #include "tables.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -53,7 +55,6 @@ u8 func_8016DE1C(u8 a, u8 b);
 u16 func_8016FA34(u16 a, u16 b, u16 c, u16 d);
 s32 func_801C8B84_ovl_1F0A30(BattleUnit *u);
 BattleUnit *func_801C8FE8_ovl_1F0A30(u32 i);
-void HFree(void *p);
 
 extern u8 D_801CFC8C_ovl_1F0A30[];
 
@@ -110,12 +111,8 @@ typedef struct {
     s32 size;
 } Arc16_20BCE0;
 extern Arc16_20BCE0 D_801D0640_ovl_1F0A30;
-s32 ChunkSize(s32 id);
-void *LoadChunkRaw(void *dst, s32 id);
-s32 ReadU32BE(void *p);
 void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
-void *func_80071C04(s32 size);
 u8 *func_801CBE18_ovl_1F0A30(s32 a, s32 x, s32 y, s32 z);
 void func_801B3CB8_ovl_1F0A30();
 void func_801B5524_ovl_1F0A30();

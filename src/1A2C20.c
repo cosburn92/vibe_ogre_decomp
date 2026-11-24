@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "scene.h"
 
 /* ovl_1A2C20: camera move / screen colour fade controller */
@@ -98,8 +99,6 @@ extern s8 D_80216F89_ovl_1A2C20;  /* g step */
 extern s8 D_80216F8A_ovl_1A2C20;  /* b step */
 extern s16 D_80216F8C_ovl_1A2C20;
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void bzero(void *p, s32 n);
 void *LoadAsset(u32 handle, ...);
 void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);

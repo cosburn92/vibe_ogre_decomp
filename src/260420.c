@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 260420 */
 
@@ -20,9 +21,7 @@ extern s32 D_80220CA4_ovl_25EE90;
 extern s32 D_80220CAC_ovl_25EE90;
 extern s32 D_80220CB0_ovl_25EE90;
 extern Ent260 *D_80220CB8_ovl_25EE90[];
-void HFree(void *p);
 void bzero(void *p, s32 n);
-void *HMalloc(s32 size);
 Ent260 *func_8020BA6C_ovl_25EE90(void *p);
 
 static inline void CacheRelease(Ent260 *e) {

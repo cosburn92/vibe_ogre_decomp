@@ -1,4 +1,6 @@
 #include "common.h"
+#include "chunk.h"
+#include "heap.h"
 
 /* Event-script interpreter context: opcodes advance pc and return 0 (continue) or 1 (wait). */
 typedef struct {
@@ -49,7 +51,6 @@ u8 *func_80222EA0_ovl_1BA050(u16 id);
 extern u8 *D_8022A234_ovl_1BA050;
 extern u8 D_801936E0;
 extern u8 D_80196AEC;
-void HFree(void *p);
 void bzero(void *p, s32 size);
 void func_80229930_ovl_1BA050(void);
 void func_80228EE4_ovl_1BA050(void);
@@ -106,7 +107,6 @@ extern s32 D_8022A240_ovl_1BA050;
 extern s32 D_8022A244_ovl_1BA050;
 void osInvalICache(void *p, s32 n);
 void osInvalDCache(void *p, s32 n);
-void RomRead(void *rom, void *dst, s32 size);
 void func_80224C60_ovl_1BA050(void);
 void func_80224D60_ovl_1BA050(void);
 void func_8022995C_ovl_1BA050(void);

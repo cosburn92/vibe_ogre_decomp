@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 262CC0 */
 
@@ -16,8 +17,6 @@ extern u16 D_80220DA0_ovl_25EE90;
 extern Blk78 *D_80220DA8_ovl_25EE90;
 extern void *D_80220DAC_ovl_25EE90;
 
-void *HFree(void *p);
-void *HMalloc(s32 size);
 extern s32 D_80220DA4_ovl_25EE90;
 void func_801B55C4(void);
 void func_8020E224_ovl_25EE90(u16 layer);

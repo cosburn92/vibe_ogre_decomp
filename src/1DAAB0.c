@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 1DAAB0 */
 
@@ -71,7 +72,6 @@ void func_80199460_ovl_1CE070(void);
 void func_80198EEC_ovl_1CE070(void);
 void func_80179060(void);
 void func_8017BDC0(void);
-void *HMalloc(s32 size);
 void bzero(void *p, s32 n);
 void _bcopy(void *src, void *dst, s32 n);
 void func_80073164(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);

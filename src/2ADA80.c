@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 
@@ -27,8 +28,6 @@ typedef struct {
 
 extern PlayerClass D_80193BD1[];
 
-void *HMalloc(s32 size);
-void *HFree(void *p);
 void func_801B0020(void);
 void func_801BBC78(void);
 void func_801BE894(void);

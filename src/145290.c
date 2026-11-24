@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 #include "libultra.h"
 
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -24,8 +25,6 @@ extern U16x3 D_801FD958_ovl_145210;
 extern s32 D_801F367C;
 extern MapUnit *D_801F0CB0[];
 void bzero(void *p, s32 size);
-void *HMalloc(s32 size);
-void HFree(void *p);
 void func_801F4358_ovl_145210(s32 kind, void *msg);
 
 

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "heap.h"
 
 /* 2A3F20 */
 
@@ -14,7 +15,6 @@ typedef struct {
 
 extern Battle2A3 *D_8022A974;
 
-void *HFree(void *p);
 void func_8022B6F4_ovl_29A4C0(void);
 void func_80233398_ovl_29A4C0(void);
 extern u8 *D_80197AF0;
@@ -105,7 +105,6 @@ void func_80234C04_ovl_29A4C0(void) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-void *HMalloc(s32 n);
 void bzero(void *p, s32 n);
 static inline u8 *Capture2A3(void) {
     nuGfxTaskAllEndWait();
