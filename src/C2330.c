@@ -50,7 +50,7 @@ u8 func_801D597C_ovl_087200(u8 m) {
             if ((mask >> k) & 1) {
                 u8 c = (q + (pos + D_801EF480_ovl_087200[k]))[4];
 
-                if ((c != 0xFF) & (c != m)) {
+                if (c != 0xFF && c != m) {
                     n++;
                     break;
                 }
