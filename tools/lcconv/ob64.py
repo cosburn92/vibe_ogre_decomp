@@ -240,10 +240,13 @@ def attempt(e, own):
         if helper in our_func_rom:
             own2 = owners.get(our_func_rom[helper])
             rename[helper] = own2[0] if own2 else 'func_%08X' % our_func_rom[helper]
+    target_address = {}  # callees that are OB64 C targets: the linker defines them, the registry doesn't
     for n, a in e['bindings'].items():
         t = their_name(n, a)
         if t is None: return 'name', n
         rename[n] = t
+        if t.lower() in target_spelling:
+            target_address[t] = a
     if len(set(rename.values())) != len(rename):
         return 'name', 'two symbols share one OB64 name'
     pat = re.compile(r'\b(%s)\b' % '|'.join(map(re.escape, sorted(rename, key=len, reverse=True))))
@@ -268,7 +271,7 @@ def attempt(e, own):
     binds = {}
     for s in syms:
         if s['shndx'] == 0 and s['name']:
-            a = registry.get(s['name'], new_registry.get(s['name']))
+            a = registry.get(s['name'], new_registry.get(s['name'], target_address.get(s['name'])))
             if a is None: return 'unbound', s['name']
             binds[s['name']] = a
     relocs = []
