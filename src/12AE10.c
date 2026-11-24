@@ -516,15 +516,13 @@ s32 func_801DA210_ovl_101CE0(s32 a) {
 }
 
 /* Legion containing the unit's squad, or -1 */
-#ifdef NON_MATCHING
-/* Prologue order differs (the squad byte is loaded first). */
 s32 func_801DA228_ovl_101CE0(MapUnit *u) {
-    u8 sq = u->squad;
-    u8 *l = gLegions[0];
+    u8 *l;
+    s32 sq = u->squad;
     s32 i;
     s32 j;
 
-    for (i = 0; i < 10; i++, l += 11) {
+    for (i = 0, l = gLegions[0]; i < 10; i++, l += 11) {
         u8 fl = l[1];
 
         if (!(fl & 1)) {
@@ -545,16 +543,11 @@ s32 func_801DA228_ovl_101CE0(MapUnit *u) {
     }
     return -1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA228_ovl_101CE0);
-#endif
 
 /* Slot of the unit's squad within its legion, or -1 */
-#ifdef NON_MATCHING
-/* Prologue order differs (the squad byte is loaded first). */
 s32 func_801DA2B4_ovl_101CE0(MapUnit *u) {
     u8 *l;
-    u8 sq = u->squad;
+    s32 sq = u->squad;
     s32 i;
     s32 j;
 
@@ -579,9 +572,6 @@ s32 func_801DA2B4_ovl_101CE0(MapUnit *u) {
     }
     return -1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DA2B4_ovl_101CE0);
-#endif
 
 /* Map position of a location (-1: the first one with flag 0x10); y from the terrain */
 #ifdef NON_MATCHING
