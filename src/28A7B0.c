@@ -2221,8 +2221,6 @@ INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239E30_ovl_286BD0);
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239EE0_ovl_286BD0);
 
 /* Whether str (cut at p) is wider than n * 11 */
-#ifdef NON_MATCHING
-/* Width register allocation differs. */
 s32 func_8023A398_ovl_286BD0(s32 n, char *str, char *p) {
     u8 saved = *p;
     s32 w;
@@ -2235,14 +2233,11 @@ s32 func_8023A398_ovl_286BD0(s32 n, char *str, char *p) {
         w = func_801794C8(str);
     }
     *p = saved;
-    if (len == 0) {
-        return 0;
+    if (len != 0) {
+        return n * 11 < w;
     }
-    return n * 11 < w;
+    return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A398_ovl_286BD0);
-#endif
 
 s32 func_8022ECBC_ovl_286BD0();
 /* Opens o's text window with paragraph n of message 0x018855FE (paragraphs are separated by
