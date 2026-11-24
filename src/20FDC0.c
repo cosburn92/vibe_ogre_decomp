@@ -14,7 +14,7 @@ extern void *D_801CFCC0_ovl_1F0A30;
 extern void *D_801D06D0_ovl_1F0A30;
 extern Seq20F *D_801D06E0_ovl_1F0A30;
 
-void func_801CCA5C_ovl_1F0A30(s32 a, s32 b, s32 c);
+void func_801CCA5C_ovl_1F0A30();
 void bzero(void *p, s32 n);
 void *HFree(void *p);
 void nuGfxTaskAllEndWait(void);
@@ -62,7 +62,7 @@ void *memcpy(void *dst, const void *src, s32 n);
 void *memcpy(void *dst, const void *src, s32 n);
 
 /* Insertion sort of n elements of the given size, ordered by cmp */
-void func_801CC930_ovl_1F0A30(u8 *base, s32 size, s32 n, s32 (*cmp)(void *, void *)) {
+inline void func_801CC930_ovl_1F0A30(u8 *base, s32 size, s32 n, s32 (*cmp)(void *, void *)) {
     void *tmp = HMalloc(size);
     s32 i;
     s32 j;
@@ -80,10 +80,106 @@ void func_801CC930_ovl_1F0A30(u8 *base, s32 size, s32 n, s32 (*cmp)(void *, void
     HFree(tmp);
 }
 
+/* Quicksort of n elements of the given size, ordered by cmp: partitions with an explicit stack
+ * of pending ranges down to fewer than 11 elements, then finishes with an insertion sort */
+#ifdef NON_MATCHING
+/* 1 instruction short: lo, depth and the pivot get saved registers or stack slots where the original keeps them in t1/t2/t0 with caller-saves around each cmp call (frame 0xC8 vs 0xB8) */
+void func_801CCA5C_ovl_1F0A30(u8 *base, s32 size, s32 n, s32 (*cmp)(void *, void *)) {
+    s32 stk[24];
+    s32 *sp;
+    s32 lo;
+    s32 hi;
+    s32 depth;
+    s32 i;
+    s32 j;
+    s32 io;
+    s32 jo;
+    u8 *pivot;
+    u8 *p;
+
+    lo = 0;
+    hi = n - 1;
+    depth = 0;
+    sp = stk;
+loop:
+    if (hi - lo < 11) {
+        if (depth == 0) {
+            goto done;
+        }
+        sp--;
+        depth--;
+        lo = sp[0];
+        hi = sp[12];
+    }
+    jo = hi * size;
+    pivot = base + (lo + hi) / 2 * size;
+    i = lo;
+    j = hi;
+    io = i * size;
+scan:
+    p = i * size + base;
+up:
+    if (cmp(p, pivot) < 0) {
+        p += size;
+        io += size;
+        i++;
+        goto up;
+    }
+    p = j * size + base;
+down:
+    if (cmp(pivot, p) < 0) {
+        p -= size;
+        jo -= size;
+        j--;
+        goto down;
+    }
+    if (i < j) {
+        u8 *a = base + io;
+        u8 *b = base + jo;
+        s32 k;
+
+        for (k = size - 1; k != -1; k--) {
+            u8 t = *a;
+            *a++ = *b;
+            *b++ = t;
+        }
+        io += size;
+        i++;
+        jo -= size;
+        j--;
+        goto scan;
+    }
+    if (hi - j < i - lo) {
+        if (i - lo < 11) {
+            lo = j + 1;
+        } else {
+            sp[0] = lo;
+            sp[12] = i - 1;
+            sp++;
+            depth++;
+            lo = j + 1;
+        }
+    } else {
+        if (hi - j < 11) {
+            hi = i - 1;
+        } else {
+            sp[0] = j + 1;
+            sp[12] = hi;
+            sp++;
+            depth++;
+            hi = i - 1;
+        }
+    }
+    goto loop;
+done:
+    func_801CC930_ovl_1F0A30(base, size, n, cmp);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CCA5C_ovl_1F0A30);
+#endif
 
 void func_801CCD4C_ovl_1F0A30(s32 a, s32 b, s32 c) {
-    func_801CCA5C_ovl_1F0A30(a, c, b);
+    ((void (*)())func_801CCA5C_ovl_1F0A30)(a, c, b);
 }
 
 void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
