@@ -32,10 +32,12 @@ For each function:
    upstream-exports memory), smallest game functions first. Skip anything a
    recent commit (git log -20) already covers.
    Also a valid pick: cleaning up pseudo-asm in C that already matches, i.e.
-   arithmetic written the way the compiler expands it (`>> 31` sign tests,
-   hand-expanded `/` or `%`, `(a == x) | (a == y)`, `x ^ x` for 0, comma-
-   sequenced assignments, m2c names like temp_v0/var_a1). Rewrite it as plain
-   control flow and arithmetic that still matches; commit as
+   operators used to reproduce the instructions instead of saying what the
+   code does (`~f() >> 31` for f() >= 0, a signed `/` or `%` spelled out with
+   a negative fixup and shifts, `(a == x) | (a == y)` for ||, `x ^ x` for 0,
+   comma-sequenced assignments, m2c names like temp_v0/var_a1). Bit operations
+   that are the code's real job (flags, masks, packing, unsigned shifts) stay.
+   Rewrite it as plain control flow and arithmetic that still matches; commit as
    "<segment>: <func> readable <what changed>". This counts as one function.
 2. Decompile it using the usual workflow (decomp-workflow memory).
 3. When it matches, commit just that change: "<segment>: <what it does>
