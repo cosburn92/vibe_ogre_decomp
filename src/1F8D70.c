@@ -83,7 +83,7 @@ void func_801B5D58_ovl_1F0A30(ImgRef1F8 *pp);
 void func_801B619C_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img);
-void func_801B7284_ovl_1F0A30(u8 *img, s32 x, s32 y, s32 s, void *b, void *m, void *a);
+void func_801B7284_ovl_1F0A30(u8 *img, s16 x, s16 y, s16 s, void *b, void *m, void *a);
 extern u8 D_801976DA;
 extern s32 D_801CEAB0_ovl_1F0A30;
 extern u8 D_801936A7;
@@ -410,7 +410,73 @@ void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img) {
     *(Gfx **)b = gfx;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7284_ovl_1F0A30);
+/* Draws a 16-bit (s == 2) or 32-bit (s == 3) RGBA image at (x, y) as TMEM-strip textured quads,
+ * writing commands and vertices through the given cursors (the matrix cursor is passed through) */
+void func_801B7284_ovl_1F0A30(u8 *img, s16 x, s16 y, s16 s, void *b, void *m, void *a) {
+    typedef struct { u16 h[8]; } V16;
+    Size1F *hdr = (Size1F *)img;
+    Gfx *gfx;
+    V16 *vtx;
+    s32 bpr;
+    u8 *timg;
+    s32 rows;
+    V16 *start;
+    void *mtx;
+    s32 h;
+    s32 w;
+    s32 xr;
+    s32 x0;
+    s32 ny;
+    s32 row;
+    s32 n;
+
+    gfx = *(Gfx **)b;
+    vtx = *(V16 **)a;
+    mtx = *(void **)m;
+    bpr = func_801BE9A8_ovl_1F0A30(s, hdr->w);
+    h = hdr->h;
+    timg = (u8 *)hdr + 8;
+    start = vtx;
+    w = hdr->w;
+    rows = 0x1000 / bpr;
+    row = 0;
+    x0 = x;
+    ny = -y;
+    xr = w + x0;
+    for (; h > 0; h -= rows, row += rows) {
+        func_801B5CE0_ovl_1F0A30((u16 *)vtx++, x0, ny - row, 0, row);
+        func_801B5CE0_ovl_1F0A30((u16 *)vtx++, xr, ny - row, w, row);
+        if (rows >= h) {
+            row += h;
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, x0, ny - row, 0, row);
+            func_801B5CE0_ovl_1F0A30((u16 *)vtx++, xr, ny - row, w, row);
+            break;
+        }
+    }
+    h = hdr->h;
+    row = 0;
+    while (start + 2 < vtx) {
+        n = rows;
+        if (h < rows) {
+            n = h;
+        }
+        if (s == 3) {
+            gDPLoadTextureTile(gfx++, timg, G_IM_FMT_RGBA, G_IM_SIZ_32b, func_801BEA0C_ovl_1F0A30(3, w), 0, 0,
+                               row, func_801BEA0C_ovl_1F0A30(3, w) - 1, row + n - 1, 0, 0, 0, 0, 0, 0, 0);
+        } else {
+            gDPLoadTextureTile(gfx++, timg, G_IM_FMT_RGBA, G_IM_SIZ_16b, func_801BEA0C_ovl_1F0A30(2, w), 0, 0,
+                               row, func_801BEA0C_ovl_1F0A30(2, w) - 1, row + n - 1, 0, 0, 0, 0, 0, 0, 0);
+        }
+        gSPVertex(gfx++, start, 4, 0);
+        gSP2Triangles(gfx++, 0, 2, 3, 0, 0, 3, 1, 0);
+        row += n;
+        start += 2;
+        h -= n;
+    }
+    *(Gfx **)b = gfx;
+    *(void **)m = mtx;
+    *(V16 **)a = vtx;
+}
 
 /* Draws image img: '64' bitmaps, or 'B5' banks by format (1, 3, other) */
 void func_801B77CC_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
