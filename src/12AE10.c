@@ -1051,24 +1051,25 @@ typedef struct {
     s32 *ids;
 } DB424Arg;
 
-#ifdef NON_MATCHING
-/* The table address is hoisted above the search loop; the target computes it after. */
+/* Whether id is in a's -1-terminated id list and its D_801F0CB0 entry has all of flags 0x31.
+ * The terminator is a local set before the null check: that is what puts it in a2 ahead of the test. */
 s32 func_801DB424_ovl_101CE0(DB424Arg *a, s32 id) {
     s32 *p;
+    s32 end = -1;
 
     if (a->ids == NULL) {
         return 0;
     }
-    for (p = a->ids; *p != -1; p++) {
+    for (p = a->ids; ; p++) {
+        if (*p == end) {
+            return 0;
+        }
         if (*p == id) {
-            return (*D_801F0CB0_ovl_101CE0[id] & 0x31) == 0x31;
+            break;
         }
     }
-    return 0;
+    return (*D_801F0CB0_ovl_101CE0[id] & 0x31) == 0x31;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB424_ovl_101CE0);
-#endif
 
 /* (squad, location): adjusts gChaosFrame by -5..+2 from how far the squad's mean alignment is from
  * the town's preference (plus 40 when bit 7 of the preference is set) and a random 0-7.
