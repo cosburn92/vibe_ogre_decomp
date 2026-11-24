@@ -53,7 +53,8 @@ typedef struct {
     /* 0x0C */ f32 y;
     /* 0x10 */ f32 z;
     /* 0x14 */ s32 unk14;
-    /* 0x18 */ u8 unk18[0x34];
+    /* 0x18 */ f32 heading; /* turns (1.0 = full circle) */
+    /* 0x1C */ u8 unk1C[0x30];
     /* 0x4C */ f32 savedX;
     /* 0x50 */ f32 savedY;
     /* 0x54 */ f32 savedZ;
@@ -117,27 +118,10 @@ extern f32 D_801F0DA0_ovl_101CE0;
 extern f32 D_801F0DA4_ovl_101CE0;
 /* --- end decls --- */
 
-#ifdef NON_MATCHING
-/* Block order differs: the target puts the mode 1-8 copy right after the dispatch. */
-void func_801D66D0_ovl_101CE0(u8 *dst, u8 *src, u8 mode) {
+/* Copies a legion's five squad slots (src[2..6]) into dst in formation order; mode 0 moves an
+ * empty middle slot to the edge */
+inline void func_801D66D0_ovl_101CE0(u8 *dst, u8 *src, u8 mode) {
     switch (mode) {
-        case 0:
-            dst[0] = src[2];
-            dst[2] = src[4];
-            if (dst[2] == 0xFF) {
-                dst[1] = 0xFF;
-                dst[2] = src[3];
-            } else {
-                dst[1] = src[3];
-            }
-            dst[3] = src[5];
-            if (dst[3] == 0xFF) {
-                dst[4] = 0xFF;
-                dst[3] = src[6];
-            } else {
-                dst[4] = src[6];
-            }
-            break;
         case 1:
         case 2:
         case 3:
@@ -152,15 +136,79 @@ void func_801D66D0_ovl_101CE0(u8 *dst, u8 *src, u8 mode) {
             dst[3] = src[5];
             dst[4] = src[6];
             break;
-        default:
+        case 0:
+            dst[0] = src[2];
+            dst[2] = src[4];
+            if (dst[2] == 0xFF) {
+                dst[2] = src[3];
+                dst[1] = 0xFF;
+            } else {
+                dst[1] = src[3];
+            }
+            dst[3] = src[5];
+            if (dst[3] == 0xFF) {
+                dst[3] = src[6];
+                dst[4] = 0xFF;
+            } else {
+                dst[4] = src[6];
+            }
             break;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D66D0_ovl_101CE0);
-#endif
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D677C_ovl_101CE0);
+typedef struct {
+    /* 0x00 */ u8 lead; /* index of the squad this slot follows */
+    /* 0x04 */ f32 side;
+    /* 0x08 */ f32 back;
+} FormationSlot; /* size 0xC */
+
+extern FormationSlot D_801EACE0_ovl_101CE0[][5];
+s32 func_801DA210_ovl_101CE0(s32 a);
+
+/* Distance (in formation units) from a marching squad's unit to its slot in the legion formation
+ * behind the squad it follows; 0 when not marching in formation */
+f32 func_801D677C_ovl_101CE0(MapUnit *u) {
+    s32 ids[5];
+    u8 sq[5];
+    u8 *l;
+    s32 i;
+    s32 slot = 0;
+    FormationSlot *e;
+    MapUnit *o;
+    f32 k;
+    f32 x, z;
+    f32 d;
+
+    if (!(u->flags & 0x40)) {
+        return 0.0f;
+    }
+    if (u->flags & 0x80) {
+        return 0.0f;
+    }
+    l = gLegions[func_801DA228_ovl_101CE0(u)];
+    func_801D66D0_ovl_101CE0(sq, l, l[8]);
+    for (i = 0; i < 5; i++) {
+        if (sq[i] == 0xFF) {
+            ids[i] = -1;
+        } else {
+            ids[i] = func_801DA210_ovl_101CE0(sq[i]);
+            if ((u32 *)u == D_801F0CB0_ovl_101CE0[ids[i]]) {
+                slot = i;
+            }
+        }
+    }
+    e = &D_801EACE0_ovl_101CE0[l[8]][slot];
+    o = (MapUnit *)D_801F0CB0_ovl_101CE0[ids[e->lead]];
+    k = 0.8f;
+    /* The slot offset is rotated from (0, 0): retail keeps the + 0.0f and 0.0f - (IEEE, not folded). */
+    d = e->side * k;
+    x = cosf(o->heading * 2.0f * 3.141592653589793) * d + 0.0f;
+    z = 0.0f - sinf(o->heading * 2.0f * 3.141592653589793) * d;
+    d = e->back * k;
+    x -= sinf(o->heading * 2.0f * 3.141592653589793) * d;
+    z -= cosf(o->heading * 2.0f * 3.141592653589793) * d;
+    return func_8009C780(o->x + x - u->x, o->z + z - u->z) / k;
+}
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
