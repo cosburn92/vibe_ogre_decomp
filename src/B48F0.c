@@ -828,9 +828,11 @@ void func_801CBA74_ovl_087200(u16 i) {
 
 /* Clears squad record sq (leader, members, positions) */
 #ifdef NON_MATCHING
-/* first loop: original walks a byte pointer down from q+8 */
+/* two instructions off: the original loads 0xFF (a3) before the loop count 8 (a1); every other
+ * instruction matches. The member loop through m = q + 4 gives the walking byte pointer. */
 void func_801CBABC_ovl_087200(u8 sq) {
     u8 *q = D_80196AF8 + (sq * 0x36 + 0x117C);
+    u8 *m = q + 4;
     s32 k;
 
     q[1] = 0;
@@ -841,7 +843,7 @@ void func_801CBABC_ovl_087200(u8 sq) {
     q[0x1E] = 0;
     q[0x1D] = 0;
     for (k = 8; k >= 0; k--) {
-        q[4 + k] = 0xFF;
+        m[k] = 0xFF;
     }
     for (k = 9; k >= 0; k--) {
         FIELD(q, s16, 0x22 + k * 2) = 0;
