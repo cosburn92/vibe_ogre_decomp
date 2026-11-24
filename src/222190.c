@@ -53,6 +53,15 @@ s32 func_801C8B08(u8 *u);
 s32 func_801C8B84(u8 *u);
 s32 func_801C8C58(u8 *u);
 u8 func_8016FF5C(u8 a, u8 b);
+void func_801D9F30_ovl_213B10(s32 a, s32 b, s32 c);
+s32 func_801C8E9C(u8 *u);
+s32 func_801C8E64(u8 *u);
+s32 func_801C8E80(u8 *u);
+void func_801D9FF0_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
+s32 func_801C8C74(u8 *u);
+s32 func_801CA29C(u8 *u);
+s32 func_801C9FB4(s32 a, s32 b);
+void func_801D9F8C_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e);
 /* --- end decls --- */
 
 #ifdef NON_MATCHING
@@ -136,7 +145,8 @@ s32 func_801DF110_ovl_213B10(u8 *a, u8 *b, u8 *ua, u8 *ub, s32 x, s32 z) {
     return d / func_801BE264(FIELD(a, s32, 0x48), FIELD(a, s32, 0x4C));
 }
 
-s32 func_801DF224_ovl_213B10(void) {
+/* also inlined into func_801E0244 */
+inline s32 func_801DF224_ovl_213B10(void) {
     s32 r;
 
     func_801D90E0_ovl_213B10();
@@ -256,80 +266,7 @@ void func_801DF9D8_ovl_213B10(s16 id) {
 
 INCLUDE_ASM("asm/nonmatchings/222190", func_801DFB80_ovl_213B10);
 
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E0244_ovl_213B10);
-
-void func_801E05A4_ovl_213B10(u8 *o, s32 a, s32 b, s32 c, u8 d) {
-    s32 e;
-
-    func_801D9FBC_ovl_213B10(0x18, b, (s32)o, 0xFF, c >> 8, c & 0xFF);
-    e = b + a;
-    func_801D9F60_ovl_213B10(0x19, e, (s32)o, 0xFF);
-    FIELD(o, s32, 0x94) = func_801DFB80_ovl_213B10(o, e, d);
-}
-
-void func_801E063C_ovl_213B10(Msg21 *m, s32 a, s32 b, s32 c) {
-    func_801D9FBC_ovl_213B10(0x1A, b, (s32)m, 0xFF, b + 100, c);
-    m->w94 = b + a;
-    m->flags |= 8;
-}
-
-void func_801E06A8_ovl_213B10(Msg21 *m, s32 a, s32 b) {
-    func_801D9F60_ovl_213B10(0x25, b, (s32)m, 0xFF);
-    m->w94 = b + a;
-    m->flags |= 4;
-}
-
-void func_801E0708_ovl_213B10(Msg21 *m, s32 a, s32 b) {
-    func_801D9F60_ovl_213B10(0x27, b, (s32)m, 0xFF);
-    m->w94 = b + a;
-    m->flags |= 0x10;
-}
-
-s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32);
-
-/* Queues message k (anim 0x19) then line 0x12 (anim 0x1A) for m from line b + a; stores the next
- * line */
-#ifdef NON_MATCHING
-/* 80/80 instructions, 14 words differ: b and the message data pointer swap s0/s1 */
-void func_801E0768_ovl_213B10(u8 *m, s32 a, s32 b, u8 k) {
-    func_801D9F8C_ovl_213B10(0x11, b, m, 0xFF, k);
-    b += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x19, 0) + a;
-    func_801D9F60_ovl_213B10(0x12, b, (s32)m, 0xFF);
-    FIELD(m, s32, 0x94) = b + func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1A, 0);
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E0768_ovl_213B10);
-#endif
-
-void func_801D9F30_ovl_213B10(s32 a, s32 b, s32 c);
-s32 func_801C8E9C(u8 *u);
-s32 func_801C8E64(u8 *u);
-s32 func_801C8E80(u8 *u);
-
-/* Queues the battle messages for unit message m from line pos on: the hit or miss line with its
- * damage, then the optional status effect (extra) or poison/other lines; stores the next line */
-void func_801E08A8_ovl_213B10(u8 *m, s32 pos, s32 hit, u8 extra) {
-    if (func_801C8E9C(m) == 0) {
-        func_801D9F60_ovl_213B10(hit ? 0xD : 0x12, pos, (s32)m, 0xFF);
-        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), hit ? 0x12 : 0x1A, 0);
-    } else {
-        func_801D9F30_ovl_213B10(0x2C, pos, (s32)m);
-    }
-    if (extra != 0) {
-        pos = func_801DFB80_ovl_213B10(m, pos, extra);
-    } else if (func_801C8E9C(m) == 0) {
-        if (func_801C8E64(m) != 0) {
-            func_801D9F8C_ovl_213B10(0x1D, pos, m, 0xFF, 0x20);
-            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x20, 0);
-        } else if (func_801C8E80(m) != 0) {
-            func_801D9F8C_ovl_213B10(0x1D, pos, m, 0xFF, 0x22);
-            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x22, 0);
-        }
-    }
-    FIELD(m, s32, 0x94) = pos;
-}
-
-/* func_801DF334 as inlined into func_801E0ACC, where func_801C8B08 gets no argument */
+/* func_801DF334 as inlined into func_801E0244 and func_801E0ACC, where func_801C8B08 gets no argument */
 static inline s32 CanUse222(u8 *u, u32 f) {
     s32 r = 0;
     s32 k = ((s32(*)())func_801C8B08)();
@@ -358,6 +295,98 @@ static inline s32 CanUse222(u8 *u, u32 f) {
     return r;
 }
 
+/* Counter message for unit message m from line pos on: the attack line, the 0x11/0x12/0x26 lines
+ * with 0x16 more after the last, flag 2 and the 0x2C line; then the item-use line 0x24 when the
+ * unit can use the chosen item. A unit for which func_801C8E9C holds gets only the attack line */
+void func_801E0244_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c) {
+    u32 f;
+
+    if (func_801C8E9C(m) == 0) {
+        func_801D9FF0_ovl_213B10(0xC, pos, (s32)m, 0xFF, 0xFF, 0xFF, c & 0xFF);
+        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x11, 0) + a;
+        func_801D9F60_ovl_213B10(0xD, pos, (s32)m, 0xFF);
+        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x12, 0);
+        func_801D9F60_ovl_213B10(0x23, pos, (s32)m, 0xFF);
+        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x26, 0);
+        pos += 0x16;
+        ((Msg21 *)m)->flags |= 2;
+        func_801D9F30_ovl_213B10(0x2C, pos, (s32)m);
+        f = func_801DF224_ovl_213B10();
+        if (f != 0 && CanUse222(m, f)) {
+            func_801D9F8C_ovl_213B10(0x1D, pos, (s32)m, 0xFF, 0x24);
+            func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x24, 0);
+        }
+    } else {
+        func_801D9FF0_ovl_213B10(0xC, pos, (s32)m, 0xFF, 0xFF, 0xFF, c & 0xFF);
+    }
+}
+
+void func_801E05A4_ovl_213B10(u8 *o, s32 a, s32 b, s32 c, u8 d) {
+    s32 e;
+
+    func_801D9FBC_ovl_213B10(0x18, b, (s32)o, 0xFF, c >> 8, c & 0xFF);
+    e = b + a;
+    func_801D9F60_ovl_213B10(0x19, e, (s32)o, 0xFF);
+    FIELD(o, s32, 0x94) = func_801DFB80_ovl_213B10(o, e, d);
+}
+
+void func_801E063C_ovl_213B10(Msg21 *m, s32 a, s32 b, s32 c) {
+    func_801D9FBC_ovl_213B10(0x1A, b, (s32)m, 0xFF, b + 100, c);
+    m->w94 = b + a;
+    m->flags |= 8;
+}
+
+void func_801E06A8_ovl_213B10(Msg21 *m, s32 a, s32 b) {
+    func_801D9F60_ovl_213B10(0x25, b, (s32)m, 0xFF);
+    m->w94 = b + a;
+    m->flags |= 4;
+}
+
+void func_801E0708_ovl_213B10(Msg21 *m, s32 a, s32 b) {
+    func_801D9F60_ovl_213B10(0x27, b, (s32)m, 0xFF);
+    m->w94 = b + a;
+    m->flags |= 0x10;
+}
+
+
+/* Queues message k (anim 0x19) then line 0x12 (anim 0x1A) for m from line b + a; stores the next
+ * line */
+#ifdef NON_MATCHING
+/* 80/80 instructions, 14 words differ: b and the message data pointer swap s0/s1 */
+void func_801E0768_ovl_213B10(u8 *m, s32 a, s32 b, u8 k) {
+    func_801D9F8C_ovl_213B10(0x11, b, (s32)m, 0xFF, k);
+    b += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x19, 0) + a;
+    func_801D9F60_ovl_213B10(0x12, b, (s32)m, 0xFF);
+    FIELD(m, s32, 0x94) = b + func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1A, 0);
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/222190", func_801E0768_ovl_213B10);
+#endif
+
+
+/* Queues the battle messages for unit message m from line pos on: the hit or miss line with its
+ * damage, then the optional status effect (extra) or poison/other lines; stores the next line */
+void func_801E08A8_ovl_213B10(u8 *m, s32 pos, s32 hit, u8 extra) {
+    if (func_801C8E9C(m) == 0) {
+        func_801D9F60_ovl_213B10(hit ? 0xD : 0x12, pos, (s32)m, 0xFF);
+        pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), hit ? 0x12 : 0x1A, 0);
+    } else {
+        func_801D9F30_ovl_213B10(0x2C, pos, (s32)m);
+    }
+    if (extra != 0) {
+        pos = func_801DFB80_ovl_213B10(m, pos, extra);
+    } else if (func_801C8E9C(m) == 0) {
+        if (func_801C8E64(m) != 0) {
+            func_801D9F8C_ovl_213B10(0x1D, pos, (s32)m, 0xFF, 0x20);
+            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x20, 0);
+        } else if (func_801C8E80(m) != 0) {
+            func_801D9F8C_ovl_213B10(0x1D, pos, (s32)m, 0xFF, 0x22);
+            pos += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x22, 0);
+        }
+    }
+    FIELD(m, s32, 0x94) = pos;
+}
+
 /* Item-use message for unit message m: when the unit can use the chosen item (as func_801DF334,
  * but the original calls func_801C8B08 without its argument) the use line; otherwise the
  * generic line and its two follow-ups (0x30/0x31 for kind 7) */
@@ -375,7 +404,7 @@ void func_801E0ACC_ovl_213B10(u8 *m, s32 pos, u8 kind) {
     f = func_8017223C(0x10);
     func_801707F4();
     if (f != 0 && CanUse222(m, f)) {
-        func_801D9F8C_ovl_213B10(0x1D, pos, m, 0xFF, 0x24);
+        func_801D9F8C_ovl_213B10(0x1D, pos, (s32)m, 0xFF, 0x24);
         func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x24, 0);
         return;
     }
@@ -394,10 +423,6 @@ void func_801E0ACC_ovl_213B10(u8 *m, s32 pos, u8 kind) {
 INCLUDE_ASM("asm/nonmatchings/222190", func_801E0ACC_ovl_213B10);
 #endif
 
-void func_801D9FF0_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g);
-s32 func_801C8C74(u8 *u);
-s32 func_801CA29C(u8 *u);
-s32 func_801C9FB4(s32 a, s32 b);
 
 /* Damage message for unit message m from line pos on: the attack line (0x10 on a plain hit, 0xC
  * or 0x32 otherwise, plus the 0x17 line when h is set), then the hp loss c: when the unit shows
@@ -459,11 +484,9 @@ void func_801E104C_ovl_213B10(s32 a, s32 b, s32 c, s32 d, s32 e) {
     func_801E0D34_ovl_213B10((u8 *)a, b, c, d, e, 0, 0, 0, 0);
 }
 
-s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32);
 extern u8 *D_801CE8BC; /* battle message units: 20 of 0xF8 bytes from +0x1C4 */
 
 /* Message line pos for m: the end of every message unit still running (flag 0x2000) */
-s32 func_801D9F8C_ovl_213B10(s32, s32, void *, s32, s32);
 extern u8 *D_801CE8BC; /* battle message units: 20 of 0xF8 bytes from +0x1C4 */
 
 /* Message line pos for m: the end of every message unit still running (flag 0x2000) */
@@ -504,7 +527,7 @@ void func_801E107C_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 d, s32 e) {
             break;
         }
     }
-    func_801D9F8C_ovl_213B10(0x39, line, m, e, i);
+    func_801D9F8C_ovl_213B10(0x39, line, (s32)m, e, i);
     func_801D9F60_ovl_213B10(0x3A, line + 0x23, (s32)m, i);
     ((Msg21 *)m)->w94 = line + 0x23;
 }
@@ -554,7 +577,7 @@ void func_801E11D8_ovl_213B10(u8 *m, s32 a, s32 pos, s32 c, s32 e) {
                 break;
             }
         }
-        func_801D9F8C_ovl_213B10(0x39, line, m, e, i);
+        func_801D9F8C_ovl_213B10(0x39, line, (s32)m, e, i);
         func_801D9F60_ovl_213B10(0x3A, line + 0x23, (s32)m, i);
         ((Msg21 *)m)->w94 = line + 0x23;
         return;
