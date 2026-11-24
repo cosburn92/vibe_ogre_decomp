@@ -1131,7 +1131,60 @@ void func_801B1330_ovl_0FA5E0(SparkFA5 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/FA5E0", func_801B15BC_ovl_0FA5E0);
+typedef struct { s32 m[16]; } MtxFA5;
+void func_801B2DBC_ovl_0FA5E0(u8 *m, Gfx **pg, MtxFA5 **pmtx, s32 k);
+void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+extern u8 D_801B4828_ovl_0FA5E0[];
+
+/* Draws the widget's 3D layer: a 320x240 ortho projection, the cursor, the three model buffers
+ * (0x524), then the tweens (0x258), sprites (0x3D4), 0x444 objects and sparks (0x4B4) */
+void func_801B15BC_ovl_0FA5E0(Widget3390 *w) {
+    u8 *p = (u8 *)w;
+    MtxFA5 *mp;
+    u32 k;
+    u32 i;
+
+    if (FIELD(p, s32, 0x194) == 0) {
+        return;
+    }
+    GFXFA(0xDE000000, (u32)D_801869C8);
+    GFXFA(0xE7000000, 0);
+    GFXFA(0xED000048, 0x004FC308);
+    GFXFA(0xE7000000, 0);
+    GFXFA(0xE7000000, 0);
+    guOrtho(D_800E9BE0->mtx[D_800C4BE4], -160.0f, 160.0f, -120.0f, 120.0f, -1000.0f, 1000.0f, 1.0f);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380007;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4];
+        D_800C4BE4++;
+    }
+    GFXFA(0xDE000000, (u32)D_801B4828_ovl_0FA5E0);
+    func_801B02C0_ovl_0FA5E0((CursorFA5 *)(p + 0x1E4));
+    mp = (MtxFA5 *)D_800E9BE0->mtx[D_800C4BE4];
+    for (k = 0; k < 3; k++) {
+        if (FIELD(p, u8 *, 0x524 + k * 4) != NULL) {
+            func_801B2DBC_ovl_0FA5E0(FIELD(p, u8 *, 0x524 + k * 4), &D_800E9BA0, &mp, FIELD(p, s32, 0x198));
+        }
+    }
+    FIELD(p, s32, 0x198) ^= 1;
+    D_800C4BE4 += mp - (MtxFA5 *)D_800E9BE0->mtx[D_800C4BE4];
+    GFXFA(0xDE000000, (u32)D_801B4828_ovl_0FA5E0);
+    for (i = 0; i < 5; i++) {
+        func_801B09B8_ovl_0FA5E0((TweenFA5 *)(p + 0x258 + i * 0x4C));
+    }
+    for (i = 0; i < 4; i++) {
+        func_801B0CE4_ovl_0FA5E0((SpriteFA5 *)(p + 0x3D4 + i * 0x1C));
+    }
+    for (i = 0; i < 4; i++) {
+        func_801B0F60_ovl_0FA5E0(p + 0x444 + i * 0x1C);
+    }
+    for (i = 0; i < 4; i++) {
+        func_801B1330_ovl_0FA5E0((SparkFA5 *)(p + 0x4B4 + i * 0x1C));
+    }
+    GFXFA(0xE7000000, 0);
+}
 
 extern f64 D_801B4CA0_ovl_0FA5E0[]; /* knot spacing h[i] */
 extern f64 D_801B4CF8_ovl_0FA5E0[]; /* d[i + 1]: slopes, then the eliminated diagonal */
@@ -1313,7 +1366,6 @@ void func_801B2CFC_ovl_0FA5E0(u8 *o) {
     }
 }
 
-typedef struct { s32 m[16]; } MtxFA5;
 extern u8 D_801B49D0_ovl_0FA5E0[];
 void func_80098AA0(void *m, f32 x, f32 y, f32 z);
 void func_801B2854_ovl_0FA5E0(u8 *m, s32 k);
