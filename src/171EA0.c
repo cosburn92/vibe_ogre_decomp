@@ -109,7 +109,27 @@ void func_8020CDA0(s32 se);
 extern u16 *D_800C4BDC;
 extern s32 D_801F1070;
 extern u8 gLocations[][0x24];
-void func_80215494_ovl_171EA0();
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+#include "gbi_ultra.h"
+extern Gfx *D_800E9BA0;
+extern u8 *D_801F0B90;
+extern u8 *D_801F36C0;
+void func_8017C4B4(s16 a);
+u16 func_8017B58C(void *s);
+void func_80200F70(void *pal, void *img, u16 w, u16 h, u16 mode);
+void func_80200DD0(s32 x, s32 y, s32 icon);
+void func_80179034(void *s, s32 x, s32 y);
+
+/* Window object (func_8017BFB0); only the fields used here are named */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x18];
+    /* 0x18 */ s16 fade[2];
+} Win17;
+
+void func_80215494_ovl_171EA0(Win17 *w, s32 page);
 void func_80215780_ovl_171EA0();
 void func_80215444_ovl_171EA0(void);
 
@@ -200,7 +220,66 @@ void func_80215444_ovl_171EA0(void) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Same size, 66 lines differ: the original has no sign extension for the (s16) casts in
+ * gSPScisTextureRectangle (GCC must know the coordinates fit; the clamped width here has two sets),
+ * so registers shift from 0x174 on */
+/* Texture strip (xl, yl) - (xh, yh) in 10.2 screen coordinates between pipe syncs */
+static inline void func_80215494_strip(Gfx **gp, s32 xl, s32 yl, s32 xh, s32 yh) {
+    gDPPipeSync((*gp)++);
+    gSPScisTextureRectangle((*gp)++, xl, yl, xh, yh, 0, 0, 24 << 5, 1 << 10, 1 << 10);
+    gDPPipeSync((*gp)++);
+}
+
+/* Draws the location name plate (window page callback): a background strip at least 77 pixels
+ * wide centred on x 0xA0, with end caps 0x76/0x77, and the name of the current location on it */
+void func_80215494_ovl_171EA0(Win17 *w, s32 page) {
+    u16 len;
+    u32 n;
+    s32 x;
+    s32 y;
+
+    if (w->fade[page] == 0) {
+        return;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    func_8017C4B4(w->fade[page]);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x00504240;
+    }
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xFC119623;
+        _g->w1 = 0xFF2FFFFF;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, 0xFF, 0xFF, 0xFF, w->fade[page]);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    gSPTexture(D_800E9BA0++, 0x8000, 0x8000, 0, 0, G_ON);
+    len = func_8017B58C((void *)D_8021AA70_ovl_171EA0->w60);
+    n = (u8)len;
+    if (n < 77) {
+        n = 77;
+    }
+    x = 0x90 - n / 2;
+    y = 0x92;
+    func_80200F70(D_801F36C0 + 0x520, D_801F0B90 + 0x3E28, 32, 45, 10);
+    func_80200DD0(x, y, 0x76);
+    func_80215494_strip(&D_800E9BA0, (x + 16) << 2, (y + 3) << 2, (x + (n + 16)) << 2, (y + 24) << 2);
+    func_80200DD0(x + n + 16, y, 0x77);
+    if ((u8)len < 77) {
+        x = 0xA0 - (u8)len / 2;
+    } else {
+        x += 16;
+    }
+    func_80179034((void *)D_8021AA70_ovl_171EA0->w60, x, y + 6);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/171EA0", func_80215494_ovl_171EA0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/171EA0", func_80215780_ovl_171EA0);
 
