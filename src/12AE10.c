@@ -60,7 +60,9 @@ typedef struct {
     /* 0x54 */ f32 savedZ;
     /* 0x58 */ u8 unk58[0xC];
     /* 0x64 */ s32 unk64;
-    /* 0x68 */ u8 unk68[0x18];
+    /* 0x68 */ u8 unk68[0xC];
+    /* 0x74 */ s32 loc; /* location index, -1 for none */
+    /* 0x78 */ u8 unk78[8];
     /* 0x80 */ s32 unk80;
     /* 0x84 */ s32 unk84;
     /* 0x88 */ u8 unk88[9];
@@ -786,10 +788,7 @@ s32 func_801DA8D0_ovl_101CE0(s32 sq) {
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DAA00_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DADF0_ovl_101CE0);
-
-u8 func_801D4A74_ovl_101CE0(u8 *legion);
-
+/* Legion containing the unit's squad, or -1 (inlined copy of func_801DA228) */
 static inline s32 LegionOf(MapUnit *u) {
     u8 *l;
     s32 sq = u->squad;
@@ -817,6 +816,69 @@ static inline s32 LegionOf(MapUnit *u) {
     }
     return -1;
 }
+
+/* Map state of a unit: for flag 0x40 units, 4 if a squad of its legion has flag 0x20000, 3 if none
+ * stands on a 0x10 location (or the unit's leader is character 1), else 6; otherwise 9 when the
+ * leader is dead or has status 4, 2 with flag 0x20000, 1 off a 0x10 location or led by
+ * character 1, else 5 */
+s32 func_801DADF0_ovl_101CE0(MapUnit *u) {
+    u8 *l;
+    s32 i;
+    s32 r;
+
+    if (u->flags & 0x40) {
+        l = gLegions[LegionOf(u)];
+        for (i = 0; i < 5; i++) {
+            u8 s = (l + i)[2];
+
+            if (s != 0xFF && (*D_801F0CB0_ovl_101CE0[s] & 0x20000)) {
+                break;
+            }
+        }
+        if (i < 5) {
+            r = 4;
+        } else {
+            for (i = 0; i < 5; i++) {
+                u8 s = (l + i)[2];
+
+                if (s != 0xFF) {
+                    s32 loc = ((MapUnit *)D_801F0CB0_ovl_101CE0[s])->loc;
+
+                    if (loc != -1 && (D_801951CC[loc].flags & 0x10)) {
+                        break;
+                    }
+                }
+            }
+            if (i < 5) {
+                for (i = 0; i < 5; i++) {
+                    if ((l + i)[2] != 0xFF && gSquads[u->squad].members[0] == 1) {
+                        break;
+                    }
+                }
+                if (i < 5) {
+                    r = 3;
+                } else {
+                    r = 6;
+                }
+            } else {
+                r = 3;
+            }
+        }
+    } else if (!func_801D92D0_ovl_101CE0(u)) {
+        r = 9;
+    } else if (func_801D935C_ovl_101CE0(u)) {
+        r = 9;
+    } else if (u->flags & 0x20000) {
+        r = 2;
+    } else if (u->loc != -1 && (D_801951CC[u->loc].flags & 0x10)) {
+        r = gSquads[u->squad].members[0] == 1 ? 1 : 5;
+    } else {
+        r = 1;
+    }
+    return r;
+}
+
+u8 func_801D4A74_ovl_101CE0(u8 *legion);
 
 #ifdef NON_MATCHING
 /* 0x2C4 vs 0x2A4: everything lines up except the squad-drop loop, where GCC hoists the
