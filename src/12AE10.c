@@ -786,7 +786,6 @@ s32 func_801DA8D0_ovl_101CE0(s32 sq) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DAA00_ovl_101CE0);
 
 /* Legion containing the unit's squad, or -1 (inlined copy of func_801DA228) */
 static inline s32 LegionOf(MapUnit *u) {
@@ -815,6 +814,121 @@ static inline s32 LegionOf(MapUnit *u) {
         }
     }
     return -1;
+}
+
+/* Slot of the unit's squad within its legion, or -1 (inlined copy of func_801DA2B4) */
+static inline s32 SlotOf(MapUnit *u) {
+    u8 *l;
+    s32 sq = u->squad;
+    s32 i;
+    s32 j;
+
+    for (i = 0, l = gLegions[0]; i < 10; i++, l += 11) {
+        u8 fl = l[1];
+
+        if (!(fl & 1)) {
+            continue;
+        }
+        if (u->flags & 8) {
+            if (fl & 0x80) {
+                continue;
+            }
+        } else if (!(fl & 0x80)) {
+            continue;
+        }
+        for (j = 0; j < 5; j++) {
+            if ((l + j)[2] == sq) {
+                return j;
+            }
+        }
+    }
+    return -1;
+}
+
+/* Takes a unit off its map task: stops it and clears its movement and order flags */
+static inline void UnitStop(MapUnit *o) {
+    func_801B2D2C_ovl_101CE0(o);
+    o->unk92 = 0;
+    o->unk91 = 0;
+    o->unk84 = -1;
+    o->unk80 = -1;
+    o->flags &= ~0x80;
+    o->flags &= ~0x40;
+    o->flags &= ~0x4000;
+    o->flags &= ~0x8000;
+    o->flags &= ~0x10000;
+    o->flags &= ~0x800000;
+}
+
+u8 func_801D4A74_ovl_101CE0(u8 *legion);
+
+/* func_801DA1AC inlined: squads in the unit's legion */
+static inline s32 LegionSquadCount(MapUnit *u) {
+    s32 n;
+    u8 *p = &gLegions[func_801DA228_ovl_101CE0(u)][2];
+    s32 i;
+
+    n = 0;
+    for (i = 0; i < 5; i++) {
+        n += p[i] != 0xFF;
+    }
+    return n;
+}
+
+/* Leaves the unit's legion (flag 0x40 units only). A legion leader (flag 0x80) disbands it:
+ * every squad is stopped and the followers are marked 0x20000000 (enemy ones excepted); a
+ * follower is stopped and its slot removed, the later squads moving up. Then the legion's
+ * type byte and free-slot count are recomputed */
+void func_801DAA00_ovl_101CE0(MapUnit *u) {
+    u8 *lg;
+    s32 l;
+    s32 i;
+    s32 k;
+
+    if (!(u->flags & 0x40)) {
+        return;
+    }
+    l = LegionOf(u);
+    SlotOf(u);
+    lg = gLegions[l];
+    if (u->flags & 0x80) {
+        lg[1] &= ~1;
+        gSquads[u->squad].flags &= ~2;
+        for (i = 0; i < 5; i++) {
+            u8 s = (lg + i)[2];
+
+            if (s != 0xFF) {
+                MapUnit *o = (MapUnit *)D_801F0CB0_ovl_101CE0[s];
+
+                UnitStop(o);
+                if (i != 0 && !(o->flags & 8)) {
+                    o->flags |= 0x20000000;
+                }
+            }
+        }
+        if (u->flags & 8) {
+            u->flags |= 0x2000000;
+        }
+    } else {
+        UnitStop(u);
+        if (u->flags & 8) {
+            u->flags |= 0x2000000;
+        }
+        for (i = 0; i < 5; i++) {
+            if ((lg + i)[2] == u->squad) {
+                for (k = i; k < 5; k++) {
+                    if (k == 4) {
+                        lg[6] = 0xFF;
+                    } else {
+                        (lg + k)[2] = (lg + k)[3];
+                    }
+                }
+                break;
+            }
+        }
+    }
+    lg[9] = func_801D4A74_ovl_101CE0(lg);
+    lg[10] = 11 - LegionSquadCount((MapUnit *)D_801F0CB0_ovl_101CE0[lg[2]]);
 }
 
 /* Map state of a unit: for flag 0x40 units, 4 if a squad of its legion has flag 0x20000, 3 if none
@@ -878,8 +992,6 @@ s32 func_801DADF0_ovl_101CE0(MapUnit *u) {
     return r;
 }
 
-u8 func_801D4A74_ovl_101CE0(u8 *legion);
-
 #ifdef NON_MATCHING
 /* 0x2C4 vs 0x2A4: everything lines up except the squad-drop loop, where GCC hoists the
  * three large flag masks (and -16385) into saved registers; the original keeps them in the
@@ -887,18 +999,6 @@ u8 func_801D4A74_ovl_101CE0(u8 *legion);
  * MapUnit flags field, do-while/goto loops or a merged mask. */
 /* Drops squads from the unit's legion until it has no more than its squad's generic members
  * allow, then recomputes the legion's type byte and free-slot count */
-/* func_801DA1AC inlined: squads in the unit's legion */
-static inline s32 LegionSquadCount(MapUnit *u) {
-    s32 n;
-    u8 *p = &gLegions[func_801DA228_ovl_101CE0(u)][2];
-    s32 i;
-
-    n = 0;
-    for (i = 0; i < 5; i++) {
-        n += p[i] != 0xFF;
-    }
-    return n;
-}
 
 void func_801DB180_ovl_101CE0(MapUnit *u) {
     s32 l = LegionOf(u);
@@ -1614,7 +1714,7 @@ s32 func_801DD2B0_ovl_101CE0(MapUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2B0_ovl_101CE0);
 #endif
 
-#define UNIT_TOWN(u) (*(s32 *)&(u)->unk68[0xC]) /* town index at +0x74, -1 when none */
+#define UNIT_TOWN(u) ((u)->loc) /* town index at +0x74, -1 when none */
 
 /* Starts unit u's move (a = kind, b = mode); mode 0 onto an owned town keeps a return point */
 #ifdef NON_MATCHING
