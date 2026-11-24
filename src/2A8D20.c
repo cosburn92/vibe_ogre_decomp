@@ -1069,7 +1069,7 @@ void func_8023D878_ovl_2A8D20(s32 n) {
                 s16 a;
 
                 if (func_801C8C90(u) == 1) {
-                    a = (-(o[0x149] == 1) & 0x3B) | 9;
+                    a = o[0x149] == 1 ? 0x3B : 9;
                 } else {
                     a = 9;
                 }
@@ -1109,7 +1109,7 @@ void func_8023DAC4_ovl_2A8D20(void) {
                 busy = 1;
                 u = D_801CE8BC + o[0x147] * 0xF8 + 0x1C4;
                 if (func_801C8C90(u) == 1) {
-                    off = -(o[0x149] == 1) & 50;
+                    off = o[0x149] == 1 ? 50 : 0;
                 }
                 switch (*s) {
                     case 5:
