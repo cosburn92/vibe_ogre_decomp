@@ -1179,7 +1179,75 @@ void func_8022AAA4_ovl_27A020(Obj27 *o) {
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AAA4_ovl_27A020);
 #endif
 
+/* Draws the bobbing cursor beside the selected list row (o->0x10) inside the window's scissor
+ * box; the row's y skips the rows above that carry a mark */
+#ifdef NON_MATCHING
+/* 220/220 instructions: registers and scheduling differ (the original hoists the constant 2 and x - 16 out of the row loop, after i = 0, and copies the scissor command pointer) */
+void func_8022AC5C_ovl_27A020(Obj27 *o) {
+    List27 *l = (List27 *)&o->w18;
+    s16 x = FIELD(FIELD(o, u8 *, 0), s32, 0x2C);
+    s16 y = FIELD(FIELD(o, u8 *, 0), s32, 0x30) + 3;
+    s16 i;
+    u8 *e;
+    Gfx *g;
+    s32 two;
+    s16 left;
+
+    gDPPipeSync(D_800E9BA0++);
+    g = D_800E9BA0++;
+    {
+        u8 *win = FIELD(o, u8 *, 0);
+        s32 y0 = FIELD(win, s32, 0x30);
+
+        g->w0 = 0xED000000 | _SHIFTL((s32)((f32)0 * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(y0 < 0 ? 0 : y0) * 4.0f), 0, 12);
+        g->w1 = _SHIFTL((s32)((f32)(FIELD(FIELD(o, u8 *, 0), s32, 0x34) == 320 ? 319 : FIELD(FIELD(o, u8 *, 0), s32, 0x34)) * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(FIELD(FIELD(o, u8 *, 0), s32, 0x38) == 240 ? 239 : FIELD(FIELD(o, u8 *, 0), s32, 0x38)) * 4.0f), 0, 12);
+    }
+    gDPPipeSync(D_800E9BA0++);
+    i = 0;
+    two = 2;
+    left = x - 16;
+    for (; i < 5; i++) {
+        e = (u8 *)l->items[i];
+        if (List27_EntryMark(l, e)) {
+            if (i == FIELD(o, s16, 0x10)) {
+                s16 cx;
+                s16 cy;
+
+                if (((u8 (*)(u8, u8))func_8016DE1C)(e[0x4B], e[0x4F]) == two) {
+                    y += 7;
+                } else {
+                    y += 8;
+                }
+                if (D_8022CB30_ovl_27A020[D_8022CB2C_ovl_27A020] == 0x63) {
+                    D_8022CB2C_ovl_27A020 = 0;
+                }
+                cy = y + 2;
+                cx = x - 13;
+                if (D_8022CB28_ovl_27A020 == 1) {
+                    cx = D_8022CB30_ovl_27A020[D_8022CB2C_ovl_27A020++] + left;
+                }
+                gSPDisplayList(D_800E9BA0++, D_8022CAB8_ovl_27A020);
+                gDPPipeSync(D_800E9BA0++);
+                {
+                    Gfx *_g = D_800E9BA0++;
+
+                    _g->w0 = 0xE200001C;
+                    _g->w1 = 0x504240;
+                }
+                func_801818A0(cx, cy);
+                gDPPipeSync(D_800E9BA0++);
+                return;
+            }
+            y += 36;
+            func_8016DE1C(e[0x4B], e[0x4F]);
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AC5C_ovl_27A020);
+#endif
 
 void func_8022AFCC_ovl_27A020(Obj27 *o) {
     *o->w18 = 0;
