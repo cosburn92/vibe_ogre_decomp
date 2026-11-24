@@ -125,7 +125,7 @@ u8 func_801D5BF0_ovl_087200(u8 m) {
         if ((D_801EF474_ovl_087200[pos] >> k) & 1) {
             u8 c = (q + (pos + D_801EF480_ovl_087200[k]))[4];
 
-            if ((c != 0xFF) & (c != m)) {
+            if (c != 0xFF && c != m) {
                 u8 *u = D_80193BC0[0];
 
                 if (c < 100) {
