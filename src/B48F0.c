@@ -447,7 +447,9 @@ void func_801CA44C_ovl_087200(u8 *sq) {
     m = D_80196AF8 + ((sq[2] * 0x36) + 0x117C);
     for (i = 0; i < 9; i++) {
         c = (m + i)[4];
-        n += (c != 0xFF) & (c >= 100);
+        if (c != 0xFF && c >= 100) {
+            n++;
+        }
         if (c != 0xFF) {
             p = D_80196AF8 + ((c * 2) + 0x1872);
             *p &= 0xDF;
