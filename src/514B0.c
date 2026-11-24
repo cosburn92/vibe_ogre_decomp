@@ -935,29 +935,33 @@ Node *func_8017F010_ovl_040E80(void *data, u16 kind, s16 x, s16 y, s16 w, s16 h,
     return n;
 }
 
+/* Creates a box node with drawer fn, outer rectangle (x, y, w, h) and inner rectangle
+ * (x2, y2, w2, h2), step 1, flags 0x8000 (the body of func_8017EF24 without the text setup) */
+static inline Node *Box514(u16 kind, void (*fn)(), s16 x, s16 y, s16 w, s16 h, s16 x2, s16 y2, s16 w2, s16 h2) {
+    Node *n = func_8017C074_ovl_040E80(kind, 0, fn, x, y, w, h);
+
+    FIELD(n, s16, 0x18) = 0;
+    FIELD(n, s32, 0x3C) = x2;
+    FIELD(n, s32, 0x40) = y2;
+    FIELD(n, s32, 0x44) = w2;
+    FIELD(n, s32, 0x48) = h2;
+    FIELD(n, s16, 0x28) = 1;
+    FIELD(n, u16, 0x26) = 0x8000;
+    return n;
+}
+
 /* Marker widget next to o (same colour index), drawn by func_8017EAE8 */
-#ifdef NON_MATCHING
-/* Same scheduling issue as func_8017EF24 (sign-extensions before li v1,1). The original also computes x-0x3E, y-0x10 and y+0x10 before the call, reusing the x/y registers. An inline setter with s16 parameters did not help. */
 void func_8017F114_ovl_040E80(Node *o) {
     s32 x = FIELD(o, s32, 0x44);
     s32 y = FIELD(o, s32, 0x48);
-    Node *n = func_8017C074_ovl_040E80(4, 0, func_8017EAE8_ovl_040E80, x - 12, y - 8, x - 4, y + 8);
+    s16 bottom = y + 0x10;
+    Node *n = Box514(4, func_8017EAE8_ovl_040E80, x - 12, y - 8, x - 4, y + 8, x - 0x3E, y - 0x10, x - 4, bottom);
 
-    FIELD(n, s16, 0x28) = 1;
-    FIELD(n, s16, 0x18) = 0;
-    FIELD(n, s32, 0x3C) = (s16)(x - 0x3E);
-    FIELD(n, s32, 0x40) = (s16)(y - 0x10);
-    FIELD(n, s32, 0x44) = (s16)(x - 4);
-    FIELD(n, s32, 0x48) = (s16)(y + 0x10);
-    FIELD(n, u16, 0x26) = 0x8000;
     FIELD(n, u8, 0x22) = FIELD(o, u8, 0x22);
+    FIELD(n, u8, 0x23) = FIELD(o, u8, 0x22);
     FIELD(n, u8, 0x24) = 1;
     FIELD(n, u8, 0x25) = 2;
-    FIELD(n, u8, 0x23) = FIELD(o, u8, 0x22);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F114_ovl_040E80);
-#endif
 
 void func_8017EC84_ovl_040E80(Node *n, s32 k);
 
