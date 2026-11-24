@@ -841,8 +841,6 @@ INCLUDE_ASM("asm/nonmatchings/29C950", BattleAnimStep2);
 #endif
 
 /* Advances u's frame counter until the colour query reports 4, then steps it back by 2 */
-#ifdef NON_MATCHING
-/* Only the epilogue differs: the original reloads wF0 into v0 and re-materialises 4 with li after the store; here v0 still holds 4 from the loop compare. */
 s32 func_8022EEDC_ovl_29A4C0(BUnit *u) {
     u8 c[3];
     u8 r;
@@ -857,13 +855,11 @@ s32 func_8022EEDC_ovl_29A4C0(BUnit *u) {
         }
         if (r == 4) {
             u->wF0 -= 2;
-            return 4;
+            break;
         }
     }
+    return 4;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29C950", func_8022EEDC_ovl_29A4C0);
-#endif
 
 typedef struct {
     u8 b00[0x10];
