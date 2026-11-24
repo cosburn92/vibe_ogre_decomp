@@ -1199,7 +1199,100 @@ s32 func_802291E0_ovl_1BA050(Rect1BB *a, Rect1BB *b, Rect1BB *out) {
     return n;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_802292DC_ovl_1BA050);
+typedef struct {
+    s32 n;
+    s16 r[1][4]; /* x0, y0, x1, y1 */
+} RectList1BB;
+extern RectList1BB D_8022A720_rects_ovl_1BA050; /* D_8022A720 (count) + D_8022A724 (rects) */
+#define RL1BB D_8022A720_rects_ovl_1BA050
+
+INCLUDE_RODATA("asm/nonmatchings/1BBFB0", D_8022A1D8_ovl_1BA050);
+
+/* Sorts the four edges v (two from each rectangle, tagged 0 and 1) and returns whether the two
+ * lowest come from the same rectangle, i.e. whether the spans are apart */
+static inline s32 func_802292DC_apart(s16 *v) {
+    u8 t[4] = { 0, 0, 1, 1 };
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 3; i++) {
+        for (j = i + 1; j < 4; j++) {
+            if (v[i] > v[j]) {
+                s16 a = v[i];
+                s16 b = v[j];
+                u8 c;
+
+                v[j] = a;
+                v[i] = b;
+                c = t[j];
+                t[j] = t[i];
+                t[i] = c;
+            }
+        }
+    }
+    {
+        s32 a = t[0];
+
+        return t[1] == a;
+    }
+}
+
+/* Cuts rectangle q (x0, y0, x1, y1) out of every rectangle in the D_8022A720 list: an overlapped
+ * rectangle is replaced by the first remaining piece and the others are appended (hangs past 30) */
+void func_802292DC_ovl_1BA050(s16 *q) {
+    s16 ys[4];
+    s16 xs[4];
+    Rect1BB cut;
+    Rect1BB out[4];
+    s32 i;
+    s32 k;
+    s32 n;
+    Rect1BB *e;
+
+    for (i = 0; i < RL1BB.n; i++) {
+        ys[0] = RL1BB.r[i][1];
+        ys[1] = RL1BB.r[i][3];
+        ys[2] = q[1];
+        ys[3] = q[3];
+        if (func_802292DC_apart(ys)) {
+            continue;
+        }
+        xs[0] = RL1BB.r[i][0];
+        xs[1] = RL1BB.r[i][2];
+        xs[2] = q[0];
+        xs[3] = q[2];
+        if (func_802292DC_apart(xs)) {
+            continue;
+        }
+        cut.y0 = ys[1];
+        cut.y1 = ys[2];
+        cut.x0 = xs[1];
+        cut.x1 = xs[2];
+        n = func_802291E0_ovl_1BA050((Rect1BB *)RL1BB.r[i], &cut, out);
+        if (n > 0) {
+            ((Rect1BB *)RL1BB.r[i])->y0 = out[0].y0;
+            ((Rect1BB *)RL1BB.r[i])->y1 = out[0].y1;
+            ((Rect1BB *)RL1BB.r[i])->x0 = out[0].x0;
+            ((Rect1BB *)RL1BB.r[i])->x1 = out[0].x1;
+            for (k = 1; k < n; k++) {
+                if ((u32)RL1BB.n >= 30) {
+                    for (;;);
+                }
+                e = (Rect1BB *)RL1BB.r[RL1BB.n++];
+                e->y0 = out[k].y0;
+                e->y1 = out[k].y1;
+                e->x0 = out[k].x0;
+                e->x1 = out[k].x1;
+            }
+        }
+    }
+}
+
+/* the original rodata ends with two zero words after the edge tags */
+__asm__(".section .rodata
+.word 0, 0
+.section .text
+");
 
 inline void func_80229604_ovl_1BA050(s16 *list) {
     if (list == NULL) {
@@ -1222,13 +1315,6 @@ inline void func_80229604_ovl_1BA050(s16 *list) {
 }
 
 extern u8 D_8022A827_ovl_1BA050;
-
-typedef struct {
-    s32 n;
-    s16 r[1][4]; /* x0, y0, x1, y1 */
-} RectList1BB;
-extern RectList1BB D_8022A720_rects_ovl_1BA050; /* D_8022A720 (count) + D_8022A724 (rects) */
-#define RL1BB D_8022A720_rects_ovl_1BA050
 
 /* Draws the D_8022A720 solid rectangles (x0, y0, x1, y1 at D_8022A724) with alpha D_8022A827 */
 void func_802296B0_ovl_1BA050(void) {
@@ -1369,6 +1455,3 @@ void func_80229BD4_ovl_1BA050(void) {
     }
 }
 
-INCLUDE_RODATA("asm/nonmatchings/1BBFB0", D_8022A1D8_ovl_1BA050);
-
-INCLUDE_RODATA("asm/nonmatchings/1BBFB0", D_8022A1E0_ovl_1BA050);
