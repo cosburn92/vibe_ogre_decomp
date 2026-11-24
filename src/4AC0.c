@@ -424,10 +424,11 @@ s32 func_8007541C(s32 n, SaveHeader *hdr) {
     return SaveChecksumOk(hdr, data, len, SLOT_OFFSET(n));
 }
 
-#ifdef NON_MATCHING
-/* Same length-register / final-compare difference as func_8007541C. */
+/* Reads the suspend save into hdr and checks it; an empty one (first word 0) is valid.
+ * len is assigned up front as in func_8007541C */
 s32 func_80075578(SaveHeader *hdr) {
     u8 *data = (u8 *)hdr + SAVE_HEADER;
+    s32 len = SUSPEND_SIZE - SAVE_HEADER;
 
     SramRead(hdr, SUSPEND_OFFSET, SUSPEND_SIZE);
     if (_bcmp(D_800A8240, hdr->magic, 8) != 0) {
@@ -436,11 +437,8 @@ s32 func_80075578(SaveHeader *hdr) {
     if (*(s32 *)hdr == 0) {
         return 1;
     }
-    return SaveChecksumOk(hdr, data, SUSPEND_SIZE - SAVE_HEADER, SUSPEND_OFFSET);
+    return SaveChecksumOk(hdr, data, len, SUSPEND_OFFSET);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4AC0", func_80075578);
-#endif
 
 #ifdef NON_MATCHING
 /* Same length-register / final-compare difference as func_8007541C. */
