@@ -424,7 +424,87 @@ void func_80213C50_ovl_25EE90(Set26 *s) {
     func_8020C074_ovl_25EE90(s->cnt);
 }
 
+u16 func_8020CE94_ovl_25EE90(void *mdl, u16 a, s32 b, u16 d, s32 e);
+
+/* func_80213980 with the animation of each record taken from set kind at base + id */
+static inline void BindSlotsKind(void *mdl, void *mtx, void *slots, s32 kind, s32 base) {
+    s32 pad[2];
+
+    if (((Set38 *)mdl)->n != 0) {
+        u8 **sl = slots;
+        u8 *m = mtx;
+        s32 off = 0;
+        u32 i = 0;
+
+    loop:
+        if (*sl != NULL) {
+            u8 *o;
+            u8 *d;
+            u16 *r;
+
+            FIELD(*sl, void *, 0) = func_8020F134_ovl_25EE90;
+            o = *sl;
+            d = o + 0x18;
+            bzero(d, 0x18);
+            r = (u16 *)((u8 *)((Set38 *)mdl)->recs + off);
+            if (r[3] != 0) {
+                FIELD(o, u8 *, 0x1C) = m;
+                if ((FIELD(o, void *, 0x2C) = func_8020BF5C_ovl_25EE90(6, r[3], 0)) == NULL) {
+                    while (1) {
+                    }
+                }
+                if (r[0] != 0) {
+                    if ((FIELD(d, void *, 8) = func_8020BF5C_ovl_25EE90(5, r[0], 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+                FIELD(d, u16, 0x10) = r[2];
+                if (!(r[1] & 0x8000)) {
+                    if ((FIELD(d, void *, 0xC) = func_8020BF5C_ovl_25EE90((u16)kind, r[1] + base, 0)) == NULL) {
+                        while (1) {
+                        }
+                    }
+                }
+            }
+        }
+        m += 0x44;
+        off += 0xA;
+        i++;
+        sl++;
+        if (i < ((Set38 *)mdl)->n) {
+            goto loop;
+        }
+    }
+}
+
+/* Instantiates model id like func_80213AC8 and starts animation set kind (base + record id);
+ * the bone slots bind that animation instead of kind 4 */
+#ifdef NON_MATCHING
+/* same length; prologue schedules the stack-arg loads first, mdl and d/i swap s4/s5,
+ * and the base spill sits 8 bytes higher */
+void func_80213CE0_ovl_25EE90(u8 *m, s32 id, s32 kind, s32 base, u16 d, s32 e) {
+    u8 *mdl;
+    u32 size;
+
+    FIELD(m, s32, 0) = id;
+    mdl = func_8020C644_ovl_25EE90(id);
+    FIELD(m, u8 *, 4) = mdl;
+    size = FIELD(mdl, u32, 4) * 0x44 + FIELD(mdl, u32, 4) * 4;
+    if (size & 0x3F) {
+        size = (size & ~0x3F) + 0x40;
+    }
+    FIELD(m, u8 *, 0x14) = HMalloc(size);
+    bzero(FIELD(m, u8 *, 0x14), size);
+    FIELD(m, u8 *, 8) = FIELD(m, u8 *, 0x14);
+    FIELD(m, u8 *, 0xC) = FIELD(m, u8 *, 0x14) + FIELD(mdl, u32, 4) * 0x44;
+    func_802138FC_ovl_25EE90((Set38 *)mdl, FIELD(m, s32 *, 0xC));
+    FIELD(m, u16, 0x10) = func_8020CE94_ovl_25EE90(mdl, kind, base, d, e);
+    BindSlotsKind(mdl, FIELD(m, void *, 8), FIELD(m, void *, 0xC), kind, base);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/267750", func_80213CE0_ovl_25EE90);
+#endif
 
 void func_80213F28_ovl_25EE90(Set26 *s, u16 a, s32 b, u16 d, s32 e) {
     func_8020D024_ovl_25EE90(s->cnt, a, b, d, e);
