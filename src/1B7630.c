@@ -571,27 +571,26 @@ INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B31C_ovl_1B2670);
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B5EC_ovl_1B2670);
 
 /* Loads the shared table chunk (two sections) and creates the two default entries */
-#ifdef NON_MATCHING
-/* Same issue as 6E660 func_80197D20: the original reuses a1 for both section offsets (load, add, load); here the two halfword loads are scheduled together. */
 void **func_8021B93C_ovl_1B2670(void) {
     TblHdr *tmp = HMalloc(ChunkSize(0x315736));
     void **r;
+    s32 one = 1;
+    u32 o;
 
     LoadChunkRaw(tmp, 0x315736);
     D_8021C9E8_ovl_1B2670 = HMalloc(tmp->size);
     _bcopy(tmp, D_8021C9E8_ovl_1B2670, tmp->size);
-    D_8021C9E0_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + D_8021C9E8_ovl_1B2670->sec0;
-    D_8021C9E4_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + D_8021C9E8_ovl_1B2670->sec1;
+    o = D_8021C9E8_ovl_1B2670->sec0;
+    D_8021C9E0_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + o;
+    o = D_8021C9E8_ovl_1B2670->sec1;
+    D_8021C9E4_ovl_1B2670 = (u8 *)D_8021C9E8_ovl_1B2670 + o;
     HFree(tmp);
     r = HMalloc(8);
     bzero(r, 8);
-    r[0] = func_8021B5EC_ovl_1B2670(1, 1, 0, 1, 1);
-    r[1] = func_8021B5EC_ovl_1B2670(1, 1, 0, 0, 1);
+    r[0] = func_8021B5EC_ovl_1B2670(1, 1, 0, 1, one);
+    r[1] = func_8021B5EC_ovl_1B2670(1, 1, 0, 0, one);
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B93C_ovl_1B2670);
-#endif
 
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
