@@ -1397,7 +1397,6 @@ extern void *D_800C4BB8;
 extern u8 D_800E7A0C;
 extern u16 *D_800A8204[3];
 void nuGfxTaskAllEndWait(void);
-void *HMalloc(s32 size);
 u32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
 
 /* Flattens the current 'B5' part sprite into a free frame buffer at the light position and

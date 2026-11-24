@@ -18,7 +18,7 @@ usage:
   ours:  ilint.py -I include -I src -D_LANGUAGE_C -D__GNUC__=2 src
   OB64:  ilint.py -I include src
 
-needs: pip install libclang  (kept in build/ilint-venv)
+needs: pip install libclang  (or a venv at build/ilint-venv, used automatically)
 Exit status is 1 when there is any error.
 
 Rules (the same ones OB64's tools/lib/c_interfaces.js applies):
@@ -44,7 +44,13 @@ import sys
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
-import clang.cindex as ci
+try:
+    import clang.cindex as ci
+except ImportError:  # not installed for this python: use the repo's venv (build/ilint-venv)
+    venv = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        'build', 'ilint-venv', 'Lib', 'site-packages')
+    sys.path.insert(0, venv)
+    import clang.cindex as ci
 
 K = ci.CursorKind
 T = ci.TypeKind

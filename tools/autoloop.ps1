@@ -63,6 +63,11 @@ these forms, which are pre-approved; anything else will be refused:
   scripts:  python3 build/autoloop/<name>.py (write helpers there, not elsewhere)
 You are already in the repo root: never cd before a git command (that
 combination is always refused, even with git pre-approved).
+Prototypes: use the shared headers in include/ (heap.h, chunk.h, rescache.h, ...)
+instead of declaring a function again in the .c file, and give a new prototype
+the definition's exact types. Before each commit, check the files you touched:
+  python3 tools/ilint.py -I include -I src -D_LANGUAGE_C -D__GNUC__=2 src | tail -40
+and fix any error it reports for a function you declared, called or defined.
 Keep reads small: pipe big asm/diff output through head or grep.
 '@
 $prompt = $prompt.Replace("MIN", "$Min").Replace("MAX", "$Max")
