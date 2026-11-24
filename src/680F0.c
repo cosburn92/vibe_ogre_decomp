@@ -346,7 +346,144 @@ s32 func_801999E8_ovl_066E10(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/680F0", func_80199D10_ovl_066E10);
+/* Image header at the start of a background file and of each part's data */
+typedef struct {
+    /* 0x0 */ u8 unk0[2];
+    /* 0x2 */ u8 type;
+    /* 0x3 */ u8 count; /* parts that follow (file header only) */
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+} BgHdr680;
+/* Part header: followed by size bytes (an image header and its data) */
+typedef struct BgPart680 {
+    /* 0x0 */ u8 unk0[2];
+    /* 0x2 */ u8 type;
+    /* 0x3 */ u8 unk3;
+    /* 0x4 */ u16 w;
+    /* 0x6 */ u16 h;
+    /* 0x8 */ s32 size;
+    /* 0xC */ struct BgPart680 *next;
+} BgPart680;
+/* The JPEG job state at D_801BA6D0 as this function sees it */
+typedef struct {
+    /* 0x000 */ u8 unk00[0x60];
+    /* 0x060 */ void *tiles;
+    /* 0x064 */ u8 unk64[4];
+    /* 0x068 */ void *img;
+    /* 0x06C */ u8 unk6C[8];
+    /* 0x074 */ u8 *out;
+    /* 0x078 */ u8 unk78[6];
+    /* 0x07E */ u8 step;
+    /* 0x07F */ u8 unk7F[2];
+    /* 0x081 */ u8 n;   /* parts decoded so far */
+    /* 0x082 */ u8 own; /* 1: the file (data[0]) is freed at the end */
+    /* 0x083 */ u8 unk83;
+    /* 0x084 */ u8 *data[65]; /* [0] the file, [1..] each decoded part */
+    /* 0x188 */ s32 size;
+} BgSeq680;
+#define BGSEQ ((BgSeq680 *)D_8019A660_ovl_066E10)
+
+/* Finishes the current JPEG part. While parts remain, it starts the decode of the next one and
+ * returns 0. After the last part it packs the file header and every decoded part (part header +
+ * pixels, linked through next) into fresh blocks, frees the job and returns the first block;
+ * a single-image job returns its output buffer directly. Same code as 1ED1D0 func_801B7B7C. */
+s32 func_80199D10_ovl_066E10(void) {
+    BgHdr680 hdr;
+    BgPart680 parts[64];
+    BgSeq680 *s;
+    BgHdr680 *file;
+    u8 count;
+    u8 i;
+    s32 bytes;
+    s32 sz;
+    BgPart680 *blk;
+    BgPart680 *last;
+    u8 *ret;
+
+    last = NULL;
+    ret = NULL;
+    while (BGSEQ->step != 6) {
+        nuGfxTaskAllEndWait();
+        func_8019974C_ovl_066E10();
+    }
+    func_8008AFA0(NULL);
+    nuGfxTaskAllEndWait();
+    HFree(BGSEQ->img);
+    HFree(BGSEQ->tiles);
+    file = (BgHdr680 *)BGSEQ->out;
+    if (BGSEQ->n == 0) {
+        s = BGSEQ;
+        D_8019A660_ovl_066E10 = NULL;
+        HFree(s);
+        return (s32)file;
+    }
+    /* data[n] = file, spelled as an int sum: the indexed form adds index + base, the original base + index */
+    *(u8 **)((s32)BGSEQ + (BGSEQ->n << 2) + 0x84) = (u8 *)file;
+    ((u8 *)D_8019A660_ovl_066E10)[0x81]++;
+    ((u8 *)D_8019A660_ovl_066E10)[0x7E]++;
+    file = (BgHdr680 *)BGSEQ->data[0];
+    count = file->count;
+    if (count < BGSEQ->n) {
+        u8 *q;
+
+        func_80080998(&hdr, file, 8);
+        q = (u8 *)(file + 1);
+        for (i = 0; i < count; i++) {
+            last = (BgPart680 *)q;
+            func_80080998(&parts[i], q, 16);
+            q = (u8 *)last + (last->size + 16);
+        }
+        if (BGSEQ->own == 1) {
+            HFree(BGSEQ->data[0]);
+        }
+        sz = 8;
+        hdr.type = 1;
+        for (i = 0; i < count; i++) {
+            bytes = parts[i].w * parts[i].h * 2;
+            blk = HMallocBack((sz += 0x10) + bytes);
+            if (i == 0) {
+                func_80080998(blk, &hdr, 8);
+                ret = (u8 *)blk;
+                blk = (BgPart680 *)(ret + 8);
+                last = blk;
+            } else {
+                last->next = blk;
+                last = blk;
+            }
+            parts[i].size = bytes;
+            func_80080998(blk, &parts[i], 16);
+            func_80080998(blk + 1, *(u8 **)((i * 4) + (s32)BGSEQ + 0x88), bytes);
+            HFree(*(u8 **)((i * 4) + (s32)BGSEQ + 0x88));
+            sz = 0;
+        }
+        last->next = NULL;
+        HFree(D_8019A660_ovl_066E10);
+        D_8019A660_ovl_066E10 = NULL;
+        return (s32)ret;
+    }
+    BGSEQ->size = 8;
+    ret = (u8 *)(file + 1);
+    count = file->count;
+    for (i = 0; i < count; i++) {
+        s32 type;
+        s32 w;
+        s32 h;
+
+        last = (BgPart680 *)ret;
+        ret += 0x10;
+        type = ((BgHdr680 *)ret)->type;
+        w = ((BgHdr680 *)ret)->w;
+        h = ((BgHdr680 *)ret)->h;
+        BGSEQ->size += last->w * last->h * 2 + 0x10;
+        ret += 8;
+        if (BGSEQ->n == i + 1) {
+            func_801999E8_ovl_066E10((s8)type, w, h, ret, 0, 1);
+            return 0;
+        }
+        ret += last->size - 8;
+    }
+    return 0;
+}
 
 /* Background image: "HU" data is decoded straight away; anything else is a JPEG job
  * (state block at D_801BA6D0) and returns 1 */
