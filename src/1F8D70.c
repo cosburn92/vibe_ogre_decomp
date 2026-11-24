@@ -69,7 +69,13 @@ typedef struct {
     u8 m[0x40];
 } Mtx1F8;
 extern Mtx1F8 *D_801969B0; /* matrix pool pointer */
-void func_801B5D58_ovl_1F0A30(void *a, void *b, u8 *img);
+typedef struct {
+    u8 *img;
+} ImgRef1F8;
+typedef struct {
+    u16 magic;
+} ImgHdr1F8;
+void func_801B5D58_ovl_1F0A30(ImgRef1F8 *pp);
 void func_801B619C_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6970_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e);
 void func_801B6DB0_ovl_1F0A30(void *a, void *b, u8 *img);
@@ -172,11 +178,11 @@ void func_801B77CC_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
 }
 
 /* Draws a full-screen image into the main display list */
-void func_801B7888_ovl_1F0A30(u8 **pp, void *b) {
-    u8 *img = *pp;
+inline void func_801B7888_ovl_1F0A30(ImgRef1F8 *pp) {
+    u8 *img = pp->img;
     s32 pad[2];
 
-    if (*(u16 *)img == 0x4235) {
+    if (((ImgHdr1F8 *)img)->magic == 0x4235) {
         u8 *dst = D_80197178;
         void *gp = &D_800E9BA0;
 
@@ -188,7 +194,7 @@ void func_801B7888_ovl_1F0A30(u8 **pp, void *b) {
             func_801B619C_ovl_1F0A30(dst, gp, img, 0, 0, 0);
         }
     } else {
-        func_801B5D58_ovl_1F0A30(pp, b, img);
+        func_801B5D58_ovl_1F0A30(pp);
     }
 }
 
@@ -448,7 +454,71 @@ INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BA0DC_ovl_1F0A30);
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BAA38_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BB58C_ovl_1F0A30);
+extern u8 D_80220E71;
+extern u8 D_80220E73;
+extern u8 D_80220E75;
+extern u8 D_801CEBA0_ovl_1F0A30[];
+extern u8 D_801CEB30_ovl_1F0A30[];
+void func_801BAA38_ovl_1F0A30(u8 *u, u8 *tint);
+
+/* Draws the backdrop image (tinted by D_801D0828 when its flag bit 0 is set), then every
+ * picture unit that sits nearer the first light plane than the second */
+void func_801BB58C_ovl_1F0A30(ImgRef1F8 *pp) {
+    Gfx1F8 *g;
+    u8 r;
+    u8 gr;
+    u8 b;
+    u8 a;
+    u32 i;
+    f32 z;
+    f32 d0;
+    f32 d1;
+
+    if (pp->img != NULL) {
+        r = D_80220E71;
+        gr = D_80220E73;
+        b = D_80220E75;
+        g = D_800E9BA0;
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_801CEBA0_ovl_1F0A30;
+        D_800E9BA0 = g + 1;
+        a = 0xFF;
+        if (D_801D0828_ovl_1F0A30[4] & 1) {
+            r = r * D_801D0828_ovl_1F0A30[0] / 255;
+            gr = gr * D_801D0828_ovl_1F0A30[1] / 255;
+            b = b * D_801D0828_ovl_1F0A30[2] / 255;
+            a = a * D_801D0828_ovl_1F0A30[3] / 255;
+        }
+        g[1].w0 = 0xFA000000;
+        g[1].w1 = (r << 24) | ((gr & 0xFF) << 16) | ((b & 0xFF) << 8) | (a & 0xFF);
+        D_800E9BA0 = g + 2;
+        func_801B7888_ovl_1F0A30(pp);
+    }
+    {
+        Gfx1F8 *g2 = D_800E9BA0;
+
+        g2->w0 = 0xDE000000;
+        g2->w1 = (u32)D_801CEB30_ovl_1F0A30;
+        g2++;
+        D_800E9BA0 = g2;
+    }
+    for (i = 0; i < D_801D0770_ovl_1F0A30.nUnits; i++) {
+        z = *(s16 *)(D_801D0770_ovl_1F0A30.units + i * 0x64 + 4);
+        d0 = *(f32 *)&D_801D0770_ovl_1F0A30.unk04[8] - z;
+        if (!(d0 > 0.0f)) {
+            d0 = -d0;
+        }
+        d1 = *(f32 *)&D_801D0770_ovl_1F0A30.unk34[8] - z;
+        if (!(d1 > 0.0f)) {
+            d1 = -d1;
+        }
+        if (d1 < d0) {
+            continue;
+        }
+        func_801BAA38_ovl_1F0A30(D_801D0770_ovl_1F0A30.units + i * 0x64,
+                                 (D_801D0828_ovl_1F0A30[4] & 2) ? D_801D0828_ovl_1F0A30 : NULL);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BB87C_ovl_1F0A30);
 
