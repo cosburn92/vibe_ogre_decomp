@@ -1139,16 +1139,16 @@ void func_801BC3D8_ovl_1F0A30(s16 a, s16 b, s16 c, s16 d, u8 e) {
 
 /* Steps the box tween: frame D_801D080D of D_801D080C, from the 07FC.. rect toward 0804.. */
 void func_801BC450_ovl_1F0A30(void) {
-    u32 temp_t4;
+    u32 frame;
 
     if (D_801D080C_ovl_1F0A30 != 0) {
-        temp_t4 = D_801D080D_ovl_1F0A30 & 0xFF;
-        if ((u8) D_801D080C_ovl_1F0A30 >= temp_t4) {
+        frame = D_801D080D_ovl_1F0A30;
+        if (D_801D080C_ovl_1F0A30 >= frame) {
             D_801D080D_ovl_1F0A30 += 1;
-            D_801D07F4_ovl_1F0A30 = D_801D07FC_ovl_1F0A30 + ((s32) ((D_801D0804_ovl_1F0A30 - D_801D07FC_ovl_1F0A30) * temp_t4) / (s32) D_801D080C_ovl_1F0A30);
-            D_801D07F6_ovl_1F0A30 = D_801D07FE_ovl_1F0A30 + ((s32) ((D_801D0806_ovl_1F0A30 - D_801D07FE_ovl_1F0A30) * temp_t4) / (s32) D_801D080C_ovl_1F0A30);
-            D_801D07F8_ovl_1F0A30 = D_801D0800_ovl_1F0A30 + ((s32) ((D_801D0808_ovl_1F0A30 - D_801D0800_ovl_1F0A30) * temp_t4) / (s32) D_801D080C_ovl_1F0A30);
-            D_801D07FA_ovl_1F0A30 = D_801D0802_ovl_1F0A30 + ((s32) ((D_801D080A_ovl_1F0A30 - D_801D0802_ovl_1F0A30) * temp_t4) / (s32) D_801D080C_ovl_1F0A30);
+            D_801D07F4_ovl_1F0A30 = D_801D07FC_ovl_1F0A30 + ((s32) ((D_801D0804_ovl_1F0A30 - D_801D07FC_ovl_1F0A30) * frame) / (s32) D_801D080C_ovl_1F0A30);
+            D_801D07F6_ovl_1F0A30 = D_801D07FE_ovl_1F0A30 + ((s32) ((D_801D0806_ovl_1F0A30 - D_801D07FE_ovl_1F0A30) * frame) / (s32) D_801D080C_ovl_1F0A30);
+            D_801D07F8_ovl_1F0A30 = D_801D0800_ovl_1F0A30 + ((s32) ((D_801D0808_ovl_1F0A30 - D_801D0800_ovl_1F0A30) * frame) / (s32) D_801D080C_ovl_1F0A30);
+            D_801D07FA_ovl_1F0A30 = D_801D0802_ovl_1F0A30 + ((s32) ((D_801D080A_ovl_1F0A30 - D_801D0802_ovl_1F0A30) * frame) / (s32) D_801D080C_ovl_1F0A30);
         }
     }
 }
