@@ -385,7 +385,105 @@ INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021AAE8_ovl_1B2670);
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B040_ovl_1B2670);
 
+extern u8 D_80187C59[][0x48]; /* gClassTable[].baseClass */
+void *LoadChunk(s32 id);
+u8 func_8016F5E0(u16 id);
+
+typedef struct {
+    /* 0x00 */ u32 id;
+    /* 0x04 */ s32 chunk;
+    /* 0x08 */ s32 *chunks;
+    /* 0x0C */ u32 kind;
+    /* 0x10 */ u32 byte10;
+    /* 0x14 */ u32 byte14;
+    /* 0x18 */ s32 count;
+    /* 0x1C */ s32 hdr1C;
+    /* 0x20 */ s32 hdr20;
+    /* 0x24 */ s32 hdr24;
+    /* 0x28 */ u8 *buf;
+    /* 0x2C */ u8 *bufEnd;
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ u8 *words;
+    /* 0x38 */ u8 *bytes38;
+    /* 0x3C */ u8 *bytes3C;
+    /* 0x40 */ void *res40;
+    /* 0x44 */ void *res44;
+    /* 0x48 */ u8 *bytes48;
+    /* 0x4C */ u8 *bytes4C;
+    /* 0x50 */ void *res50;
+} SprRec;
+
+/* Fills record o for class cls (or for b when cls is not b's base class), variant c/d and
+ * entry e: looks up the id in the shared table, loads its chunk list and the four chunks it
+ * names, and splits one buffer into a word array and four byte arrays of count entries. */
+#ifdef NON_MATCHING
+/* Same size; scheduling only: the original loads the table pointer before adding d to the
+ * index and before the >> 12, and stores buf then reloads it for words, where this stores
+ * words first. */
+SprRec *func_8021B31C_ovl_1B2670(SprRec *o, s32 cls, s32 b, s32 c, s32 d, s32 e) {
+    s32 *tmp;
+    s32 *src;
+    s32 n1;
+    s32 n4;
+    s32 size;
+    s32 i;
+
+    if (D_80187C59[cls][0] == b) {
+        i = c * 2 + cls * 4 + d;
+    } else {
+        i = c * 2 + b * 4 + d;
+    }
+    o->id = ((u16 *)D_8021C9E0_ovl_1B2670)[i] & 0xFFF;
+    if (o->id == 0) {
+        return NULL;
+    }
+    tmp = HMalloc(ChunkSize(0x3B6CD0));
+    LoadChunkRaw(tmp, 0x3B6CD0);
+    o->chunk = tmp[o->id - 1];
+    o->chunks = HMalloc(ChunkSize(o->chunk));
+    if (o->chunks == NULL) {
+        HFree(tmp);
+        return NULL;
+    }
+    LoadChunkRaw(o->chunks, o->chunk);
+    HFree(tmp);
+    o->res44 = LoadChunk(o->chunks[0]);
+    o->res40 = LoadChunk(o->chunks[1]);
+    src = LoadChunk(o->chunks[2]);
+    o->res50 = LoadChunk(o->chunks[3]);
+    if (D_80187C59[cls][0] == b) {
+        i = c * 2 + cls * 4 + d;
+    } else {
+        i = c * 2 + b * 4 + d;
+    }
+    o->kind = ((u16 *)D_8021C9E0_ovl_1B2670)[i] >> 12;
+    o->byte10 = D_8021C9E4_ovl_1B2670[e];
+    o->byte14 = func_8016F5E0(e);
+    o->count = src[0];
+    o->hdr1C = src[1];
+    o->hdr20 = src[2];
+    o->hdr24 = src[3];
+    n1 = (o->count + 7) & ~7;
+    n4 = (o->count * 4 + 7) & ~7;
+    size = n4 + n1 + n1 + n1 + n1;
+    o->buf = HMalloc(size);
+    o->words = o->buf;
+    o->bufEnd = o->words + size;
+    o->bytes48 = o->buf + n4;
+    o->bytes3C = o->bytes48 + n1;
+    o->bytes4C = o->bytes3C + n1;
+    o->bytes38 = o->bytes4C + n1;
+    bzero(o->words, n4);
+    bzero(o->bytes3C, n1);
+    bzero(o->bytes38, n1);
+    _bcopy(src + 8, o->bytes48, o->count);
+    _bcopy((u8 *)src + src[7], o->bytes4C, o->count);
+    HFree(src);
+    return o;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B31C_ovl_1B2670);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1B7630", func_8021B5EC_ovl_1B2670);
 
