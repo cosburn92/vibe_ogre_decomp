@@ -76,7 +76,7 @@ void func_800780D4(u8 kind, void *src, u16 n, u8 **out);
 void func_80078164(u8 *p, void *dst);
 void func_800782EC(s32 color, s32 shade, s32 x, s32 y, s32 x2, s32 y2);
 void func_80077288(void);
-void func_80077494(s32 arg0);
+void func_80077494(s32 id);
 s32 func_8009C7CC(void);
 void func_80173D14(void *list);
 void func_80173D4C(void *list);
@@ -531,10 +531,10 @@ extern u16 D_800E8700;
 extern u16 *D_800E9BC0;
 extern u16 D_800E9BE4;
 
-/* Points the shared state pointers at the live copies when arg0 is the current id
+/* Points the shared state pointers at the live copies when id is the current id
  * (D_800C4C10), otherwise at the default buffers */
-void func_80077494(s32 arg0) {
-    if (arg0 == *(u16 *)D_800C4C10) {
+void func_80077494(s32 id) {
+    if (id == *(u16 *)D_800C4C10) {
         D_800C4BE0 = &D_800C47F0;
         D_800E8108 = &D_800E79B0;
         D_800C4BDC = &D_800E8100;
