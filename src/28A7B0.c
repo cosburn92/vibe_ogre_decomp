@@ -2578,18 +2578,16 @@ u8 *func_8023AB74_ovl_286BD0(u8 *o, u32 k, u8 *src) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AB74_ovl_286BD0);
 #endif
 
-/* The a and b saved registers are swapped. */
-#ifdef NON_MATCHING
-/* a and b saved registers swapped (s1/s2); tried param types and an inline split */
+/* Allocates and clears the window's 0x604-byte text buffer and sets its defaults (a at +0x600, b at +0x5F4/5) */
 u8 *func_8023AD10_ovl_286BD0(Win28 *w, s32 a, u8 b) {
     u8 *t;
 
     w->text = t = HMalloc(0x604);
     bzero(t, 0x604);
     t = w->text;
+    *(s32 *)(t + 0x600) = a;
     t[0x5F3] = 0x3F;
     t[0x5F6] = 0xF;
-    *(s32 *)(t + 0x600) = a;
     t[0x5F0] = 0;
     t[0x5FE] = 2;
     bzero(t, 0x500);
@@ -2597,6 +2595,3 @@ u8 *func_8023AD10_ovl_286BD0(Win28 *w, s32 a, u8 b) {
     t[0x5F5] = b;
     return t;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023AD10_ovl_286BD0);
-#endif
