@@ -27,7 +27,6 @@ typedef struct {
 } ClassSpriteInfo;
 extern ClassSpriteInfo D_8018ECE0_ovl_040E80[];
 
-void *LoadAsset();
 
 
 u8 func_8016D200_ovl_040E80(u8 cls, u8 other) {

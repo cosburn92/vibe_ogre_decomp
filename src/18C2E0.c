@@ -1,4 +1,5 @@
 #include "common.h"
+#include "chunk.h"
 #include "tables.h"
 
 /* 18C2E0 */
@@ -120,7 +121,6 @@ extern s32 D_801F0B98;
 extern s32 D_801F3618;
 extern u8 D_80210219;
 s32 func_801DA228(s32 a, s32 b);
-u8 *LoadAsset(s32 id, s32 a, s32 b, s32 c);
 
 /* Opens the legion screen for the squad list ids (terminated by a negative id): copies the list,
  * picks the legion and resets the screen state */

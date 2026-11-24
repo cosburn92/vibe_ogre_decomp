@@ -10,6 +10,10 @@ u32 ChunkSize(u32 handle);
 void *LoadChunkRaw(void *dst, u32 handle); /* dst == NULL allocates it */
 void *LoadChunk(u32 handle);               /* load and LZ-decode */
 
+/* src/8700.c: LoadAsset(handle, table index..., command[, member]) walks chunk tables from
+ * handle and returns the data the command asks for */
+void *LoadAsset(u32 handle, ...);
+
 /* src/A370.c */
 u32 ReadU32BE(u8 *p);
 

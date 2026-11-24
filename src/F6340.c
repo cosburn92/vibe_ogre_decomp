@@ -1,4 +1,5 @@
 #include "common.h"
+#include "chunk.h"
 #include "scene.h"
 
 /* F6340 */
@@ -46,7 +47,6 @@ extern u8 D_801AD030_ovl_0EBBB0[];
 
 #include "gbi_ultra.h"
 extern u8 D_801AC940_ovl_0EBBB0[];
-void *LoadAsset(u32 id, s32 a, s32 b, s32 c);
 
 /* Draws background panel 0x02093576: 32x64 RGBA16 texture, then display list D_801AC940 */
 void func_801A95E0_ovl_0EBBB0(void) {

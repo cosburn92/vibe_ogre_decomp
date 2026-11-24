@@ -1311,7 +1311,6 @@ void func_801DDDA8_ovl_101CE0(void) {
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DDDF8_ovl_101CE0);
 
 void _bcopy(void *src, void *dst, s32 n);
-s32 LoadAsset(u32 handle, ...);
 s32 func_8017BFB0(s32 a, s32 b, void *func, s32 x0, s32 y0, s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3);
 void func_8020CDA0(s32 se);
 extern s16 D_801F0B50_ovl_101CE0;
@@ -1333,7 +1332,7 @@ void func_801DE440_ovl_101CE0(s16 k) {
         HFree(src);
         D_801EB28C_ovl_101CE0 = pal;
     }
-    *p = LoadAsset(0x0218E9B4, 0x15, -3, 6);
+    *p = (s32)LoadAsset(0x0218E9B4, 0x15, -3, 6);
     D_801EB284_ovl_101CE0 = func_8017BFB0(0, 0, func_801DDDF8_ovl_101CE0, 0x9E, 0xA4, 0xA2, 0xA8, 0x5A, 0x95, 0xE6, 0xB7);
     func_8020CDA0(0x2D3);
     D_801F0B50_ovl_101CE0 = k;

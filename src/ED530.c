@@ -1,4 +1,5 @@
 #include "common.h"
+#include "chunk.h"
 #include "heap.h"
 
 /* ED530 */
@@ -1477,7 +1478,6 @@ f32 func_801A7D9C_ovl_0EBBB0(Curve *c, f32 t) {
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7D9C_ovl_0EBBB0);
 #endif
 
-void *LoadAsset(); /* (id, entry, mode[, slot]): some callers pass a fourth argument */
 
 /* Loads the two scrolling 32x32 water textures (tiles 0 and 1, both 0x02093576 entry 4) at
  * half alpha and scrolls them against each other by the scene timer */

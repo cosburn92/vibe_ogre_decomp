@@ -68,6 +68,9 @@ typedef struct {
 #define ASSET_CMD_FIRST ((u32)-0x17)
 
 extern AssetNode *D_800A8740; /* cache root */
+/* Second name for the cache root: LoadAsset stores through it as an array element, which keeps
+ * the store ahead of the first va_arg load (a scalar store gets the load hoisted above it). */
+extern AssetNode *D_800A8740_root[];
 extern AssetNode *D_800AF0C0; /* last node found */
 extern AssetSub *D_800AF0C4;  /* last sub found */
 extern u32 D_800C4BC0;        /* size of the last asset */
@@ -381,8 +384,6 @@ void func_80079380(void) {
 }
 
 /* LoadAsset(handle, index..., command): walks the chunk tables and loads what the command asks for */
-#ifdef NON_MATCHING
-/* The original stores D_800A8740 before the first va_arg load; GCC here hoists the load above the store. */
 void *LoadAsset(u32 handle, ...) {
     va_list ap;
     u32 arg;
@@ -390,7 +391,7 @@ void *LoadAsset(u32 handle, ...) {
     void *ret;
     u32 i;
 
-    D_800A8740 = func_800798AC(D_800A8740, handle);
+    D_800A8740_root[0] = func_800798AC(D_800A8740, handle);
     va_start(ap, handle);
     for (arg = va_arg(ap, u32); arg < ASSET_CMD_FIRST; arg = va_arg(ap, u32)) {
         node = D_800AF0C0;
@@ -467,9 +468,6 @@ void *LoadAsset(u32 handle, ...) {
     }
     return ret;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/8700", LoadAsset);
-#endif
 
 /* UnloadAsset(handle or command, index..., command) */
 void func_80079618(u32 handle, ...) {

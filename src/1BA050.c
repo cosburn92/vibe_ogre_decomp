@@ -75,7 +75,6 @@ extern s32 D_8022A230_ovl_1BA050;
 void *func_8017F334(u16 id);
 void func_8017C2FC(void *o);
 void func_8017C384(void *o);
-void *LoadAsset(s32 file, s32 id, s32 a, s32 b);
 void bzero(void *p, s32 n);
 #define U16AT(p, off) (*(u16 *)((u8 *)(p) + (off)))
 typedef struct {
