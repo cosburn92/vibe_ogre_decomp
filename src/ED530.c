@@ -795,8 +795,6 @@ inline s32 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A6A78_ovl_0EBBB0);
-
 typedef struct {
     /* 0x00 */ u16 *grids[10];
     /* 0x28 */ u8 pad28[4];
@@ -804,6 +802,34 @@ typedef struct {
     /* 0x2D */ u8 pad2D[0xA8 - 0x2D];
 } SceneGrids;
 extern SceneGrids D_800E8328[];
+
+/* Heights of the four corners of grid cell (x, z) in scene slot's height grid, in the order
+ * (x, z), (x+1, z), (x, z+1), (x+1, z+1); returns the index of the highest corner */
+s32 func_801A6A78_ovl_0EBBB0(s32 slot, s32 x, s32 z, s32 *h) {
+    u16 *g = D_800E8328[slot].grids[D_800E8328[slot].grid];
+    s32 m;
+    s32 r;
+
+    m = h[0] = func_801A69A4_ovl_0EBBB0(g, x, z);
+    r = 0;
+    h[1] = func_801A69A4_ovl_0EBBB0(g, x + 1, z);
+    if (m < h[1]) {
+        r = 1;
+        m = h[1];
+    }
+    h[2] = func_801A69A4_ovl_0EBBB0(g, x, z + 1);
+    if (m < h[2]) {
+        r = 2;
+        m = h[2];
+    }
+    z++;
+    x++;
+    h[3] = func_801A69A4_ovl_0EBBB0(g, x, z);
+    if (m < h[3]) {
+        r = 3;
+    }
+    return r;
+}
 
 /* Heights of the three corners of triangle tri (0: x+1 corner, else z+1 corner) of grid cell
  * (x, z) in the current scene's height grid; returns the index of the highest corner */
