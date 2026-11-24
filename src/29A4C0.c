@@ -187,7 +187,112 @@ s32 func_8022AF94_ovl_29A4C0(u8 i, s32 kind, s32 sub, s32 mode, s32 x, s32 y, s3
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B100_ovl_29A4C0);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx29;
+extern Gfx29 *D_800E9BA0;
+typedef struct { s32 m[16]; } Mtx29;
+extern Mtx29 *D_801969B0;
+extern u8 D_8022A9F0[];
+extern u8 D_8022AAE0[];
+void guRotate(void *m, f32 a, f32 x, f32 y, f32 z);
+void func_80098AA0(void *m, f32 x, f32 y, f32 z);
+void func_80098C20(void *m, f32 x, f32 y, f32 z);
+typedef struct {
+    /* 0x00 */ u8 unk0[0x20];
+    /* 0x20 */ void (*draw)(void *, s32, s32);
+    /* 0x24 */ s32 x;
+    /* 0x28 */ s32 y;
+    /* 0x2C */ u8 unk2C[0x14];
+    /* 0x40 */ s16 angle;
+    /* 0x42 */ s16 unk42;
+    /* 0x44 */ u16 kind;
+    /* 0x46 */ s16 unk46;
+    /* 0x48 */ s16 scale;
+    /* 0x4A */ u8 layer;
+} Fx29;
+
+/* Draws the 30 effect sprites of layer `layer`: translate to (0x24, 0x28), rotate by angle + 180
+ * degrees (skipped at 180), scale by percent, then call the draw callback. `front` selects the
+ * sprites of kind 800/801 (drawn in front) or all others */
+void func_8022B100_ovl_29A4C0(s16 layer, u8 front) {
+    s32 i;
+
+    {
+        Gfx29 *g = D_800E9BA0++;
+
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_8022A9F0;
+    }
+    for (i = 0; i < 30; i++) {
+        Fx29 *e = FLD(D_8022A974, Fx29 *, 0x1AC0 + i * 4);
+
+        if (e == NULL || e->layer != layer) {
+            continue;
+        }
+        if (e->kind == 800 || e->kind == 801) {
+            if (front == 0) {
+                continue;
+            }
+        } else if (front != 0) {
+            continue;
+        }
+        D_800E9BA0->w0 = 0xDE000000;
+        D_800E9BA0->w1 = (u32)D_8022AAE0;
+        D_800E9BA0++;
+        D_800E9BA0->w0 = 0xFB000000;
+        D_800E9BA0->w1 = 1;
+        D_800E9BA0++;
+        D_800E9BA0->w0 = 0xD7000002;
+        D_800E9BA0->w1 = 0x80008000;
+        D_800E9BA0++;
+        func_80098C20(D_801969B0, e->x, e->y, 0.0f);
+        D_800E9BA0->w0 = 0xDA380000;
+        D_800E9BA0->w1 = (u32)D_801969B0;
+        D_800E9BA0++;
+        D_801969B0++;
+        if (e->angle != 180) {
+            guRotate(D_801969B0, e->angle + 180, 0.0f, 0.0f, 1.0f);
+            {
+                Gfx29 *g = D_800E9BA0++;
+
+                g->w0 = 0xDA380001;
+                g->w1 = (u32)D_801969B0++;
+            }
+        }
+        if (e->scale != 100) {
+            f32 s = e->scale / 100.0f;
+
+            func_80098AA0(D_801969B0, s, s, s);
+            {
+                Gfx29 *g = D_800E9BA0++;
+
+                g->w0 = 0xDA380001;
+                g->w1 = (u32)D_801969B0++;
+            }
+        }
+        e->draw(e, 0xFF, (u8)layer);
+        {
+            Gfx29 *g = D_800E9BA0++;
+
+            g->w0 = 0xE7000000;
+            g->w1 = 0;
+        }
+        {
+            Gfx29 *g = D_800E9BA0++;
+
+            g->w0 = 0xD8380002;
+            g->w1 = 0x40;
+        }
+    }
+    {
+        Gfx29 *g = D_800E9BA0++;
+
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_8022A9F0;
+    }
+}
 
 void func_8022B414_ovl_29A4C0(s32 i) {
     s32 k;
@@ -422,11 +527,6 @@ void func_8022BDDC_ovl_29A4C0(void) {
     }
 }
 
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gfx29;
-extern Gfx29 *D_800E9BA0;
 extern s32 D_80197178; /* frame vertex pool cursor */
 extern u8 D_8022AB48[];
 void func_80080998(s32 dst, void *src, s32 n);
