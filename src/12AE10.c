@@ -1717,11 +1717,7 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2B0_ovl_101CE0);
 #define UNIT_TOWN(u) ((u)->loc) /* town index at +0x74, -1 when none */
 
 /* Starts unit u's move (a = kind, b = mode); mode 0 onto an owned town keeps a return point */
-#ifdef NON_MATCHING
-/* flag masks folded into one constant, params re-masked; original keeps two masks and unmasked a/b */
-void func_801DD2D4_ovl_101CE0(MapUnit *u, u8 a, u8 b) {
-    u8 v;
-
+void func_801DD2D4_ovl_101CE0(MapUnit *u, s32 a, s32 b) {
     if (u->flags & 0x40) {
         return;
     }
@@ -1730,7 +1726,8 @@ void func_801DD2D4_ovl_101CE0(MapUnit *u, u8 a, u8 b) {
     u->unk91 = 0;
     u->unk84 = -1;
     u->unk80 = -1;
-    u->flags = u->flags & ~0x2000 & ~0x800000;
+    u->flags &= ~0x2000;
+    u->flags &= ~0x800000;
     if (b == 0 && UNIT_TOWN(u) != -1 && (D_801951CC[UNIT_TOWN(u)].flags & 2)) {
         u->flags |= 0x800000;
         u->savedX = u->x;
@@ -1742,19 +1739,15 @@ void func_801DD2D4_ovl_101CE0(MapUnit *u, u8 a, u8 b) {
     }
     u->unk91 = a;
     if (a == 1 && b == 1) {
-        v = 1;
+        u->unk88[8] = 1;
     } else if (a == 2 && b == 2) {
-        v = 2;
+        u->unk88[8] = 2;
     } else if (a == 0 && b == 0) {
-        v = 0;
+        u->unk88[8] = 0;
     } else {
-        v = 3;
+        u->unk88[8] = 3;
     }
-    u->unk88[8] = v;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DD2D4_ovl_101CE0);
-#endif
 
 u16 func_8016B6FC(u16 id);
 
