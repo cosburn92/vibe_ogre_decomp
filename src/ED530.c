@@ -617,7 +617,69 @@ void func_801A597C_ovl_0EBBB0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5B0C_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5F38_ovl_0EBBB0);
+extern u16 D_801AC34A_ovl_0EBBB0[];
+extern u16 D_801AC356_ovl_0EBBB0[];
+extern f32 D_801AC1E0_ovl_0EBBB0[2][5][3];
+extern f32 D_801AC258_ovl_0EBBB0[5][3];
+extern f32 D_801AC294_ovl_0EBBB0[5][3];
+extern f32 D_801AC2D0_ovl_0EBBB0[5][3];
+extern f32 D_801AC30C_ovl_0EBBB0[5][3];
+extern u8 D_801AC104_ovl_0EBBB0[];
+extern u8 D_801AC1A0_ovl_0EBBB0[];
+extern Gfx D_801AC138_ovl_0EBBB0[];
+void func_801A6284_ovl_0EBBB0(s32 lo, s32 hi, s32 x, f32 *from, f32 *to, u8 *out);
+
+/* Time-of-day colours: picks the key interval containing t, lerps the light colours
+ * (D_801AC104) and four scene colours, then emits the light matrix and display list */
+void func_801A5F38_ovl_0EBBB0(s32 t) {
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 4; i++) {
+        if (t < D_801AC34A_ovl_0EBBB0[i]) {
+            break;
+        }
+    }
+    j = i;
+    if (i < 4) {
+        j++;
+    }
+    func_801A6284_ovl_0EBBB0(D_801AC34A_ovl_0EBBB0[i - 1], D_801AC34A_ovl_0EBBB0[j - 1], t,
+                             D_801AC1E0_ovl_0EBBB0[0][i], D_801AC1E0_ovl_0EBBB0[0][j], D_801AC104_ovl_0EBBB0);
+    _bcopy(D_801AC104_ovl_0EBBB0, D_801AC104_ovl_0EBBB0 + 0x10, 3);
+    func_801A6284_ovl_0EBBB0(D_801AC34A_ovl_0EBBB0[i - 1], D_801AC34A_ovl_0EBBB0[j - 1], t,
+                             D_801AC1E0_ovl_0EBBB0[1][i], D_801AC1E0_ovl_0EBBB0[1][j], D_801AC104_ovl_0EBBB0 + 0x20);
+    _bcopy(D_801AC104_ovl_0EBBB0 + 0x20, D_801AC104_ovl_0EBBB0 + 0x30, 3);
+    gDPPipeSync(D_800E9BA0++);
+    guMtxF2L(D_801AC1A0_ovl_0EBBB0, D_800E9BE0->mtx[D_800C4BE4]);
+    func_800987E0((MtxE *)D_800E9BE0->mtx[D_800C4BE4]);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDA380003;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++] - 0x80000000;
+    }
+    gSPDisplayList(D_800E9BA0++, D_801AC138_ovl_0EBBB0);
+
+    for (i = 0; i < 4; i++) {
+        if (t < D_801AC356_ovl_0EBBB0[i]) {
+            break;
+        }
+    }
+    j = i;
+    if (i < 4) {
+        j++;
+    }
+    func_801A6284_ovl_0EBBB0(D_801AC356_ovl_0EBBB0[i - 1], D_801AC356_ovl_0EBBB0[j - 1], t,
+                             D_801AC258_ovl_0EBBB0[i], D_801AC258_ovl_0EBBB0[j], D_801ABA58_ovl_0EBBB0->unk124 + 0x24);
+    func_801A6284_ovl_0EBBB0(D_801AC356_ovl_0EBBB0[i - 1], D_801AC356_ovl_0EBBB0[j - 1], t,
+                             D_801AC294_ovl_0EBBB0[i], D_801AC294_ovl_0EBBB0[j], D_801ABA58_ovl_0EBBB0->unk124 + 0x27);
+    func_801A6284_ovl_0EBBB0(D_801AC356_ovl_0EBBB0[i - 1], D_801AC356_ovl_0EBBB0[j - 1], t,
+                             D_801AC2D0_ovl_0EBBB0[i], D_801AC2D0_ovl_0EBBB0[j], D_801ABA58_ovl_0EBBB0->unk124 + 0x20);
+    func_801A6284_ovl_0EBBB0(D_801AC356_ovl_0EBBB0[i - 1], D_801AC356_ovl_0EBBB0[j - 1], t,
+                             D_801AC30C_ovl_0EBBB0[i], D_801AC30C_ovl_0EBBB0[j], &D_801ABA58_ovl_0EBBB0->r);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 /* RGB lerp from `from` to `to` as x goes lo..hi (clamped), written as bytes (x256, capped at 255) */
 void func_801A6284_ovl_0EBBB0(s32 lo, s32 hi, s32 x, f32 *from, f32 *to, u8 *out) {
