@@ -150,8 +150,6 @@ INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211900_ovl_25EE90);
 #endif
 
 /* Draws a ring (radius 0x48, 0x4A segments, colour 0x40) under matrix p */
-#ifdef NON_MATCHING
-/* same length; the point counter's zeroing is scheduled before the hoisted 0.01745 constant instead of after */
 void func_80211C10_ovl_25EE90(u8 *p) {
     RingPt266 pts[128];
 
@@ -162,13 +160,14 @@ void func_80211C10_ovl_25EE90(u8 *p) {
         GFX266(0xFA000000, (p[0x40] << 24) | (p[0x41] << 16) | (p[0x42] << 8) | p[0x43]);
         if (FIELD(p, u16, 0x44) == 0) {
             RingPt266 *q = pts;
+            f32 d2r = 0.017453292f;
             s32 n = 0;
             f32 ang = 0.0f;
             f32 r = FIELD(p, s16, 0x48);
             f32 step = 360.0f / FIELD(p, s16, 0x4A);
 
             do {
-                f32 rad = ang * 0.017453292f;
+                f32 rad = ang * d2r;
 
                 q->x = r * cosf(rad);
                 q->y = r * sinf(rad);
@@ -183,9 +182,6 @@ void func_80211C10_ovl_25EE90(u8 *p) {
         D_801969B0 += 0x40;
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/2664B0", func_80211C10_ovl_25EE90);
-#endif
 
 s32 func_80211E40_ovl_25EE90(u8 *p) {
     func_80211C10_ovl_25EE90(p + 0x18);
