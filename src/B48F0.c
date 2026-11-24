@@ -662,22 +662,22 @@ void func_801CAD90_ovl_087200(u16 id) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAD90_ovl_087200);
 #endif
 
-#ifdef NON_MATCHING
-/* addu operand order (3 instructions) */
+/* Clears flag 4 of every member placed in squad sq's nine cells (o is one offset variable,
+ * the row offset then the member offset, which keeps the base + offset add order) */
 void func_801CAE4C_ovl_087200(u16 sq) {
     s32 i;
     u8 m;
+    s32 o;
 
     for (i = 0; i < 9; i++) {
-        m = (D_80196AF8 + sq * 0x36)[i + 0x1180];
+        o = sq * 0x36;
+        m = (D_80196AF8 + o + i)[0x1180];
         if (m != 0xFF) {
-            D_80196AF8[m * 2 + 0x1872] &= 0xFB;
+            o = m * 2;
+            (D_80196AF8 + o)[0x1872] &= 0xFB;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAE4C_ovl_087200);
-#endif
 
 void func_801CAEB0_ovl_087200(u16 sq, u16 v) {
     OrgSquad *q = &((OrgSquad *)(D_80196AF8 + 0x117C))[sq];
