@@ -1074,49 +1074,54 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB424_ovl_101CE0);
  * the town's preference (plus 40 when bit 7 of the preference is set) and a random 0-7.
  * Returns whether the score was 31 or more. */
 #ifdef NON_MATCHING
-/* Logic is complete; loop strength reduction and register use differ. */
+/* Same length; the bonus is masked (andi) before the score add in the original, and the abs/score temporaries get other registers. */
 s32 ChaosFrameOnLiberate(s32 squad, s32 loc) {
     u16 pref = D_801951CC[loc].pref;
     u16 bonus;
     u16 sum;
-    u16 avg;
     u16 score;
     u8 cnt;
+    s32 i;
     s32 r;
     s32 d;
     s32 delta;
     s32 v;
-    u8 *m;
+    u8 m;
 
-    if (pref == 0xFF || squad >= 30) {
+    if (pref == 0xFF) {
         return 0;
     }
-    bonus = (pref >> 7) ? 40 : 0;
+    if (squad >= 30) {
+        return 0;
+    }
+    bonus = pref & 0x80 ? 40 : 0;
     pref &= 0x7F;
     sum = 0;
     cnt = 0;
-    for (m = gSquads[squad].members; m < gSquads[squad].members + 5; m++) {
-        if (*m == 0 || *m >= 99) {
+    for (i = 0; i < 5; i++) {
+        m = gSquads[squad].members[i];
+        if (m == 0 || m >= 99) {
             continue;
         }
         if (squad < 30) {
-            sum += D_80193BC0[*m].c.alignment;
+            sum += D_80193BC0[m].c.alignment;
         } else {
-            sum += D_80195560[*m].alignment;
+            sum += D_80195560[m].alignment;
         }
         cnt++;
     }
     if (cnt == 0) {
-        avg = 50;
+        sum = 50;
     } else {
-        avg = sum / cnt;
+        sum = sum / cnt;
     }
     r = guRandom() % 8;
-    d = avg - pref;
-    if (d <= 0) {
-        d = pref - avg;
+    if (sum - pref > 0) {
+        d = sum - pref;
+    } else {
+        d = pref - sum;
     }
-    score = d + r + bonus;
+    score = bonus + d + r;
     if (score > 140) {
         delta = -5;
     } else if (score > 110) {
