@@ -299,25 +299,22 @@ void func_8020DFB8_ovl_25EE90(void) {
     func_8020DF24_ovl_25EE90(D_80220FE8_ovl_25EE90);
 }
 
-#ifdef NON_MATCHING
-/* Two instructions short: the original leaves its branch delay slots unfilled. */
 /* The child of t (a following task whose parent is t) running func, or NULL. */
 Task *func_8020E054_ovl_25EE90(Task *t, void (*func)()) {
     Task *c;
+    Task *r = NULL;
 
     for (c = t->prev; c != NULL; c = c->prev) {
         if (c->parent != t) {
             break;
         }
         if (c->func == func) {
-            return c;
+            r = c;
+            break;
         }
     }
-    return NULL;
+    return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020E054_ovl_25EE90);
-#endif
 
 s16 func_8020E094_ovl_25EE90(void) {
     return D_80220FE8_ovl_25EE90->unk1A;
