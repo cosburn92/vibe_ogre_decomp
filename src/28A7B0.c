@@ -236,11 +236,14 @@ s16 func_8022E984_ovl_286BD0(s16 id) {
 }
 
 /* Whether b is earlier than a */
-inline s32 func_8022EA9C_ovl_286BD0(TimeStamp *a, TimeStamp *b) {
+inline s16 func_8022EA9C_ovl_286BD0(TimeStamp *a, TimeStamp *b) {
     s32 va = a->lo + a->mid * 30 + a->hi * 600;
     s32 vb = b->lo + b->mid * 30 + b->hi * 600;
 
-    return vb < va;
+    if (vb >= va) {
+        return 0;
+    }
+    return 1;
 }
 
 extern u8 D_80193678[];
@@ -248,8 +251,6 @@ extern s16 D_8023DF16_ovl_286BD0;
 
 /* Copies the current game time into the selection record (0x2) and selects the first saved
  * time stamp later than it (0x6), if the record is active */
-#ifdef NON_MATCHING
-/* 71/74: the original materialises the inlined comparison with a branch (bnez / li 1 / move 0) instead of slt */
 void func_8022EB0C_ovl_286BD0(void) {
     s16 i;
 
@@ -263,9 +264,6 @@ void func_8022EB0C_ovl_286BD0(void) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8022EB0C_ovl_286BD0);
-#endif
 
 #ifdef NON_MATCHING
 /* Struct-base addressing and branch order differ. */
