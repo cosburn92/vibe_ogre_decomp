@@ -139,7 +139,50 @@ s32 func_801B5940_ovl_1F0A30(void) {
     return D_801D07CC_ovl_1F0A30;
 }
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B594C_ovl_1F0A30);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+#include "gbi_ultra.h"
+s32 func_801BE9A8_ovl_1F0A30(s32 fmt, s32 w);
+s32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
+void func_801BA0DC_ovl_1F0A30(void *timg, s32 a, s32 b, s32 fmt, s32 siz, s32 stride, s32 height, s32 uls,
+                              s32 ult, s32 lrs, s32 lrt, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
+
+/* Draws a w x h window at (s, t) of image img to the screen at (x, y) as textured rectangles,
+ * in strips of as many rows as fit in TMEM */
+void func_801B594C_ovl_1F0A30(Size1F *img, s32 s, s32 t, s32 w, s32 h, s32 x, s32 y) {
+    s32 bpr;
+    s32 rows;
+    s32 i;
+    s32 n;
+    s32 stride;
+    s32 tt;
+
+    if (w == 0) {
+        return;
+    }
+    bpr = func_801BE9A8_ovl_1F0A30(img->unk0[3], w);
+    rows = 0x1000 / bpr;
+    if (img->unk0[2] == 2) {
+        rows = 0x800 / bpr;
+    }
+    for (i = 0; i < h; i += rows) {
+        n = rows;
+        if (h - i < rows) {
+            n = h - i;
+        }
+        stride = func_801BEA0C_ovl_1F0A30(img->unk0[3], img->w);
+        tt = t + i;
+        func_801BA0DC_ovl_1F0A30((u8 *)img + 8, 0, 0, img->unk0[2], img->unk0[3], stride, img->h, s, tt,
+                                 s + func_801BEA0C_ovl_1F0A30(img->unk0[3], w) - 1, tt + n - 1, 0, 0, 0, 0, 0,
+                                 0, 0);
+        gDPPipeSync(((Gfx *)D_800E9BA0)++);
+        gSPScisTextureRectangle(((Gfx *)D_800E9BA0)++, x << 2, (y + i) << 2, (x + w) << 2, (y + i + n) << 2, 0, s << 5,
+                                tt << 5, 1 << 10, 1 << 10);
+        gDPPipeSync(((Gfx *)D_800E9BA0)++);
+    }
+}
 
 void func_801B5CAC_ovl_1F0A30(Size1F *s, s32 a, s32 b) {
     func_801B594C_ovl_1F0A30(s, 0, 0, s->w, s->h, a, b);
@@ -249,7 +292,7 @@ u8 func_801B7914_ovl_1F0A30(s32 t) {
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
-s32 func_801BE9A8_ovl_1F0A30(u8 fmt, u16 w);
+s32 func_801BE9A8_ovl_1F0A30(s32 fmt, s32 w);
 void func_80080998(void *dst, void *src, s32 n);
 
 /* Copies image src into its own allocation and frees src; a "B5" multi-frame image becomes a chain
@@ -1083,7 +1126,7 @@ extern u8 D_800E7A0C;
 extern u16 *D_800A8204[3];
 void nuGfxTaskAllEndWait(void);
 void *HMalloc(s32 size);
-s32 func_801BEA0C_ovl_1F0A30(s32 fmt, u16 w);
+s32 func_801BEA0C_ovl_1F0A30(s32 fmt, s32 w);
 
 /* Flattens the current 'B5' part sprite into a free frame buffer at the light position and
  * replaces it with a full-screen 320x240 '64' image copied from there */
