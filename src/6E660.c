@@ -562,7 +562,6 @@ typedef struct {
     /* 0x50 */ void *p50;
 } Model6E;
 
-void *LoadChunk(s32 handle);
 u8 func_8016F5E0(u16 id);
 void bzero(void *, s32);
 

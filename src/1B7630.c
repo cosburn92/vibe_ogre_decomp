@@ -380,7 +380,6 @@ u8 *func_8021A208_ovl_1B2670(u8 *t, u32 index) {
 }
 
 extern u8 D_80187C59[][0x48]; /* gClassTable[].baseClass */
-void *LoadChunk(s32 id);
 u8 func_8016F5E0(u16 id);
 
 typedef struct {

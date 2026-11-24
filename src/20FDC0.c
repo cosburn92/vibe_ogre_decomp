@@ -834,7 +834,6 @@ typedef struct {
     s16 w;
     s16 h;
 } BgState20F;
-void *HMallocBack(s32 size);
 void HuDecode(void *src, void *dst);
 void func_8008AFA0(void (*func)(void));
 
