@@ -791,28 +791,25 @@ void func_801EB4F0_ovl_23B220(void) {
     D_801EFE48_ovl_23B220->flags |= 4;
 }
 
-#ifdef NON_MATCHING
-/* display-list pointer store is scheduled after the argument loads */
 void func_801EB508_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
-    Gfx *g;
 
     if (s->flags & 4) {
-        g = D_800E9BA0;
-        g->w0 = 0xDE000000;
-        g->w1 = (u32)D_801F01D0_ovl_23B220;
-        D_800E9BA0 = g + 1;
-        func_801B5CAC(FIELD(s, s32, 0x36C), s->x0, s->x1);
-        g = D_800E9BA0++;
-        g->w0 = 0xE7000000;
-        g->w1 = 0;
+        {
+            Gfx *_g = D_800E9BA0++;
+            _g->w0 = 0xDE000000;
+            _g->w1 = (u32)D_801F01D0_ovl_23B220;
+        }
+        func_801B5CAC(((struct { u8 pad[0x36C]; s32 v; } *)s)->v, s->x0, s->x1);
+        {
+            Gfx *_g = D_800E9BA0++;
+            _g->w0 = 0xE7000000;
+            _g->w1 = 0;
+        }
         func_801EAAD8_ovl_23B220();
         func_801EAFC8_ovl_23B220();
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EB508_ovl_23B220);
-#endif
 
 #include "gbi_ultra.h"
 s32 func_801B594C(void *img, s32 a, s32 b, u16 w, s32 h, s32 x, s32 y);
