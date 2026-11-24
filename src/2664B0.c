@@ -177,7 +177,92 @@ s32 func_80212488_ovl_25EE90(Model266 *o) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/2664B0", func_80212558_ovl_25EE90);
+typedef struct {
+    s16 ob[3];
+    u16 flag;
+    s16 tc[2];
+    u8 cn[4];
+} Vtx266;
+extern Vtx266 *D_80197178;
+extern Gfx D_80220520_ovl_25EE90[];
+void bzero(void *p, s32 n);
+
+typedef struct {
+    f32 mtx[4][4];
+    f32 alpha;
+    s16 w;
+    s16 h;
+    u16 type;
+} Tri266;
+
+/* Draws a flat triangle (half width 0x44, height 0x46, shape 0x48: 0 centred, 1 left-shaded,
+ * 2 right) under matrix p with alpha 0x40 */
+void func_80212558_ovl_25EE90(void *arg) {
+    Tri266 *p = arg;
+    s32 w;
+    s32 h;
+    s32 type;
+    Vtx266 *vtx;
+    s32 i;
+    s32 x;
+    s32 y;
+    s32 c;
+
+    GFX266(0xDE000000, (u32)D_80220520_ovl_25EE90);
+    guMtxF2L(p->mtx, D_801969B0);
+    GFX266(0xDA380000, (u32)D_801969B0);
+    GFX266(0xFA000000, (u8)(p->alpha * 255.0f));
+    w = p->w;
+    h = p->h;
+    vtx = D_80197178;
+    c = 0xFF;
+    type = p->type;
+    for (i = 0; i < 3; i++) {
+        if (i == 0) {
+            y = 0;
+        } else if (i == 1) {
+            y = h;
+        } else {
+            y = -h;
+        }
+        bzero(D_80197178, 16);
+        switch (type) {
+        case 0:
+            if (i == 0) {
+                x = w;
+            } else {
+                x = -w;
+            }
+            break;
+        case 1:
+            if (i == 0) {
+                x = 0;
+                c = 0x80;
+            } else {
+                x = w * 2;
+                c = 0;
+            }
+            break;
+        case 2:
+            x = i ? 0 : -(w * 2);
+            break;
+        default:
+            for (;;) {
+            }
+        }
+        D_80197178->ob[0] = y;
+        D_80197178->ob[2] = x;
+        FIELD(D_80197178, u8, 0xC) = 0xFF;
+        FIELD(D_80197178, u8, 0xD) = c;
+        FIELD(D_80197178, u8, 0xE) = c;
+        FIELD(D_80197178, u8, 0xF) = 0xFF;
+        D_80197178++;
+    }
+    GFX266(0x01003006, (u32)vtx);
+    GFX266(0x05000204, 0);
+    GFX266(0xD8380002, 0x40);
+    D_801969B0 += 0x40;
+}
 
 s32 func_80212814_ovl_25EE90(u8 *p) {
     func_80212558_ovl_25EE90(p + 0x18);
