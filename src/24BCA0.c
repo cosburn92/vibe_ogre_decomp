@@ -304,7 +304,7 @@ s32 func_801F7DA4_ovl_24BCA0(f32 *pos, s32 c, f32 ang) {
     p[2] += side * 20.0f;
     func_801F7BE4_ovl_24BCA0(d, p, pos);
     a1 = func_801F7CF4_ovl_24BCA0(d);
-    if ((a0 <= ang) & (ang <= a1)) {
+    if (a0 <= ang && ang <= a1) {
         return 1;
     }
     if (a1 < ang) {
