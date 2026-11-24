@@ -565,7 +565,121 @@ void func_80077494(s32 arg0) {
     }
 }
 
+/* Opening animation: scenes with flags 0xE800 set grow from (x, y) to their full size (unk28 x
+ * unk2A) over unk04[0] frames in 8.8 fixed point. flags2 bits 0xC0 pick the horizontal direction
+ * (0 or 0x40 grows x2 right, 0x80 grows x left) and bits 0x30 the vertical one (0 or 0x20 grows y2
+ * down, 0x10 grows y up); a window pushed past the 320x240 screen slides back. unk2C carries the
+ * fractions (read x from the low byte, y from the high byte, but written back the other way round).
+ * Once both axes reach full size, flags 0x800 and 0x400 are cleared. */
+#ifdef NON_MATCHING
+/* same size; loads are scheduled differently (retail reloads unk28/x after the x2 store and keeps mode in a3) and the scene offset lands in a1 instead of a2 */
+void func_800775EC(void) {
+    s32 fx;
+    s32 fy;
+    s32 i;
+    s32 s;
+    u8 mode;
+    s32 step;
+    s32 grow;
+    u8 done;
+
+    fx = 0;
+    fy = 0;
+    for (i = 0; i < D_800C49D0; i++) {
+        s = ((u16 *)D_800C4C10)[i];
+        if ((D_800E82C8[s].flags & 0xE800) != 0xE800) {
+            continue;
+        }
+        if (D_800E82C8[s].flags3 & 2) {
+            continue;
+        }
+        done = 0;
+        if (!(D_800E82C8[s].flags & 0x400)) {
+            D_800E82C8[s].unk2C = 0;
+            D_800E82C8[s].flags |= 0x400;
+        }
+
+        step = D_800E82C8[s].unk28 << 8;
+        mode = D_800E82C8[s].flags2 & 0xC0;
+        grow = mode == 0 || mode == 0x40;
+        step /= D_800E82C8[s].unk04[0];
+        if (grow) {
+            fx = ((D_800E82C8[s].x2 << 8) | (D_800E82C8[s].unk2C & 0xFF)) + step;
+            D_800E82C8[s].x2 = fx >> 8;
+            if (D_800E82C8[s].x2 >= D_800E82C8[s].x + D_800E82C8[s].unk28 - 1) {
+                D_800E82C8[s].x2 = D_800E82C8[s].x + D_800E82C8[s].unk28 - 1;
+                done |= 1;
+            }
+            if (D_800E82C8[s].x2 >= 320) {
+                D_800E82C8[s].x = D_800E82C8[s].x + 319 - D_800E82C8[s].x2;
+                D_800E82C8[s].x2 = 319;
+                if (D_800E82C8[s].x < 0) {
+                    D_800E82C8[s].x = 0;
+                    done |= 1;
+                }
+            }
+        } else if (mode == 0x40 || mode == 0x80) {
+            fx = ((D_800E82C8[s].x << 8) | (D_800E82C8[s].unk2C & 0xFF)) - step;
+            D_800E82C8[s].x = fx >> 8;
+            if (D_800E82C8[s].x <= D_800E82C8[s].x2 - D_800E82C8[s].unk28 + 1) {
+                D_800E82C8[s].x = D_800E82C8[s].x2 - D_800E82C8[s].unk28 + 1;
+                done |= 1;
+            }
+            if (D_800E82C8[s].x < 0) {
+                D_800E82C8[s].x2 = D_800E82C8[s].x2 - D_800E82C8[s].x;
+                D_800E82C8[s].x = 0;
+                if (D_800E82C8[s].x2 >= 320) {
+                    D_800E82C8[s].x2 = 319;
+                    done |= 1;
+                }
+            }
+        }
+
+        step = D_800E82C8[s].unk2A << 8;
+        mode = D_800E82C8[s].flags2 & 0x30;
+        grow = mode == 0 || mode == 0x20;
+        step /= D_800E82C8[s].unk04[0];
+        if (grow) {
+            fy = ((D_800E82C8[s].y2 << 8) | (D_800E82C8[s].unk2C >> 8)) + step;
+            D_800E82C8[s].y2 = fy >> 8;
+            if (D_800E82C8[s].y2 >= D_800E82C8[s].y + D_800E82C8[s].unk2A - 1) {
+                D_800E82C8[s].y2 = D_800E82C8[s].y + D_800E82C8[s].unk2A - 1;
+                done |= 2;
+            }
+            if (D_800E82C8[s].y2 >= 240) {
+                D_800E82C8[s].y = D_800E82C8[s].y + 239 - D_800E82C8[s].y2;
+                D_800E82C8[s].y2 = 239;
+                if (D_800E82C8[s].y < 0) {
+                    D_800E82C8[s].y = 0;
+                    done |= 2;
+                }
+            }
+        } else if (mode == 0x20 || mode == 0x10) {
+            fy = ((D_800E82C8[s].y << 8) | (D_800E82C8[s].unk2C >> 8)) - step;
+            D_800E82C8[s].y = fy >> 8;
+            if (D_800E82C8[s].y <= D_800E82C8[s].y2 - D_800E82C8[s].unk2A + 1) {
+                D_800E82C8[s].y = D_800E82C8[s].y2 - D_800E82C8[s].unk2A + 1;
+                done |= 2;
+            }
+            if (D_800E82C8[s].y < 0) {
+                D_800E82C8[s].y2 = D_800E82C8[s].y2 - D_800E82C8[s].y;
+                D_800E82C8[s].y = 0;
+                if (D_800E82C8[s].y2 >= 240) {
+                    D_800E82C8[s].y2 = 239;
+                    done |= 2;
+                }
+            }
+        }
+
+        D_800E82C8[s].unk2C = (fy & 0xFF) | ((fx & 0xFF) << 8);
+        if (done == 3) {
+            D_800E82C8[s].flags &= ~0xC00;
+        }
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800775EC);
+#endif
 
 /* Closing animation: scenes with all of flags 0xF000 set shrink their far corner (x2, y2) towards
  * (x, y) over unk04[0] frames in 8.8 fixed point, and are freed once they reach the minimum size.
