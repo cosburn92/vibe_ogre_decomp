@@ -21,6 +21,7 @@ void func_801C1A94_ovl_1F0A30(void) {
 void func_801C1A9C_ovl_1F0A30(void) {
 }
 
+/* Declared s32: the caller passes the u16 result on without the andi a u16 prototype adds. */
 s32 func_801BE138_ovl_1F0A30(s32 a, s32 b, s32 c, s32 d);
 extern u8 D_801CEEE0_ovl_1F0A30[];
 

@@ -102,21 +102,12 @@ u16 func_801BE138_ovl_1F0A30(s32 cls, s32 base, s32 c, s32 d) {
     return D_801D0690_ovl_1F0A30[base * 4 + c * 2 + d] & 0xFFF;
 }
 
-#ifdef NON_MATCHING
-/* index arithmetic order differs (original selects k*4 in each branch) */
 u16 func_801BE18C_ovl_1F0A30(s32 cls, s32 base, s32 c, s32 d) {
-    s32 k;
-
     if (gClassTable[cls].baseClass == base) {
-        k = cls;
-    } else {
-        k = base;
+        return D_801D0690_ovl_1F0A30[cls * 4 + c * 2 + d] >> 12;
     }
-    return D_801D0690_ovl_1F0A30[c * 2 + k * 4 + d] >> 12;
+    return D_801D0690_ovl_1F0A30[base * 4 + c * 2 + d] >> 12;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BE18C_ovl_1F0A30);
-#endif
 
 f32 func_801BE1E0_ovl_1F0A30(s32 cls, s32 base) {
     if (gClassTable[cls].baseClass == base && D_801D0698_ovl_1F0A30[cls][0] != 0xFF) {
