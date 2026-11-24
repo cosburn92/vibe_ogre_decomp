@@ -39,8 +39,9 @@ extern u8 D_8018F481;
 extern u8 D_8018F480;
 extern u8 D_8018F53F;
 extern u8 D_8018F55B;
-extern s16 D_8018F55C;
-extern s16 D_8018F55E;
+extern u16 D_8018F55C;
+extern u16 D_8018F55E;
+extern u8 D_8018F55A;
 extern s32 D_801AD580_ovl_0EBBB0;
 extern f32 D_801AD584_ovl_0EBBB0;
 extern Scene0E *D_801ABA58_ovl_0EBBB0;
@@ -435,7 +436,98 @@ void func_801A4204_ovl_0EBBB0(u8 r, u8 g, u8 b, u8 a0, u8 a1, u16 x0, u16 y0, u1
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4204_ovl_0EBBB0);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A45F4_ovl_0EBBB0);
+s32 func_8009C7CC(void);
+
+/* Third of three random draws */
+#define RAND3() (func_8009C7CC(), func_8009C7CC(), func_8009C7CC())
+
+/* Flicker state machine: D_8018F55B steps through dark wait (0), choose (1), fade in over
+ * D_8018F55E frames (2), lit wait (3), choose (4), fade out (5); D_8018F55A is the level 0..255
+ * and D_8018F55C the frame counter, reloaded with a random 0x100..0x600 wait */
+void func_801A45F4_ovl_0EBBB0(void) {
+    u8 unused[0xB0]; /* only sizes the frame */
+
+    if (D_8018F55C >= 0x800 || D_8018F55E >= 0x800) {
+        D_8018F55A = 0;
+        D_8018F55B = 0xFF;
+    }
+    if (FIELDX(D_801ABA58_ovl_0EBBB0, u8, 0x139) != 0) {
+        return;
+    }
+    switch (D_8018F55B) {
+        case 0:
+            D_8018F55A = 0;
+            if (D_8018F55C != 0) {
+                D_8018F55C--;
+            } else {
+                D_8018F55B++;
+            }
+            break;
+        case 1:
+            D_8018F55A = 0;
+            do {
+                D_8018F55C = RAND3() & 0x7FF;
+            } while (D_8018F55C < 0x100 || D_8018F55C > 0x600);
+            if (RAND3() & 4) {
+                D_8018F55B--;
+            } else {
+                D_8018F55B++;
+                D_8018F55E = D_8018F55C;
+                D_8018F55C = 0;
+            }
+            break;
+        case 2:
+            if (D_8018F55C < D_8018F55E) {
+                D_8018F55C++;
+                D_8018F55A = D_8018F55C * 255 / D_8018F55E;
+            } else {
+                do {
+                    D_8018F55C = RAND3() & 0x7FF;
+                } while (D_8018F55C < 0x100 || D_8018F55C > 0x600);
+                D_8018F55A = 0xFF;
+                D_8018F55B++;
+            }
+            break;
+        case 3:
+            D_8018F55A = 0xFF;
+            if (D_8018F55C != 0) {
+                D_8018F55C--;
+            } else {
+                D_8018F55B++;
+            }
+            break;
+        case 4:
+            D_8018F55A = 0xFF;
+            do {
+                D_8018F55C = RAND3() & 0x7FF;
+            } while (D_8018F55C < 0x100 || D_8018F55C > 0x600);
+            if (RAND3() & 8) {
+                D_8018F55B--;
+            } else {
+                D_8018F55B++;
+                D_8018F55E = D_8018F55C = D_8018F55C; /* the store to D_8018F55C is in the original */
+            }
+            break;
+        case 5:
+            if (D_8018F55C != 0) {
+                D_8018F55C--;
+                D_8018F55A = D_8018F55C * 255 / D_8018F55E;
+            } else {
+                do {
+                    D_8018F55C = RAND3() & 0x7FF;
+                } while (D_8018F55C < 0x100 || D_8018F55C > 0x600);
+                D_8018F55A = 0;
+                D_8018F55B = 0;
+            }
+            break;
+        default:
+            D_8018F55A = 0;
+            D_8018F55B = 0;
+            D_8018F55C = 0;
+            D_8018F55E = 0;
+            break;
+    }
+}
 
 /* Sky state from the hour (D_8018F481): next of 8 colour pairs and an angle (hour * 20 mod 5400) */
 void func_801A499C_ovl_0EBBB0(void) {
