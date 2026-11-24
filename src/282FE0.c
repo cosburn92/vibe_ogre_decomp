@@ -418,19 +418,18 @@ void DecodeLZ(void *dst, void *src);
 void func_8007ACB0(void *arc, void *reqs, s32 n);
 
 /* Loads entry k of the index chunk id and unpacks it (LHa archive or LZ) */
-#ifdef NON_MATCHING
-/* 82/82 instructions, 12 words differ: id and the index buffer swap s1/s2 (same family as 20BCE0 func_801CC234) */
+/* Like 20BCE0 func_801CC234, but the entry's size is read before the index is freed, and the
+ * index buffer and the result share one variable (that is what puts them in the same register) */
 void *func_80227A18_ovl_281860(s32 id, s32 k) {
-    s32 *index = func_80071C04(ChunkSize(id));
+    void *out = func_80071C04(ChunkSize(id));
     s32 e;
     s32 size;
     u8 *raw;
-    void *out;
 
-    LoadChunkRaw(index, id);
-    e = index[k];
+    LoadChunkRaw(out, id);
+    e = ((s32 *)out)[k];
     size = ChunkSize(e);
-    HFree(index);
+    HFree(out);
     raw = func_80071C04(size);
     LoadChunkRaw(raw, e);
     if (raw[2] == '-' && raw[3] == 'l' && raw[4] == 'h') {
@@ -448,9 +447,6 @@ void *func_80227A18_ovl_281860(s32 id, s32 k) {
     HFree(raw);
     return out;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/282FE0", func_80227A18_ovl_281860);
-#endif
 
 void func_80227B60_ovl_281860(void) {
     u8 *p = D_8022A974_ovl_281860;
