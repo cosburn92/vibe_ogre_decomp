@@ -95,21 +95,12 @@ u8 func_801BE0F4_ovl_1F0A30(s32 cls, s32 other) {
     return D_801D0684_ovl_1F0A30[other];
 }
 
-#ifdef NON_MATCHING
-/* index arithmetic order differs (original selects k*4 in each branch) */
 u16 func_801BE138_ovl_1F0A30(s32 cls, s32 base, s32 c, s32 d) {
-    s32 off;
-
     if (gClassTable[cls].baseClass == base) {
-        off = cls * 4;
-    } else {
-        off = base * 4;
+        return D_801D0690_ovl_1F0A30[cls * 4 + c * 2 + d] & 0xFFF;
     }
-    return D_801D0690_ovl_1F0A30[c * 2 + off + d] & 0xFFF;
+    return D_801D0690_ovl_1F0A30[base * 4 + c * 2 + d] & 0xFFF;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BE138_ovl_1F0A30);
-#endif
 
 #ifdef NON_MATCHING
 /* index arithmetic order differs (original selects k*4 in each branch) */
