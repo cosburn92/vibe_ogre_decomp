@@ -1623,30 +1623,25 @@ void func_80231C54_ovl_29A4C0(f32 *p, f32 *out, Mtx29 *m, f32 *cam) {
 }
 
 /* Sets the f32 at 0x12C of unit i, or of every unit when i == -1, to v */
-#ifdef NON_MATCHING
-/* 1 instruction short: the original keeps start in v0 (separate from i in a0) and copies it into k
- * after the if; GCC here reuses i's register. The struct-typed store keeps the base hoisted. */
 void func_80231DE0_ovl_29A4C0(s32 i, s32 unused, f32 v) {
     s16 k;
     s32 end;
-    s32 start;
+    s16 start;
 
     if (i == -1) {
         start = 0;
         end = 28;
     } else {
         start = i;
-        end = i + 1;
+        end = i;
+        end++;
     }
     for (k = start; k < (s16)end; k++) {
         if (D_8022A974->units[k] != NULL) {
-            ((struct { u8 pad[0x12C]; f32 f; } *)D_8022A974->units[k])->f = v;
+            D_8022A974->units[k]->f12C = v;
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/29C950", func_80231DE0_ovl_29A4C0);
-#endif
 
 /* Sets the speed (pct / 100) of every part of unit i, or of all units when i == -1 */
 #ifdef NON_MATCHING
