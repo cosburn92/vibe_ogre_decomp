@@ -523,7 +523,91 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DAA00_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DADF0_ovl_101CE0);
 
+u8 func_801D4A74_ovl_101CE0(u8 *legion);
+
+static inline s32 LegionOf(MapUnit *u) {
+    u8 sq = u->squad;
+    u8 *l = gLegions[0];
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 10; i++, l += 11) {
+        u8 fl = l[1];
+
+        if (!(fl & 1)) {
+            continue;
+        }
+        if (u->flags & 8) {
+            if (fl & 0x80) {
+                continue;
+            }
+        } else if (!(fl & 0x80)) {
+            continue;
+        }
+        for (j = 0; j < 5; j++) {
+            if ((l + j)[2] == sq) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+#ifdef NON_MATCHING
+/* 0x2C4 vs 0x2A4: GCC hoists the four flag masks of the squad-drop loop into saved registers
+ * (bigger frame), the legion-of-unit prologue order differs as in func_801DA228, and the
+ * two legion count loops index instead of walking a pointer */
+/* Drops squads from the unit's legion until it has no more than its squad's generic members
+ * allow, then recomputes the legion's type byte and free-slot count */
+void func_801DB180_ovl_101CE0(MapUnit *u) {
+    s32 l = LegionOf(u);
+    s32 n = 0;
+    s32 m = 0;
+    s32 k;
+    s32 d;
+    u8 *p;
+
+    for (k = 1; k < 5; k++) {
+        n += (gLegions[l] + k)[2] != 0xFF;
+        m += gSquads[u->squad].members[k] >= 100;
+    }
+    d = n - m;
+    if (d > 0) {
+        p = &gLegions[l][6];
+        do {
+            if (*p != 0xFF) {
+                u32 *o = D_801F0CB0_ovl_101CE0[*p];
+
+                func_801B2D2C_ovl_101CE0((MapUnit *)o);
+                *o &= ~0x80;
+                *o &= ~0x40;
+                *o &= ~0x4000;
+                *o &= ~0x8000;
+                *o &= ~0x10000;
+                *o &= ~0x800000;
+                if (!(*o & 8)) {
+                    *o |= 0x20000000;
+                }
+                *p = 0xFF;
+            }
+            d--;
+            p--;
+        } while (d > 0);
+    }
+    gLegions[l][9] = func_801D4A74_ovl_101CE0(gLegions[l]);
+    {
+        s32 l2 = func_801DA228_ovl_101CE0((MapUnit *)D_801F0CB0_ovl_101CE0[gLegions[l][2]]);
+        s32 c = 0;
+
+        for (k = 0; k < 5; k++) {
+            c += gLegions[l2][2 + k] != 0xFF;
+        }
+        gLegions[l][10] = 11 - c;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801DB180_ovl_101CE0);
+#endif
 
 typedef struct {
     u8 unk00[0xA8];
