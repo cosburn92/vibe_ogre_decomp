@@ -766,63 +766,12 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A66C8_ovl_0EBBB0);
 
 /* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
  * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
-/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
- * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
-/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
- * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
-/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
- * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
-/* Cell x of row `row` in a run-length grid: u16 width, u16 height, row offsets at +0x1C
- * (in halfwords, from +0x1C). A word 0xFFnn repeats the following word nn times. */
-#ifdef NON_MATCHING
-/* run-length grid lookup: logic right, the counter/index/word registers (a2/a3/t0) are allocated differently */
-u16 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row) {
+/* plain inline: also inlined into func_801A6E3C */
+inline s32 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row) {
     u16 *p = &grid[14] + grid[14 + row];
-    u16 i;
-    u16 j;
     u16 w;
-
-    if (x < 0 || x >= grid[0] || row < 0 || row >= grid[1]) {
-        return 0;
-    }
-    i = 0;
-    j = 0;
-    while (1) {
-        w = p[j++];
-        if ((w >> 8) != 0xFF) {
-            if (i >= x) {
-                return w;
-            }
-            i++;
-        } else {
-            i += w & 0xFF;
-            if (i - 1 >= x) {
-                return p[j];
-            }
-            j++;
-        }
-    }
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A69A4_ovl_0EBBB0);
-#endif
-
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A6A78_ovl_0EBBB0);
-
-typedef struct {
-    /* 0x00 */ u16 *grids[10];
-    /* 0x28 */ u8 pad28[4];
-    /* 0x2C */ u8 grid;
-    /* 0x2D */ u8 pad2D[0xA8 - 0x2D];
-} SceneGrids;
-extern SceneGrids D_800E8328[];
-
-/* inlined copy of func_801A69A4 */
-static inline s32 GridCell(u16 *grid, s32 x, s32 row) {
-    u16 *p = &grid[14] + grid[14 + row];
-    u16 i;
     u16 j;
-    u16 w;
+    u16 i;
 
     if (x < 0 || x >= grid[0] || row < 0 || row >= grid[1]) {
         return 0;
@@ -846,6 +795,16 @@ static inline s32 GridCell(u16 *grid, s32 x, s32 row) {
     }
 }
 
+INCLUDE_ASM("asm/nonmatchings/ED530", func_801A6A78_ovl_0EBBB0);
+
+typedef struct {
+    /* 0x00 */ u16 *grids[10];
+    /* 0x28 */ u8 pad28[4];
+    /* 0x2C */ u8 grid;
+    /* 0x2D */ u8 pad2D[0xA8 - 0x2D];
+} SceneGrids;
+extern SceneGrids D_800E8328[];
+
 /* Heights of the three corners of triangle tri (0: x+1 corner, else z+1 corner) of grid cell
  * (x, z) in the current scene's height grid; returns the index of the highest corner */
 s32 func_801A6E3C_ovl_0EBBB0(s32 tri, s32 x, s32 z, s32 *h) {
@@ -853,9 +812,9 @@ s32 func_801A6E3C_ovl_0EBBB0(s32 tri, s32 x, s32 z, s32 *h) {
     s32 m;
     s32 r;
 
-    m = h[0] = GridCell(g, x, z);
+    m = h[0] = func_801A69A4_ovl_0EBBB0(g, x, z);
     r = 0;
-    h[1] = GridCell(g, x + 1, z + 1);
+    h[1] = func_801A69A4_ovl_0EBBB0(g, x + 1, z + 1);
     if (m < h[1]) {
         r = 1;
         m = h[1];
@@ -865,7 +824,7 @@ s32 func_801A6E3C_ovl_0EBBB0(s32 tri, s32 x, s32 z, s32 *h) {
     } else {
         z++;
     }
-    h[2] = GridCell(g, x, z);
+    h[2] = func_801A69A4_ovl_0EBBB0(g, x, z);
     if (m < h[2]) {
         r = 2;
     }
