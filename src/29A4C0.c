@@ -227,32 +227,6 @@ void func_8022B4A8_ovl_29A4C0(void *pix, s32 fmt, s32 h, s32 w) {
     }
 }
 
-/* Sepia-filters every RGBA5551 image in a sprite bank */
-#ifdef NON_MATCHING
-/* hdr/k registers swapped (s3/s4) and the a0=2 hoist differs */
-void func_8022B56C_ovl_29A4C0(u8 *bank) {
-    u8 *e = bank + 8;
-    u8 k;
-
-    for (k = 0; k < bank[3]; k++) {
-        u8 *hdr = e;
-        s32 h = FIELD(hdr, u16, 6);
-        s32 n;
-        s32 i;
-
-        e = hdr + 0x10;
-        n = func_801BEA0C(2, FIELD(hdr, u16, 4)) * h;
-        for (i = 0; i < n; i++, e += 2) {
-            *(u16 *)e = func_801BEB28(*(u16 *)e);
-        }
-        e = FIELD(hdr, u8 *, 0xC);
-    }
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/29A4C0", func_8022B56C_ovl_29A4C0);
-#endif
-
-/* Sepia-filters a single image (8-byte header: [3] fmt, u16 width at 4, height at 6) */
 /* inlined copy of func_8022B4A8 (n computed in two statements) */
 static inline void SepiaImg29(void *pix, s32 fmt, s32 h, s32 w) {
     s32 n;
@@ -276,6 +250,20 @@ static inline void SepiaImg29(void *pix, s32 fmt, s32 h, s32 w) {
     }
 }
 
+/* Sepia-filters every RGBA5551 image in a sprite bank */
+void func_8022B56C_ovl_29A4C0(u8 *bank) {
+    u8 *e = bank + 8;
+    s32 k;
+
+    for (k = 0; k < bank[3]; k++) {
+        u8 *hdr = e;
+
+        SepiaImg29(hdr + 0x10, 2, FIELD(hdr, u16, 6), FIELD(hdr, u16, 4));
+        e = FIELD(hdr, u8 *, 0xC);
+    }
+}
+
+/* Sepia-filters a single image (8-byte header: [3] fmt, u16 width at 4, height at 6) */
 void func_8022B62C_ovl_29A4C0(u8 *img) {
     u8 *hdr = img;
 
