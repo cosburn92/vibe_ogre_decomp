@@ -2194,30 +2194,27 @@ char *func_80239C5C_ovl_286BD0(char *buf, s32 n) {
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239C5C_ovl_286BD0);
 #endif
 
-#ifdef NON_MATCHING
-/* Digit loop shape differs. */
+/* Writes n (> 0) as decimal digits into out; the digits are collected low first in buf, then copied
+ * reversed (n is reused as the copy index). n == 0 gives an empty string. */
 void func_80239E30_ovl_286BD0(s32 n, char *out) {
     char buf[20];
-    char *o = out;
+    u8 *d = D_8023E0DC_ovl_286BD0;
     s32 i;
-    s32 j;
+    s32 q;
 
     for (i = 0; i < 20; i++) {
         if (n == 0) {
-            *o = 0;
+            out[i] = 0;
             break;
         }
-        o++;
-        buf[i] = D_8023E0DC_ovl_286BD0[n % 10];
+        q = n % 10;
         n /= 10;
+        buf[i] = d[q];
     }
-    for (j = 0; j < i; j++) {
-        *out++ = (buf - 1)[i - j];
+    for (n = 0; n < i; n++) {
+        *out++ = buf[i - n - 1];
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239E30_ovl_286BD0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_80239EE0_ovl_286BD0);
 
