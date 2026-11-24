@@ -12,6 +12,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+# claude's stdin and stdout are UTF-8; without this, 5.1 decodes them in the OEM codepage
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 if ($Min -lt 1 -or $Max -lt $Min) { throw "need 1 <= Min <= Max (got Min=$Min, Max=$Max)" }
 $repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
@@ -76,8 +79,10 @@ for ($i = 1; $i -le $Runs; $i++) {
     Write-Host "[$i/$Runs] $stamp starting ($Min-$Max functions)..."
 
     # prompt goes in on stdin: PowerShell 5.1 mangles embedded quotes in native arguments
+    # log as UTF-8: Tee-Object in PowerShell 5.1 can only write UTF-16
+    $log = "$logDir/$stamp.log"
     $prompt | claude -p --model $Model --permission-mode acceptEdits |
-        Tee-Object -FilePath "$logDir/$stamp.log"
+        ForEach-Object { $_; Add-Content -LiteralPath $log -Value $_ -Encoding UTF8 }
 
     if ($LASTEXITCODE -ne 0) { Write-Host "claude exited $LASTEXITCODE, stopping."; break }
 
