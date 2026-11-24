@@ -82,7 +82,7 @@ s32 func_8020936C_ovl_24BCA0(u16 msg, u8 *o) {
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
 #endif
 extern s16 D_80220F70;
-s16 func_801F70E0_ovl_24BCA0(u8 id);
+u8 func_801F70E0_ovl_24BCA0(u8 c);
 u8 func_801BE034(u8 id);
 void func_801C893C(s32 id, s32 v);
 extern u8 D_8018AA82[][16];

@@ -26,7 +26,7 @@ u8 func_801F70E0_ovl_24BCA0(u8 c) {
     if ((u8)(c - 20) < 27) {
         return 1;
     }
-    return (u8)-((u8)(c - 47) >= 40) | 2;
+    return (u8)(c - 47) < 40 ? 2 : 0xFF;
 }
 
 typedef struct {
