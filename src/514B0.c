@@ -498,25 +498,21 @@ void func_8017C24C_ovl_040E80(Win514 *w, s32 a, s16 x0, s16 y0, s16 x1, s16 y1) 
     w->cur[3] = y1;
 }
 
-#ifdef NON_MATCHING
-/* stack argument load is scheduled first in the original */
-u8 *func_8017C29C_ovl_040E80(u8 *p, s16 x, s16 y, s16 z, s16 w) {
-    FIELD(p, s32, 0x2C) = x;
-    FIELD(p, s32, 0x3C) = x;
-    FIELD(p, s32, 0x30) = y;
-    FIELD(p, s32, 0x40) = y;
-    FIELD(p, s16, 0x18) = 0xFF;
-    FIELD(p, s32, 0x34) = z;
-    FIELD(p, s32, 0x44) = z;
-    FIELD(p, s16, 0x28) = 0;
-    FIELD(p, u16, 0x26) = 0x8004;
-    FIELD(p, s32, 0x38) = w;
-    FIELD(p, s32, 0x48) = w;
-    return p;
+/* Places the window at rectangle (x0, y0, x1, y1) (start and current), fade 0xFF, step 0, flags 0x8004; returns it */
+Win514 *func_8017C29C_ovl_040E80(Win514 *w, s16 x0, s16 y0, s16 x1, s16 y1) {
+    w->from[0] = x0;
+    w->cur[0] = x0;
+    w->from[1] = y0;
+    w->cur[1] = y0;
+    w->from[2] = x1;
+    w->cur[2] = x1;
+    w->fade = 0xFF;
+    w->step = 0;
+    w->h26 = 0x8004;
+    w->from[3] = y1;
+    w->cur[3] = y1;
+    return w;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017C29C_ovl_040E80);
-#endif
 
 /* Unlinks a node from the list and frees it */
 void func_8017C2FC_ovl_040E80(Node *n) {
