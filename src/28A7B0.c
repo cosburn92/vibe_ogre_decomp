@@ -2402,12 +2402,13 @@ char *func_8023ADA0_ovl_286BD0(s16 id);
 
 /* Loads paragraph arg & 0xFF of the text chunk into window o's buffer (0xD0) and expands its codes:
  * 0x87 0x8D inserts the selected unit's name, 0x87 0x8E/0x8F the name at D_8023DE34 + 0x24,
- * 0x81 0x97 ends a line (up to 48, starts at 0x534) */
+ * 0x81 0x97 ends a line (up to 48, starts at 0x534); returns the buffer */
 #ifdef NON_MATCHING
 /* 149/151 words (2 short): written as a goto loop; the original is a natural loop (0x878D and 0x500 hoisted into s7/s6) that still does not strength-reduce p + 2, which every natural-loop form here does (6 over), and the paragraph-found block is placed inline */
-void func_8023A814_ovl_286BD0(u8 *o, s32 arg) {
+u8 *func_8023A814_ovl_286BD0(u8 *o, s32 arg) {
     char buf[0x500];
     char *bp;
+    u8 *t;
     u16 para;
     u8 *w;
     u8 *src;
@@ -2483,9 +2484,11 @@ loop:
     if (j < 0x500) {
         goto loop;
     }
+    t = w;
     o[0x25] = n;
-    w[0x5F4] = n;
-    w[0x5F5] = n;
+    t[0x5F4] = n;
+    t[0x5F5] = n;
+    return t;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A814_ovl_286BD0);
