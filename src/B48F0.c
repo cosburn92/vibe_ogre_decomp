@@ -644,28 +644,30 @@ void func_801CAB68_ovl_087200(s32 sq) {
 INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAB68_ovl_087200);
 #endif
 
-#ifdef NON_MATCHING
-/* store order/scheduling of the release block differs */
 void func_801CAD90_ovl_087200(u16 id) {
     if (id != 0xFF) {
         if (id >= 100) {
             u16 r = func_801CBC98_ovl_087200(id);
+            s32 o = id * 2;
 
-            D_80190EBC[id] = 0;
+            /* D_80190EBC[id] spelled with the byte offset o: the original computes id * 2 once
+             * for both tables, and D_80190EBC[id] gets its own shift */
+            *(u16 *)((u8 *)D_80190EBC + o) = 0;
             D_80191010[id] = 0;
             D_80190F81 += r;
-            FIELD(D_80196AF8, u8, 0x1872 + id * 2) = 0;
+            (D_80196AF8 + o)[0x1872] = 0;
         }
-        if (FIELD(D_80196AF8, u8, 0x1872 + id * 2) & 8) {
-            FIELD(D_80196AF8, s32, 0x5D4)++;
+        {
+            s32 o = id * 2;
+
+            if ((D_80196AF8 + o)[0x1872] & 8) {
+                FIELD(D_80196AF8, s32, 0x5D4)++;
+            }
+            (D_80196AF8 + o)[0x1872] = 0;
         }
-        FIELD(D_80196AF8, u8, 0x1872 + id * 2) = 0;
         func_801CE074_ovl_087200();
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAD90_ovl_087200);
-#endif
 
 /* Clears flag 4 of every member placed in squad sq's nine cells (o is one offset variable,
  * the row offset then the member offset, which keeps the base + offset add order; inlined
