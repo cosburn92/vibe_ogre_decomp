@@ -2,7 +2,28 @@
 #include "heap.h"
 #include "scene.h"
 extern u16 D_800C49D0;
-extern void *D_800AF0B0;
+/* A window object list (040E80 overlay) and the window it holds */
+typedef struct {
+    /* 0x00 */ u8 unk00[0x26];
+    /* 0x26 */ u16 flags;
+    /* 0x28 */ u8 unk28[4];
+    /* 0x2C */ s32 x;
+    /* 0x30 */ s32 y;
+    /* 0x34 */ s32 x2;
+    /* 0x38 */ s32 y2;
+} SceneWin;
+typedef struct {
+    /* 0x00 */ void *unk00;
+    /* 0x04 */ SceneWin *win;
+} SceneWinList;
+/* Scene.flags seen as bitfields: the original tests two of its bits together with one word load */
+typedef struct {
+    u32 unk_hi : 3; /* 0x8000 in use, 0x4000, 0x2000 started */
+    u32 f1000 : 1;
+    u32 f0800 : 1;
+    u32 unk_lo : 27;
+} SceneBits;
+extern SceneWinList *D_800AF0B0;
 extern u16 D_800E810E;
 extern u8 D_800C4C10[];
 extern s32 D_800E79A0;
@@ -54,6 +75,12 @@ void func_80173DBC(u8 kind, s16 x, s16 y, s16 x2, s16 y2);
 void func_800780D4(u8 kind, void *src, u16 n, u8 **out);
 void func_80078164(u8 *p, void *dst);
 void func_800782EC(s32 color, s32 shade, s32 x, s32 y, s32 x2, s32 y2);
+void func_80077288(void);
+void func_80077494(s32 arg0);
+s32 func_8009C7CC(void);
+void func_80173D14(void *list);
+void func_80173D4C(void *list);
+u8 *func_8017C29C(u8 *p, s16 x, s16 y, s16 z, s16 w);
 /* --- end decls --- */
 
 /* Scene system init: clears the six scene slots and the input state, seeds the random generator */
@@ -80,7 +107,106 @@ void func_800764E0(void) {
     func_8007819C();
 }
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_800765D8);
+/* Scene update. First pass, round robin from slot 0 until a full lap starts nothing new: scenes
+ * not yet started (flag 0x2000 clear) run their init callback with a fresh window list in unk98;
+ * a list that got a window keeps its own copy (flags3 bit 2), the shared one is replaced.
+ * Second pass: started scenes run their update callback; a windowed scene keeps its rect on the
+ * window (inset by 6) and is closed (flags2 bit 2) once the window is gone. */
+void func_800765D8(void) {
+    s32 i;
+    s32 last;
+
+    last = 0;
+    i = 0;
+    do {
+        D_800C4C20 = i;
+        if (!(D_800E82C8[i].flags & 0x2000) && (D_800E82C8[i].flags & 0x8000) && D_800E82C8[i].owner != NULL) {
+            _bcopy(&D_800E82C8[i], &D_800E7A30, 0xA8);
+            if (i == ((u16 *)D_800C4C10)[0]) {
+                D_800E7A30.flags2 |= 4;
+            }
+            D_800E7A30.unk04[0] = 6;
+            D_800E7A30.unk98 = D_800AF0B0;
+            ((void (*)(s32))D_800E7A30.owner)(i);
+            if (((SceneWinList *)D_800E7A30.unk98)->win != NULL) {
+                D_800E7A30.unk98 = func_80173B60(D_800E7A30.unk98);
+                ((SceneWinList *)D_800E7A30.unk98)->win = D_800AF0B0->win;
+                D_800AF0B0->win = NULL;
+                D_800E7A30.flags3 |= 2;
+            } else {
+                D_800E7A30.unk98 = NULL;
+            }
+            D_800E7A30.flags |= 0x2000;
+            if (i == ((u16 *)D_800C4C10)[0]) {
+                D_800E7A30.flags2 &= ~4;
+            }
+            func_800780D4(D_800E7A30.flags, D_800E91D0, D_800E7A30.size, &D_800E7A30.data);
+            _bcopy(&D_800E7A30, &D_800E82C8[i], 0xA8);
+            if (D_800E82C8[i].flags2 & 2) {
+                func_80077F88(i);
+            }
+            last = i;
+        }
+        i++;
+        i %= 6;
+    } while (i != last);
+    func_8007819C();
+
+    for (i = 0; i < 6; i++) {
+        D_800C4C20 = i;
+        if (!(D_800E82C8[i].flags & 0x2000) || !(D_800E82C8[i].flags & 0x8000) || D_800E82C8[i].update == NULL) {
+            continue;
+        }
+        _bcopy(&D_800E82C8[i], &D_800E7A30, 0xA8);
+        if (i == ((u16 *)D_800C4C10)[0]) {
+            D_800E7A30.flags2 |= 4;
+        }
+        func_80078164(D_800E7A30.data, D_800E91D0);
+        func_80077494(i);
+        D_800E7A30.update(i);
+        if (D_800E7A30.flags3 & 2) {
+            if (!((SceneBits *)&D_800E7A30)->f1000 && !((SceneBits *)&D_800E7A30)->f0800) {
+                func_8017C29C((u8 *)((SceneWinList *)D_800E7A30.unk98)->win, D_800E7A30.x - 6, D_800E7A30.y - 6,
+                              D_800E7A30.x2 + 6, D_800E7A30.y2 + 6);
+            }
+            func_80173D14(D_800E7A30.unk98);
+            func_80173D4C(D_800E7A30.unk98);
+            if (((SceneWinList *)D_800E7A30.unk98)->win == NULL) {
+                D_800E7A30.flags2 |= 2;
+            } else if (((SceneWinList *)D_800E7A30.unk98)->win->flags == 0) {
+                if (D_800E7A30.flags & 0x800) {
+                    D_800E7A30.flags &= ~0x800;
+                }
+            } else {
+                D_800E7A30.x = ((SceneWinList *)D_800E7A30.unk98)->win->x + 6;
+                D_800E7A30.x2 = ((SceneWinList *)D_800E7A30.unk98)->win->x2 - 6;
+                if (D_800E7A30.x2 < D_800E7A30.x) {
+                    D_800E7A30.x = D_800E7A30.x2;
+                }
+                D_800E7A30.y = ((SceneWinList *)D_800E7A30.unk98)->win->y + 6;
+                D_800E7A30.y2 = ((SceneWinList *)D_800E7A30.unk98)->win->y2 - 6;
+                if (D_800E7A30.y2 < D_800E7A30.y) {
+                    D_800E7A30.y = D_800E7A30.y2;
+                }
+            }
+        }
+        if (i == ((u16 *)D_800C4C10)[0]) {
+            D_800E7A30.flags2 &= ~4;
+        }
+        func_800780D4(D_800E7A30.flags, D_800E91D0, D_800E7A30.size, &D_800E7A30.data);
+        _bcopy(&D_800E7A30, &D_800E82C8[i], 0xA8);
+        if (D_800E82C8[i].flags2 & 2) {
+            func_80077F88(i);
+        }
+        func_8009C7CC();
+        if (--D_800C49D0 == 0) {
+            break;
+        }
+    }
+    func_8007819C();
+    D_800C4C20 = -1;
+    func_80077288();
+}
 
 /* Draws the active scenes back to front: each one is copied into D_800E7A30 with its saved
  * D_800E91D0 state, gets an optional backdrop, runs its draw callback, then is saved back.
