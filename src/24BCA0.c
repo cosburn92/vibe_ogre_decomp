@@ -853,9 +853,7 @@ u8 *func_801F9950_ovl_24BCA0(u8 *a, u8 *b) {
 }
 
 /* Screen shake by amt on the axes in flags (bit 0 x, bit 1 y), random signs */
-#ifdef NON_MATCHING
-/* only the s1/s2 save order in the prologue differs */
-void func_801F9BEC_ovl_24BCA0(s32 amt, s32 flags) {
+void func_801F9BEC_ovl_24BCA0(u8 amt, s32 flags) {
     s16 x = 0;
     s16 y = 0;
 
@@ -881,9 +879,6 @@ void func_801F9BEC_ovl_24BCA0(s32 amt, s32 flags) {
     }
     func_801BC3A0(x, y, 0, 0);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/24BCA0", func_801F9BEC_ovl_24BCA0);
-#endif
 
 void func_801F9CD8_ovl_24BCA0(u8 a, s32 b) {
     struct {
