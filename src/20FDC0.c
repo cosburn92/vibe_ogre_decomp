@@ -364,29 +364,26 @@ s32 CombinationMatch(u8 *e, s32 n) {
 
 /* Walks the 6-byte-node trie (section 1b) over n elements; returns the last result id reached
  * (0xFF if none) and stores the matching secondary value in *out */
-#ifdef NON_MATCHING
-/* same register/scheduling issue as CombinationMatch */
 s32 CombinationLookup(u8 *e, s32 n, u8 *out) {
     u8 *node = D_801D06D8_ovl_1F0A30;
-    u8 *base = node;
-    s32 r2 = 0;
-    s32 r = 0xFF;
-    u8 *end;
+    u8 r;
+    u8 r2 = 0;
+    u32 i = 0;
     u8 k = node[0];
 
+    r = 0xFF;
     if (k != 0xFF) {
-        end = e + n;
         do {
-            if (k == *e) {
+            if (k == e[i]) {
                 if (node[1] != 0xFF) {
                     r = node[1];
                 }
                 if (node[2] != 0xFF) {
                     r2 = node[2];
                 }
-                e++;
-                node = base + *(u16 *)(node + 4);
-                if (!(e < end)) {
+                i++;
+                node = D_801D06D8_ovl_1F0A30 + *(u16 *)(node + 4);
+                if (i >= n) {
                     break;
                 }
             } else {
@@ -400,9 +397,6 @@ s32 CombinationLookup(u8 *e, s32 n, u8 *out) {
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationLookup);
-#endif
 
 s32 func_801CD390_ovl_1F0A30(u8 *e, s32 n) {
     u8 *node = D_801D06DC_ovl_1F0A30;
