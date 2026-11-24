@@ -28,7 +28,14 @@ typedef struct Task27 {
 } Task27; /* size 0x38 */
 
 typedef struct {
-    /* 0x00 */ u8 unk00[0x18];
+    /* 0x00 */ u8 *win;  /* main window */
+    /* 0x04 */ void *fn; /* its draw callback */
+    /* 0x08 */ s16 x;
+    /* 0x0A */ s16 y;
+    /* 0x0C */ s16 h;
+    /* 0x0E */ s16 w;
+    /* 0x10 */ u8 unk10[4];
+    /* 0x14 */ s32 w14;
     /* 0x18 */ s32 *w18;
     /* 0x1C */ s16 h1C;
     /* 0x1E */ s16 h1E;
@@ -56,7 +63,7 @@ s32 func_8016E1DC(s32 a, s32 b);
 void func_80226980_ovl_27A020(void);
 void func_801CBF44(void);
 s32 func_802283C0_ovl_27A020(void);
-void func_8022B5EC_ovl_27A020(s32 a, Task27 *t);
+s32 func_8022B5EC_ovl_27A020(u16 msg, Task27 *t);
 void func_8022A488_ovl_27A020(Obj27 *o);
 void func_8022A2A8_ovl_27A020(Obj27 *o);
 extern s16 D_8022D0F2_ovl_27A020;
@@ -1436,8 +1443,14 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AFE8_ovl_27A020);
 typedef struct {
     /* 0x00 */ u8 unk00[0x18];
     /* 0x18 */ s16 fade;
-    /* 0x1A */ u8 unk1A[0xE];
+    /* 0x1A */ u8 unk1A[4];
+    /* 0x1E */ s16 moveTime;
+    /* 0x20 */ u8 unk20[6];
+    /* 0x26 */ u16 flags26;
     /* 0x28 */ u16 flags;
+    /* 0x2A */ u8 unk2A[0x12];
+    /* 0x3C */ s32 move[4]; /* rectangle to move to (x0, y0, x1, y1) */
+    /* 0x4C */ s32 rect4C[4];
 } Win27;
 extern u16 D_800E79B0;
 extern s16 D_8022CB28_ovl_27A020;
@@ -1549,10 +1562,166 @@ void func_8022B560_ovl_27A020(void) {
     func_8017BED4();
 }
 
-INCLUDE_ASM("asm/nonmatchings/27A020", func_8022B5EC_ovl_27A020);
+typedef struct {
+    s16 x0;
+    s16 y0;
+    s16 x1;
+    s16 y1;
+} Rect27;
+extern Rect27 D_8022D098_ovl_27A020;
+extern Rect27 D_8022D0A0_ovl_27A020;
+extern u8 D_8022CB84_ovl_27A020[];
+void func_80184130(Win27 *w);
+void func_8022BC30_ovl_27A020(void);
+u8 *func_8017F334(s32 id);
+
+/* Starts window w moving to rectangle r (x0, y0, x1, y1) over 8 frames */
+static inline void Win27_MoveTo(Win27 *w, s16 *r) {
+    if (w == NULL || r == NULL) {
+        return;
+    }
+    w->moveTime = 8;
+    w->flags26 |= 1;
+    w->move[0] = r[0];
+    w->move[1] = r[1];
+    w->move[2] = r[2];
+    w->move[3] = r[3];
+    func_80184130(w);
+}
+
+static inline void Win27_SetRect4C(Win27 *w, Rect27 *r) {
+    w->rect4C[0] = r->x0;
+    w->rect4C[1] = r->y0;
+    w->rect4C[2] = r->x1;
+    w->rect4C[3] = r->y1;
+}
+
+/* Closes window w unless it is already closing */
+static inline void Win27_Close(Win27 *w) {
+    if (w != NULL && !(w->flags & 2)) {
+        func_8017C384((u8 *)w);
+    }
+}
+
+/* Shop yes/no task: 0x10 sets it up, 0x100 opens the prompt window, 0x102 opens the list window
+ * beside the marked entries (none marked: 0x10B), 0x103 runs the prompt (yes 0x10A, no 0x10B,
+ * 0x10C), 0x106/0x108 close the windows; the window handles are refreshed every call */
+s32 func_8022B5EC_ovl_27A020(u16 msg, Task27 *t) {
+    Obj27 *o = (Obj27 *)((u8 *)t + 0x18);
+    u8 *sub = (u8 *)&o->w18;
+    Rect27 a;
+    Rect27 b;
+    Rect27 r;
+    Rect27 r2;
+    Rect27 r3;
+    s16 res;
+
+    switch (msg) {
+        case 0x11:
+            func_802287C0_ovl_27A020(t);
+            break;
+        case 0x10:
+            FIELD(t, u8 *, 0) = D_8022CB84_ovl_27A020;
+            o->w18 = (s32 *)D_8022D134_ovl_27A020;
+            o->w14 = 0;
+            o->h1C = 0;
+            o->w24 = NULL;
+            o->w20 = NULL;
+            D_8022CB20_ovl_27A020 = o;
+            D_8022CB28_ovl_27A020 = 0;
+            t->state = 0x100;
+            o->h1E ^= o->h1E; /* the original loads and xors the field (lhu/xor/sh), as in func_8022AFCC */
+            break;
+        case 0x100:
+            a = D_8022D098_ovl_27A020;
+            b = D_8022D098_ovl_27A020;
+            a.y0 = b.y0 = 0xCD;
+            a.y1 = b.y1 = 0xE1;
+            b.x0 = a.x0 = a.x1 = 0x1E;
+            b.x1 = 0x74;
+            o->w20 = func_8017BFB0(2, 0, func_8022BC30_ovl_27A020, a.x0, a.y0, a.x1, a.y1, b.x0, b.y0, b.x1, b.y1);
+            t->state = 0x109;
+            break;
+        case 0x102:
+            r = D_8022D0A0_ovl_27A020;
+            r2 = D_8022D098_ovl_27A020;
+            res = func_8022AFE8_ovl_27A020(o);
+            if (res == 0) {
+                t->state = 0x10B;
+                break;
+            }
+            r.x1 = o->x + o->w;
+            if (o->win == NULL) {
+                o->win = func_8017BFB0(0x401, 0, o->fn, r.x0, r.y0, r.x1, r.y1, o->x, o->y, (s16)(o->x + o->w),
+                                       (s16)(o->y + o->h));
+            }
+            r.x1 = r.x0 + o->w;
+            Win27_SetRect4C((Win27 *)o->win, &r);
+            r2.y0 = o->y - 0x19;
+            r2.y1 = o->y - 5;
+            r2.x0 = o->x;
+            r2.x1 = r2.x0 + 0x56;
+            Win27_MoveTo((Win27 *)o->w20, &r2.x0);
+            r2.x0 = r2.x1 = 10;
+            Win27_SetRect4C((Win27 *)o->w20, &r2);
+            t->hE = 9;
+            t->hC = 0x103;
+            t->state = 0;
+            break;
+        case 0x103:
+            res = func_8022A120_ovl_27A020(o);
+            D_8022CB28_ovl_27A020 = 1;
+            if (res == 1) {
+                func_800EA604(D_800EB1F0, 0);
+                t->state = 0x10A;
+            } else if (res == 2) {
+                func_800EA604(D_800EB1F0, 1);
+                t->state = 0x10B;
+            } else if (res == 3) {
+                func_800EA604(D_800EB1F0, 9);
+                t->state = 0x10C;
+            }
+            break;
+        case 0x106:
+            Win27_Close((Win27 *)o->w24);
+            Win27_Close((Win27 *)o->win);
+            t->hE = 3;
+            t->hC = 0x107;
+            t->state = 0;
+            break;
+        case 0x107:
+            r3 = D_8022D098_ovl_27A020;
+            r3.y0 = 0xCD;
+            r3.y1 = 0xE1;
+            r3.x0 = 0x1E;
+            r3.x1 = 0x74;
+            Win27_MoveTo((Win27 *)o->w20, &r3.x0);
+            r3.x0 = r3.x1 = 10;
+            Win27_SetRect4C((Win27 *)o->w20, &r3);
+            t->state = 0x109;
+            break;
+        case 0x108:
+            Win27_Close((Win27 *)o->w24);
+            Win27_Close(FIELD(sub, Win27 *, 8));
+            Win27_Close((Win27 *)o->win);
+            t->hE = 0xF;
+            t->hC = 0x11;
+            t->state = 0;
+            break;
+        case 0x109:
+        case 0x10A:
+        case 0x10B:
+        case 0x10C:
+            break;
+    }
+    o->win = func_8017F334(0x401);
+    o->w20 = func_8017F334(2);
+    o->w24 = func_8017F334(4);
+    return 0;
+}
 
 void func_8022BC08_ovl_27A020(void) {
-    func_8022874C_ovl_27A020(func_8022B5EC_ovl_27A020);
+    func_8022874C_ovl_27A020((void (*)(s32, Task27 *))func_8022B5EC_ovl_27A020);
 }
 
 s16 func_8022BC28_ovl_27A020(Obj27 *o) {
