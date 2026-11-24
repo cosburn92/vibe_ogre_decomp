@@ -964,7 +964,7 @@ s32 func_801DCD90_ovl_101CE0(MapUnit *u, u16 id) {
         Character *c;
         ClassData *cls;
 
-        if ((k >= 100) | (k == 0)) {
+        if (k >= 100 || k == 0) {
             goto next;
         }
         if (player) {

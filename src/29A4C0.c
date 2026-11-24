@@ -170,7 +170,7 @@ s32 func_8022AF94_ovl_29A4C0(u8 i, s32 kind, s32 sub, s32 mode, s32 x, s32 y, s3
     FLD(e, s32, 0x34) = -1;
     FLD(e, s32, 0x38) = 0;
     FLD(e, s32, 0x3C) = 0;
-    if ((x != -1) | (y != -1)) {
+    if (x != -1 || y != -1) {
         FLD(e, s32, 0x24) = x;
         FLD(e, s32, 0x28) = -y;
     }

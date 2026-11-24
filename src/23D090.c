@@ -438,6 +438,8 @@ void func_801EA404_ovl_23B220(void) {
     m = ~0x10;
     for (; i < 4; i++) {
         if (FIELD(s, u16, 0x23C) & 1) {
+            /* Not || or &&: retail ORs the two equality results (sltiu, or) and
+             * tests the sum, and KMC turns either logical form into an AND of !=. */
             if (((s->ent[i].id == 0) | (s->ent[i].id == 3)) == 0) {
                 continue;
             }

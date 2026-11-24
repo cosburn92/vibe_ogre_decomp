@@ -1071,15 +1071,15 @@ extern u8 D_801936E0;
 
 void func_801CC1EC_ovl_087200(void)
 {
-  short new_var;
-  s32 var_v1;
-  new_var = func_801CF070_ovl_087200() & 0xFF;
-  var_v1 = 0xE8;
-  if (new_var)
+  s16 option;
+  s32 x;
+  option = func_801CF070_ovl_087200() & 0xFF;
+  x = 0xE8;
+  if (option)
   {
-    var_v1 = 0x128;
+    x = 0x128;
   }
-  func_801CC974_ovl_087200(0x15U, 0xAU, func_801B10FC_ovl_087200, 0x60, -8, 0xE0, 0, 0x18, 0x18, (s16) var_v1, 0x34);
+  func_801CC974_ovl_087200(0x15U, 0xAU, func_801B10FC_ovl_087200, 0x60, -8, 0xE0, 0, 0x18, 0x18, (s16) x, 0x34);
   func_801CC974_ovl_087200(6U, 0xAU, func_801B1624_ovl_087200, 0x18, 0xD8, 0x20, 0xE0, 0x18, 0xC8, 0x6E, 0xE0);
   if ((D_801936E0 != 0) || (func_8016FEF4(0xB) != 0))
   {

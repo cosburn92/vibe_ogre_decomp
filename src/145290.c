@@ -739,56 +739,56 @@ s8 func_801F40A0_ovl_145210(u8);                    /* extern */
 extern s32 D_801F3658;
 extern u8 *D_801FCD2C_ovl_145210[];
 
-void func_801F5AD0_ovl_145210(void *arg0, void *arg1) {
-    s32 temp_a0;
-    u16 temp_v1;
-    u8 temp_v1_2;
-    void *temp_s0;
+void func_801F5AD0_ovl_145210(void *unit, void *src) {
+    s32 table;
+    u16 flags;
+    u8 bits;
+    void *sub;
 
-    if (FIELD(arg0, u8, 1) & 1) {
-        temp_v1 = FIELD(arg1, u16, 4);
-        temp_s0 = arg0 + 0x38;
-        if (temp_v1 & 8) {
-            if (temp_v1 & 0x10) {
-                FIELD(arg0, s8, 0x48) = 3;
+    if (FIELD(unit, u8, 1) & 1) {
+        flags = FIELD(src, u16, 4);
+        sub = unit + 0x38;
+        if (flags & 8) {
+            if (flags & 0x10) {
+                FIELD(unit, s8, 0x48) = 3;
             } else {
-                FIELD(arg0, s8, 0x48) = 2;
+                FIELD(unit, s8, 0x48) = 2;
             }
-        } else if (temp_v1 & 0x8000) {
-            FIELD(arg0, s8, 0x48) = 1;
+        } else if (flags & 0x8000) {
+            FIELD(unit, s8, 0x48) = 1;
         } else {
-            FIELD(arg0, s8, 0x48) = 0;
+            FIELD(unit, s8, 0x48) = 0;
         }
-        if (!(FIELD(arg1, u16, 4) & 0x4000)) {
-            FIELD(temp_s0, u8, 0x13) = (u8) FIELD(arg1, u8, 8);
-            FIELD(temp_s0, u8, 0x14) = (u8) FIELD(arg1, u8, 9);
-            FIELD(temp_s0, u8, 0x15) = (u8) FIELD(arg1, u8, 0xA);
-            FIELD(temp_s0, u8, 0x16) = (u8) FIELD(arg1, u8, 0xB);
-        }
-        {
-            u8 *r = (u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14;
-
-            FIELD(temp_s0, s32, 8) = FIELD(r, s32, 0x10);
+        if (!(FIELD(src, u16, 4) & 0x4000)) {
+            FIELD(sub, u8, 0x13) = (u8) FIELD(src, u8, 8);
+            FIELD(sub, u8, 0x14) = (u8) FIELD(src, u8, 9);
+            FIELD(sub, u8, 0x15) = (u8) FIELD(src, u8, 0xA);
+            FIELD(sub, u8, 0x16) = (u8) FIELD(src, u8, 0xB);
         }
         {
-            u8 *r = (u8 *)arg0 + FIELD(arg0, u8, 0xC) * 0x14;
+            u8 *r = (u8 *)unit + FIELD(unit, u8, 0xC) * 0x14;
 
-            FIELD(temp_s0, s32, 0xC) = FIELD(r, s32, 0x14);
+            FIELD(sub, s32, 8) = FIELD(r, s32, 0x10);
         }
-        FIELD(temp_s0, s8, 0x12) = func_801F40A0_ovl_145210(FIELD(arg0, u8, 2));
-        temp_a0 = (s32)D_801FCD2C_ovl_145210[FIELD(arg0, u8, 5)];
-        temp_v1_2 = FIELD(temp_s0, u8, 0x11) & 0xF8;
-        FIELD(temp_s0, u8, 0x11) = temp_v1_2;
-        if (FIELD(((FIELD(arg0, u8, 6) * 2) + temp_a0), u8, 1) & 0x80) {
-            FIELD(temp_s0, u8, 0x11) = (u8) (temp_v1_2 | 1);
+        {
+            u8 *r = (u8 *)unit + FIELD(unit, u8, 0xC) * 0x14;
+
+            FIELD(sub, s32, 0xC) = FIELD(r, s32, 0x14);
         }
-        if (FIELD(((FIELD(arg0, u8, 6) * 2) + temp_a0), u8, 1) & 0x40) {
-            FIELD(temp_s0, u8, 0x11) = (u8) (FIELD(temp_s0, u8, 0x11) | 2);
+        FIELD(sub, s8, 0x12) = func_801F40A0_ovl_145210(FIELD(unit, u8, 2));
+        table = (s32)D_801FCD2C_ovl_145210[FIELD(unit, u8, 5)];
+        bits = FIELD(sub, u8, 0x11) & 0xF8;
+        FIELD(sub, u8, 0x11) = bits;
+        if (FIELD(((FIELD(unit, u8, 6) * 2) + table), u8, 1) & 0x80) {
+            FIELD(sub, u8, 0x11) = (u8) (bits | 1);
         }
-        if ((D_801F3658 != -1) && (FIELD(arg1, s32, 0) == ((s32 *)D_801F0CB0)[D_801F3658])) {
-            FIELD(temp_s0, u8, 0x11) = (u8) (FIELD(temp_s0, u8, 0x11) | 4);
+        if (FIELD(((FIELD(unit, u8, 6) * 2) + table), u8, 1) & 0x40) {
+            FIELD(sub, u8, 0x11) = (u8) (FIELD(sub, u8, 0x11) | 2);
         }
-        func_801F4BBC_ovl_145210((s32) temp_s0);
+        if ((D_801F3658 != -1) && (FIELD(src, s32, 0) == ((s32 *)D_801F0CB0)[D_801F3658])) {
+            FIELD(sub, u8, 0x11) = (u8) (FIELD(sub, u8, 0x11) | 4);
+        }
+        func_801F4BBC_ovl_145210((s32) sub);
     }
 }
 
