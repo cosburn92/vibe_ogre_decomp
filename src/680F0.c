@@ -127,7 +127,153 @@ void func_80198FC8_ovl_066E10(void *data_ptr, u32 data_size, s32 unused, u32 fla
     osSendMesg(&D_800E8B4C, D_8019A660_ovl_066E10, 1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/680F0", func_80199110_ovl_066E10);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx680;
+extern u8 D_8019A370_ovl_066E10[];
+
+/* Background JPEG display list (1ED1D0 func_801B6F90 with a pipe sync first): YUV colour
+ * conversion setup for the frame buffer, then one 16x16 YUV tile load and decode command per block */
+void func_80199110_ovl_066E10(Gfx680 **gp) {
+    Gfx680 *g = *gp;
+    u8 *img;
+    u8 i;
+    u8 j;
+
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xDB060000;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE7000000;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3000A01;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3000800;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xFF10013F;
+        _g->w1 = FIELD(D_8019A660_ovl_066E10, u32, 0x64);
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xED000000;
+        _g->w1 = 0x005003C0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3000C00;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3000F00;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3001001;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3000D01;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3001402;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xEC15FD5D;
+        _g->w1 = 0x3B78E42A;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3001201;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xFC17FE2F;
+        _g->w1 = 0x77FCF87C;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3001700;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE200001C;
+        _g->w1 = 0x0F0A4000;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE2001E01;
+        _g->w1 = 0;
+    }
+    {
+        Gfx680 *_g = g++;
+        _g->w0 = 0xE3001801;
+        _g->w1 = 0xC0;
+    }
+    img = FIELD(D_8019A660_ovl_066E10, u8 *, 0x68);
+    for (i = 0; i < FIELD(D_8019A660_ovl_066E10, s16, 0x7A) / 16; i++) {
+        for (j = 0; j < FIELD(D_8019A660_ovl_066E10, s16, 0x78) / 16; j++) {
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xFD30000F;
+                _g->w1 = (u32)img;
+            }
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xF5300400;
+                _g->w1 = 0x07080200;
+            }
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xE6000000;
+                _g->w1 = 0;
+            }
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xF4000000;
+                _g->w1 = 0x0703C03C;
+            }
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xDC070002;
+                _g->w1 = (u32)&FIELD(D_8019A660_ovl_066E10, Gfx680 *, 0x60)[i * (FIELD(D_8019A660_ovl_066E10, s16, 0x78) / 16) + j];
+            }
+            {
+                Gfx680 *_g = g++;
+                _g->w0 = 0xDA000000;
+                _g->w1 = (u32)D_8019A370_ovl_066E10;
+            }
+            img += 0x300;
+        }
+    }
+    *gp = g;
+}
 
 void func_8019951C_ovl_066E10(void) {
     if (D_8019A660_ovl_066E10[0x7E] == 1) {
@@ -137,13 +283,6 @@ void func_8019951C_ovl_066E10(void) {
         D_8019A660_ovl_066E10[0x7E]++;
     }
 }
-
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gfx680;
-
-void func_80199110_ovl_066E10(Gfx680 **gp);
 
 /* Closes the display list (last == 0: full sync + end, records its end) or sends it to the
  * scheduler as a graphics task, like nuGfxTaskStart */
