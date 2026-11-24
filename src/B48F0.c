@@ -663,20 +663,26 @@ INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAD90_ovl_087200);
 #endif
 
 /* Clears flag 4 of every member placed in squad sq's nine cells (o is one offset variable,
- * the row offset then the member offset, which keeps the base + offset add order) */
-void func_801CAE4C_ovl_087200(u16 sq) {
+ * the row offset then the member offset, which keeps the base + offset add order; inlined
+ * into its callers, so each copy gets its own loop counter) */
+static inline void ClearMemberFlag4(u16 sq) {
     s32 i;
-    u8 m;
-    s32 o;
 
     for (i = 0; i < 9; i++) {
+        s32 o;
+        u8 m;
+
         o = sq * 0x36;
         m = (D_80196AF8 + o + i)[0x1180];
         if (m != 0xFF) {
             o = m * 2;
-            (D_80196AF8 + o)[0x1872] &= 0xFB;
+            (D_80196AF8 + o)[0x1872] &= ~4;
         }
     }
+}
+
+void func_801CAE4C_ovl_087200(u16 sq) {
+    ClearMemberFlag4(sq);
 }
 
 void func_801CAEB0_ovl_087200(u16 sq, u16 v) {
@@ -691,15 +697,12 @@ void func_801CAEB0_ovl_087200(u16 sq, u16 v) {
 /* Moves the member in cell a of squad sa to cell b of squad sb, swapping with its occupant (cells
  * 9+ are the reserve list); the leader cell (row byte 3) follows the move. Clears flag 4 of both
  * squads' members and rebuilds their flag grids */
-#ifdef NON_MATCHING
-/* 121/121, 14 words: the member-flag loops swap the index and base registers and add the row offset in the other order */
 void func_801CAF18_ovl_087200(u16 sa, u16 a, u16 sb, u16 b) {
     u8 moved = 0;
     u8 *pa;
     u8 *pb;
     u8 *row;
     u8 t;
-    s32 i;
 
     if (a >= 9) {
         pa = D_80196AF8 + (a + 0x1A21);
@@ -728,24 +731,11 @@ void func_801CAF18_ovl_087200(u16 sa, u16 a, u16 sb, u16 b) {
         *pa = *pb;
         *pb = t;
     }
-    for (i = 0; i < 9; i++) {
-        t = D_80196AF8[sa * 0x36 + i + 0x1180];
-        if (t != 0xFF) {
-            D_80196AF8[t * 2 + 0x1872] &= ~4;
-        }
-    }
-    for (i = 0; i < 9; i++) {
-        t = D_80196AF8[sb * 0x36 + i + 0x1180];
-        if (t != 0xFF) {
-            D_80196AF8[t * 2 + 0x1872] &= ~4;
-        }
-    }
+    ClearMemberFlag4(sa);
+    ClearMemberFlag4(sb);
     func_801C67B0_ovl_087200(sa);
     func_801C67B0_ovl_087200(sb);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CAF18_ovl_087200);
-#endif
 
 /* Swaps formation cells a and b of squad sq (the leader follows its cell), clears flag 4 of every
  * member, then refreshes the squad's front-row count (0x1D) and its display */
