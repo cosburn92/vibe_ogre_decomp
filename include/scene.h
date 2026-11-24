@@ -15,7 +15,12 @@ typedef struct {
     /* 0x0C */ s16 y2;
     /* 0x0E */ u16 unk0E;
     /* 0x10 */ void *owner;
-    /* 0x14 */ u8 unk14[0x14];
+    /* 0x14 */ void (*update)(s32 slot);
+    /* 0x18 */ void (*draw)(s32 slot);
+    /* 0x1C */ void (*exit)(s32 slot);
+    /* 0x20 */ u16 size; /* bytes of D_800E91D0 saved in data between runs */
+    /* 0x22 */ u8 unk22[2];
+    /* 0x24 */ u8 *data;
     /* 0x28 */ s16 unk28;
     /* 0x2A */ s16 unk2A;
     /* 0x2C */ u8 unk2C[0xC];
@@ -34,7 +39,10 @@ typedef struct {
     /* 0x95 */ u8 unk95;
     /* 0x96 */ u8 unk96;
     /* 0x97 */ u8 unk97;
-    /* 0x98 */ u8 unk98[0xA];
+    /* 0x98 */ void *unk98; /* display list run when flags3 & 2 */
+    /* 0x9C */ u8 unk9C[4];
+    /* 0xA0 */ u8 unkA0;
+    /* 0xA1 */ u8 unkA1;
     /* 0xA2 */ s16 parent;
     /* 0xA4 */ u8 unkA4[4];
 } Scene; /* size 0xA8 */

@@ -41,6 +41,19 @@ extern s32 D_800C4C20;
 extern u16 D_800C4C26;
 extern u8 D_800E7A32;
 void func_80077F88(s32 i);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+extern Gfx *D_800E9BA0;
+extern Scene D_800E7A30; /* the scene being run, copied out of its slot */
+extern u8 D_800E91D0[];
+extern u32 D_801869C8[];
+void func_80173D84(void *list);
+void func_80173DBC(u8 kind, s16 x, s16 y, s16 x2, s16 y2);
+void func_800780D4(u8 kind, void *src, u16 n, u8 **out);
+void func_80078164(u8 *p, void *dst);
+void func_800782EC(s32 color, s32 shade, s32 x, s32 y, s32 x2, s32 y2);
 /* --- end decls --- */
 
 /* Scene system init: clears the six scene slots and the input state, seeds the random generator */
@@ -69,7 +82,69 @@ void func_800764E0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800765D8);
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80076AE8);
+/* Draws the active scenes back to front: each one is copied into D_800E7A30 with its saved
+ * D_800E91D0 state, gets an optional backdrop, runs its draw callback, then is saved back.
+ * The front scene (index 0) is marked with flags2 bit 4 and gets the bright frame. */
+void func_80076AE8(void) {
+    s32 i;
+    s32 s;
+
+    for (i = D_800C49D0 - 1; i >= 0; i--) {
+        s = ((u16 *)D_800C4C10)[i];
+        D_800C4C20 = s;
+        if (!(D_800E82C8[s].flags & 0x2000) && D_800E82C8[s].draw == NULL) {
+            continue;
+        }
+        _bcopy(&D_800E82C8[s], &D_800E7A30, 0xA8);
+        if (i == 0) {
+            D_800E7A30.flags2 |= 4;
+        }
+        func_80078164(D_800E7A30.data, D_800E91D0);
+        if (D_800E7A30.flags3 & 2) {
+            Gfx *g = D_800E9BA0;
+
+            g->w0 = 0xDE000000;
+            g->w1 = (u32)D_801869C8;
+            D_800E9BA0 = g + 1;
+            func_80173D84(D_800E7A30.unk98);
+        } else if (!(D_800E7A30.flags2 & 1) && D_800E7A30.unkA0 != 0) {
+            Gfx *g = D_800E9BA0;
+
+            g->w0 = 0xDE000000;
+            g->w1 = (u32)D_801869C8;
+            D_800E9BA0 = g + 1;
+            func_80173DBC(D_800E7A30.unkA0, D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+        }
+        {
+            Gfx *g = D_800E9BA0;
+
+            g->w0 = 0xDE000000;
+            g->w1 = (u32)D_801869C8;
+            D_800E9BA0 = g + 1;
+        }
+        D_800E7A30.draw(s);
+        {
+            Gfx *g = D_800E9BA0;
+
+            g->w0 = 0xE7000000;
+            g->w1 = 0;
+            D_800E9BA0 = g + 1;
+        }
+        if (!(D_800E7A30.flags2 & 1) && D_800E7A30.unkA0 == 0) {
+            if (i == 0) {
+                func_800782EC(0xFFFF, 0x18C1, D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+            } else {
+                func_800782EC(0x4211, 0x843, D_800E7A30.x, D_800E7A30.y, D_800E7A30.x2, D_800E7A30.y2);
+            }
+        }
+        if (i == 0) {
+            D_800E7A30.flags2 &= ~4;
+        }
+        func_800780D4(D_800E7A30.flags, D_800E91D0, D_800E7A30.size, &D_800E7A30.data);
+        _bcopy(&D_800E7A30, &D_800E82C8[s], 0xA8);
+    }
+    D_800C4C20 = -1;
+}
 
 void func_80076DC8(void) {
     if (D_800C49D0) {
@@ -392,8 +467,8 @@ void func_80077F88(s32 i) {
             }
         }
     }
-    if (*(void (**)(s32))&D_800E82C8[i].unk14[8] != NULL) {
-        (*(void (**)(s32))&D_800E82C8[i].unk14[8])(i);
+    if (D_800E82C8[i].exit != NULL) {
+        D_800E82C8[i].exit(i);
     }
     {
         void **p = D_800E82C8[i].slotsA;
@@ -404,7 +479,7 @@ void func_80077F88(s32 i) {
             }
         }
     }
-    HFree(*(void **)&D_800E82C8[i].unk14[0x10]);
+    HFree(D_800E82C8[i].data);
     bzero(&D_800E82C8[i], 0xA8);
 }
 #else
@@ -473,7 +548,7 @@ void func_8007819C(void) {
 INCLUDE_ASM("asm/nonmatchings/68E0", func_8007819C);
 #endif
 
-void func_800782EC(void) {
+void func_800782EC(s32 color, s32 shade, s32 x, s32 y, s32 x2, s32 y2) {
 }
 
 INCLUDE_RODATA("asm/nonmatchings/68E0", D_800ADF88);
