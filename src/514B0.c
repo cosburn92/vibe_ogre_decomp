@@ -151,7 +151,7 @@ s32 func_8019AEEC(void);
 s32 func_801C212C(void);
 s32 func_8019B320(void);
 void func_80172394_ovl_040E80(void);
-void func_80172124_ovl_040E80(void);
+s32 func_80172124_ovl_040E80(void);
 void func_801707F4_ovl_040E80(void);
 extern u16 D_8018F1A2_ovl_040E80;
 extern u8 D_801939D1_ovl_040E80;

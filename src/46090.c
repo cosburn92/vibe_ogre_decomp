@@ -37,7 +37,7 @@ extern u8 D_80197B01_ovl_040E80;
 extern u8 D_80197B02_ovl_040E80;
 extern u8 D_80197B03_ovl_040E80;
 extern u16 D_80197B04_ovl_040E80;
-void func_80171B94_ovl_040E80(void);
+s32 func_80171B94_ovl_040E80(void);
 extern u8 D_801936A6_ovl_040E80;
 
 extern struct { u16 v; u8 pad[34]; } D_801951CC_ovl_040E80[];
@@ -321,7 +321,7 @@ s32 func_80171FE0_ovl_040E80(s32 a, s32 b);
 void DateAdvanceDay(void *d);
 void func_8016C70C_ovl_040E80(void *d);
 extern s16 D_80197B06_ovl_040E80;
-void func_80171B94_ovl_040E80(void);
+s32 func_80171B94_ovl_040E80(void);
 s32 func_80171ED8_ovl_040E80(void);
 void func_8016B774_ovl_040E80(void);
 void DecodeLZ(void *dst, void *src);
@@ -419,7 +419,113 @@ s32 func_80170838_ovl_040E80(u8 k) {
 
 INCLUDE_ASM("asm/nonmatchings/46090", func_80170954_ovl_040E80);
 
+typedef struct {
+    u8 script;
+    u8 msg;
+    u8 b2;
+    u8 mode;
+    u16 h4;
+    s16 h6;
+    u16 h8;
+    u16 hA;
+    volatile s32 mask; /* re-read after each store */
+    s32 opts;
+    s32 result;
+    void *tbl0;
+    void *tbl1;
+} Menu46;
+#define gMenu46 (*(Menu46 *)D_80197B00_ovl_040E80)
+extern s16 D_8018F2F8_ovl_040E80[];
+extern s16 D_8018F1A0_ovl_040E80;
+extern u16 D_8018F1A2_ovl_040E80;
+s32 func_80172124_ovl_040E80(void);
+
+/* Runs the menu messages for each enabled option in turn; when all are done, switches to the
+ * second option set once, then either picks the next game state or returns the result */
+#ifdef NON_MATCHING
+/* one instruction short: the original hoists &mask, &script, &msg and &h4 into s1/fp/s5/s4 for the
+ * loops (all derived from one la of &mask before the first test); GCC here only hoists &script */
+s32 func_80171B94_ovl_040E80(void) {
+    u8 *tbl;
+    u8 *s;
+    s32 m;
+
+restart:
+    tbl = !gMenu46.mode ? gMenu46.tbl1 : gMenu46.tbl0;
+    while (gMenu46.mask & 0x3F) {
+        s = tbl + ((u16 *)tbl)[gMenu46.script];
+        while (((u16 *)s)[gMenu46.msg] != 0xFFFF) {
+            switch (func_80170954_ovl_040E80(tbl + ((u16 *)s)[gMenu46.msg])) {
+            case 1:
+                if (D_801936A8_ovl_040E80) {
+                    return gMenu46.result;
+                }
+                HFree(gMenu46.tbl0);
+                HFree(gMenu46.tbl1);
+                gMenu46.tbl0 = NULL;
+                gMenu46.tbl1 = NULL;
+                gMenu46.h6 = 0;
+                func_80172394_ovl_040E80();
+                gMenu46.mask = 1;
+                return func_80172124_ovl_040E80();
+            case 2:
+                goto restart;
+            }
+            gMenu46.h4 = 0;
+            gMenu46.msg++;
+        }
+        gMenu46.mask &= ~D_8018F2F8_ovl_040E80[gMenu46.script];
+        m = gMenu46.mask;
+        if (m & 1) {
+            gMenu46.script = 0;
+        } else if (m & 2) {
+            gMenu46.script = 1;
+        } else if (m & 4) {
+            gMenu46.script = 2;
+        } else if (m & 8) {
+            gMenu46.script = 3;
+        } else if (m & 0x10) {
+            gMenu46.script = 4;
+        } else if (m & 0x20) {
+            gMenu46.script = 5;
+        }
+        gMenu46.msg = 0;
+        gMenu46.h4 = 0;
+    }
+    if (!gMenu46.mode) {
+        gMenu46.mode = 1;
+        m = gMenu46.opts;
+        gMenu46.mask = m;
+        if (m & 1) {
+            gMenu46.script = 0;
+        } else if (m & 2) {
+            gMenu46.script = 1;
+        } else if (m & 4) {
+            gMenu46.script = 2;
+        } else if (m & 8) {
+            gMenu46.script = 3;
+        } else if (m & 0x10) {
+            gMenu46.script = 4;
+        } else if (m & 0x20) {
+            gMenu46.script = 5;
+        }
+        gMenu46.msg = 0;
+        gMenu46.h4 = 0;
+        goto restart;
+    }
+    if (gMenu46.opts & 8) {
+        D_8018F1A0_ovl_040E80 = 0x8000;
+        D_8018F1A2_ovl_040E80 = func_80170838_ovl_040E80(0xFF);
+        return gMenu46.opts & 8;
+    }
+    if (D_8018F1A0_ovl_040E80 == 0) {
+        D_8018F1A2_ovl_040E80 = func_80170838_ovl_040E80(0xFF);
+    }
+    return 0;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/46090", func_80171B94_ovl_040E80);
+#endif
 
 /* Runs the menu message for the current option; on completion frees the message tables and resets the menu */
 s32 func_80171ED8_ovl_040E80(void) {
@@ -500,8 +606,7 @@ s32 func_80172124_ovl_040E80(void) {
     case 0:
     case 1:
         if (D_80197B06_ovl_040E80 != 0) {
-            func_80171B94_ovl_040E80();
-            return;
+            return func_80171B94_ovl_040E80();
         }
         return func_80171ED8_ovl_040E80();
     case 2: {

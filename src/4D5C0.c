@@ -40,7 +40,7 @@ s16 func_801ACC04(void);
 s32 func_801A1B54(void);
 u8 func_802276EC(); /* takes an argument from some callers, none from others */
 void func_80172394_ovl_040E80(void);
-void func_80172124_ovl_040E80(void);
+s32 func_80172124_ovl_040E80(void);
 void func_801707F4_ovl_040E80(void);
 s32 func_801EE5E0(void);
 void func_801ACB04(void);
