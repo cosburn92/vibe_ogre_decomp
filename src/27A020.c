@@ -1184,7 +1184,7 @@ INCLUDE_ASM("asm/nonmatchings/27A020", func_8022AC5C_ovl_27A020);
 void func_8022AFCC_ovl_27A020(Obj27 *o) {
     *o->w18 = 0;
     o->h1C = 0;
-    o->h1E ^= o->h1E;
+    o->h1E ^= o->h1E; /* the original loads and xors the field (lhu/xor/sh); "= 0" is two instructions shorter */
 }
 
 void func_8022BCD0_ovl_27A020(void);

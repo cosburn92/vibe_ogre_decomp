@@ -210,7 +210,7 @@ void func_802216D8_ovl_275850(Obj27 *o) {
     o->w1C = NULL;
     o->w24 = 0;
     o->h22 = 0;
-    o->flags ^= o->flags;
+    o->flags ^= o->flags; /* the original loads and xors the field (lhu/xor/sh); "= 0" is two instructions shorter */
     o->w1C = func_8020C9B0(4);
 }
 
