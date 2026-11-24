@@ -96,7 +96,8 @@ AssetSub *func_80079E9C(AssetSub *sub);
 void func_80079EF4(AssetSub *sub, u32 index);
 
 typedef struct {
-    u8 unk0[8];
+    u8 (*lookat)[0x20];
+    u8 (*hilite)[0x10];
     u8 (*mtx)[0x40];
 } FbSet87;
 extern FbSet87 *D_800E9BE0;
@@ -130,9 +131,43 @@ void func_80078300(Camera *dst, Camera *src) {
     *dst = *src;
 }
 
-INCLUDE_ASM("asm/nonmatchings/8700", func_8007834C);
+void guPerspective(void *m, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+void guLookAt(void *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp);
+void guLookAtHilite(void *m, void *l, void *h, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+                    f32 xUp, f32 yUp, f32 zUp, f32 xl1, f32 yl1, f32 zl1, f32 xl2, f32 yl2, f32 zl2,
+                    s32 twidth, s32 theight);
+extern u16 D_800E7A0E; /* projection matrix index */
+extern u16 D_800C4C24; /* view matrix index */
+extern u16 D_800C4C48; /* next free look-at/hilite entry */
 
-void func_8007834C(Camera *cam);
+#define K0_TO_PHYS87(p) ((u32)(p) - 0x80000000)
+
+/* Loads the camera's projection and view matrices; with a light direction set, the view comes
+ * from guLookAtHilite and the look-at vectors are sent as well */
+void func_8007834C(Camera *cam) {
+    u16 perspNorm;
+
+    D_800E7A0E = D_800C4BE4;
+    guPerspective(D_800E9BE0->mtx[D_800C4BE4], &perspNorm, cam->fovy, cam->aspect, cam->near, cam->far,
+                  cam->scale);
+    GFX87(0xDB0E0000, perspNorm);
+    GFX87(0xDA380007, K0_TO_PHYS87(D_800E9BE0->mtx[D_800C4BE4++]));
+    if (cam->light1[0] == 0.0f && cam->light1[1] == 0.0f && cam->light1[2] == 0.0f) {
+        D_800C4C24 = D_800C4BE4;
+        guLookAt(D_800E9BE0->mtx[D_800C4C24], cam->eye[0], cam->eye[1], cam->eye[2], cam->at[0], cam->at[1],
+                 cam->at[2], cam->up[0], cam->up[1], cam->up[2]);
+    } else {
+        D_800C4C24 = D_800C4BE4;
+        guLookAtHilite(D_800E9BE0->mtx[D_800C4C24], D_800E9BE0->lookat[D_800C4C48],
+                       D_800E9BE0->hilite[D_800C4C48], cam->eye[0], cam->eye[1], cam->eye[2], cam->at[0],
+                       cam->at[1], cam->at[2], cam->up[0], cam->up[1], cam->up[2], cam->light1[0],
+                       cam->light1[1], cam->light1[2], cam->light2[0], cam->light2[1], cam->light2[2],
+                       cam->texWidth, cam->texHeight);
+        GFX87(0xDC08000A, (u32)D_800E9BE0->lookat[D_800C4C48]);
+        GFX87(0xDC08030A, (u32)D_800E9BE0->lookat[D_800C4C48++] + 0x10);
+    }
+    GFX87(0xDA380005, K0_TO_PHYS87(D_800E9BE0->mtx[D_800C4BE4++]));
+}
 
 void func_80078658(Camera *cam) {
     func_8007834C(cam);
