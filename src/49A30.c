@@ -358,6 +358,138 @@ void func_80176C6C_ovl_040E80(s32 x0, s32 y0, s32 x1, s32 y1, s32 s0, s32 t0, s3
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80176C6C_ovl_040E80);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/49A30", func_80176F90_ovl_040E80);
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    u16 flag;
+    s16 s;
+    s16 t;
+    u8 cn[4];
+} Vtx49;
+
+typedef struct {
+    /* 0x00 */ u8 pad0[0x10];
+    /* 0x10 */ Vtx49 *vtx;
+} FbSet49;
+
+extern FbSet49 *D_800E9BE0;
+extern u16 D_800E79E0;
+extern u8 D_8018FA70_ovl_040E80[];
+void func_80197B70(void);
+
+/* Textured quad over screen cells x0..x1, y0..y1 (scaled and offset by func_801768D4) showing
+ * texels from (s0, t0) on, one per cell: calls the setup list and loads the three matrices, then
+ * writes four vertices (screen-centred, colours from col: top right, top left, bottom left,
+ * bottom right) and draws them as two triangles */
+void func_80176F90_ovl_040E80(s32 x0, s32 y0, s32 x1, s32 y1, s32 s0, s32 t0, s32 unused, u8 *col) {
+    Vtx49 *v;
+    s32 left;
+    s32 right;
+    s32 top;
+    s32 bottom;
+    s32 sl;
+    s32 sr;
+    s32 tt;
+    s32 tb;
+    f32 sx = D_80196AF4_ovl_040E80;
+    f32 sy = D_801977D0_ovl_040E80;
+    s32 ox = D_801939C8_ovl_040E80;
+    s32 oy = D_80197AF4_ovl_040E80;
+
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_8018FA70_ovl_040E80;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380007;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000008;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380005;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000048;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380003;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000088;
+    }
+
+    v = D_800E9BE0->vtx + D_800E79E0;
+    right = 0xA0 - ((s32)(sx * (x1 + 1)) + ox);
+    top = 0x78 - ((s32)(sy * y0) + oy);
+    sl = s0 * 64;
+    tt = t0 * 64;
+    sr = (s0 + x1 - x0) * 64;
+    left = 0xA0 - ((s32)(sx * x0) + ox);
+    tb = (t0 + y1 - y0) * 64;
+    bottom = 0x78 - ((s32)(sy * (y1 + 1)) + oy);
+
+    v[0].x = right;
+    v[0].y = top;
+    v[0].z = 0;
+    v[0].flag = 0;
+    v[0].s = sl;
+    v[0].t = tt;
+    v[0].cn[0] = col[4];
+    v[0].cn[1] = col[5];
+    v[0].cn[2] = col[6];
+    v[0].cn[3] = col[7];
+
+    v[1].x = left;
+    v[1].y = top;
+    v[1].z = 0;
+    v[1].flag = 0;
+    v[1].s = sr;
+    v[1].t = tt;
+    v[1].cn[0] = col[0];
+    v[1].cn[1] = col[1];
+    v[1].cn[2] = col[2];
+    v[1].cn[3] = col[3];
+
+    v[2].x = left;
+    v[2].y = bottom;
+    v[2].z = 0;
+    v[2].flag = 0;
+    v[2].s = sr;
+    v[2].t = tb;
+    v[2].cn[0] = col[12];
+    v[2].cn[1] = col[13];
+    v[2].cn[2] = col[14];
+    v[2].cn[3] = col[15];
+
+    v[3].x = right;
+    v[3].y = bottom;
+    v[3].z = 0;
+    v[3].flag = 0;
+    v[3].s = sl;
+    v[3].t = tb;
+    v[3].cn[0] = col[8];
+    v[3].cn[1] = col[9];
+    v[3].cn[2] = col[10];
+    v[3].cn[3] = col[11];
+
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0x01004008;
+        g->w1 = (u32)(D_800E9BE0->vtx + D_800E79E0);
+        D_800E79E0 += 4;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0x06000204;
+        g->w1 = 0x406;
+    }
+    func_80197B70();
+}
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_801772C0_ovl_040E80);
