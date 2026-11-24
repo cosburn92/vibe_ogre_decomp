@@ -2398,7 +2398,98 @@ copy:
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A5D8_ovl_286BD0);
 #endif
 
+char *func_8023ADA0_ovl_286BD0(s16 id);
+
+/* Loads paragraph arg & 0xFF of the text chunk into window o's buffer (0xD0) and expands its codes:
+ * 0x87 0x8D inserts the selected unit's name, 0x87 0x8E/0x8F the name at D_8023DE34 + 0x24,
+ * 0x81 0x97 ends a line (up to 48, starts at 0x534) */
+#ifdef NON_MATCHING
+/* 149/151 words (2 short): written as a goto loop; the original is a natural loop (0x878D and 0x500 hoisted into s7/s6) that still does not strength-reduce p + 2, which every natural-loop form here does (6 over), and the paragraph-found block is placed inline */
+void func_8023A814_ovl_286BD0(u8 *o, s32 arg) {
+    char buf[0x500];
+    char *bp;
+    u16 para;
+    u8 *w;
+    u8 *src;
+    u8 *p;
+    s32 k;
+    s32 start;
+    s32 i;
+    s32 n;
+    s32 j;
+    u8 *q;
+
+    bzero(buf, 0x500);
+    bp = buf;
+    para = arg & 0xFF;
+    w = FIELD(o, u8 *, 0xD0);
+    src = func_80227A18(0x018855FE, 0);
+    k = 0;
+    start = 0;
+    for (i = 0; i < 0x0FFFFFFF; i++) {
+        if (src[i] == '\r' && src[i + 1] == '\n' && src[i + 2] == src[i] && src[i + 3] == src[i + 1]) {
+            k++;
+            if (para == k) {
+                s32 len = i - start;
+
+                bzero(bp, len + 2);
+                func_80080998(bp, src + start, len);
+                break;
+            }
+            start = i + 4;
+        }
+    }
+    HFree(src);
+    _bcopy(buf, w, 0x500);
+    p = w;
+    FIELD(w, u8 *, 0x530) = w;
+    n = 1;
+    j = 0;
+    q = w + 4;
+loop:
+        switch (p[1] | (p[0] << 8)) {
+            case 0x878D: {
+                u8 *d = D_8023DE30_ovl_286BD0;
+                char *s = func_8023ADA0_ovl_286BD0(FIELD(((u8 **)d)[d[0x23D]], s16, 0x2C));
+
+                func_80080998(buf, p + 2, 0x500 - j);
+                func_8009C550((char *)p, s);
+                func_8009C620(p, buf);
+                break;
+            }
+            case 0x878E:
+            case 0x878F:
+                func_80080998(buf, p + 2, 0x500 - j);
+                func_8009C550((char *)p, (char *)D_8023DE34_ovl_286BD0 + 0x24);
+                func_8009C620(p, buf);
+                break;
+            case 0x8197:
+                p[0] = 0;
+                p += 2;
+                FIELD(q, u8 *, 0x530) = p;
+                q += 4;
+                n++;
+                if (n < 0x30) {
+                    j += 2;
+                } else {
+                    j = 0x500;
+                }
+                break;
+            default:
+                p++;
+                j++;
+                break;
+        }
+    if (j < 0x500) {
+        goto loop;
+    }
+    o[0x25] = n;
+    w[0x5F4] = n;
+    w[0x5F5] = n;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_8023A814_ovl_286BD0);
+#endif
 
 /* Allocates o's 0x604-byte text window (0x500 bytes of text copied from src) for window kind */
 u8 *func_8023AA70_ovl_286BD0(u8 *o, s32 kind, u8 *src) {
