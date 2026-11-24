@@ -182,20 +182,24 @@ void func_80201384_ovl_14EBE0(s32 x0, s32 y0, s32 x1, s32 y1) {
 
 /* Rank 1-3 of stat i: how many thirds of the cap (D_80190F82) it reaches */
 #ifdef NON_MATCHING
-/* loop condition compiled as a branchless and in the original */
+/* Same length. The branchless loop test (slt/sltiu/and) comes from the two flags a and b;
+ * what differs: the original has an 8-byte frame (an unused u8 pad[8] gives it, but not the
+ * rest), keeps n in a1 and v in a2 (swapped here) and closes the loop with bnezl. */
 u16 func_802014C8_ovl_14EBE0(u8 i) {
-    s32 pad;
     u16 q = D_80190F82 / 3;
     s32 v = D_80190EBC[i] - q;
     u16 n = 0;
+    s32 a, b;
 
-    do {
+    while (1) {
         n++;
-        if (!(v > 0 && n < 3)) {
+        a = v > 0;
+        b = n < 3;
+        if (!(a & b)) {
             break;
         }
         v -= q;
-    } while (1);
+    }
     if (n >= 4) {
         n = 3;
     }
