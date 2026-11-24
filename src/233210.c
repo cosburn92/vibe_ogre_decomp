@@ -656,7 +656,7 @@ s32 func_801F11E4_ovl_22A280(BattleUnit *u, s32 d) {
     return func_8007FE70(a, b) / d;
 }
 
-f32 func_801F1274_ovl_22A280(s32 k, BattleUnit *u) {
+inline f32 func_801F1274_ovl_22A280(s32 k, BattleUnit *u) {
     FOLD_AFFINITY(k);
     if (k == 5) {
         return (u->unk34[0] - 50) * 0.1;
@@ -667,13 +667,13 @@ f32 func_801F1274_ovl_22A280(s32 k, BattleUnit *u) {
     return D_801F6A14_ovl_22A280[k][u->unk33];
 }
 
-s8 func_801F1344_ovl_22A280(BattleUnit *u) {
+inline s8 func_801F1344_ovl_22A280(BattleUnit *u) {
     u8 a = func_801C9FA4(u->unk58);
 
     return D_801F6A30_ovl_22A280[func_8016E458(((u8 *)u)[0x7F])][a];
 }
 
-s32 func_801F139C_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+inline s32 func_801F139C_ovl_22A280(BattleUnit *a, BattleUnit *b) {
     s32 r = 0;
 
     if (func_801C8D84(b)) {
@@ -806,7 +806,41 @@ s8 func_801F17B8_ovl_22A280(BattleUnit *u) {
     return D_801F6A44_ovl_22A280[e][k];
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F1884_ovl_22A280);
+u8 func_8016DBD8(u8 a, u8 cls);
+extern s8 D_801F6910_ovl_22A280[7][27];
+
+/* a's attack modifier against b: the (element - 1, battle mode) table, the affinity/alignment
+ * term, the class/terrain table, the item bonus against b and the matchup bonus, minus the 0x3E
+ * penalty */
+f32 func_801F1884_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 k = func_8016E470(a->attack, a->items[0], a->items[1], a->items[2], a->items[3]);
+    u32 e = func_8016DBD8(a->unk48, a->cls);
+    u32 m;
+    f32 p;
+    s32 pen;
+
+    e = (e - 1) % 7;
+    m = 15;
+    if (!(D_801976D9.mode & 0x80)) {
+        m = D_801976D9.mode;
+    }
+    m %= 27;
+    p = D_801F6910_ovl_22A280[e][m];
+    p += func_801F1274_ovl_22A280(k, a);
+    p += func_801F1344_ovl_22A280(a);
+    p += func_801F139C_ovl_22A280(a, b);
+    p += func_801F14E8_ovl_22A280(a);
+    if (a == NULL || a->unk3E < 70) {
+        pen = 0;
+    } else if (a->unk3E < 80) {
+        pen = 5;
+    } else if (a->unk3E < 90) {
+        pen = 18;
+    } else {
+        pen = 40;
+    }
+    return p - pen;
+}
 
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1B98_ovl_22A280);
 
