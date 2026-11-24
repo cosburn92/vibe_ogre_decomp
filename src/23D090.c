@@ -797,23 +797,10 @@ void func_801EA990_ovl_23B220(void)
   c->h652 = 0;
 }
 
-/* Closes the panel by 8 px a frame and fades out; 1 when the fade completes */
-#ifdef NON_MATCHING
-/* same as func_801EAA58 */
-s32 func_801EA9BC_ovl_23B220(void) {
-    Ctx23 *s = D_801EFE48_ovl_23B220;
-    s32 step = 25;
-    s16 *f = &s->h652;
-
-    if (s->x1 >= s->y1) {
-        s->x1 -= 8;
-        if (s->x1 <= s->y1) {
-            s->x1 = s->y1;
-            s->y1 = 0xF2;
-        }
-    }
+/* Raises fade *f by step, clamped at 0xFF; 1 when it reaches 0xFF */
+static inline s32 fadeOut23(s16 *f, u8 step) {
     if (*f != 0xFF) {
-        *f += step;
+        *f = step + *f;
         if (*f < 0xFF) {
             return 0;
         }
@@ -822,9 +809,26 @@ s32 func_801EA9BC_ovl_23B220(void) {
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA9BC_ovl_23B220);
-#endif
+
+static inline void close23(Ctx23 *s) {
+    if (s->x1 >= s->y1) {
+        s->x1 -= 8;
+        if (s->x1 <= s->y1) {
+            s->x1 = s->y1;
+            s->y1 = 0xF2;
+        }
+    }
+}
+
+/* Closes the panel by 8 px a frame and fades out; 1 when the fade completes */
+s32 func_801EA9BC_ovl_23B220(void) {
+    Ctx23 *s = D_801EFE48_ovl_23B220;
+    u8 step = 25;
+    s16 *f = &s->h652;
+
+    close23(s);
+    return fadeOut23(f, step);
+}
 
 /* Lowers fade *f by step, clamped at 0; 1 when it reaches 0 */
 static inline s32 fade23(s16 *f, u8 step) {
