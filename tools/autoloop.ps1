@@ -74,6 +74,9 @@ instead of declaring a function again in the .c file, and give a new prototype
 the definition's exact types. Before each commit, check the files you touched:
   python3 tools/ilint.py -I include -I src -D_LANGUAGE_C -D__GNUC__=2 src | tail -40
 and fix any error it reports for a function you declared, called or defined.
+Also run python3 tools/pseudoasm.py on the .c files you changed: for any hit in
+a function you wrote, try the plain form (see its docstring) and keep it if the
+build still matches; if only the spelled-out form matches, say why in a comment.
 Keep reads small: pipe big asm/diff output through head or grep.
 '@
 $prompt = $prompt.Replace("MIN", "$Min").Replace("MAX", "$Max")
