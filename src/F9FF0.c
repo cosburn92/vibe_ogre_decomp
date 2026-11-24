@@ -59,20 +59,18 @@ s32 func_8019EF80_ovl_0F9FF0(s32 a, s16 b, u16 c) {
 INCLUDE_ASM("asm/nonmatchings/F9FF0", func_8019EF80_ovl_0F9FF0);
 #endif
 
-#ifdef NON_MATCHING
+//UNWRAP_BEGIN
 /* The original loads the last two stack arguments with lw (32-bit) but schedules like this u16 version. */
-s32 func_8019F0E0_ovl_0F9FF0(s32 id, s32 a, s32 b, s32 c, u8 flag, u16 d, u16 e) {
+s32 func_8019F0E0_ovl_0F9FF0(s32 id, s32 a, s32 b, s32 c, u8 flag, s32 d, s32 e) {
     s32 i = func_8019EE58_ovl_0F9FF0(id, a, b, c, flag);
 
-    D_800E82C8[i].unk8C = d >> 8;
+    D_800E82C8[i].unk8C = (u16)d >> 8;
     D_800E82C8[i].unk8D = d;
-    D_800E82C8[i].unk94 = e >> 8;
+    D_800E82C8[i].unk94 = (u16)e >> 8;
     D_800E82C8[i].unk95 = e;
     return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F9FF0", func_8019F0E0_ovl_0F9FF0);
-#endif
+//UNWRAP_END
 
 s32 func_8019F174_ovl_0F9FF0(u8 id) {
     s32 i;
