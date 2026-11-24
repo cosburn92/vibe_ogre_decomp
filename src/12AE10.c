@@ -448,19 +448,19 @@ s32 func_801D93EC_ovl_101CE0(MapUnit *u) {
 }
 
 /* Two-digit number, blank-padded */
-#ifdef NON_MATCHING
-/* The pointer increment is scheduled differently. */
 void func_801D9474_ovl_101CE0(s32 n, char *buf) {
     s32 tens = n / 10;
-    s32 ones = n - tens * 10;
+    s32 ones = n % 10;
 
-    *buf++ = tens ? tens + '0' : ' ';
-    buf[0] = ones + '0';
+    if (tens) {
+        *buf = tens + '0';
+    } else {
+        *buf = ' ';
+    }
+    buf++;
+    *buf = ones + '0';
     buf[1] = 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D9474_ovl_101CE0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D94CC_ovl_101CE0);
 
