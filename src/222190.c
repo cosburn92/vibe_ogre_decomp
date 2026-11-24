@@ -390,19 +390,13 @@ void func_801E08A8_ovl_213B10(u8 *m, s32 pos, s32 hit, u8 extra) {
 /* Item-use message for unit message m: when the unit can use the chosen item (as func_801DF334,
  * but the original calls func_801C8B08 without its argument) the use line; otherwise the
  * generic line and its two follow-ups (0x30/0x31 for kind 7) */
-#ifdef NON_MATCHING
-/* 153/154 instructions: the original copies the flags into a second register for the check and recomputes pos + n for the store */
 void func_801E0ACC_ovl_213B10(u8 *m, s32 pos, u8 kind) {
     s32 f;
     s32 n;
-    s32 id;
 
     FIELD(m, s16, 0x20) = 0;
     FIELD(m, s32, 0x40) = (FIELD(m, s32, 0x40) & ~0x3E) | 1;
-    func_801D90E0_ovl_213B10();
-    func_80172394();
-    f = func_8017223C(0x10);
-    func_801707F4();
+    f = func_801DF224_ovl_213B10();
     if (f != 0 && CanUse222(m, f)) {
         func_801D9F8C_ovl_213B10(0x1D, pos, (s32)m, 0xFF, 0x24);
         func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x24, 0);
@@ -411,17 +405,13 @@ void func_801E0ACC_ovl_213B10(u8 *m, s32 pos, u8 kind) {
     n = func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1D, 0);
     if (kind == 7) {
         func_801D9F60_ovl_213B10(0x30, pos, (s32)m, 0xFF);
-        id = 0x31;
+        func_801D9F60_ovl_213B10(0x31, pos + n, (s32)m, 0xFF);
     } else {
         func_801D9F60_ovl_213B10(0x13, pos, (s32)m, 0xFF);
-        id = 0x14;
+        func_801D9F60_ovl_213B10(0x14, pos + n, (s32)m, 0xFF);
     }
-    func_801D9F60_ovl_213B10(id, pos + n, (s32)m, 0xFF);
     FIELD(m, s32, 0x94) = pos + n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E0ACC_ovl_213B10);
-#endif
 
 
 /* Damage message for unit message m from line pos on: the attack line (0x10 on a plain hit, 0xC
