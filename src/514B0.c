@@ -1052,22 +1052,20 @@ inline Node *func_8017F408_ovl_040E80(void) {
         if (!(FIELD(n, u8, 0x14) & 0x10)) {
             return n;
         }
-        n = (n->prev != D_8018FDC0_ovl_040E80->next) ? n->prev : NULL;
+        n = n->prev;
+        if (n == D_8018FDC0_ovl_040E80->next) {
+            n = NULL;
+        }
     }
     return n;
 }
 
-#ifdef NON_MATCHING
-/* inlined F408 loop: a0/v1 register swap */
 void func_8017F490_ovl_040E80(void) {
     if (D_801936E0_ovl_040E80 && (D_80196AEC_ovl_040E80 & 0x80)) {
         func_80221354();
     }
     func_8017F554_ovl_040E80(func_8017F408_ovl_040E80());
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F490_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017F554_ovl_040E80);
 
