@@ -71,7 +71,7 @@ void func_801ECAB0_ovl_23B220(void);
 extern u8 *D_801969B0;
 extern Gfx D_801F0090_ovl_23B220[];
 void guMtxF2L(void *mf, void *m);
-void func_801E9DFC_ovl_23B220(s16 a, s32 b);
+void func_801E9DFC_ovl_23B220(s32 id, u8 *img);
 typedef struct {
     u8 id;
     u8 pad[3];
@@ -414,7 +414,85 @@ void func_801E99FC_ovl_23B220(void) {
 
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9A50_ovl_23B220);
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9DFC_ovl_23B220);
+typedef struct {
+    /* 0x0 */ s16 x;
+    /* 0x2 */ s16 y;
+    /* 0x4 */ s16 z;
+    /* 0x6 */ u16 flag;
+    /* 0x8 */ s16 s;
+    /* 0xA */ s16 t;
+    /* 0xC */ s8 nx;
+    /* 0xD */ s8 ny;
+    /* 0xE */ s8 nz;
+    /* 0xF */ u8 a;
+} Vtx23;
+extern Vtx23 *D_80197178; /* frame vertex pool cursor */
+void func_801E9A50_ovl_23B220(s32 id);
+void func_801BA0DC(void *timg, s32 a, s32 b, s32 fmt, s32 siz, s32 stride, s32 height, s32 uls, s32 ult,
+                   s32 lrs, s32 lrt, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
+#include "gbi_ultra.h"
+
+/* Draws image img (16-bit, w x h) as a strip of 4-texel-wide columns standing in the yz plane
+ * (64 vertices in the frame pool, one texture load per column pair); func_801E9A50 sets the x
+ * positions */
+void func_801E9DFC_ovl_23B220(s32 id, u8 *img) {
+    if (D_801EFE48_ovl_23B220->flags & 1) {
+        Vtx23 *v = D_80197178;
+        s32 h;
+        s32 w;
+        s32 i;
+        s32 s;
+
+        bzero(v, 0x400);
+        h = FIELD(img, u16, 6);
+        w = FIELD(img, u16, 4);
+        D_80197178[0].z = -h / 2;
+        D_80197178[1].z = (u32)h / 2;
+        for (i = 2; i < 64; i += 2) {
+            D_80197178[i].z = (u32)h / 2;
+            D_80197178[i + 1].z = -h / 2;
+        }
+        func_801E9A50_ovl_23B220(id);
+        for (i = 0, s = 4; i < 64; i++) {
+            if (i == 0 || i == 1) {
+                D_80197178[i].s = 0;
+                if (i & 1) {
+                    D_80197178[i].t = h << 6;
+                } else {
+                    D_80197178[i].t = 0;
+                }
+            } else {
+                D_80197178[i].s = s << 6;
+                if (!(i & 1)) {
+                    D_80197178[i].t = h << 6;
+                } else {
+                    D_80197178[i].t = 0;
+                }
+                if (i & 1) {
+                    s += 4;
+                }
+            }
+            D_80197178[i].flag = 0;
+            D_80197178[i].nx = 0;
+            D_80197178[i].ny = 0;
+            D_80197178[i].nz = 0;
+            D_80197178[i].a = 0xFF;
+        }
+        D_80197178 += 64;
+        func_801BA0DC(img + 8, 0, 0, 0, 2, w, h, 0, 0, 4, h - 1, 0, 0, 0, 0, 0, 0, 0);
+        gSPVertex(D_800E9BA0++, v, 4, 0);
+        gSP2Triangles(D_800E9BA0++, 0, 1, 2, 0, 0, 2, 3, 0);
+        gDPPipeSync(D_800E9BA0++);
+        s = 4;
+        for (i = 2; i < 62; i += 2) {
+            func_801BA0DC(img + 8, 0, 0, 0, 2, w, h, s, 0, s + 4, h - 1, 0, 0, 0, 0, 0, 0, 0);
+            s += 4;
+            gSPVertex(D_800E9BA0++, &v[i], 4, 0);
+            gSP2Triangles(D_800E9BA0++, 1, 0, 2, 0, 1, 2, 3, 0);
+            gDPPipeSync(D_800E9BA0++);
+        }
+    }
+}
 
 /* Draws object o with its float matrix (o + 0x20) */
 s32 func_801EA158_ovl_23B220(u8 *o) {
@@ -431,7 +509,7 @@ s32 func_801EA158_ovl_23B220(u8 *o) {
         _g->w0 = 0xDA380000;
         _g->w1 = (u32)D_801969B0;
     }
-    func_801E9DFC_ovl_23B220(e->id, (s32)e->img);
+    func_801E9DFC_ovl_23B220(e->id, e->img);
     {
         Gfx *_g = D_800E9BA0++;
         _g->w0 = 0xD8380002;
@@ -996,17 +1074,6 @@ void func_801EB594_ovl_23B220(void) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-typedef struct {
-    /* 0x0 */ s16 x;
-    /* 0x2 */ s16 y;
-    /* 0x4 */ s16 z;
-    /* 0x6 */ u8 pad6[6];
-    /* 0xC */ s8 nx;
-    /* 0xD */ s8 ny;
-    /* 0xE */ s8 nz;
-    /* 0xF */ u8 a;
-} Vtx23;
-extern Vtx23 *D_80197178; /* frame vertex pool cursor */
 
 /* Builds a lit box of half-size (a, b, c) in the vertex pool (four faces of four vertices each,
  * normals +z, +y, -y, -z) and draws it as four quads */
