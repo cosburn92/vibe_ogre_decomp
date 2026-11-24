@@ -696,12 +696,11 @@ s32 func_800819D4(u32 flags) {
     return n;
 }
 
-#ifdef NON_MATCHING
-/* Same code; loop counters get different registers. */
+/* Stop the channels playing handle over speed frames (libmus MusHandleStop) */
 s32 func_80081A54(s32 handle, s32 speed) {
+    MusChannel *cp;
     s32 i, n;
     s32 s;
-    MusChannel *cp;
 
     if (handle == 0) {
         return 0;
@@ -710,9 +709,7 @@ s32 func_80081A54(s32 handle, s32 speed) {
     if (s == 0) {
         s = 1;
     }
-    n = 0;
-    cp = D_800B180C;
-    for (i = 0; i < D_800B1804; i++, cp++) {
+    for (i = 0, n = 0, cp = D_800B180C; i < D_800B1804; i++, cp++) {
         if (cp->handle == handle && cp->unk10 == -1) {
             if (cp->unk00 & 1) {
                 cp->unk1C = 1;
@@ -727,9 +724,6 @@ s32 func_80081A54(s32 handle, s32 speed) {
     }
     return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081A54);
-#endif
 
 /* Number of channels playing handle (libmus MusHandleAsk) */
 s32 func_80081B08(s32 handle) {
