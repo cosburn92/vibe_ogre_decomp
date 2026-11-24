@@ -764,7 +764,59 @@ void func_801BF9B4_ovl_1F0A30(s32 dst, u16 *pal, s32 fmt, s32 big, s32 a, s32 b,
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BF9B4_ovl_1F0A30);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BFBA0_ovl_1F0A30);
+/* Inlined copies of func_801BEA70 (taking the colour as a u32) and func_801BEB28 */
+static inline u32 SepiaRgba201(u32 in) {
+    Rgba201 c = *(Rgba201 *)&in;
+    u32 lum = c.r * 30 + c.g * 59 + c.b * 11;
+
+    c.r = lum * 255 / 30000;
+    c.g = lum / 150;
+    c.b = lum * 130 / 30000;
+    return *(u32 *)&c;
+}
+
+static inline u16 Sepia5551(u16 c) {
+    u32 r = (c >> 8) & 0xF8;
+    u32 g = (c >> 3) & 0xF8;
+    u32 b = (c << 2) & 0xF8;
+    u32 lum = r * 30 + g * 59 + b * 11;
+
+    r = lum * 255 / 30000;
+    g = lum / 150;
+    b = lum * 130 / 30000;
+    lum = ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+    return lum;
+}
+
+/* Sepia-tones texture tex in place (header: size at 3, width at 4, height at 6, texels from 8);
+ * only 32-bit and 16-bit textures are changed */
+void func_801BFBA0_ovl_1F0A30(u8 *tex) {
+    u32 w = *(u16 *)(tex + 4);
+    u32 h = *(u16 *)(tex + 6);
+    s32 stride = RowBytes201(tex[3], w);
+    u8 *row;
+    u8 *row2;
+    u32 x;
+    u32 y;
+
+    if (tex[3] == 3) {
+        row = tex + 8;
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
+                ((u32 *)row)[x] = SepiaRgba201(((u32 *)row)[x]);
+            }
+            row += stride;
+        }
+    } else if (tex[3] == 2) {
+        row2 = tex + 8;
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
+                ((u16 *)row2)[x] = Sepia5551(((u16 *)row2)[x]);
+            }
+            row2 += stride;
+        }
+    }
+}
 
 #ifdef NON_MATCHING
 #ifndef FIELD
