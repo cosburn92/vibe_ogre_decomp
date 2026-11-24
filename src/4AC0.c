@@ -381,37 +381,35 @@ void func_80075224(void) {
 }
 
 /* Verifies save n, reformatting it when broken; returns whether it was valid */
-#ifdef NON_MATCHING
-/* Only differs in the order of two moves after HMalloc in the slot branch. */
+/* Each branch frees its own buffer (GCC cross-jumps the three HFree calls); a shared buf
+ * freed after the if/else schedules the slot branch's argument moves the other way */
 s32 func_80075360(s32 n) {
-    void *buf;
     s32 ok = 0;
 
     if (n == SAVE_COMMON) {
-        buf = HMalloc(COMMON_SIZE);
+        void *buf = HMalloc(COMMON_SIZE);
         if (func_80075688(buf)) {
             ok = 1;
         }
+        HFree(buf);
     } else if (n == SAVE_SUSPEND) {
-        buf = HMalloc(SUSPEND_SIZE);
+        void *buf = HMalloc(SUSPEND_SIZE);
         if (func_80075578(buf)) {
             ok = 1;
         }
+        HFree(buf);
     } else {
-        buf = HMalloc(SLOT_SIZE);
+        void *buf = HMalloc(SLOT_SIZE);
         if (func_8007541C(n, buf)) {
             ok = 1;
         }
+        HFree(buf);
     }
-    HFree(buf);
     if (!ok) {
         func_80074F9C(n);
     }
     return ok;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4AC0", func_80075360);
-#endif
 
 #ifdef NON_MATCHING
 /* The original keeps the checksum length (0x1844) in a saved register and branches to
