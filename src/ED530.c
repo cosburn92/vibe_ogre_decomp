@@ -228,8 +228,6 @@ void func_801A3A9C_ovl_0EBBB0(s32 arg, u8 *o) {
 }
 
 /* Whether a box (8 corners) is at least partly inside the view: fails if all corners are behind any of the 4 side planes */
-#ifdef NON_MATCHING
-/* GCC biases the plane pointer (+80); the original keeps offsets 72..80 */
 s32 func_801A3B4C_ovl_0EBBB0(f32 *cam, f32 (*pts)[3]) {
     f32 x = cam[0];
     f32 y = cam[1];
@@ -237,10 +235,10 @@ s32 func_801A3B4C_ovl_0EBBB0(f32 *cam, f32 (*pts)[3]) {
     s32 k;
     s32 i;
 
-    for (k = 0; k < 4; k++, cam += 3) {
-        f32 nx = cam[18];
-        f32 ny = cam[19];
-        f32 nz = cam[20];
+    for (k = 0; k < 4; k++) {
+        f32 nx = cam[k * 3 + 18];
+        f32 ny = cam[k * 3 + 19];
+        f32 nz = cam[k * 3 + 20];
 
         for (i = 0; i < 8; i++) {
             if ((pts[i][0] - x) * nx + (pts[i][1] - y) * ny + (pts[i][2] - z) * nz >= 0.0f) {
@@ -253,9 +251,6 @@ s32 func_801A3B4C_ovl_0EBBB0(f32 *cam, f32 (*pts)[3]) {
     }
     return 1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A3B4C_ovl_0EBBB0);
-#endif
 
 extern f32 D_801AD550_ovl_0EBBB0[4][3]; /* 4x3 transform copied from m */
 void _bcopy(const void *src, void *dst, s32 n);
