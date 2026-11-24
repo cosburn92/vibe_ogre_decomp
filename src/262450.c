@@ -5,7 +5,7 @@
 typedef struct Task {
     /* 0x00 */ u16 nextFree;
     /* 0x02 */ u16 unk02;
-    /* 0x04 */ void (*func)();
+    /* 0x04 */ s32 (*func)();
     /* 0x08 */ u16 state;
     /* 0x0A */ u16 unk0A;
     /* 0x0C */ struct Task *next;
@@ -32,7 +32,7 @@ Task *func_8020DD60_ovl_25EE90(void (*fn)(), Task *t);
 
 extern s32 D_80220D90_ovl_25EE90;
 extern Task **D_80220D94_ovl_25EE90;
-void func_8020DCAC_ovl_25EE90(Task *t, u16 a);
+s32 func_8020DCAC_ovl_25EE90(Task *t, u16 a);
 /* --- end decls --- */
 
 extern s32 D_80220D80_ovl_25EE90;
@@ -183,18 +183,16 @@ void func_8020DC90_ovl_25EE90(Task *t) {
     t->next = NULL;
 }
 
-/* Runs task t's function with t as the current task (task stack D_80220D94) */
-#ifdef NON_MATCHING
-/* register choice after the call differs (a0/a1 vs v1/a0) */
-void func_8020DCAC_ovl_25EE90(Task *t, u16 a) {
+/* Runs task t's function with t as the current task (task stack D_80220D94) and returns its result */
+s32 func_8020DCAC_ovl_25EE90(Task *t, u16 a) {
+    s32 r;
+
     D_80220FE8_ovl_25EE90 = t;
     D_80220D94_ovl_25EE90[--D_80220D90_ovl_25EE90] = t;
-    t->func(a, t->data);
+    r = t->func(a, t->data);
     D_80220FE8_ovl_25EE90 = D_80220D94_ovl_25EE90[++D_80220D90_ovl_25EE90];
+    return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/262450", func_8020DCAC_ovl_25EE90);
-#endif
 
 void func_8020DD34_ovl_25EE90(u16 a) {
     Task *t = D_80220FE8_ovl_25EE90;
