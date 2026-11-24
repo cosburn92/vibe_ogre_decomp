@@ -685,7 +685,9 @@ void func_801D0484_ovl_087200(u16 sq);
 /* Commits squad sq (30 = the squad being built, stored into a new slot first): marks its members
  * placed (0x08, counting down the free total unless already 0x40) and led (0x20), then refreshes */
 #ifdef NON_MATCHING
-/* 138/138 instructions, 7 words differ: only the operand order of the squad-record address adds (base + s * 0x36, then + i) */
+/* 138/138 instructions, 6 words differ, all in the row 0x10DD store at the end: the original loads
+ * D_80196AF8 before masking and scaling the row index, then adds base + offset (same gap as
+ * func_801CB8A0). The block-scoped o = s * 0x36 gives the squad-record base + offset adds. */
 void func_801CAB68_ovl_087200(s32 sq) {
     u16 s;
     u8 *st;
@@ -715,7 +717,9 @@ void func_801CAB68_ovl_087200(s32 sq) {
             FIELD(D_80196AF8, s32, 0x2C4)++;
         }
         for (i = 0; i < 9; i++) {
-            id = ((OrgSquad *)(D_80196AF8 + 0x117C))[s].b[i + 4];
+            s32 o = s * 0x36;
+
+            id = (D_80196AF8 + o)[0x1180 + i];
             f = D_80196AF8 + (id * 2 + 0x1872);
             if (id != 0xFF && !(*f & 8)) {
                 u8 v = *f;
@@ -727,7 +731,7 @@ void func_801CAB68_ovl_087200(s32 sq) {
                     *f = (v & 0x7F) | 8;
                     FIELD(D_80196AF8, s32, 0x5D4)--;
                 }
-                if (((OrgSquad *)(D_80196AF8 + 0x117C))[s].b[2] != 0xFF) {
+                if ((D_80196AF8 + o)[0x117E] != 0xFF) {
                     *f |= 0x20;
                 }
             }
