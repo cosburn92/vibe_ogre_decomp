@@ -274,19 +274,16 @@ extern s32 D_8018F3A0_ovl_040E80;
 
 /* Fills quad v (four 16-byte vertices from the template) for the screen rectangle (x0, y0) -
  * (x1, y1): centred coordinates and texture coordinates spanning the rectangle */
-#ifdef NON_MATCHING
-/* 71 vs 70: the original keeps copies of x0/x1 (s5/s6) and compares the sign-extended differences, likely an inline span helper */
 void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, s16 y1) {
-    s32 w, h;
+    s16 w, h;
     s16 l, t, r, b;
 
     _bcopy(&D_8018F3A0_ovl_040E80, v, 0x40);
-    w = (x1 - x0 > 0) ? x1 - x0 : x0 - x1;
-    h = (y1 - y0 > 0) ? y1 - y0 : y0 - y1;
-    w = (w - 1) << 6;
-    h = (h - 1) << 6;
+    w = ((x1 - x0 > 0) ? x1 - x0 : x0 - x1) - 1;
+    h = ((y1 - y0 > 0) ? y1 - y0 : y0 - y1) - 1;
     r = 0xA0 - x1;
     b = 0x78 - y1;
+    h <<= 6;
     t = 0x78 - y0;
     l = 0xA0 - x0;
     FIELD(v, s16, 0x12) = t;
@@ -296,15 +293,12 @@ void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, s16 y1) {
     FIELD(v, s16, 0xA) = h;
     FIELD(v, s16, 0x10) = r;
     FIELD(v, s16, 0x20) = l;
-    FIELD(v, s16, 0x28) = w;
+    FIELD(v, s16, 0x28) = w << 6;
     FIELD(v, s16, 0x30) = l;
     FIELD(v, s16, 0x32) = b;
-    FIELD(v, s16, 0x38) = w;
+    FIELD(v, s16, 0x38) = w << 6;
     FIELD(v, s16, 0x3A) = h;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/49A30", func_80174138_ovl_040E80);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80174250_ovl_040E80);
 
