@@ -1,5 +1,6 @@
 #include "common.h"
 #include "tables.h"
+#include "heap.h"
 
 /* ovl_195410: builds characters and squads from stage templates */
 
@@ -28,6 +29,13 @@ void func_8016BD20(s32 enemy, u8 index);
 void func_8016F11C(Character *c, u8 level);
 u8 func_8016F5C8(u16 item);
 s32 func_801DC054(void);
+u16 func_801FE190(u8 slot);       /* squad member count (ovl_14EBE0) */
+void func_801DC720(u16 item, u8 flag); /* InventoryAdd at this overlay's address */
+extern u8 D_801971FD[][25];       /* gSquads[].items */
+
+/* Unreferenced first word of this file's rodata: it puts the strings at
+ * +4 and SquadSetupItems' 8-aligned jump table at +0x50. */
+const s32 D_802172E0_ovl_195410 = 0;
 
 /* Puts item in the equipment slot whose class default item is of the same kind */
 void CharacterEquipItem(u16 item, Character *c) {
@@ -121,6 +129,113 @@ INCLUDE_ASM("asm/nonmatchings/195410", CharacterCreateFromTemplate);
 
 INCLUDE_ASM("asm/nonmatchings/195410", SquadCreateFromTemplate);
 
-INCLUDE_ASM("asm/nonmatchings/195410", SquadSetupItems);
+/* Fills the squad's consumable slots: builds a list of item ids (heals 1-3,
+ * fruit 4-5, revives 6) for the squad's size, then copies them into the squad
+ * record sorted by id, adding each to the inventory for player squads. */
+void SquadSetupItems(u8 slot, u8 heals, u8 fruit, u8 revives) {
+    u8 *buf;
+    s32 n;
+    s32 i;
+    s32 k;
+    s32 j; /* the fill phase (0 heals, 1 fruit, 2 revives), then the scan index */
+    u8 *dst;
+
+    buf = HMalloc(0x14);
+    bzero(buf, 0x14);
+    n = func_801FE190(slot);
+    if (heals != 0 || fruit != 0 || revives != 0) {
+        j = 0;
+        i = 0;
+        while (i < n) {
+            switch (j) {
+                case 0:
+                    switch (heals) {
+                        case 1:
+                            buf[i++] = 1;
+                            i += 4;
+                            break;
+                        case 2:
+                            buf[i++] = 1;
+                            buf[i++] = 1;
+                            i += 2;
+                            break;
+                        case 3:
+                            buf[i++] = 1;
+                            buf[i++] = 1;
+                            buf[i++] = 2;
+                            i += 3;
+                            break;
+                        case 4:
+                            buf[i++] = 2;
+                            buf[i++] = 2;
+                            i += 2;
+                            break;
+                        case 5:
+                            buf[i++] = 2;
+                            buf[i++] = 2;
+                            buf[i++] = 3;
+                            i += 3;
+                            break;
+                        case 6:
+                            buf[i++] = 3;
+                            buf[i++] = 3;
+                            i += 2;
+                            break;
+                    }
+                    j = 1;
+                    break;
+                case 1:
+                    switch (fruit) {
+                        case 1:
+                            buf[i++] = 4;
+                            buf[i++] = 4;
+                            break;
+                        case 2:
+                            buf[i++] = 4;
+                            buf[i++] = 5;
+                            break;
+                        case 3:
+                            buf[i++] = 5;
+                            buf[i++] = 5;
+                            break;
+                    }
+                    j = 2;
+                    break;
+                case 2:
+                    switch (revives) {
+                        case 1:
+                            buf[i++] = 6;
+                            break;
+                        case 2:
+                            buf[i++] = 6;
+                            buf[i++] = 6;
+                            break;
+                    }
+                    j = 0;
+                    break;
+            }
+        }
+    }
+    dst = D_801971FD[slot];
+    bzero(dst, 10);
+    if (heals != 0 || fruit != 0 || revives != 0) {
+        for (k = 1, j = 0, i = 0; i < n && k < 7; j++) {
+            if (j >= n) {
+                k++;
+                j = 0;
+            }
+            if (buf[j] == k) {
+                dst[i++] = k;
+                if (slot < 30) {
+                    func_801DC720(k, 1);
+                }
+            }
+        }
+    }
+    HFree(buf);
+}
+
+/* The jump table above is the file's last rodata; the original pads it to 16 bytes. */
+__asm__(".section .rodata\n.word 0, 0\n.section .text\n");
 
 INCLUDE_ASM("asm/nonmatchings/195410", StageSetupUnits);

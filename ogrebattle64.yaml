@@ -994,7 +994,7 @@ segments:
     subsegments:
       - [0x195410, c]
       - [0x197740, data, 195410]
-      - [0x197774, .rodata, 195410]
+      - [0x197770, .rodata, 195410]
 
   - name: ovl_1977E0
     type: code
