@@ -351,17 +351,13 @@ void func_801E0708_ovl_213B10(Msg21 *m, s32 a, s32 b) {
 
 /* Queues message k (anim 0x19) then line 0x12 (anim 0x1A) for m from line b + a; stores the next
  * line */
-#ifdef NON_MATCHING
-/* 80/80 instructions, 14 words differ: b and the message data pointer swap s0/s1 */
 void func_801E0768_ovl_213B10(u8 *m, s32 a, s32 b, u8 k) {
     func_801D9F8C_ovl_213B10(0x11, b, (s32)m, 0xFF, k);
     b += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x19, 0) + a;
     func_801D9F60_ovl_213B10(0x12, b, (s32)m, 0xFF);
-    FIELD(m, s32, 0x94) = b + func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1A, 0);
+    b += func_801DF2AC_ovl_213B10((Blob50 *)(FIELD(m, u8 *, 0) + 0x44), 0x1A, 0);
+    FIELD(m, s32, 0x94) = b;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/222190", func_801E0768_ovl_213B10);
-#endif
 
 
 /* Queues the battle messages for unit message m from line pos on: the hit or miss line with its
