@@ -17,6 +17,44 @@ void func_8017F490_ovl_040E80(void);
 void func_8017BFB0_ovl_040E80(u16 a, u8 b, void *c, s16 x0, s16 y0, s16 x1, s16 y1, s16 x2, s16 y2, s16 x3, s16 y3);
 void func_801841F4_ovl_040E80(void);
 void func_80180BDC_ovl_040E80(void);
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx49;
+extern Gfx49 *D_800E9BA0;
+
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 z;
+    u16 flag;
+    s16 s;
+    s16 t;
+    u8 cn[4];
+} Vtx49;
+
+typedef struct {
+    /* 0x00 */ u8 pad0[0x8];
+    /* 0x08 */ Mtx *mtx;
+    /* 0x0C */ u8 padC[0x4];
+    /* 0x10 */ Vtx49 *vtx;
+} FbSet49;
+
+extern FbSet49 *D_800E9BE0;
+extern u16 D_800E79E0;
+extern u8 D_8018FA70_ovl_040E80[];
+void func_80197B70(void);
+typedef struct {
+    /* 0x00 */ u8 pad0[0xC8];
+    /* 0xC8 */ void *img;
+    /* 0xCC */ void *tlut;
+} Ctx49;
+extern u8 D_8018F3E0_ovl_040E80[];
+void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, s16 y1);
+void func_80174250_ovl_040E80(u16 id, s16 x0, s16 y0, s16 x1, s16 y1);
+#ifndef FIELD
+#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
+#endif
 /* --- end decls --- */
 
 void func_80173B30_ovl_040E80(u8 *p) {
@@ -95,11 +133,142 @@ void func_80173D84_ovl_040E80(void *list) {
     D_8018FDC0_ovl_040E80 = old;
 }
 
-INCLUDE_ASM("asm/nonmatchings/49A30", func_80173DBC_ovl_040E80);
+/* Draws over the screen rectangle (x0, y0) - (x1, y1): loads the context's CI texture, its
+ * palette and its three matrices, draws a quad filled by func_80174138, then hands id and the
+ * rectangle to func_80174250 */
+void func_80173DBC_ovl_040E80(s32 id, s16 x0, s16 y0, s16 x1, s16 y1) {
+    {
+        Gfx49 *g = D_800E9BA0++;
 
-#ifndef FIELD
-#define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
-#endif
+        g->w0 = 0xDE000000;
+        g->w1 = (u32)D_8018F3E0_ovl_040E80;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xFD500000;
+        g->w1 = (u32)((Ctx49 *)D_8018FDC0_ovl_040E80)->img;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF5500000;
+        g->w1 = 0x07018060;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE6000000;
+        g->w1 = 0;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF3000000;
+        g->w1 = 0x073FF200;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF5400800;
+        g->w1 = 0x00018060;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF2000000;
+        g->w1 = 0x000FC0FC;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xFD100000;
+        g->w1 = (u32)((Ctx49 *)D_8018FDC0_ovl_040E80)->tlut;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE8000000;
+        g->w1 = 0;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF5000100;
+        g->w1 = 0x07000000;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE6000000;
+        g->w1 = 0;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xF0000000;
+        g->w1 = 0x0703C000;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380007;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000008;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380005;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000048;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xDA380003;
+        g->w1 = (u32)D_8018FDC0_ovl_040E80 + 0x80000088;
+    }
+
+    func_80174138_ovl_040E80(D_800E9BE0->vtx + D_800E79E0, x0, y0, x1, y1);
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0x01004008;
+        g->w1 = (u32)(D_800E9BE0->vtx + D_800E79E0);
+        D_800E79E0 += 4;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0x06000204;
+        g->w1 = 0x406;
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+    func_80174250_ovl_040E80(id, x0, y0, x1, y1);
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+}
+
 s32 _bcopy(s32 *, void *, s32);
 extern s32 D_8018F3A0_ovl_040E80;
 
@@ -107,13 +276,13 @@ extern s32 D_8018F3A0_ovl_040E80;
  * (x1, y1): centred coordinates and texture coordinates spanning the rectangle */
 #ifdef NON_MATCHING
 /* 71 vs 70: the original keeps copies of x0/x1 (s5/s6) and compares the sign-extended differences, likely an inline span helper */
-void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, u16 y1) {
+void func_80174138_ovl_040E80(void *v, s16 x0, s16 y0, s16 x1, s16 y1) {
     s32 w, h;
     s16 l, t, r, b;
 
     _bcopy(&D_8018F3A0_ovl_040E80, v, 0x40);
     w = (x1 - x0 > 0) ? x1 - x0 : x0 - x1;
-    h = ((s16)y1 - y0 > 0) ? y1 - y0 : y0 - y1;
+    h = (y1 - y0 > 0) ? y1 - y0 : y0 - y1;
     w = (w - 1) << 6;
     h = (h - 1) << 6;
     r = 0xA0 - x1;
@@ -147,12 +316,6 @@ void func_801768D4_ovl_040E80(s32 w, s32 h, s32 x0, s32 y0, s32 x1, s32 y1) {
     D_80196AF4_ovl_040E80 = (f32)(x1 - x0 + 1) / w;
     D_801977D0_ovl_040E80 = (f32)(y1 - y0 + 1) / h;
 }
-
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gfx49;
-extern Gfx49 *D_800E9BA0;
 
 /* Texture rectangle over screen cells x0..x1, y0..y1 (scaled and offset by func_801768D4) showing
  * texels s0..s1, t0..t1 of the tile; clipped to the 320x240 screen, with the texture start
@@ -358,28 +521,6 @@ void func_80176C6C_ovl_040E80(s32 x0, s32 y0, s32 x1, s32 y1, s32 s0, s32 t0, s3
 #else
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80176C6C_ovl_040E80);
 #endif
-
-typedef struct {
-    s16 x;
-    s16 y;
-    s16 z;
-    u16 flag;
-    s16 s;
-    s16 t;
-    u8 cn[4];
-} Vtx49;
-
-typedef struct {
-    /* 0x00 */ u8 pad0[0x8];
-    /* 0x08 */ Mtx *mtx;
-    /* 0x0C */ u8 padC[0x4];
-    /* 0x10 */ Vtx49 *vtx;
-} FbSet49;
-
-extern FbSet49 *D_800E9BE0;
-extern u16 D_800E79E0;
-extern u8 D_8018FA70_ovl_040E80[];
-void func_80197B70(void);
 
 /* Textured quad over screen cells x0..x1, y0..y1 (scaled and offset by func_801768D4) showing
  * texels from (s0, t0) on, one per cell: calls the setup list and loads the three matrices, then
