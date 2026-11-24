@@ -771,7 +771,74 @@ void func_801BD1F4_ovl_1F0A30(void) {
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BD258_ovl_1F0A30);
 
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BDC78_ovl_1F0A30);
+typedef struct {
+    u8 b[0x19];
+} SquadCopy1F8; /* one gSquads record */
+extern SquadCopy1F8 gSquads[];
+
+typedef struct {
+    /* 0x00 */ u8 unk00[0x54];
+    /* 0x54 */ s32 col;
+    /* 0x58 */ s32 row;
+    /* 0x5C */ u8 unk5C[0x9A];
+    /* 0xF6 */ u8 id;
+} Unit1F8;
+Unit1F8 *func_801C8FE8_ovl_1F0A30(s32 i);
+s32 func_801C8B84_ovl_1F0A30(Unit1F8 *u);
+s32 func_801C8B68_ovl_1F0A30(Unit1F8 *u);
+s32 func_801C8E30_ovl_1F0A30(Unit1F8 *u);
+
+/* Copies both sides' squad records into the battle context and gives each live member its
+ * formation slot (player side mirrored); members not found or dead are dropped */
+void func_801BDC78_ovl_1F0A30(void) {
+    SquadCopy1F8 *s;
+    u32 k;
+    s32 i;
+    Unit1F8 *u;
+
+    *(SquadCopy1F8 *)(D_801CE8C0_ovl_1F0A30 + 0x82F) = gSquads[D_801976DC];
+    *(SquadCopy1F8 *)(D_801CE8C0_ovl_1F0A30 + 0x848) = gSquads[D_801976E8];
+    s = (SquadCopy1F8 *)(D_801CE8C0_ovl_1F0A30 + 0x82F);
+    for (k = 0; k < 5; k++) {
+        if (s->b[k + 2] != 0) {
+            for (i = 0; i < 20; i++) {
+                u = func_801C8FE8_ovl_1F0A30(i);
+                if (u == NULL || func_801C8B84_ovl_1F0A30(u) == 0 || u->id != s->b[k + 2]) {
+                    continue;
+                }
+                if (func_801C8E30_ovl_1F0A30(u) != 0) {
+                    s->b[k + 2] = 0;
+                    continue;
+                }
+                s->b[k + 7] = (8 - u->row) * 3 - (u->col - 2);
+                break;
+            }
+            if (i >= 20) {
+                s->b[k + 2] = 0;
+            }
+        }
+    }
+    s = (SquadCopy1F8 *)(D_801CE8C0_ovl_1F0A30 + 0x848);
+    for (k = 0; k < 5; k++) {
+        if (s->b[k + 2] != 0) {
+            for (i = 0; i < 20; i++) {
+                u = func_801C8FE8_ovl_1F0A30(i);
+                if (u == NULL || func_801C8B68_ovl_1F0A30(u) == 0 || u->id != s->b[k + 2]) {
+                    continue;
+                }
+                if (func_801C8E30_ovl_1F0A30(u) != 0) {
+                    s->b[k + 2] = 0;
+                    continue;
+                }
+                s->b[k + 7] = u->row * 3 + u->col;
+                break;
+            }
+            if (i >= 20) {
+                s->b[k + 2] = 0;
+            }
+        }
+    }
+}
 
 void func_801BDF40_ovl_1F0A30(void) {
     func_801BDC78_ovl_1F0A30();
