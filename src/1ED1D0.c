@@ -39,7 +39,7 @@ extern u64 D_800C6D70[];
 extern u32 D_800A9E70;
 extern volatile u32 D_800E79A4;
 extern u8 D_801B9998_ovl_1CE070[];
-void BgDecodeHu(s8 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
+s32 BgDecodeHu(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b);
 void bzero(void *p, s32 n);
 extern u64 D_8009F540[];
 extern u64 jpegTextStart[];
@@ -252,7 +252,7 @@ void func_801B75B8_ovl_1CE070(void) {
 
 /* Reports which frame buffer pair is current (o[0], o[1]) */
 /* Reports which frame buffer pair is current (o[0], o[1]) */
-void func_801B77B8_ovl_1CE070(u8 *o) {
+inline void func_801B77B8_ovl_1CE070(u8 *o) {
     nuGfxTaskAllEndWait();
     o[0] = 0;
     o[1] = 1;
@@ -270,7 +270,74 @@ void func_801B77B8_ovl_1CE070(u8 *o) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/1ED1D0", BgDecodeHu);
+typedef struct {
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+} BgTile1ED;
+typedef struct {
+    u8 unk00[0x68];
+    void *img;
+    u8 unk6C[0xC];
+    s16 w;
+    s16 h;
+} BgState1ED;
+void HuDecode(void *src, void *dst);
+void func_8008AFA0(void (*func)(void *));
+
+/* Sets up a background image job (same code as 20FDC0 func_801CE064): w x h pixels in 16x16
+ * tiles, decodes the "HU" data (freeing it if a == 1) and hooks func_801B7388 as the per-frame
+ * step. Returns -1 if a JPEG job is still busy */
+s32 BgDecodeHu(s32 type, u16 w, u16 h, u8 *data, u8 a, u8 b) {
+    u8 o[2];
+    s16 n;
+    s16 k;
+    s16 i;
+    s16 j;
+
+    if (D_801BA6D0_ovl_1CE070 == NULL) {
+        D_801BA6D0_ovl_1CE070 = HMalloc(0x190);
+        bzero(D_801BA6D0_ovl_1CE070, 0x190);
+        ((u8 *)D_801BA6D0_ovl_1CE070)[0x81] = 0;
+    } else if (((u8 *)D_801BA6D0_ovl_1CE070)[0x81] == 0) {
+        return -1;
+    }
+    n = (w >> 4) * (h >> 4);
+    if (b == 0) {
+        FIELD(D_801BA6D0_ovl_1CE070, void *, 0x74) = HMallocBack(w * h * 2 + 8);
+    } else {
+        FIELD(D_801BA6D0_ovl_1CE070, void *, 0x74) = HMalloc(w * h * 2);
+    }
+    func_801B77B8_ovl_1CE070(o);
+    FIELD(D_801BA6D0_ovl_1CE070, void *, 0x64) = D_800A8204[o[0]];
+    FIELD(D_801BA6D0_ovl_1CE070, BgTile1ED *, 0x60) = HMalloc(n * 8);
+    FIELD(D_801BA6D0_ovl_1CE070, void *, 0x5C) = D_800A8204[o[1]];
+    ((u8 *)D_801BA6D0_ovl_1CE070)[0x80] = b;
+    ((BgState1ED *)D_801BA6D0_ovl_1CE070)->img = HMalloc(n * 0x300);
+    ((BgState1ED *)D_801BA6D0_ovl_1CE070)->w = w;
+    ((BgState1ED *)D_801BA6D0_ovl_1CE070)->h = h;
+    D_801BA6D0_ovl_1CE070->step = 0;
+    FIELD(D_801BA6D0_ovl_1CE070, s16, 0x7C) = type;
+    FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x6C) = data;
+    ((u8 *)D_801BA6D0_ovl_1CE070)[0x7F] = a;
+    k = 0;
+    for (i = 0; i < (h >> 4); i++) {
+        for (j = 0; j < (w >> 4); j++) {
+            FIELD(D_801BA6D0_ovl_1CE070, BgTile1ED *, 0x60)[k].x = j * 64;
+            FIELD(D_801BA6D0_ovl_1CE070, BgTile1ED *, 0x60)[k].y = i * 64;
+            FIELD(D_801BA6D0_ovl_1CE070, BgTile1ED *, 0x60)[k].w = 0x400;
+            FIELD(D_801BA6D0_ovl_1CE070, BgTile1ED *, 0x60)[k].h = 0x400;
+            k++;
+        }
+    }
+    HuDecode(FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x6C), FIELD(D_801BA6D0_ovl_1CE070, void *, 0x68));
+    if (((u8 *)D_801BA6D0_ovl_1CE070)[0x7F] == 1) {
+        HFree(FIELD(D_801BA6D0_ovl_1CE070, u8 *, 0x6C) - 8);
+    }
+    func_8008AFA0((void (*)(void *))func_801B7388_ovl_1CE070);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/1ED1D0", func_801B7B7C_ovl_1CE070);
 
@@ -303,7 +370,7 @@ s32 BgLoad(u8 *data, u8 a, u8 b) {
         ((BgJob *)D_801BA6D0_ovl_1CE070)->size = *(u16 *)(r + 4) * *(u16 *)(r + 6) * 2 + 0x18;
         q = p;
         p += 8;
-        BgDecodeHu(q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
+        BgDecodeHu((s8)q[2], *(u16 *)(q + 4), *(u16 *)(q + 6), p, 0, 1);
         return 1;
     }
 }
