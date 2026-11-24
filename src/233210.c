@@ -384,7 +384,131 @@ s32 func_801F043C_ovl_22A280(void) {
     return D_80193BC0[gSquads[a[2]].members[0]].c.intl < D_80195560[gSquads[b[2]].members[0]].intl;
 }
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F0514_ovl_22A280);
+/* Target list for a lane: walks the rows from start (0/6 forward three rows, 2/8 back three
+ * rows) and lists the first targetable unit in the own lane and in each neighbouring lane
+ * (the two neighbours found on the same row go in random order). If nothing was found and
+ * the lane is an outer one, the first unit of the far outer lane is taken. Returns the count. */
+s32 func_801F0514_ovl_22A280(BattleUnit **out, s32 start, s32 lane) {
+    BattleUnit **p;
+    BattleUnit *c;
+    BattleUnit *r;
+    BattleUnit *l;
+    s32 n;
+    s32 row;
+    s32 far;
+
+    n = 0;
+    l = NULL;
+    r = NULL;
+    c = NULL;
+    row = start;
+    p = out;
+    for (;;) {
+        if (c == NULL) {
+            c = func_801CA2E0(lane, row);
+            if (func_801C8E30(c) || func_801C8C3C(c)) {
+                c = NULL;
+            }
+            if (c != NULL) {
+                *p++ = c;
+                n++;
+            }
+        }
+        if (r == NULL && l == NULL) {
+            r = func_801CA2E0(lane + 1, row);
+            l = func_801CA2E0(lane - 1, row);
+            if (func_801C8E30(r) || func_801C8C3C(r)) {
+                r = NULL;
+            }
+            if (func_801C8E30(l) || func_801C8C3C(l)) {
+                l = NULL;
+            }
+            if (r != NULL && l != NULL) {
+                if (func_8009C7CC() & 1) {
+                    *p++ = r;
+                    *p++ = l;
+                } else {
+                    *p++ = l;
+                    *p++ = r;
+                }
+                n += 2;
+            } else if (r != NULL) {
+                *p++ = r;
+                n++;
+            } else if (l != NULL) {
+                *p++ = l;
+                n++;
+            }
+        } else if (r == NULL) {
+            r = func_801CA2E0(lane + 1, row);
+            if (func_801C8E30(r) || func_801C8C3C(r)) {
+                r = NULL;
+            }
+            if (r != NULL) {
+                *p++ = r;
+                n++;
+            }
+        } else if (l == NULL) {
+            l = func_801CA2E0(lane - 1, row);
+            if (func_801C8E30(l) || func_801C8C3C(l)) {
+                l = NULL;
+            }
+            if (l != NULL) {
+                *p++ = l;
+                n++;
+            }
+        }
+        if (c != NULL && r != NULL && l != NULL) {
+            break;
+        }
+        if (start == 0) {
+            if (++row >= 3) {
+                break;
+            }
+        } else if (start == 2) {
+            if (--row < 0) {
+                break;
+            }
+        } else if (start == 6) {
+            if (++row >= 9) {
+                break;
+            }
+        } else if (--row < 6) {
+            break;
+        }
+    }
+    if (n == 0 && lane != 1) {
+        far = lane == 0 ? 2 : 0;
+        row = start;
+        for (;;) {
+            c = func_801CA2E0(far, row);
+            if (func_801C8E30(c) || func_801C8C3C(c)) {
+                c = NULL;
+            }
+            if (c != NULL) {
+                out[n] = c;
+                n++;
+                break;
+            }
+            if (start == 0) {
+                if (++row >= 3) {
+                    break;
+                }
+            } else if (start == 2) {
+                if (--row < 0) {
+                    break;
+                }
+            } else if (start == 6) {
+                if (++row >= 9) {
+                    break;
+                }
+            } else if (--row < 6) {
+                break;
+            }
+        }
+    }
+    return n;
+}
 
 /* Threat score: the target's own attack power times its remaining actions; picks the highest */
 BattleUnit *func_801F089C_ovl_22A280(BattleUnit *self, BattleUnit **list, s32 n, u8 mode) {
