@@ -754,7 +754,36 @@ void func_8017CBE8_ovl_040E80(WinLabel514 *w, UnitLabel514 *o) {
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_8017D6D0_ovl_040E80);
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_8017E264_ovl_040E80);
+/* Draws the list scroll arrows (8x8 cells of the 16x8 image at sheet image + 0xD20, palette + 0xC0):
+ * up at (x, y0) when the first row cur is not 0, down at (x, y1) while cur < max; coordinates and
+ * texel steps double in high resolution */
+void func_8017E264_ovl_040E80(void *w, u8 cur, u8 max, s32 x, s32 y0, s32 y1) {
+    s32 step = 10;
+    s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
+
+    if (D_80187020_ovl_040E80) {
+        step = 9;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0xC0);
+    D_800E9BA0->w0 = 0xD7000002;
+    D_800E9BA0->w1 = 0x80008000;
+    D_800E9BA0++;
+    func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xD20, 16, 8, 0, 0, 0, 0);
+    if ((u8)cur != 0) {
+        gDPPipeSync(D_800E9BA0++);
+        gSPScisTextureRectangle(D_800E9BA0++, x << shift, y0 << shift, (x + 7) << shift, (y0 + 7) << shift, 0, 0, 0,
+                                1 << step, 1 << step);
+        gDPPipeSync(D_800E9BA0++);
+    }
+    if ((u8)cur < (u8)max) {
+        gDPPipeSync(D_800E9BA0++);
+        gSPScisTextureRectangle(D_800E9BA0++, x << shift, y1 << shift, (x + 7) << shift, (y1 + 7) << shift, 0,
+                                8 << 5, 0, 1 << step, 1 << step);
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
 
 
 /* Draws the 16x32 cursor arrow (sprite sheet +0x1500, palette +0x200) as a 10-px-tall bar
