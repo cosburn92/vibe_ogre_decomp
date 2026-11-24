@@ -1029,7 +1029,81 @@ void func_801A7130_ovl_0EBBB0(s32 a, s32 b) {
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7150_ovl_0EBBB0);
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7754_ovl_0EBBB0);
+extern f32 D_801AD588_ovl_0EBBB0;
+extern f32 D_801AD58C_ovl_0EBBB0;
+extern f32 D_801AD590_ovl_0EBBB0;
+extern f32 D_801AD594_ovl_0EBBB0;
+extern u8 D_801AC450_ovl_0EBBB0[][2];
+s32 func_801A7AA0_ovl_0EBBB0(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, s32 cx, s32 cz, s32 tri, f32 *out);
+
+/* Walks a segment from (px, pz) through up to four grid-edge crossings (dirs: 0 = end point,
+ * 1/3 = column line col/col+1, 2/4 = row line row+off/+1, 5 = diagonal) on the line
+ * z = D_801AD588 * x + D_801AD58C, testing each piece against triangle ids (0xFF ends);
+ * mode != 0 swaps the x/z axes. Returns 1 on the first hit */
+s32 func_801A7754_ovl_0EBBB0(u8 mode, f32 px, f32 pz, f32 ax, f32 az, s32 col, s32 row, u8 *ids, u8 *dirs,
+                             f32 *out) {
+    f32 x;
+    f32 z;
+    s32 i;
+    u8 id;
+    s8 off;
+
+    x = z = 0.0f;
+    for (i = 0; i < 4; i++) {
+        id = ids[i];
+        if (id == 0xFF) {
+            break;
+        }
+        off = D_801AC450_ovl_0EBBB0[id][0];
+        switch (dirs[i]) {
+            case 0:
+                x = ax;
+                z = az;
+                break;
+            case 1:
+                x = col;
+                z = D_801AD588_ovl_0EBBB0 * x + D_801AD58C_ovl_0EBBB0;
+                break;
+            case 2:
+                z = row + off;
+                x = (z - D_801AD58C_ovl_0EBBB0) / D_801AD588_ovl_0EBBB0;
+                break;
+            case 3:
+                x = col + 1;
+                z = D_801AD588_ovl_0EBBB0 * x + D_801AD58C_ovl_0EBBB0;
+                break;
+            case 4:
+                z = row + off + 1;
+                x = (z - D_801AD58C_ovl_0EBBB0) / D_801AD588_ovl_0EBBB0;
+                break;
+            case 5:
+                z = row + off - col;
+                x = (z - D_801AD58C_ovl_0EBBB0) / (D_801AD588_ovl_0EBBB0 - 1.0f);
+                z = z + x;
+                break;
+        }
+        if (mode == 0) {
+            if ((px != x) | (pz != z)) {
+                if (func_801A7AA0_ovl_0EBBB0(px, D_801AD590_ovl_0EBBB0 * px + D_801AD594_ovl_0EBBB0, pz, x,
+                                             D_801AD590_ovl_0EBBB0 * x + D_801AD594_ovl_0EBBB0, z, col, row + off,
+                                             (s8)D_801AC450_ovl_0EBBB0[id][1], out)) {
+                    return 1;
+                }
+            }
+        } else {
+            if ((px != x) | (pz != z)) {
+                if (func_801A7AA0_ovl_0EBBB0(pz, D_801AD590_ovl_0EBBB0 * px + D_801AD594_ovl_0EBBB0, px, z,
+                                             D_801AD590_ovl_0EBBB0 * x + D_801AD594_ovl_0EBBB0, x, row + off, col,
+                                             (s8)(D_801AC450_ovl_0EBBB0[id][1] ^ 1), out)) {
+                    return 1;
+                }
+            }
+        }
+        px = x;
+        pz = z;
+    }
+    return 0;
+}
 
 s32 func_801A6E3C_ovl_0EBBB0(s32 tri, s32 x, s32 z, s32 *h);
 
