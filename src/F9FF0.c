@@ -83,7 +83,7 @@ s32 func_8019F174_ovl_0F9FF0(u8 id) {
     return (D_8019EE48 & 2) ? 3 : 1;
 }
 
-#ifdef NON_MATCHING
+//UNWRAP_BEGIN
 /* GCC here folds the 2/0 and 3/1 returns into set-compare arithmetic; the original keeps branches. */
 s32 func_8019F210_ovl_0F9FF0(void) {
     s32 i;
@@ -91,19 +91,21 @@ s32 func_8019F210_ovl_0F9FF0(void) {
     for (i = 0; i < 6; i++) {
         if ((D_800E82C8[i].flags & 0x8000) && D_800E82C8[i].owner == D_80198BE8 && D_800E82C8[i].unk8F == 0xFF) {
             if (D_800E82C8[i].unk8A & 1) {
-                return 2;
+                goto two;
             }
             return 0;
         }
     }
-    if (D_8019EE48 & 2) {
-        return 3;
+    if (!(D_8019EE48 & 2)) {
+        goto one;
     }
+    return 3;
+two:
+    return 2;
+one:
     return 1;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/F9FF0", func_8019F210_ovl_0F9FF0);
-#endif
+//UNWRAP_END
 
 void func_8019F2C0_ovl_0F9FF0(u8 id) {
     s32 i;
