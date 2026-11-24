@@ -1440,7 +1440,27 @@ void func_80181504_ovl_040E80(s32 x, s32 y, s32 x1) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-INCLUDE_ASM("asm/nonmatchings/514B0", func_801818A0_ovl_040E80);
+/* Draws the 16x12 image at sheet image + 0xAC0 (palette + 0x80, s wrapped at 16) at (x + 3, y),
+ * starting at texel column 16; coordinates and texel steps double in high resolution */
+void func_801818A0_ovl_040E80(s32 x, s32 y) {
+    s32 step = 10;
+    s32 shift = (D_80187020_ovl_040E80 ? 3 : 0) | 2;
+
+    if (D_80187020_ovl_040E80) {
+        step = 9;
+    }
+    gDPPipeSync(D_800E9BA0++);
+    LoadTlut514(((SheetPair514 *)D_8018FDC0_ovl_040E80)->pal + 0x80);
+    gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+    D_800E9BA0->w0 = 0xD7000002;
+    D_800E9BA0->w1 = 0x80008000;
+    D_800E9BA0++;
+    func_8017BB50_ovl_040E80(((SheetPair514 *)D_8018FDC0_ovl_040E80)->img + 0xAC0, 16, 12, 1, 0, 4, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, (x + 3) << shift, y << shift, (x + 19) << shift, (y + 12) << shift, 0,
+                            16 << 5, 0, 1 << step, 1 << step);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 INCLUDE_ASM("asm/nonmatchings/514B0", func_80181C2C_ovl_040E80);
 
