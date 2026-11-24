@@ -66,7 +66,9 @@ typedef struct {
     /* 0x88 */ u8 unk88[9];
     /* 0x91 */ u8 unk91;
     /* 0x92 */ u8 unk92;
-    /* 0x93 */ u8 unk93[0x15];
+    /* 0x93 */ u8 unk93[0xD];
+    /* 0xA0 */ struct PathJob *job;
+    /* 0xA4 */ u8 unkA4[4];
     /* 0xA8 */ s32 *ids;
     /* 0xAC */ u8 unkAC[0xE];
     /* 0xBA */ u8 unkBA;
@@ -285,7 +287,118 @@ INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D8048_ovl_101CE0);
 
 INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D8A30_ovl_101CE0);
 
-INCLUDE_ASM("asm/nonmatchings/12AE10", func_801D8FBC_ovl_101CE0);
+typedef struct PathJob {
+    /* 0x00 */ s32 from;
+    /* 0x04 */ s32 to;
+    /* 0x08 */ s32 unk08;
+    /* 0x0C */ s32 unk0C;
+    /* 0x10 */ s32 w;
+    /* 0x14 */ s32 h;
+    /* 0x18 */ f32 *bounds;
+    /* 0x1C */ u8 *cells;
+    /* 0x20 */ s32 *cost;
+    /* 0x24 */ s32 *prev;
+    /* 0x28 */ s32 done;
+    /* 0x2C */ s32 unk2C;
+    /* 0x30 */ void *open;
+    /* 0x34 */ s32 unk34[2];
+    /* 0x3C */ s32 unk3C;
+} PathJob; /* size 0x40 */
+
+extern s32 D_801F0DA8_ovl_101CE0; /* grid width */
+extern s32 D_801F0DAC_ovl_101CE0; /* grid height */
+extern u8 *D_801F0DB0_ovl_101CE0;
+extern u8 *D_801F0DB4_ovl_101CE0;
+extern u8 D_801F36D8_ovl_101CE0[][0x40];
+void func_801B36F8_ovl_101CE0(PathJob *job);
+s32 func_801B3620_ovl_101CE0(s32 from, s32 to, s32 *prev);
+void func_801C678C_ovl_101CE0(MapUnit *u);
+void func_801D8048_ovl_101CE0(s32 slot, MapUnit *u, s32 a, s32 b);
+
+/* Route search for a unit: allocates the search buffers and starts it, or once it has finished
+ * takes the route, frees the buffers and starts the unit moving */
+void func_801D8FBC_ovl_101CE0(MapUnit *u, u8 slot, s32 *started) {
+    PathJob *j;
+
+    if (u->job == NULL) {
+        if (*started != 0) {
+            return;
+        }
+        j = u->job = HMalloc(sizeof(PathJob));
+        if (j != NULL) {
+            /* Raw stores, not j->field: retail keeps each one ahead of the next global load. */
+            FIELD(j, s32, 0x0) = u->unk14;
+            /* destination: u->target[u->leg] at 0x54; the byte-offset shift keeps retail's u + offset add order */
+            FIELD(j, s32, 0x4) = *(s32 *)((u8 *)u + (FIELD(u, s32, 0x24) << 2) + 0x54);
+            FIELD(j, s32, 0x8) = 0;
+            FIELD(j, s32, 0xC) = 0;
+            FIELD(j, s32, 0x10) = 0x3F;
+            FIELD(j, s32, 0x14) = 0x3F;
+            FIELD(j, f32 *, 0x18) = &D_801F0D98_ovl_101CE0;
+            FIELD(j, u8 *, 0x1C) = HMalloc(D_801F0DA8_ovl_101CE0 * D_801F0DAC_ovl_101CE0);
+            FIELD(j, s32 *, 0x20) = HMalloc(D_801F0DA8_ovl_101CE0 * 4 * D_801F0DAC_ovl_101CE0);
+            FIELD(j, s32 *, 0x24) = HMalloc(D_801F0DA8_ovl_101CE0 * 4 * D_801F0DAC_ovl_101CE0);
+            FIELD(j, void *, 0x30) = HMalloc(D_801F0DA8_ovl_101CE0 * 12 * D_801F0DAC_ovl_101CE0);
+            FIELD(j, s32, 0x3C) = 0;
+            FIELD(j, s32, 0x28) = 0;
+            FIELD(j, s32, 0x2C) = 0;
+        }
+        D_801F0DB4_ovl_101CE0 = D_801F36D8_ovl_101CE0[slot];
+        D_801F0DB0_ovl_101CE0 = *(u8 **)(D_800E7A90 + D_800E7A90[0x33] * 4);
+        if (j == NULL || j->cells == NULL || j->cost == NULL || j->prev == NULL || j->open == NULL) {
+            if (j != NULL) {
+            if (j->cells != NULL) {
+                HFree(j->cells);
+                j->cells = NULL;
+            }
+            if (j->cost != NULL) {
+                HFree(j->cost);
+                j->cost = NULL;
+            }
+            if (j->prev != NULL) {
+                HFree(j->prev);
+                j->prev = NULL;
+            }
+            if (j->open != NULL) {
+                HFree(j->open);
+                j->open = NULL;
+            }
+        }
+        if (u->job != NULL) {
+            HFree(u->job);
+            u->job = NULL;
+        }
+        } else {
+            func_801B36F8_ovl_101CE0(u->job);
+            *started = 1;
+        }
+    } else if (u->job->done != 0) {
+        if (*started == 0) {
+            func_801B36F8_ovl_101CE0(u->job);
+            *started = 1;
+        }
+    } else if (FIELD(u, s32, 0x68) != 0) {
+        func_801D8048_ovl_101CE0(D_800E7A90[0x29], u, 5, 1);
+    } else {
+        s32 r;
+
+        j = u->job;
+        r = func_801B3620_ovl_101CE0(u->unk14, *(s32 *)((u8 *)u + (FIELD(u, s32, 0x24) << 2) + 0x54), j->prev);
+        if (r != 0) {
+            FIELD(u, s32, 0x68) = r;
+            HFree(j->cells);
+            j->cells = NULL;
+            HFree(j->cost);
+            j->cost = NULL;
+            HFree(j->prev);
+            j->prev = NULL;
+            HFree(j->open);
+            j->open = NULL;
+            func_801C678C_ovl_101CE0(u);
+            FIELD(u, s32, 0x6C) = 1;
+        }
+    }
+}
 
 /* Whether the unit's squad leader is alive */
 inline s32 func_801D92D0_ovl_101CE0(MapUnit *u) {
