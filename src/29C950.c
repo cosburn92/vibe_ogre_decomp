@@ -1540,7 +1540,7 @@ void func_802316C0_ovl_29A4C0(void) {
         } else {
             fz = abs((s32)(a->f124 - u->f124));
             fx = abs((s32)(a->f11C - u->f11C));
-            if ((fz < 20.0f) & (fx < 20.0f)) {
+            if (fz < 20.0f && fx < 20.0f) {
                 d = sqrtf(fx * fx + fz * fz);
                 n = (20 - (s16)d) / 2;
                 *l = n;
