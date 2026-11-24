@@ -549,7 +549,7 @@ s32 func_801F4EB4_ovl_145210(MapUnit *u) {
     return u->unk70 == 1 && !(u->flags & 0x40);
 }
 
-s32 func_801F4030_ovl_145210(s32 cls);
+s32 func_801F4030_ovl_145210(s32 a, s32 alt);
 extern u8 D_80187C59[][0x48]; /* gClassTable[].baseClass */
 extern u8 D_80193BD1[][0x38]; /* player characters: class, base class */
 extern u8 D_80193BD2[][0x38];
@@ -589,7 +589,7 @@ s32 func_801F4ED8_ovl_145210(MapUnit *u) {
     if (r >= 0xAA) {
         r = base;
     }
-    if (func_801F4030_ovl_145210(r) == -1) {
+    if (((s32 (*)())func_801F4030_ovl_145210)(r) == -1) { /* called without alt: a1 left over */
         r = base;
     }
     return (u8)r;
@@ -698,7 +698,7 @@ void func_801F5550_ovl_145210(u8 *a, void *b, s32 c, s32 d, s32 e, s32 f) {
             pal = a[5];
         }
         p[0xA] = D_801FCD2C_ovl_145210[pal][a[6] * 2 + 1] & 0xF;
-        FIELD(p, u16, 8) = func_801F4030_ovl_145210(a[2]);
+        FIELD(p, u16, 8) = ((s32 (*)())func_801F4030_ovl_145210)(a[2]); /* a1 left over */
         b8 = 0;
         if (a[2] != 0x87) {
             b8 = a[4];
@@ -796,7 +796,7 @@ void func_801F57D0_ovl_145210(u8 *a, u8 mode) {
                     pal = a[5];
                 }
                 p->pal = D_801FCD2C_ovl_145210[pal][a[6] * 2 + 1] & 0xF;
-                p->cls = ((s32 (*)(s32, s32))func_801F4030_ovl_145210)(a[2], a[3]);
+                p->cls = func_801F4030_ovl_145210(a[2], a[3]);
                 b8 = 0;
                 if (a[2] != 0x87) {
                     b8 = a[4];
