@@ -336,7 +336,9 @@ void *HMalloc(s32 size) {
     h = (flags >> 1) & 1;
     if (h) {
         count = gHeapCount - (~flags & 1);
-        h = h & -(gHeapCount >= 2);
+        if (gHeapCount < 2) {
+            h = 0;
+        }
     } else {
         count = flags & 1;
     }
@@ -380,7 +382,9 @@ void *func_800710DC(s32 size) {
     h = (flags >> 1) & 1;
     if (h) {
         count = gHeapCount - (~flags & 1);
-        h = h & -(gHeapCount >= 2);
+        if (gHeapCount < 2) {
+            h = 0;
+        }
     } else {
         count = flags & 1;
     }
@@ -461,7 +465,9 @@ u32 func_800713EC(void) {
     h = (flags >> 1) & 1;
     if (h) {
         count = gHeapCount - (~flags & 1);
-        h = h & -(gHeapCount >= 2);
+        if (gHeapCount < 2) {
+            h = 0;
+        }
     } else {
         count = flags & 1;
     }
@@ -748,7 +754,9 @@ void *func_80071C04(s32 size) {
     h = (flags >> 1) & 1;
     if (h) {
         count = gHeapCount - (~flags & 1);
-        h = h & -(gHeapCount >= 2);
+        if (gHeapCount < 2) {
+            h = 0;
+        }
     } else {
         count = flags & 1;
     }
