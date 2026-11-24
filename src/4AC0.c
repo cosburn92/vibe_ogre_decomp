@@ -440,21 +440,18 @@ s32 func_80075578(SaveHeader *hdr) {
     return SaveChecksumOk(hdr, data, len, SUSPEND_OFFSET);
 }
 
-#ifdef NON_MATCHING
-/* Same length-register / final-compare difference as func_8007541C. */
+/* Reads the common save into hdr and checks it; len is assigned up front as in func_8007541C */
 s32 func_80075688(SaveHeader *hdr) {
     u8 *data = (u8 *)hdr + SAVE_HEADER;
+    s32 len = COMMON_SIZE - SAVE_HEADER;
 
     SramCacheLoad();
     _bcopy(D_800A83B8, hdr, COMMON_SIZE);
     if (_bcmp(D_800A8240, hdr->magic, 8) != 0) {
         return 0;
     }
-    return SaveChecksumOk(hdr, data, COMMON_SIZE - SAVE_HEADER, 0);
+    return SaveChecksumOk(hdr, data, len, 0);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4AC0", func_80075688);
-#endif
 
 void func_8007578C(s32 n, void *buf) {
     SramWrite(buf, SLOT_OFFSET(n), SLOT_SIZE);
