@@ -615,8 +615,6 @@ s32 func_801A63F4_ovl_0EBBB0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
-
 #include "scene.h"
 #ifndef FIELD
 #define FIELD(p, T, off) (*(T *)((u8 *)(p) + (off)))
@@ -624,6 +622,47 @@ INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
 extern s32 D_8018F818[][3];
 f32 func_801A63FC_ovl_0EBBB0(s32 slot, f32 x, f32 z);
 s32 func_801A69A4_ovl_0EBBB0(u16 *grid, s32 x, s32 row);
+
+/* Ground height at (x, z) in scene slot's height grid for maps with flag 0x8 (0 otherwise):
+ * the grid cell's two triangles are interpolated (16-bit heights over 0xC-0x10) */
+#ifdef NON_MATCHING
+/* same size; in both branches the a0 argument move is scheduled after the index update instead of first */
+f32 func_801A63FC_ovl_0EBBB0(s32 slot, f32 x, f32 z) {
+    u8 *g = (u8 *)D_800E82C8[slot].slotsB[D_800E82C8[slot].unk8D];
+    f32 fx;
+    f32 fz;
+    s32 ix;
+    s32 iz;
+    s32 a;
+    s32 b;
+    s32 c;
+    f32 dx;
+    f32 dz;
+    f32 v;
+
+    if (!(D_8018F818[D_800E82C8[slot].unk88][0] & 8)) {
+        return 0.0f;
+    }
+    fx = (x - FIELD(g, f32, 4)) / (FIELD(g, f32, 8) - FIELD(g, f32, 4)) * (f32)(FIELD(g, u16, 0) - 1);
+    fz = (z - FIELD(g, f32, 0x14)) / (FIELD(g, f32, 0x18) - FIELD(g, f32, 0x14)) * (f32)(FIELD(g, u16, 2) - 1);
+    ix = func_8009D3E0(fx);
+    iz = func_8009D3E0(fz);
+    a = func_801A69A4_ovl_0EBBB0((u16 *)g, ix, iz);
+    b = func_801A69A4_ovl_0EBBB0((u16 *)g, ix + 1, iz + 1);
+    dz = fz - iz;
+    dx = fx - ix;
+    if (dz - dx >= 0.0f) {
+        { s32 t = ix; ix = iz + 1; c = func_801A69A4_ovl_0EBBB0((u16 *)g, t, ix); }
+        v = dx * (b - c) - (fz - ix) * (a - c) + c;
+    } else {
+        c = func_801A69A4_ovl_0EBBB0((u16 *)g, ++ix, iz);
+        v = -(fx - ix) * (a - c) + dz * (b - c) + c;
+    }
+    return v / 65279.0f * (FIELD(g, f32, 0x10) - FIELD(g, f32, 0xC)) + FIELD(g, f32, 0xC);
+}
+#else
+INCLUDE_ASM("asm/nonmatchings/ED530", func_801A63FC_ovl_0EBBB0);
+#endif
 
 /* Ground height at (x, z) in scene slot's height grid: the grid cell's two triangles are
  * interpolated (16-bit heights over 0xC-0x10); maps without flag 0x10 use func_801A63FC */
