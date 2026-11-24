@@ -615,7 +615,110 @@ void func_801A597C_ovl_0EBBB0(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/ED530", func_801A5B0C_ovl_0EBBB0);
+extern f32 D_801AC0D8_ovl_0EBBB0[8];
+extern f32 D_801ABDD8_ovl_0EBBB0[8][2][4][3]; /* second name: D_801ABE08 - 0x30 */
+typedef struct {
+    /* 0x00 */ u8 acol[4];
+    /* 0x04 */ u8 acolc[4];
+    /* 0x08 */ u8 col[4];
+    /* 0x0C */ u8 colc[4];
+    /* 0x10 */ s8 dir[4];
+} Lights0E;
+extern Lights0E D_801ABA40_ovl_0EBBB0;
+extern u8 D_8018F557;
+extern u8 D_8018F558;
+extern u8 D_8018F559;
+void func_801A633C_ovl_0EBBB0(f32 lo, f32 hi, f32 x, f32 *from, f32 *to, u8 *out);
+
+/* Sun light from the sun angle (0x12C): direction (rotated -60 about x, by the angle about y,
+ * 50 out, normalised to 119) into D_801ABA50..52, and two colour pairs lerped between the
+ * surrounding angle keys D_801AC0D8 (scaled by the light level, each channel at least 0x20) */
+void func_801A5B0C_ovl_0EBBB0(void) {
+    f32 m[4][4];
+    f32 r[4][4];
+    f32 v[3];
+    u8 c[3];
+    s32 i;
+    s32 j;
+    f32 hi;
+    u32 k;
+
+    for (i = 7; i > 0; i--) {
+        if (D_801AC0D8_ovl_0EBBB0[i] <= FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C)) {
+            break;
+        }
+    }
+    for (j = 1; j < 8; j++) {
+        if (FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C) <= D_801AC0D8_ovl_0EBBB0[j]) {
+            break;
+        }
+    }
+    guRotateF((f32 *)m, -60.0f, 1.0f, 0.0f, 0.0f);
+    guRotateF((f32 *)r, FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C), 0.0f, 1.0f, 0.0f);
+    guMtxCatF((f32 *)r, (f32 *)m, (f32 *)m);
+    func_80098D00(r, -50.0f, 0.0f, 0.0f);
+    guMtxCatF((f32 *)r, (f32 *)m, (f32 *)m);
+    guMtxXFMF(m, 0.0f, 0.0f, 0.0f, &v[0], &v[1], &v[2]);
+    func_8007FFD0(v);
+    j &= 7;
+    func_80080190(v, 119.0f);
+    D_801ABA40_ovl_0EBBB0.dir[0] = v[0];
+    D_801ABA40_ovl_0EBBB0.dir[1] = v[1];
+    D_801ABA40_ovl_0EBBB0.dir[2] = v[2];
+
+    hi = D_801AC0D8_ovl_0EBBB0[j];
+    if (hi < D_801AC0D8_ovl_0EBBB0[i]) {
+        hi += 360.0f;
+    }
+    func_801A633C_ovl_0EBBB0(D_801AC0D8_ovl_0EBBB0[i], hi, FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C),
+                             D_801ABDD8_ovl_0EBBB0[i][1][D_8018F53F], D_801ABDD8_ovl_0EBBB0[j][1][D_8018F53F], c);
+    k = c[0] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.acolc[0] = k;
+    D_801ABA40_ovl_0EBBB0.acol[0] = k;
+    k = c[1] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.acolc[1] = k;
+    D_801ABA40_ovl_0EBBB0.acol[1] = k;
+    k = c[2] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.acolc[2] = k;
+    D_801ABA40_ovl_0EBBB0.acol[2] = k;
+
+    hi = D_801AC0D8_ovl_0EBBB0[j];
+    if (hi < D_801AC0D8_ovl_0EBBB0[i]) {
+        hi += 360.0f;
+    }
+    func_801A633C_ovl_0EBBB0(D_801AC0D8_ovl_0EBBB0[i], hi, FIELDX(D_801ABA58_ovl_0EBBB0, f32, 0x12C),
+                             D_801ABDD8_ovl_0EBBB0[i][0][D_8018F53F], D_801ABDD8_ovl_0EBBB0[j][0][D_8018F53F], c);
+    k = c[0] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.colc[0] = k;
+    D_801ABA40_ovl_0EBBB0.col[0] = k;
+    k = c[1] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.colc[1] = k;
+    D_801ABA40_ovl_0EBBB0.col[1] = k;
+    k = c[2] * D_8018F530 >> 16;
+    if ((u8)k < 0x20) {
+        k = 0x20;
+    }
+    D_801ABA40_ovl_0EBBB0.colc[2] = k;
+    D_801ABA40_ovl_0EBBB0.col[2] = k;
+    D_8018F557 = c[0];
+    D_8018F558 = c[1];
+    D_8018F559 = c[2];
+}
 
 extern u16 D_801AC34A_ovl_0EBBB0[];
 extern u16 D_801AC356_ovl_0EBBB0[];
