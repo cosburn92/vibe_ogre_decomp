@@ -654,7 +654,32 @@ s32 func_801EAA58_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAA58_ovl_23B220);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAAD8_ovl_23B220);
+#include "gbi_ultra.h"
+extern Gfx D_801F0230_ovl_23B220[];
+typedef struct {
+    /* 0x000 */ u8 pad0[0x244];
+    /* 0x244 */ void *img;
+    /* 0x248 */ void *pal;
+    /* 0x24C */ u8 pad24C[0x124];
+    /* 0x370 */ u16 x;
+    /* 0x372 */ u16 y;
+} Pic23;
+
+/* Draws the 40x48 CI8 picture (palette at 0x248, texels at 0x244) at (x0 + 6, x1 + 6) */
+void func_801EAAD8_ovl_23B220(void) {
+    Pic23 *s = (Pic23 *)D_801EFE48_ovl_23B220;
+    s16 x = s->x;
+    s16 y = s->y;
+
+    gSPDisplayList(D_800E9BA0++, D_801F0230_ovl_23B220);
+    gDPLoadTLUT_pal256(D_800E9BA0++, s->pal);
+    gDPLoadTextureBlock(D_800E9BA0++, s->img, G_IM_FMT_CI, G_IM_SIZ_8b, 40, 48, 0, 0, 0, 0, 0, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gSPScisTextureRectangle(D_800E9BA0++, (x + 6) << 2, (y + 6) << 2, (x + 46) << 2, (y + 54) << 2,
+                            G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+}
 
 typedef struct {
     /* 0x000 */ u8 text[0x100];
