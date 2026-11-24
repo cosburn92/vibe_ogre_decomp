@@ -826,8 +826,8 @@ s32 func_801EA9BC_ovl_23B220(void) {
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EA9BC_ovl_23B220);
 #endif
 
-/* Opens the panel by 8 px a frame and fades in; 1 when the fade completes */
-static inline s32 fade23(s16 *f, s32 step) {
+/* Lowers fade *f by step, clamped at 0; 1 when it reaches 0 */
+static inline s32 fade23(s16 *f, u8 step) {
     if (*f != 0) {
         *f -= step;
         if (*f > 0) {
@@ -838,6 +838,7 @@ static inline s32 fade23(s16 *f, s32 step) {
     }
     return 0;
 }
+
 static inline void open23(Ctx23 *s) {
     if (s->x1 != s->y1) {
         s->x1 += 8;
@@ -846,19 +847,16 @@ static inline void open23(Ctx23 *s) {
         }
     }
 }
-#ifdef NON_MATCHING
-/* step 25 kept in a3 (unpropagated constant, likely an inlined helper arg); 0x18 frame */
+
+/* Opens the panel by 8 px a frame and fades in; 1 when the fade completes */
 s32 func_801EAA58_ovl_23B220(void) {
     Ctx23 *s = D_801EFE48_ovl_23B220;
-    s32 step = 25;
+    u8 step = 25;
     s16 *f = &s->h652;
 
     open23(s);
     return fade23(f, step);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAA58_ovl_23B220);
-#endif
 
 #include "gbi_ultra.h"
 extern Gfx D_801F0230_ovl_23B220[];
