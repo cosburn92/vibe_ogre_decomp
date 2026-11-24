@@ -1110,7 +1110,7 @@ void func_80230B44_ovl_29A4C0(u8 a) {
 
 #include "scene.h"
 /* Moves each visible unit's name label (scene slot) to its projected screen position */
-void func_80230B60_ovl_29A4C0(s32 a0, s32 a1, s32 a2, s32 arg0) {
+void func_80230B60_ovl_29A4C0(s32 a0, s32 a1, s32 a2, s32 x) {
     Pt29C p;
     f32 out[2];
     s16 i;
@@ -1122,18 +1122,18 @@ void func_80230B60_ovl_29A4C0(s32 a0, s32 a1, s32 a2, s32 arg0) {
         if (o != NULL && (y = (u32)D_8022A974->units[i]) != 0) {
             s16 n = o[0];
             if (!(D_800E82C8[n].unk8A & 0x40) && (D_800E82C8[n].flags & 0x8000)) {
-                func_8022D534_ovl_29A4C0(p.v, out, y + 0xA0, arg0);
-                arg0 = out[0];
+                func_8022D534_ovl_29A4C0(p.v, out, y + 0xA0, x);
+                x = out[0];
                 if (out[1] < (s16)(o[2] * 14 + 0x31)) {
                     y = (s32)out[1] - 0x14;
                 } else {
                     y = (s32)out[1] - 0x2D;
                 }
                 {
-                    u8 xh = (u32)arg0 >> 8;
+                    u8 xh = (u32)x >> 8;
                     u8 yh = y >> 8;
                     D_800E82C8[n].unk8C = xh;
-                    D_800E82C8[n].unk8D = arg0;
+                    D_800E82C8[n].unk8D = x;
                     D_800E82C8[n].unk94 = yh;
                     D_800E82C8[n].unk95 = y;
                 }
