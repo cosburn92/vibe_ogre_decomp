@@ -1,6 +1,7 @@
 #include "common.h"
 #include "chunk.h"
 #include "heap.h"
+#include "gu.h"
 
 /* 23D090 */
 
@@ -70,7 +71,6 @@ void func_801EC00C_ovl_23B220(void);
 void func_801ECAB0_ovl_23B220(void);
 extern u8 *D_801969B0;
 extern Gfx D_801F0090_ovl_23B220[];
-void guMtxF2L(void *mf, void *m);
 void func_801E9DFC_ovl_23B220(s32 id, u8 *img);
 typedef struct {
     u8 id;
@@ -84,7 +84,6 @@ extern u8 D_801EFE34_ovl_23B220[];
 void func_8016F11C(void *p, s32 n);
 extern s32 D_801EFE70_ovl_23B220[];
 s32 func_801EB968_ovl_23B220();
-void guMtxIdentF(void *m);
 void guRotateRPYF(f32 mf[4][4], f32 r, f32 p, f32 h);
 void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
 /* --- end decls --- */
@@ -412,8 +411,6 @@ void func_801E99FC_ovl_23B220(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801E9A50_ovl_23B220);
-
 typedef struct {
     /* 0x0 */ s16 x;
     /* 0x2 */ s16 y;
@@ -427,14 +424,77 @@ typedef struct {
     /* 0xF */ u8 a;
 } Vtx23;
 extern Vtx23 *D_80197178; /* frame vertex pool cursor */
+
+/* Entry fields from the image pointer on (entry + 0x18) */
+typedef struct {
+    /* 0x00 */ void *img;
+    /* 0x04 */ u8 unk04[0x44];
+    /* 0x48 */ u16 flags;
+    /* 0x4A */ s16 radius;
+    /* 0x4C */ s16 angle;
+} EntPose23;
+
+/* Lays entry id's strip vertices out along an arc of the entry's radius, starting at its angle
+ * (degrees) and stepping one degree per column pair: flag 2 shrinks the radius by 4 per pair
+ * from |radius|, flag 1 grows it by 4 from 0 (walking the angles back from the far end). With a
+ * negative angle each y is raised to at least the arc height at 87 degrees; the strip ends in a
+ * pair at (0, -5) */
+void func_801E9A50_ovl_23B220(s32 id) {
+    EntPose23 *o = (EntPose23 *)&D_801EFE48_ovl_23B220->ent[id].img;
+    f32 ang = o->angle / 180.0 * 3.141592653589793;
+    f32 lim = 87.0 / 180.0 * 3.141592653589793;
+    s16 r;
+    s16 i;
+    s16 x;
+    s16 y;
+
+    if (o->flags & 2) {
+        r = o->radius < 0 ? -o->radius : o->radius;
+        for (i = 0; i < 62; i += 2) {
+            if (i > 0) {
+                r -= 4;
+            }
+            x = r * sinf(ang - i / 4 / 180.0 * 3.141592653589793);
+            y = r * cosf(ang - i / 4 / 180.0 * 3.141592653589793);
+            D_80197178[i + 1].x = D_80197178[i].x = x;
+            D_80197178[i + 1].y = D_80197178[i].y = y;
+            if (o->angle < 0) {
+                y = r * cosf(lim - i / 4 / 180.0 * 3.141592653589793);
+                if (D_80197178[i].y < y) {
+                    D_80197178[i + 1].y = D_80197178[i].y = y;
+                }
+            }
+        }
+        D_80197178[i].x = D_80197178[i + 1].x = 0;
+        D_80197178[i].y = D_80197178[i + 1].y = -5;
+    } else if (o->flags & 1) {
+        r = 0;
+        D_80197178[0].x = D_80197178[1].x = 0;
+        D_80197178[0].y = D_80197178[1].y = -5;
+        for (i = 2; i < 64; i += 2) {
+            r += 4;
+            x = r * sinf(ang - (64 - i) / 4 / 180.0 * 3.141592653589793);
+            y = r * cosf(ang - (64 - i) / 4 / 180.0 * 3.141592653589793);
+            D_80197178[i + 1].x = D_80197178[i].x = x;
+            D_80197178[i + 1].y = D_80197178[i].y = y;
+            if (o->angle < 0) {
+                y = r * cosf(lim - (64 - i) / 4 / 180.0 * 3.141592653589793);
+                if (D_80197178[i].y < y) {
+                    D_80197178[i + 1].y = D_80197178[i].y = y;
+                }
+            }
+        }
+    }
+}
+
 void func_801E9A50_ovl_23B220(s32 id);
 void func_801BA0DC(void *timg, s32 a, s32 b, s32 fmt, s32 siz, s32 stride, s32 height, s32 uls, s32 ult,
                    s32 lrs, s32 lrt, s32 c, s32 d, s32 e, s32 f, s32 g, s32 h, s32 i);
 #include "gbi_ultra.h"
 
 /* Draws image img (16-bit, w x h) as a strip of 4-texel-wide columns standing in the yz plane
- * (64 vertices in the frame pool, one texture load per column pair); func_801E9A50 sets the x
- * positions */
+ * (64 vertices in the frame pool, one texture load per column pair); func_801E9A50 lays the
+ * columns out along an arc */
 void func_801E9DFC_ovl_23B220(s32 id, u8 *img) {
     if (D_801EFE48_ovl_23B220->flags & 1) {
         Vtx23 *v = D_80197178;
@@ -503,7 +563,7 @@ s32 func_801EA158_ovl_23B220(u8 *o) {
         _g->w0 = 0xDE000000;
         _g->w1 = (u32)D_801F0090_ovl_23B220;
     }
-    guMtxF2L(e->mf, D_801969B0);
+    guMtxF2L(e->mf, (Mtx *)D_801969B0);
     {
         Gfx *_g = D_800E9BA0++;
         _g->w0 = 0xDA380000;
@@ -1130,7 +1190,6 @@ void func_801EB6C8_ovl_23B220(s16 a, s16 b, s16 c) {
 #include "gbi_ultra.h"
 typedef struct { s32 m[16]; } Mtx23;
 #define MTX23 (*(Mtx23 **)&D_801969B0)
-void guOrtho(void *m, f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
 void func_800987E0(void *m); /* identity */
 extern u8 D_801F02B8_ovl_23B220[];
 void func_801EB6C8_ovl_23B220(s16 a, s16 b, s16 c);
@@ -1144,14 +1203,14 @@ s32 func_801EB968_ovl_23B220(u8 *o) {
     Obj23b *ob = (Obj23b *)o;
 
     GU23(0xE7000000, 0);
-    guOrtho(D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
+    guOrtho((Mtx *)D_801969B0, -160.0f, 160.0f, -120.0f, 120.0f, 1.0f, 2000.0f, 1.0f);
     func_800987E0(D_801969B0 + 0x40);
     GU23(0xDA380007, (D_801969B0 += 0x40) - 0x40);
     GU23(0xDA380002, (D_801969B0 += 0x40) - 0x40);
     GU23(0xDE000000, D_801F02B8_ovl_23B220);
     GU23(0xDB0A0000, ob->col);
     GU23(0xDB0A0004, ob->col);
-    guMtxF2L(ob->mf, D_801969B0);
+    guMtxF2L(ob->mf, (Mtx *)D_801969B0);
     GU23(0xDA380001, D_801969B0);
     GU23(0xFA000000, (u8)D_801EFE48_ovl_23B220->h652);
     func_801EB6C8_ovl_23B220(ob->a, ob->b, ob->c);
@@ -1188,7 +1247,7 @@ void func_801EBB5C_ovl_23B220(u8 *u) {
         FIELD(b, s16, 0x48) = 2;
         FIELD(b, s32, 0x4C) = D_801EFE70_ovl_23B220[i];
         FIELD(b, s16, 0x50) = st[i] / 150.0f * 60.0f;
-        guMtxIdentF(b + 4);
+        guMtxIdentF((f32 (*)[4])(b + 4));
         FIELD(b, void *, 0) = func_801EB968_ovl_23B220;
         FIELD(b, f32, 0x34) = 105.0f;
         FIELD(b, f32, 0x38) = y;
