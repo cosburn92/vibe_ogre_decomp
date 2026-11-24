@@ -379,7 +379,61 @@ void func_801A4100_ovl_0EBBB0(s32 t, s32 n) {
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4100_ovl_0EBBB0);
 #endif
 
+#include "gbi_ultra.h"
+
+/* Alpha-graded fill: rectangle x0..x1, y0..y1 in colour r,g,b. The top half is drawn in up to 240
+ * bands whose alpha steps from a0 down by |a1 - a0|, the rest as one band at alpha a1 */
+#ifdef NON_MATCHING
+/* Same size; the original keeps y0 in s0 and the band count in t3 (ours s-registers), computes the
+ * half-height before the header, re-reads 0xE4 inside the loop and masks the right edge with 0xFFC */
+void func_801A4204_ovl_0EBBB0(u8 r, u8 g, u8 b, u8 a0, u8 a1, u16 x0, u16 y0, u16 x1, s32 y1) {
+    s32 xr = x1 + 1;
+    s32 yb = (u16)(y1 + 1);
+    s32 mid = (u32)(y0 + yb) >> 1;
+    s32 d;
+    u32 cnt;
+    u32 n;
+    s32 i;
+    s32 ytop;
+    s32 ybot;
+
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xE3000A01; _g->w1 = 0; } /* 1-cycle */
+    gDPPipeSync(D_800E9BA0++);
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xD9000000; _g->w1 = 0; }
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xFCFFFFFF; _g->w1 = 0xFFFDF6FB; }
+    { Gfx *_g = D_800E9BA0++; _g->w0 = 0xE200001C; _g->w1 = 0x504340; }
+    if (xr > 320) {
+        xr = 320;
+    }
+    d = a1 - a0;
+    if (d <= 0) {
+        d = a0 - a1;
+    }
+    cnt = d + 1;
+    n = cnt;
+    if (n > 240) {
+        n = 240;
+    }
+    ytop = y0;
+    for (i = 0; i < n; i++) {
+        ybot = (i + 1) * (mid - y0 + 1) / n + y0;
+        gDPSetPrimColor(D_800E9BA0++, 0, 0, r, g, b, a0 - cnt * i / n);
+        gDPPipeSync(D_800E9BA0++);
+        gSPTextureRectangle(D_800E9BA0++, x0 * 4, ytop * 4, xr * 4, ybot * 4, 0, 0, 0, 0, 0);
+        gDPPipeSync(D_800E9BA0++);
+        ytop = ybot;
+    }
+    gDPSetPrimColor(D_800E9BA0++, 0, 0, r, g, b, a1);
+    gDPPipeSync(D_800E9BA0++);
+    gSPTextureRectangle(D_800E9BA0++, x0 * 4, ytop * 4, xr * 4, yb * 4, 0, 0, 0, 0, 0);
+    gDPPipeSync(D_800E9BA0++);
+    gDPPipeSync(D_800E9BA0++);
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4204_ovl_0EBBB0);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A45F4_ovl_0EBBB0);
 
@@ -507,7 +561,6 @@ void func_801A4CE0_ovl_0EBBB0(void) {
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A4CE0_ovl_0EBBB0);
 #endif
 
-#include "gbi_ultra.h"
 typedef struct {
     s32 m[16];
 } MtxE;
