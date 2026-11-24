@@ -1314,43 +1314,38 @@ void func_801EBDD8_ovl_23B220(void) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-/* Selects the title text for id and right-aligns it (x = 0x113 - width) */
-#ifdef NON_MATCHING
-/* register allocation: original keeps the title ptr in t0 and second kern in a0 */
-void func_801EBF58_ovl_23B220(u8 id) {
-    u8 *t = (u8 *)D_801EFE48_ovl_23B220 + 0x5C8;
-    u32 i;
-    u8 *s;
-    u8 c;
-    s32 w;
-
-    FIELD(D_801EFE48_ovl_23B220, u8 *, 0x5CC) = D_801EFE34_ovl_23B220;
-    for (i = 0; i < 27; i++) {
-        if (D_801EFF04_ovl_23B220[i].id == id) {
-            FIELD(t, u8 *, 4) = D_801EFF04_ovl_23B220[i].text;
-        }
-    }
-    s = FIELD(t, u8 *, 4);
-    w = 0;
-    while (*s != 0) {
-        c = *s++;
-        w -= D_801EFE8C_ovl_23B220[c - 'A'][0];
-        w += 16;
-        w -= D_801EFE8D_ovl_23B220[c - 'A'][0];
-    }
-    FIELD(t, s16, 8) = 0x113 - w;
-    FIELD(t, s16, 0xA) = 0x1E;
-}
-#else
-INCLUDE_ASM("asm/nonmatchings/23D090", func_801EBF58_ovl_23B220);
-#endif
-
 typedef struct {
     /* 0x0 */ u8 *font; /* 16-colour palette, then a 256-wide CI4 sheet of 16x16 cells */
     /* 0x4 */ u8 *text;
     /* 0x8 */ s16 x;
     /* 0xA */ s16 y;
 } Caption23;
+
+/* Selects the title text for id and right-aligns it (x = 0x113 - width) */
+void func_801EBF58_ovl_23B220(u8 id) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    Caption23 *cap = (Caption23 *)&c->img5C8;
+    u32 i;
+    u8 *s;
+    s32 w;
+    s32 k;
+
+    FIELD(c, u8 *, 0x5CC) = D_801EFE34_ovl_23B220;
+    for (i = 0; i < 27; i++) {
+        if (D_801EFF04_ovl_23B220[i].id == id) {
+            cap->text = D_801EFF04_ovl_23B220[i].text;
+        }
+    }
+    s = cap->text;
+    w = 0;
+    while (*s != 0) {
+        k = (*s++ - 'A') * 2;
+        w -= ((s8 *)D_801EFE8C_ovl_23B220)[k];
+        w += 16 - ((s8 *)D_801EFE8D_ovl_23B220)[k];
+    }
+    cap->x = 0x113 - w;
+    cap->y = 0x1E;
+}
 
 /* Font cell of a caption character: A-Z are cells 0-25, a-z cells 32-57, anything else cell 58 */
 static inline s32 FontCell23(u8 c) {
