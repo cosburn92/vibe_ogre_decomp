@@ -404,25 +404,24 @@ s32 CombinationLookup(u8 *e, s32 n, u8 *out) {
 INCLUDE_ASM("asm/nonmatchings/20FDC0", CombinationLookup);
 #endif
 
-#ifdef NON_MATCHING
-/* Same as CombinationMatch (section 2). */
 s32 func_801CD390_ovl_1F0A30(u8 *e, s32 n) {
     u8 *node = D_801D06DC_ovl_1F0A30;
-    u8 *base = node;
-    s32 r = 0;
-    u8 *end;
+    u8 *base;
+    s32 r;
+    u32 i = 0;
     u8 k = node[0];
 
+    r = 0;
     if (k != 0xFF) {
-        end = e + n;
+        base = node;
         do {
-            if (k == *e) {
+            if (k == e[i]) {
                 if (node[1] != 0) {
                     r = node[1];
                 }
-                e++;
+                i++;
                 node = base + *(u16 *)(node + 2);
-                if (!(e < end)) {
+                if (i >= n) {
                     break;
                 }
             } else {
@@ -433,9 +432,6 @@ s32 func_801CD390_ovl_1F0A30(u8 *e, s32 n) {
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/20FDC0", func_801CD390_ovl_1F0A30);
-#endif
 
 /* Loads the combination tries (chunk 0x31823A, three sections) and chunk 0x3188AE */
 void CombinationTablesLoad(void) {
