@@ -276,7 +276,47 @@ void func_802245EC_ovl_1BA050(u8 *o) {
     func_802243A0_ovl_1BA050(0x1F, FIELD(o, s16, 0x22) - 16, FIELD(o, s16, 0x24) - 16);
 }
 
-INCLUDE_ASM("asm/nonmatchings/1BBFB0", func_8022478C_ovl_1BA050);
+/* Window open/close animation: state 0 grows the corners (0x1E..0x24) from the start rect (0x6..0xC)
+ * to the target rect (0xE..0x14) around the origin (0x2, 0x4) over o[0x16] frames while fading in,
+ * 1 holds for 5 frames, 2 fades out over 16 frames, 3 resets; then the palette cycle advances every
+ * other frame */
+void func_8022478C_ovl_1BA050(u8 *o) {
+    s32 steps;
+
+    switch (o[0x17]) {
+    case 0:
+        FIELD(o, s16, 0x1E) = FIELD(o, s16, 0x2) + FIELD(o, s16, 0x6) + (FIELD(o, s16, 0xE) - FIELD(o, s16, 0x6)) * o[0x1A] / o[0x16];
+        FIELD(o, s16, 0x20) = FIELD(o, s16, 0x4) + FIELD(o, s16, 0x8) + (FIELD(o, s16, 0x10) - FIELD(o, s16, 0x8)) * o[0x1A] / o[0x16];
+        FIELD(o, s16, 0x22) = FIELD(o, s16, 0x2) + FIELD(o, s16, 0xA) + (FIELD(o, s16, 0x12) - FIELD(o, s16, 0xA)) * o[0x1A] / o[0x16];
+        FIELD(o, s16, 0x1C) = o[0x1A] * 255 / o[0x16];
+        FIELD(o, s16, 0x24) = FIELD(o, s16, 0x4) + FIELD(o, s16, 0xC) + (FIELD(o, s16, 0x14) - FIELD(o, s16, 0xC)) * o[0x1A] / o[0x16];
+        if (o[0x16] < ++o[0x1A]) {
+            o[0x1A] = 0;
+            o[0x17] = 1;
+        }
+        break;
+    case 1:
+        if (++o[0x1A] >= 5) {
+            o[0x1A] = 0;
+            o[0x17] = 2;
+        }
+        break;
+    case 2:
+        steps = 16; /* a variable: the original divides with div, not shifts */
+        FIELD(o, s16, 0x1C) = o[0x1A] * -255 / steps + 255;
+        if (++o[0x1A] > steps) {
+            o[0x17] = 3;
+        }
+        break;
+    case 3:
+        o[0x1A] = 0;
+        o[0x17] = 0;
+        break;
+    }
+    if (++o[0x18] & 1) {
+        o[0x19] = (o[0x19] + 1) & 3;
+    }
+}
 
 void func_80224A88_ovl_1BA050(void) {
     bzero(D_8022A2E8_ovl_1BA050, 4 * sizeof(ScriptObj));
