@@ -59,13 +59,16 @@ extern u8 D_80187010_ovl_040E80[];
 
 /* Converts d from the 16-month game calendar to the 12-month one (year - 1748) */
 #ifdef NON_MATCHING
-/* 91 vs 87 instructions: the original evaluates (m == 1) & leap as setcc + and; GCC here turns it into branches */
+/* 87/87 instructions, register choice only: m and the month bound get a1/a2 the other way round
+ * (and the and operands swap). Splitting c = m == 1 and the & leap into two statements, with s16
+ * leap / u8 c, gives the original's setcc + and (as one expression GCC folds it into branches), and
+ * the jump into the do-while gives its bgezl loop exit. */
 void func_8016C268_ovl_040E80(Date420 *d) {
-    s32 leap = 0;
+    s16 leap = 0;
     s16 days = d->day - 1;
-    s32 c;
-    u8 t;
+    u8 c;
     u8 m;
+    s32 t;
 
     if (func_8016C1D0_ovl_040E80(d->year, 0) == 1) {
         leap = 1;
@@ -73,22 +76,25 @@ void func_8016C268_ovl_040E80(Date420 *d) {
     d->year -= 1748;
     for (m = 0; m < d->month - 1; m++) {
         days += D_80187010_ovl_040E80[m];
-        c = (m == 1) & leap;
+        c = m == 1;
+        c &= leap;
         if (c) {
             days++;
         }
     }
-    for (m = 0;; m++) {
+    m = 0;
+    goto start;
+    do {
+        m++;
+    start:
         t = D_80187000_ovl_040E80[m];
-        c = (m == 2) & leap;
+        c = m == 2;
+        c &= leap;
         days -= t;
         if (c) {
             days--;
         }
-        if (days < 0) {
-            break;
-        }
-    }
+    } while (days >= 0);
     if (c) {
         days++;
     }
