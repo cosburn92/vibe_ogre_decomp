@@ -446,7 +446,56 @@ void func_80077494(s32 arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/68E0", func_800775EC);
 
-INCLUDE_ASM("asm/nonmatchings/68E0", func_80077BF8);
+/* Closing animation: scenes with all of flags 0xF000 set shrink their far corner (x2, y2) towards
+ * (x, y) over unk04[0] frames in 8.8 fixed point, and are freed once they reach the minimum size.
+ * The step's whole parts go in unk28/unk2A and both fractions in unk2C; unk2E holds the corner's
+ * fractions (x in the low byte, y in the high byte). */
+void func_80077BF8(void) {
+    s32 i;
+    s32 s;
+    s32 dx;
+    s32 dy;
+
+    for (i = 0; i < D_800C49D0; i++) {
+        s = ((u16 *)D_800C4C10)[i];
+        if ((D_800E82C8[s].flags & 0xF000) != 0xF000) {
+            continue;
+        }
+        if (D_800E82C8[s].flags3 & 2) {
+            continue;
+        }
+        if (D_800E82C8[s].x2 == D_800E82C8[s].x + D_800E79A0 - 1
+            && D_800E82C8[s].y2 == D_800E82C8[s].y + D_800E79A0 - 1) {
+            func_80077F88(s);
+            continue;
+        }
+        if (!(D_800E82C8[s].flags & 0x400)) {
+            dx = ((D_800E82C8[s].x2 - D_800E82C8[s].x + 1) << 8) / D_800E82C8[s].unk04[0];
+            dy = ((D_800E82C8[s].y2 - D_800E82C8[s].y + 1) << 8) / D_800E82C8[s].unk04[0];
+            D_800E82C8[s].unk2E = 0;
+            D_800E82C8[s].flags |= 0x400;
+            D_800E82C8[s].unk28 = dx >> 8;
+            D_800E82C8[s].unk2A = dy >> 8;
+            D_800E82C8[s].unk2C = ((u8)dy << 8) | (u8)dx;
+        }
+        dx = (D_800E82C8[s].unk28 << 8) | (D_800E82C8[s].unk2C & 0xFF);
+        dy = (D_800E82C8[s].unk2A << 8) | (D_800E82C8[s].unk2C >> 8);
+        {
+            s32 nx = ((D_800E82C8[s].x2 << 8) | (D_800E82C8[s].unk2E & 0xFF)) - dx;
+            s32 ny = ((D_800E82C8[s].y2 << 8) | (D_800E82C8[s].unk2E >> 8)) - dy;
+
+            D_800E82C8[s].x2 = nx >> 8;
+            D_800E82C8[s].y2 = ny >> 8;
+            D_800E82C8[s].unk2E = (nx & 0xFF) | ((ny & 0xFF) << 8);
+        }
+        if (D_800E82C8[s].x2 < D_800E82C8[s].x + D_800E79A0 - 1) {
+            D_800E82C8[s].x2 = D_800E82C8[s].x + D_800E79A0 - 1;
+        }
+        if (D_800E82C8[s].y2 < D_800E82C8[s].y + D_800E79A0 - 1) {
+            D_800E82C8[s].y2 = D_800E82C8[s].y + D_800E79A0 - 1;
+        }
+    }
+}
 
 void func_80077F80(void) {
 }
