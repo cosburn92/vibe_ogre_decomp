@@ -593,18 +593,8 @@ static inline s32 RowBytes201(s32 fmt, u32 w) {
     return ((u32)(w + 31) >> 5) * 8;
 }
 
-static inline u32 Rgba5551To8888(u16 c) {
-    u32 r = ((c & 0xF800) << 16) | ((c & 0x7C0) << 13) | ((c & 0x3E) << 10);
-
-    if (c & 1) {
-        r |= 0xFF;
-    }
-    return r;
-}
-/* RGBA8888 colour of texel (x, y) in a w-wide image of format fmt / size siz (palette pal for CI) */
-#ifdef NON_MATCHING
-/* 1 instruction over: the shared RGBA5551 tail builds the colour in v0 and copies it to r, where the
- * original builds it in r directly */
+/* RGBA8888 colour of texel (x, y) in a w-wide image of format fmt / size siz (palette pal for CI);
+ * the RGBA5551 conversion is written out in each case */
 u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u32 x, u32 y) {
     u32 off = RowBytes201(siz, w) * y;
     u32 r = 0;
@@ -614,7 +604,14 @@ u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u
         case 0:
             switch (siz) {
                 case 2:
-                    r = Rgba5551To8888(*(u16 *)(img + (x * 2 + off)));
+                    {
+                        u16 c = *(u16 *)(img + (x * 2 + off));
+
+                        r = ((c & 0xF800) << 16) | ((c & 0x7C0) << 13) | ((c & 0x3E) << 10);
+                        if (c & 1) {
+                            r |= 0xFF;
+                        }
+                    }
                     break;
                 case 3:
                     r = *(u32 *)(img + (x * 4 + off));
@@ -630,10 +627,24 @@ u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u
                     } else {
                         v >>= 4;
                     }
-                    r = Rgba5551To8888(*(u16 *)(pal + v * 2));
+                    {
+                        u16 c = *(u16 *)(pal + v * 2);
+
+                        r = ((c & 0xF800) << 16) | ((c & 0x7C0) << 13) | ((c & 0x3E) << 10);
+                        if (c & 1) {
+                            r |= 0xFF;
+                        }
+                    }
                     break;
                 case 1:
-                    r = Rgba5551To8888(*(u16 *)(pal + img[off + x] * 2));
+                    {
+                        u16 c = *(u16 *)(pal + img[off + x] * 2);
+
+                        r = ((c & 0xF800) << 16) | ((c & 0x7C0) << 13) | ((c & 0x3E) << 10);
+                        if (c & 1) {
+                            r |= 0xFF;
+                        }
+                    }
                     break;
             }
             break;
@@ -652,12 +663,18 @@ u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u
                     }
                     break;
                 case 1:
-                    v = img[off + x];
-                    r = (v & 0xF0) << 24 | (v & 0xF0) << 16 | (v & 0xF0) << 8 | v << 4;
+                    {
+                        u32 c = img[off + x];
+
+                        r = (c & 0xF0) << 24 | (c & 0xF0) << 16 | (c & 0xF0) << 8 | c << 4;
+                    }
                     break;
                 case 2:
-                    v = *(u16 *)(img + (x * 2 + off));
-                    r = (v & 0xFF00) << 16 | (v & 0xFF00) << 8 | (v & 0xFF00) | (v & 0xFF);
+                    {
+                        u32 c = *(u16 *)(img + (x * 2 + off));
+
+                        r = (c & 0xFF00) << 16 | (c & 0xFF00) << 8 | (c & 0xFF00) | (c & 0xFF);
+                    }
                     break;
             }
             break;
@@ -673,17 +690,17 @@ u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u
                     r = (v & 0xF) << 28 | (v & 0xF) << 20 | (v & 0xF) << 12 | (v & 0xF) << 4;
                     break;
                 case 1:
-                    v = img[off + x];
-                    r = v << 24 | v << 16 | v << 8 | v;
+                    {
+                        u32 c = img[off + x];
+
+                        r = c << 24 | c << 16 | c << 8 | c;
+                    }
                     break;
             }
             break;
     }
     return r;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/201430", func_801BF59C_ovl_1F0A30);
-#endif
 u32 func_801BF59C_ovl_1F0A30(u8 *img, u8 *pal, u32 fmt, u32 siz, u32 w, u32 h, u32 x, u32 y);
 
 
