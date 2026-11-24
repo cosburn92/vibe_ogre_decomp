@@ -690,6 +690,8 @@ typedef struct {
     /* 0x110 */ s32 tick;
     /* 0x114 */ s32 backdropSize;
     /* 0x118 */ s32 lines;
+    /* 0x11C */ s16 x;
+    /* 0x11E */ s16 y;
 } Text23;
 
 /* Advances the text box's typewriter: one character per 0x100 ticks (two-byte SJIS characters at
@@ -754,7 +756,68 @@ s32 func_801EAFB4_ovl_23B220(void) {
     return D_801EFE48_ovl_23B220->flags & 0x20;
 }
 
+void func_80179018(void);
+void func_80179034(char *s, s32 x, s32 y);
+void func_8017A704(void *a, void *b, void *c);
+extern u16 D_801EFE50_ovl_23B220[];
+
+typedef struct {
+    /* 0x00 */ u8 pad0[4];
+    /* 0x04 */ s16 x;
+    /* 0x06 */ s16 y;
+} Box23;
+
+/* Draws the text box text when flag 0x10 is set: scissor to the box at the panel position (bottom
+ * edge clamped to the screen), font palette, the text at its offset; once three lines are shown the
+ * text scrolls up one 14-pixel line */
+#ifdef NON_MATCHING
+/* one instruction short: the original evaluates the clamped bottom edge twice (add and compare
+ * redone after the == 240 test); here GCC reuses the first compare */
+void func_801EAFC8_ovl_23B220(void) {
+    Ctx23 *c = D_801EFE48_ovl_23B220;
+    Text23 *t = (Text23 *)&c->unk23E[0xE];
+    Box23 *p;
+
+    if (c->flags & 0x10) {
+        gDPPipeSync(D_800E9BA0++);
+        gDPPipeSync(D_800E9BA0++);
+        p = (Box23 *)c->unk36C;
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xED000000 | _SHIFTL((s32)((f32)(c->x0 + 48 < 0 ? 0 : c->x0 + 48) * 4.0f), 12, 12) |
+                     _SHIFTL((s32)((f32)(p->y + 8 < 0 ? 0 : p->y + 8) * 4.0f), 0, 12);
+            _g->w1 = _SHIFTL((s32)((f32)(p->x + 274 == 320 ? 319 : p->x + 274) * 4.0f), 12, 12) |
+                     _SHIFTL((s32)((f32)((p->y + 53 > 240 ? 240 : p->y + 53) == 240 ? 239 : (p->y + 53 > 240 ? 240 : p->y + 53)) * 4.0f), 0, 12);
+        }
+        gDPPipeSync(D_800E9BA0++);
+        func_80179018();
+        ((void (*)(void))func_8017A704)();
+        gDPPipeSync(D_800E9BA0++);
+        gDPSetBlendColor(D_800E9BA0++, 255, 255, 255, 1);
+        gDPSetAlphaCompare(D_800E9BA0++, G_AC_THRESHOLD);
+        gDPSetTextureLUT(D_800E9BA0++, G_TT_RGBA16);
+        gDPLoadTLUT_pal16(D_800E9BA0++, 0, D_801EFE50_ovl_23B220);
+        func_80179034((char *)t->text, p->x + t->x, p->y + t->y);
+        if (t->lines >= 3) {
+            t->y -= 14;
+            t->lines--;
+        }
+        gDPPipeSync(D_800E9BA0++);
+        gDPSetAlphaCompare(D_800E9BA0++, G_AC_NONE);
+        gDPPipeSync(D_800E9BA0++);
+        {
+            Gfx *_g = D_800E9BA0++;
+
+            _g->w0 = 0xED000000;
+            _g->w1 = 0x4FC3BC;
+        }
+        gDPPipeSync(D_800E9BA0++);
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/23D090", func_801EAFC8_ovl_23B220);
+#endif
 
 void func_801EB394_ovl_23B220(void) {
     if (D_801EFE48_ovl_23B220->flags & 0x10) {
@@ -1233,7 +1296,6 @@ void func_801ECD80_ovl_23B220(void) {
 }
 
 void func_801EA770_ovl_23B220(u8 **out);
-void func_8017A704(void *a, void *b, void *c);
 extern s32 D_800E9C0A;
 extern u8 D_801976DA;
 extern u8 D_801CEAAC;

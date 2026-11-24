@@ -178,10 +178,16 @@
 
 #define gSPSetOtherMode(pkt, cmd, sft, len, data)                                                 {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(cmd, 24, 8) | _SHIFTL(32 - (sft) - (len), 8, 8) |                                    _SHIFTL((len) - 1, 0, 8));                                                          _g->w1 = (unsigned int)(data);                                                            }
 #define gDPSetTextureLUT(pkt, type) gSPSetOtherMode(pkt, G_SETOTHERMODE_H, G_MDSFT_TEXTLUT, 2, type)
+#define G_MDSFT_ALPHACOMPARE 0
+#define G_AC_NONE (0 << G_MDSFT_ALPHACOMPARE)
+#define G_AC_THRESHOLD (1 << G_MDSFT_ALPHACOMPARE)
+#define gDPSetAlphaCompare(pkt, type) gSPSetOtherMode(pkt, G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 2, type)
 
 #define gDPSetColor(pkt, c, d)                                                                    {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = _SHIFTL(c, 24, 8);                                                                   _g->w1 = (unsigned int)(d);                                                               }
 #define DPRGBColor(pkt, cmd, r, g, b, a)                                                          gDPSetColor(pkt, cmd, (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8)))
 #define gDPSetEnvColor(pkt, r, g, b, a) DPRGBColor(pkt, G_SETENVCOLOR, r, g, b, a)
+#define G_SETBLENDCOLOR 0xF9
+#define gDPSetBlendColor(pkt, r, g, b, a) DPRGBColor(pkt, G_SETBLENDCOLOR, r, g, b, a)
 #define gDPSetFillColor(pkt, d) gDPSetColor(pkt, G_SETFILLCOLOR, d)
 #define gDPSetPrimColor(pkt, m, l, r, g, b, a)                                                    {                                                                                                 Gfx *_g = (Gfx *)(pkt);                                                                       _g->w0 = (_SHIFTL(G_SETPRIMCOLOR, 24, 8) | _SHIFTL(m, 8, 8) | _SHIFTL(l, 0, 8));              _g->w1 = (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) |                                    _SHIFTL(a, 0, 8));                                                              }
 
