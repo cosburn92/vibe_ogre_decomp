@@ -684,7 +684,144 @@ u8 func_801BC914_ovl_1F0A30(void) {
     return t + 128;
 }
 
+/* Scrolling picture unit (0x64 bytes, D_801D0770.units) */
+typedef struct {
+    /* 0x00 */ s16 x;
+    /* 0x02 */ s16 y;
+    /* 0x04 */ u8 unk04[4];
+    /* 0x08 */ s16 x0;
+    /* 0x0A */ s16 y0;
+    /* 0x0C */ s16 x1;
+    /* 0x0E */ s16 y1;
+    /* 0x10 */ u16 flags;
+    /* 0x12 */ u8 unk12[2];
+    /* 0x14 */ u8 anim[0xC];
+    /* 0x20 */ s16 ox;
+    /* 0x22 */ s16 oy;
+    /* 0x24 */ u8 unk24[0x40];
+} Scroll1F8;
+
+typedef struct {
+    /* 0x00 */ u8 unk00[0x1E];
+    /* 0x1E */ s16 h1E;
+    /* 0x20 */ u8 unk20[0x24];
+    /* 0x44 */ u8 anim[4];
+    /* 0x48 */ s16 frame;
+    /* 0x4A */ u8 unk4A[6];
+    /* 0x50 */ s16 h50;
+    /* 0x52 */ s16 h52;
+    /* 0x54 */ s16 h54;
+    /* 0x56 */ u8 unk56[0x3E];
+    /* 0x94 */ s32 flags;
+} Panel1F8;
+
+/* Battle object slot (0xF8 bytes, D_801D0770.objs) */
+typedef struct {
+    /* 0x00 */ Panel1F8 *panel;
+    /* 0x04 */ u8 unk04[0x28];
+    /* 0x2C */ u16 h2C;
+    /* 0x2E */ u8 unk2E[0xA];
+    /* 0x38 */ u16 frames;
+    /* 0x3A */ u16 base;
+    /* 0x3C */ u8 unk3C[0xC];
+    /* 0x48 */ s32 speed;
+    /* 0x4C */ u8 unk4C[0xAC];
+} Obj1F8;
+
+extern u8 D_801CEAA9;
+extern u8 *D_801D07D8_ovl_1F0A30; /* D_801D0770.objs */
+extern u32 D_801D07E0_ovl_1F0A30; /* D_801D0770.nObjs */
+void BattleAnimStep(void *a, s32 b, s32 c, s32 d, s32 e);
+void func_801AD9D4_ovl_1F0A30(void *p, s32 a);
+
+/* Per-frame update: wraps the scrolling pictures, steps the object animations (looping the
+ * ones that ran off), the box tween and the two countdown timers */
+#ifdef NON_MATCHING
+/* one instruction short: the original keeps copies of the panel/object pointers and of top
+ * (a0/a3/a2) for the scrolled-off check and its reset branch; ours uses s2/a1 directly */
+void func_801BC9F0_ovl_1F0A30(void) {
+    s32 pad[2];
+    u32 i;
+    Scroll1F8 *s;
+    Obj1F8 *o;
+    Panel1F8 *p;
+    u16 prev;
+    s16 top;
+    s16 h52;
+    s16 h50;
+    s16 h54;
+    u8 *c;
+
+    for (i = 0; i < D_801D0770_ovl_1F0A30.nUnits; i++) {
+        s = (Scroll1F8 *)D_801D0770_ovl_1F0A30.units + i;
+        BattleAnimStep(s->anim, 0x100, 0, 0, 0);
+        if (s->flags & 1) {
+            if (s->x0 > s->x + s->ox) {
+                s->ox = s->x1 + s->ox - s->x0;
+            }
+            if (s->x1 < s->x + s->ox) {
+                s->ox = s->x0 + s->ox - s->x1;
+            }
+            if (s->y0 > s->y + s->oy) {
+                s->oy = s->y1 + s->oy - s->y0;
+            }
+            if (s->y1 < s->y + s->oy) {
+                s->oy = s->y0 + s->oy - s->y1;
+            }
+        }
+    }
+    for (i = 0; i < D_801D07E0_ovl_1F0A30; i++) {
+        o = (Obj1F8 *)(i * sizeof(Obj1F8) + (u32)D_801D07D8_ovl_1F0A30);
+        prev = o->panel->frame;
+        BattleAnimStep(o->panel->anim, o->speed, 0, 0, 0);
+        o = (Obj1F8 *)(i * sizeof(Obj1F8) + (u32)D_801D07D8_ovl_1F0A30);
+        p = o->panel;
+        if (p->flags & 0x10) {
+            top = p->h1E;
+            h52 = p->h52;
+            if (top + h52 < 0) {
+                if (p->frame != prev) {
+                    p->h50 = 0;
+                    p->h54 = 0;
+                    p->h52 = o->h2C - top;
+                } else if (p->frame < o->frames) {
+                    h50 = p->h50;
+                    h54 = p->h54;
+                    func_801AD9D4_ovl_1F0A30(p->anim, p->frame + o->base);
+                    p->h50 = h50;
+                    p->h52 = h52;
+                    p->h54 = h54;
+                }
+            }
+        }
+    }
+    func_801BC450_ovl_1F0A30();
+    c = D_801CE8C0_ovl_1F0A30;
+    if (c[0x82C] != 0) {
+        if (--c[0x82C] == 0) {
+            D_801CEAA9 = 0;
+        }
+    }
+    c = D_801CE8C0_ovl_1F0A30;
+    if (c[0x82D] != 0) {
+        if (--c[0x82D] == 0) {
+            D_801D0804_ovl_1F0A30 = 0;
+            D_801D0806_ovl_1F0A30 = 0;
+            D_801D0808_ovl_1F0A30 = 0;
+            D_801D080A_ovl_1F0A30 = 0;
+            D_801D080C_ovl_1F0A30 = 2;
+            D_801D080D_ovl_1F0A30 = 0;
+            D_801D07FC_ovl_1F0A30 = D_801D07F4_ovl_1F0A30;
+            D_801D07FE_ovl_1F0A30 = D_801D07F6_ovl_1F0A30;
+            D_801D0800_ovl_1F0A30 = D_801D07F8_ovl_1F0A30;
+            D_801D0802_ovl_1F0A30 = D_801D07FA_ovl_1F0A30;
+        }
+    }
+    func_801BDF40_ovl_1F0A30();
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BC9F0_ovl_1F0A30);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801BCD0C_ovl_1F0A30);
 
