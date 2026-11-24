@@ -95,6 +95,25 @@ void func_80079E50(AssetNode *node);
 AssetSub *func_80079E9C(AssetSub *sub);
 void func_80079EF4(AssetSub *sub, u32 index);
 
+typedef struct {
+    u8 unk0[8];
+    u8 (*mtx)[0x40];
+} FbSet87;
+extern FbSet87 *D_800E9BE0;
+
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx;
+extern Gfx *D_800E9BA0;
+extern u16 D_800C4BE4; /* next free matrix pool entry */
+#include "gbi_ultra.h"
+
+typedef struct {
+    s16 vscale[4];
+    s16 vtrans[4];
+} Vp87;
+
 void func_80078300(Camera *dst, Camera *src) {
     *dst = *src;
 }
@@ -107,7 +126,55 @@ void func_80078658(Camera *cam) {
     func_8007834C(cam);
 }
 
-INCLUDE_ASM("asm/nonmatchings/8700", func_80078674);
+/* Viewport and scissor box (x0, y0) - (x1, y1), clamped to the 320x240 screen. The viewport goes
+ * in the next matrix pool entry; the commands are separated by pipe syncs. */
+void func_80078674(s16 x0, s16 y0, s16 x1, s16 y1) {
+    if (x0 < 0) {
+        x0 = 0;
+    } else if (x0 >= 320) {
+        x0 = 319;
+    }
+    if (y0 < 0) {
+        y0 = 0;
+    } else if (y0 >= 240) {
+        y0 = 239;
+    }
+    if (x1 < 0) {
+        x1 = 0;
+    } else if (x1 >= 320) {
+        x1 = 319;
+    }
+    if (y1 < 0) {
+        y1 = 0;
+    } else if (y1 >= 240) {
+        y1 = 239;
+    }
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vscale[0] = (x1 - x0 + 1) * 2;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vscale[1] = (y1 - y0 + 1) * 2;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vscale[2] = 0x1FF;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vscale[3] = 0;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vtrans[0] = (x0 + x1) * 2;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vtrans[1] = (y0 + y1) * 2;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vtrans[2] = 0x1FF;
+    ((Vp87 *)D_800E9BE0->mtx[D_800C4BE4])->vtrans[3] = 0;
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xDC080008;
+        _g->w1 = (u32)D_800E9BE0->mtx[D_800C4BE4++];
+    }
+    gDPPipeSync(D_800E9BA0++);
+    {
+        Gfx *_g = D_800E9BA0++;
+
+        _g->w0 = 0xED000000 | _SHIFTL((s32)((f32)(x0 < 0 ? 0 : x0) * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(y0 < 0 ? 0 : y0) * 4.0f), 0, 12);
+        _g->w1 = _SHIFTL((s32)((f32)(x1 + 1 == 320 ? 319 : x1 + 1) * 4.0f), 12, 12) |
+                 _SHIFTL((s32)((f32)(y1 + 1 == 240 ? 239 : y1 + 1) * 4.0f), 0, 12);
+    }
+    gDPPipeSync(D_800E9BA0++);
+}
 
 INCLUDE_ASM("asm/nonmatchings/8700", func_8007896C);
 
@@ -125,11 +192,6 @@ u16 func_80079028(f32 mf[4][4], f32 *pos, f32 range) {
     return ~(u32)(sqrtf(dx * dx + dy * dy + dz * dz) / range * 65534.0f);
 }
 
-typedef struct {
-    u8 unk0[8];
-    u8 (*mtx)[0x40];
-} FbSet87;
-extern FbSet87 *D_800E9BE0;
 extern u16 D_800C4C24; /* modelview matrix index */
 extern u16 D_800E7A0E; /* projection matrix index */
 

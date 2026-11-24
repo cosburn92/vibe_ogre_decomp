@@ -436,7 +436,7 @@ extern s16 D_800E7A36;
 extern s16 D_800E7A38;
 extern s16 D_800E7A3A;
 extern s16 D_800E7A3C;
-void func_80078674(s32 a, s32 b, s32 c, s32 d);
+void func_80078674(s16 x0, s16 y0, s16 x1, s16 y1);
 
 /* Draws the screen fade: a full-screen rectangle in the fade colour (bytes 4-6) with alpha +8 */
 void func_802265EC_ovl_281860(void) {
