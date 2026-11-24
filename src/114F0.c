@@ -980,25 +980,25 @@ void func_8008203C(s32 a) {
     D_800A9B8C = a;
 }
 
-#ifdef NON_MATCHING
-/* Same code; count and channel pointer swap registers. */
+/* Song (or effect bank) header word 0x08 for the channel playing handle */
 s32 func_80082048(s32 handle) {
     s32 i;
     MusChannel *cp;
 
-    if (handle != 0) {
-        cp = D_800B180C;
-        for (i = 0; i < D_800B1804; i++, cp++) {
-            if (cp->handle == handle) {
-                return ((cp->unk74 != 0) ? (MusSong *)cp->unk74 : (MusSong *)cp->unk78)->unk08;
+    if (handle == 0) {
+        return 0;
+    }
+    cp = D_800B180C;
+    for (i = 0; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            if (cp->unk74 != 0) {
+                return ((MusSong *)cp->unk74)->unk08;
             }
+            return ((MusSong *)cp->unk78)->unk08;
         }
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80082048);
-#endif
 
 s32 func_800820AC(s32 handle) {
     s32 i;
