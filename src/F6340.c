@@ -84,14 +84,80 @@ void func_801A997C_ovl_0EBBB0(void) {
     gSPDisplayList(D_800E9BA0++, D_801AD030_ovl_0EBBB0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/F6340", func_801A9AB0_ovl_0EBBB0);
+void func_8007FFD0(f32 *v);                       /* normalise */
+f32 *func_8007FEE0(f32 *out, f32 *a, f32 *b);     /* out = a x b */
+void func_80080040(f32 *out, f32 *a, f32 *b);     /* out = a - b */
+void func_80080190(f32 *v, f32 s);                /* v *= s */
+f32 *func_8007FF70(f32 *out, f32 *v);             /* out = normalised v */
+f32 func_8009CE20(f32 x);                         /* tanf */
+void func_800800C0(f32 *out, f32 *a, f32 *b);     /* out = a + b */
+void func_800801D0(f32 *a, f32 *b);               /* a += b */
+void func_80080150(f32 *a, f32 *b);               /* a -= b */
+void func_8007FE50(f32 *dst, f32 *src);           /* copy */
+
+/* View frustum: eye, far-scaled view direction, four far corners, four side-plane normals, bounds */
+typedef struct {
+    /* 0x00 */ f32 eye[3];
+    /* 0x0C */ f32 dir[3];
+    /* 0x18 */ f32 corner[4][3];
+    /* 0x48 */ f32 plane[4][3];
+    /* 0x78 */ f32 min[3];
+    /* 0x84 */ f32 max[3];
+} FrustumF63;
+
+/* Builds frustum f for a camera at eye looking at at (fov in degrees, aspect, up, far distance) */
+void func_801A9AB0_ovl_0EBBB0(f32 fov, f32 aspect, f32 *eye, f32 *at, f32 *up, f32 far, FrustumF63 *f) {
+    f32 h[3];
+    f32 v[3];
+    s32 i;
+    s32 j;
+
+    func_80080040(f->dir, at, eye);
+    func_8007FFD0(f->dir);
+    func_80080190(f->dir, far);
+    func_8007FEE0(h, up, f->dir);
+    func_8007FFD0(h);
+    fov /= 360.0f;
+    fov *= 3.1415927f;
+    func_80080190(h, far * func_8009CE20(fov) * aspect);
+    func_8007FF70(v, up);
+    func_80080190(v, far * func_8009CE20(fov));
+    func_800800C0(f->corner[0], f->dir, h);
+    func_800801D0(f->corner[0], v);
+    func_80080040(f->corner[1], f->dir, h);
+    func_800801D0(f->corner[1], v);
+    func_80080040(f->corner[2], f->dir, h);
+    func_80080150(f->corner[2], v);
+    func_800800C0(f->corner[3], f->dir, h);
+    func_80080150(f->corner[3], v);
+    func_8007FFD0(func_8007FEE0(f->plane[0], f->corner[0], f->corner[1]));
+    func_8007FFD0(func_8007FEE0(f->plane[1], f->corner[1], f->corner[2]));
+    func_8007FFD0(func_8007FEE0(f->plane[2], f->corner[2], f->corner[3]));
+    func_8007FFD0(func_8007FEE0(f->plane[3], f->corner[3], f->corner[0]));
+    func_8007FE50(f->eye, eye);
+    func_800801D0(f->corner[0], f->eye);
+    func_800801D0(f->corner[1], f->eye);
+    func_800801D0(f->corner[2], f->eye);
+    func_800801D0(f->corner[3], f->eye);
+    func_800801D0(f->dir, f->eye);
+    for (i = 0; i < 3; i++) {
+        f->min[i] = f->max[i] = eye[i];
+    }
+    for (j = 0; j < 4; j++) {
+        for (i = 0; i < 3; i++) {
+            if (f->min[i] > f->corner[j][i]) {
+                f->min[i] = f->corner[j][i];
+            }
+            if (f->max[i] < f->corner[j][i]) {
+                f->max[i] = f->corner[j][i];
+            }
+        }
+    }
+}
 
 static inline f32 AbsF63(f32 v) {
     return v < 0.0f ? -v : v;
 }
-
-void func_8007FFD0(f32 *v);                       /* normalise */
-void func_8007FEE0(f32 *out, f32 *a, f32 *b);     /* out = a x b */
 f32 *func_80080080(f32 *out, f32 *a, f32 s);  /* scale */
 f32 sinf(f32 x);
 f32 cosf(f32 x);
@@ -212,7 +278,7 @@ void func_801AA62C_ovl_0EBBB0(s32 i, s32 a, s32 b, s32 c, f32 *x, f32 *y) {
 void func_8007FE50(f32 *dst, f32 *src);           /* copy */
 void func_80080040(f32 *out, f32 *a, f32 *b);     /* out = a - b */
 void func_8007FFD0(f32 *v);                       /* normalise */
-void func_8007FEE0(f32 *out, f32 *a, f32 *b);     /* out = a x b */
+f32 *func_8007FEE0(f32 *out, f32 *a, f32 *b);     /* out = a x b */
 void func_80080190(f32 *v, f32 s);                /* v *= s */
 void func_800801D0(f32 *a, f32 *b);               /* a += b */
 void func_800800C0(f32 *out, f32 *a, f32 *b);     /* out = a + b */
