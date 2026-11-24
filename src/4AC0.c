@@ -91,10 +91,9 @@ static inline void SramWrite(void *src, s32 offset, s32 size) {
 }
 
 static inline s32 SaveChecksumOk(SaveHeader *hdr, u8 *data, u16 len, s32 seed) {
-    if (hdr->sum != func_80075A84(data, len, seed)) {
-        return 0;
-    }
-    if (hdr->bitSum != func_80075B00(data, len, seed)) {
+    /* one || test: two early returns fold the last compare into a set-on-equal */
+    if (hdr->sum != func_80075A84(data, len, seed)
+        || hdr->bitSum != func_80075B00(data, len, seed)) {
         return 0;
     }
     return 1;
@@ -411,22 +410,19 @@ s32 func_80075360(s32 n) {
     return ok;
 }
 
-#ifdef NON_MATCHING
-/* The original keeps the checksum length (0x1844) in a saved register and branches to
- * "return 1" instead of folding the last compare into a set-on-equal. */
+/* Reads save slot n into hdr and checks its magic and both checksums. len is assigned before
+ * the inlined SramRead loop, so it stays a saved register instead of a folded constant */
 s32 func_8007541C(s32 n, SaveHeader *hdr) {
     u8 *data = (u8 *)hdr + SAVE_HEADER;
     s32 offset = SLOT_OFFSET(n);
+    s32 len = SLOT_SIZE - SAVE_HEADER;
 
     SramRead(hdr, offset, SLOT_SIZE);
     if (_bcmp(D_800A8240, hdr->magic, 8) != 0) {
         return 0;
     }
-    return SaveChecksumOk(hdr, data, SLOT_SIZE - SAVE_HEADER, SLOT_OFFSET(n));
+    return SaveChecksumOk(hdr, data, len, SLOT_OFFSET(n));
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/4AC0", func_8007541C);
-#endif
 
 #ifdef NON_MATCHING
 /* Same length-register / final-compare difference as func_8007541C. */
