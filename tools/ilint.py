@@ -100,8 +100,10 @@ def record_name(canonical, typedef_name):
 
 
 def reduce_type(t):
-    t, typedef_name = without_sugar(t)
+    # `const s8` puts the qualifier on the typedef use, so read it before peeling sugar
     const = t.is_const_qualified()
+    t, typedef_name = without_sugar(t)
+    const = const or t.is_const_qualified()
     canonical = t.get_canonical()
     kind = canonical.kind
     if kind == T.POINTER:
