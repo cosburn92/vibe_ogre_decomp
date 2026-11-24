@@ -71,7 +71,22 @@ f32 *func_80080040(f32 *out, f32 *a, f32 *b);
 f32 *func_8007FEE0(f32 *out, f32 *a, f32 *b);
 void func_801A9AB0_ovl_0EBBB0(f32 a, f32 b, f32 *p, f32 *q, f32 *axis, f32 c, s32 d);
 extern u8 D_8018F56D;
-f32 func_801A7D9C_ovl_0EBBB0(void *curve, f32 t);
+typedef struct {
+    f32 t;
+    f32 v;
+    f32 out; /* outgoing tangent */
+    f32 in;  /* incoming tangent */
+    s16 interp; /* to the next key: 0 step, 1 linear, 2 Hermite */
+} CurveKey;
+
+typedef struct {
+    CurveKey *keys;
+    s16 n;
+    s16 slopeMode; /* 1: extrapolate along the end segment rather than the end tangent */
+    s16 pre;       /* before the first key: 0 hold, 1 extrapolate, 2 loop */
+    s16 post;      /* after the last key, likewise */
+} Curve;
+f32 func_801A7D9C_ovl_0EBBB0(Curve *c, f32 t);
 /* --- end decls --- */
 
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A07D0_ovl_0EBBB0);
@@ -1332,7 +1347,135 @@ s32 func_801A7D44_ovl_0EBBB0(f32 a, f32 b) {
     return 1;
 }
 
+/* Value of a keyframe curve at time t */
+#ifdef NON_MATCHING
+/* Same size; t and the end-segment length / loop bound swap $f4 and $f14 (and the previous key's
+ * time takes $f4 instead of $f10) */
+f32 func_801A7D9C_ovl_0EBBB0(Curve *c, f32 t) {
+    CurveKey *k;
+    CurveKey *last;
+    f32 kt;
+    f32 kv;
+    f32 kin;
+    f32 pt;
+    f32 pv;
+    f32 pout;
+    f32 slope;
+    f32 period;
+    s32 lo;
+    s32 hi;
+    s32 mid;
+    f32 dt;
+
+    if (c == NULL || c->n == 0) {
+        return 0.0f;
+    }
+    if (t < c->keys[0].t) {
+        switch (c->pre) {
+            case 0:
+                return c->keys[0].v;
+            case 1:
+                if (c->n == 1) {
+                    return c->keys[0].v;
+                }
+                k = c->keys;
+                dt = k[1].t - k[0].t;
+                if (c->slopeMode == 1 && dt != 0.0) {
+                    slope = (k[1].v - k[0].v) / dt;
+                } else {
+                    slope = k[0].in;
+                }
+                return k[0].v - (k[0].t - t) * slope;
+            case 2:
+                dt = c->keys[0].t;
+                if (c->n == 1) {
+                    return c->keys[0].v;
+                }
+                period = c->keys[c->n - 1].t - dt;
+                while (t < dt) {
+                    t += period;
+                }
+                break;
+            default:
+                return 0.0f;
+        }
+    }
+    if (c->keys[c->n - 1].t <= t) {
+        switch (c->post) {
+            case 0:
+                return c->keys[c->n - 1].v;
+            case 1:
+                if (c->n == 1) {
+                    return c->keys[0].v;
+                }
+                k = &c->keys[c->n - 2];
+                last = &c->keys[c->n - 1];
+                dt = last->t - k->t;
+                if (c->slopeMode == 1 && dt != 0.0) {
+                    slope = (last->v - k->v) / dt;
+                } else {
+                    slope = last->out;
+                }
+                return last->v + (t - last->t) * slope;
+            case 2:
+                dt = c->keys[c->n - 1].t;
+                if (c->n == 1) {
+                    return c->keys[0].v;
+                }
+                period = dt - c->keys[0].t;
+                while (dt < t) {
+                    t -= period;
+                }
+                break;
+            default:
+                return 0.0f;
+        }
+    }
+    lo = 1;
+    hi = c->n - 1;
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        k = &c->keys[mid];
+        if (t < k->t) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    k = &c->keys[lo];
+    kt = k->t;
+    if (t == kt) {
+        return k->v;
+    }
+    kv = k->v;
+    kin = k->in;
+    k--;
+    pt = k->t;
+    pv = k->v;
+    pout = k->out;
+    switch (k->interp) {
+        case 0:
+            return pv;
+        case 1:
+            return pv + (kv - pv) * (t - pt) / (kt - pt);
+        case 2: {
+            f32 inv = 1.0 / (kt - pt);
+            f32 s = t - pt;
+            f32 s2 = s * s;
+            f32 inv2 = inv * inv;
+            f32 a = s2 * s * inv2; /* u^3 * d */
+            f32 h2 = 2.0 * a * inv; /* 2u^3 */
+            f32 h3 = s2 * 3.0 * inv2; /* 3u^2 */
+            f32 b = s2 * inv; /* u^2 * d */
+
+            return (h2 - h3) * pv + pv + kv * (-h2 + h3) + pout * (a - b - b + s) + kin * (a - b);
+        }
+    }
+    return 0.0f;
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/ED530", func_801A7D9C_ovl_0EBBB0);
+#endif
 
 void *LoadAsset(); /* (id, entry, mode[, slot]): some callers pass a fourth argument */
 
