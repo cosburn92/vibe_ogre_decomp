@@ -323,28 +323,29 @@ u16 func_8017A94C_ovl_040E80(u16 c) {
 
 /* Shift-JIS code to EUC (JIS | 0x8080) */
 #ifdef NON_MATCHING
-/* u16/int temporaries of the high byte differ */
+/* One instruction short, everything else matches: the original copies the high byte into a
+ * second register (move a1,a2) before the 0xE0 test and subtracts 0x40 from the first one.
+ * Separate b/hi variables, u16/u32 copies, an inline helper and a ternary didn't keep the copy. */
 u16 func_8017A9B0_ovl_040E80(u16 c) {
-    u16 b = c >> 8;
+    s32 hi = c >> 8;
     u16 lo = c & 0xFF;
-    s32 hi = b;
     s32 h;
 
-    if (b >= 0xE0) {
-        hi = b - 0x40;
+    if ((u32)hi >= 0xE0) {
+        hi -= 0x40;
     }
     h = (hi - 0x81) * 2;
     hi = h + 0x21;
     if (lo >= 0x80) {
         lo--;
     }
-    if (lo < 0x9E) {
-        lo -= 0x1F;
-    } else {
+    if (lo >= 0x9E) {
         hi = h + 0x22;
         lo -= 0x7D;
+    } else {
+        lo -= 0x1F;
     }
-    return (lo | (hi << 8)) | 0x8080;
+    return lo | (hi << 8) | 0x8080;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/4EF10", func_8017A9B0_ovl_040E80);
