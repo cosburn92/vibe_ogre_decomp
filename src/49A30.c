@@ -147,7 +147,115 @@ void func_801768D4_ovl_040E80(s32 w, s32 h, s32 x0, s32 y0, s32 x1, s32 y1) {
     D_801977D0_ovl_040E80 = (f32)(y1 - y0 + 1) / h;
 }
 
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gfx49;
+extern Gfx49 *D_800E9BA0;
+
+/* Texture rectangle over screen cells x0..x1, y0..y1 (scaled and offset by func_801768D4) showing
+ * texels s0..s1, t0..t1 of the tile; clipped to the 320x240 screen, with the texture start
+ * advanced past any part left of or above it */
+#ifdef NON_MATCHING
+/* 0x320 vs 0x324: the opening float conversions schedule lrx before uly (one load-delay nop
+ * fewer); from the divides on the code is the same apart from registers and the order of the
+ * E4 word's x field */
+void func_80176948_ovl_040E80(s32 x0, s32 y0, s32 x1, s32 y1, s32 s0, s32 t0, s32 s1, s32 t1, s32 tile) {
+    s32 ulx;
+    s32 uly;
+    s32 lrx;
+    s32 lry;
+    s32 s;
+    s32 t;
+    s32 dsdx;
+    s32 dtdy;
+    s32 n;
+    s32 span;
+
+    ulx = ((s32)(D_80196AF4_ovl_040E80 * x0) + D_801939C8_ovl_040E80) * 4;
+    uly = ((s32)(D_801977D0_ovl_040E80 * y0) + D_80197AF4_ovl_040E80) * 4;
+    lrx = ((s32)(D_80196AF4_ovl_040E80 * (x1 + 1)) + D_801939C8_ovl_040E80) * 4;
+    lry = ((s32)(D_801977D0_ovl_040E80 * (y1 + 1)) + D_80197AF4_ovl_040E80) * 4;
+    s = s0 * 32;
+    t = t0 * 32;
+
+    span = (s1 - s0 + 1) * 1024;
+    n = (lrx - ulx) >> 2;
+    if (n != 1) {
+        dsdx = span / (n - 1) - 1;
+    } else {
+        dsdx = span - 1;
+    }
+    span = (t1 - t0 + 1) * 1024;
+    n = (lry - uly) >> 2;
+    if (n != 1) {
+        dtdy = span / (n - 1) - 1;
+    } else {
+        dtdy = span - 1;
+    }
+
+    if (lrx >= 0 && lry >= 0 && ulx < 0x500 && uly < 0x3C0) {
+        u32 w1;
+        s32 x;
+        s32 y;
+
+        {
+            Gfx49 *g = D_800E9BA0++;
+
+            g->w0 = 0xE7000000;
+            g->w1 = 0;
+        }
+        {
+            Gfx49 *g = D_800E9BA0++;
+
+            x = lrx;
+            if (x > 0x500) {
+                x = 0x500;
+            }
+            x = (x & 0xFFF) << 12;
+            y = lry;
+            if (y > 0x3C0) {
+                y = 0x3C0;
+            }
+            g->w0 = x | (0xE4000000 | (y & 0xFFF));
+            w1 = (tile & 7) << 24;
+            if (ulx >= 0) {
+                w1 |= (ulx & 0xFFF) << 12;
+            }
+            g->w1 = w1;
+            if (uly >= 0) {
+                g->w1 = w1 | (uly & 0xFFF);
+            }
+        }
+        {
+            Gfx49 *g = D_800E9BA0++;
+
+            g->w0 = 0xE1000000;
+            g->w1 = ((ulx < 0 ? s + ((-ulx * dsdx) >> 7) : s) << 16) | ((uly < 0 ? t + ((-uly * dtdy) >> 7) : t) & 0xFFFF);
+        }
+        {
+            Gfx49 *g = D_800E9BA0++;
+
+            g->w0 = 0xF1000000;
+            g->w1 = (dsdx << 16) | (dtdy & 0xFFFF);
+        }
+        {
+            Gfx49 *g = D_800E9BA0++;
+
+            g->w0 = 0xE7000000;
+            g->w1 = 0;
+        }
+    }
+    {
+        Gfx49 *g = D_800E9BA0++;
+
+        g->w0 = 0xE7000000;
+        g->w1 = 0;
+    }
+}
+#else
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80176948_ovl_040E80);
+#endif
 
 INCLUDE_ASM("asm/nonmatchings/49A30", func_80176C6C_ovl_040E80);
 
