@@ -515,12 +515,13 @@ u32 func_801BED08_ovl_1F0A30(u32 rgba) {
 
 /* RGBA5551 version of the tint above */
 #ifdef NON_MATCHING
-/* c&1 hoisted early in original; register order differs */
+/* same length, 2 words differ: the final sum lands in a3 (r) instead of a1 (m); assigning it to m instead swaps the r/g registers (a3/t0) */
 u16 func_801BEDC8_ovl_1F0A30(u16 c) {
     u32 r;
     u32 g = (c >> 3) & 0xF8;
     u32 b = (c << 2) & 0xF8;
     s32 m = (c >> 8) & 0xF8;
+    u32 a = c & 1;
 
     if (m < g) {
         m = g;
@@ -537,7 +538,8 @@ u16 func_801BEDC8_ovl_1F0A30(u16 c) {
         g = m * 80 / 128 + 60;
         b = m * 80 / 128 + 40;
     }
-    return ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + (c & 1);
+    r = ((r & 0xF8) << 8) + ((g & 0xF8) << 3) + ((b & 0xF8) >> 2) + a;
+    return r;
 }
 #else
 INCLUDE_ASM("asm/nonmatchings/201430", func_801BEDC8_ovl_1F0A30);
