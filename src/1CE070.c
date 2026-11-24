@@ -932,7 +932,82 @@ void func_8019B6D8_ovl_1CE070(void) {
 INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B6D8_ovl_1CE070);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/1CE070", func_8019B8AC_ovl_1CE070);
+extern u16 D_800E8700;
+extern u16 D_800E8100;
+extern u8 D_800EB240[];
+extern u8 D_800EB0B0[];
+extern s32 D_800E9C0A;
+extern void *D_801B80D8_ovl_1CE070[];
+extern u32 D_801BA53C_ovl_1CE070;
+extern u8 D_801BA545_ovl_1CE070;
+extern s32 D_801BA6EC_ovl_1CE070;
+extern s32 D_801BA6F0_ovl_1CE070;
+void func_800EA604(void *ch, s32 sound);
+void func_800EA7E4(void *ch, s32 v);
+void func_800EA8CC(s32 v);
+
+/* Menu cursor in slot 15's rows (y from 0x8C in steps of 14, last row mode[2]): up/down wrap and
+ * play the alternating move sound, slot 14's flags get the row's bit; on the last row A/B/Z
+ * toggle the setting byte, elsewhere A/Start confirm the row (row 3 when two rows are shown) */
+void func_8019B8AC_ovl_1CE070(void) {
+    Slot1CE *t = D_801B80C0_ovl_1CE070;
+    s16 *mode = (s16 *)((u8 *)t + 0x220);
+    u8 *flags = (u8 *)&t[14].x;
+    u8 *opt;
+    s32 i;
+
+    if (D_800E8700 & 0x800) {
+        mode[1] -= 14;
+        if (mode[1] < 0x8C) {
+            mode[1] = mode[2] * 14 + 0x8C;
+        }
+        func_800EA604(D_801B80D8_ovl_1CE070[D_801BA53C_ovl_1CE070], 6);
+        D_801BA53C_ovl_1CE070++;
+        if (D_801BA53C_ovl_1CE070 >= 2) {
+            D_801BA53C_ovl_1CE070 = 0;
+        }
+        D_801BA6F0_ovl_1CE070 = 0;
+    }
+    if (D_800E8700 & 0x400) {
+        mode[1] += 14;
+        if (mode[1] > mode[2] * 14 + 0x8C) {
+            mode[1] = 0x8C;
+        }
+        func_800EA604(D_801B80D8_ovl_1CE070[D_801BA53C_ovl_1CE070], 6);
+        D_801BA53C_ovl_1CE070++;
+        if (D_801BA53C_ovl_1CE070 >= 2) {
+            D_801BA53C_ovl_1CE070 = 0;
+        }
+        D_801BA6F0_ovl_1CE070 = 0;
+    }
+    *flags = 1 << ((mode[1] - 0x8C) / 14);
+    if (*flags >> mode[2]) {
+        if (D_800E8700 & 0x8300) {
+            opt = (u8 *)&D_800E9C0A + 7;
+            *opt ^= 1;
+            func_800EA8CC(*opt == 0);
+            func_800EA604(D_801B80D8_ovl_1CE070[D_801BA53C_ovl_1CE070], 6);
+            D_801BA53C_ovl_1CE070++;
+            if (D_801BA53C_ovl_1CE070 >= 2) {
+                D_801BA53C_ovl_1CE070 = 0;
+            }
+        }
+    } else if (D_800E8100 & 0x9000) {
+        func_800EA604(D_800EB240, 0);
+        func_800EA7E4(D_800EB0B0, 0x1E);
+        for (i = 0; i < 3; i++) {
+            if ((*flags >> i) & 1) {
+                break;
+            }
+        }
+        D_801BA545_ovl_1CE070 = i + 1;
+        if (mode[2] == 2 && D_801BA545_ovl_1CE070 == mode[2]) {
+            D_801BA545_ovl_1CE070 = 3;
+        }
+        D_801BA6F0_ovl_1CE070 = 0;
+        D_801BA6EC_ovl_1CE070++;
+    }
+}
 
 void func_8016C900(void);
 void func_80184D70(void);
