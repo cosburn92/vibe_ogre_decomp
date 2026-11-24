@@ -172,26 +172,25 @@ void func_801B77CC_ovl_1F0A30(void *a, void *b, u8 *img, u8 c, s32 d, s32 e) {
 }
 
 /* Draws a full-screen image into the main display list */
-#ifdef NON_MATCHING
-/* original hoists the D_80197178/D_800E9BA0 args above the format test; frame 0x28 */
 void func_801B7888_ovl_1F0A30(u8 **pp, void *b) {
     u8 *img = *pp;
+    s32 pad[2];
 
     if (*(u16 *)img == 0x4235) {
+        u8 *dst = D_80197178;
+        void *gp = &D_800E9BA0;
+
         if (img[2] == 1) {
-            func_801B6DB0_ovl_1F0A30(D_80197178, &D_800E9BA0, img);
+            func_801B6DB0_ovl_1F0A30(dst, gp, img);
         } else if (img[2] == 3) {
-            func_801B6970_ovl_1F0A30(D_80197178, &D_800E9BA0, img, 0, 0, 0);
+            func_801B6970_ovl_1F0A30(dst, gp, img, 0, 0, 0);
         } else {
-            func_801B619C_ovl_1F0A30(D_80197178, &D_800E9BA0, img, 0, 0, 0);
+            func_801B619C_ovl_1F0A30(dst, gp, img, 0, 0, 0);
         }
     } else {
         func_801B5D58_ovl_1F0A30(pp, b, img);
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/1F8D70", func_801B7888_ovl_1F0A30);
-#endif
 
 s32 func_8009C7CC(void);
 extern u8 D_801CEAB8_ovl_1F0A30[][4];
