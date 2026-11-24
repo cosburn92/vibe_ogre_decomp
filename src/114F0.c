@@ -731,23 +731,21 @@ s32 func_80081A54(s32 handle, s32 speed) {
 INCLUDE_ASM("asm/nonmatchings/114F0", func_80081A54);
 #endif
 
-#ifdef NON_MATCHING
-/* Same code; i/cp/count load order differs (register assignment). */
+/* Number of channels playing handle (libmus MusHandleAsk) */
 s32 func_80081B08(s32 handle) {
+    MusChannel *cp;
     s32 i, n;
 
     if (handle == 0) {
         return 0;
     }
-    n = 0;
-    for (i = 0; i < D_800B1804; i++) {
-        n += (D_800B180C[i].handle == handle);
+    for (i = 0, n = 0, cp = D_800B180C; i < D_800B1804; i++, cp++) {
+        if (cp->handle == handle) {
+            n++;
+        }
     }
     return n;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/114F0", func_80081B08);
-#endif
 
 s32 func_80081B60(s32 handle, u16 value) {
     s32 i, n;
