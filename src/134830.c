@@ -88,12 +88,11 @@ extern u8 D_801ED5A4_ovl_101CE0;
 
 /* Draws window o's page i: its two text lines and the blinking cursor (column in the low nibble
  * of D_801ED5A4, row D_801ED5A0), then steps the cursor blink */
-#ifdef NON_MATCHING
-/* 93/93, 5 words: the page id is reloaded before the display-list pointer store in the original, after it here */
+typedef struct { u8 pad[0x18]; s16 page; } Page134;
 void func_801E0868_ovl_101CE0(u8 *o, s32 i) {
-    u8 *p = o + i * 2;
+    Page134 *p = (Page134 *)(i * 2 + (s32)o);
 
-    if (FIELD(p, s16, 0x18) != 0) {
+    if (p->page != 0) {
         s32 x = FIELD(o, s32, 0x2C);
         s32 y = FIELD(o, s32, 0x30);
         s32 tx, ty;
@@ -103,7 +102,7 @@ void func_801E0868_ovl_101CE0(u8 *o, s32 i) {
         D_800E9BA0->w1 = 0;
         D_800E9BA0++;
         ty = y + 1;
-        func_8017C4B4(FIELD(p, s16, 0x18));
+        func_8017C4B4(p->page);
         bzero(buf, 0x100);
         _bcopy(D_801ED584_ovl_101CE0, buf, D_801ED598_ovl_101CE0);
         tx = x + 0x17;
@@ -126,9 +125,6 @@ void func_801E0868_ovl_101CE0(u8 *o, s32 i) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/134830", func_801E0868_ovl_101CE0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/134830", func_801E09DC_ovl_101CE0);
 
