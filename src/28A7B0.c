@@ -2056,8 +2056,8 @@ s32 func_80239634_ovl_286BD0(s32 n) {
 }
 
 /* Whether list row n is the last entry of its date group */
-#ifdef NON_MATCHING
-/* return-1 block placement differs */
+/* The two "return 1" exits share one block, placed after the new-hi branch: the mid branch
+ * jumps to it (as separate returns GCC keeps the copy after the mid branch instead). */
 s32 func_802396F0_ovl_286BD0(s32 n) {
     s32 k = 0;
     u8 mid = 0;
@@ -2078,6 +2078,7 @@ s32 func_802396F0_ovl_286BD0(s32 n) {
             }
             k++;
             if (n == k) {
+            last:
                 return 1;
             }
         } else {
@@ -2088,7 +2089,7 @@ s32 func_802396F0_ovl_286BD0(s32 n) {
                 k++;
                 mid = t->mid;
                 if (n == k) {
-                    return 1;
+                    goto last;
                 }
             }
             if (n == k) {
@@ -2099,9 +2100,6 @@ s32 func_802396F0_ovl_286BD0(s32 n) {
     }
     return 0;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802396F0_ovl_286BD0);
-#endif
 
 INCLUDE_ASM("asm/nonmatchings/28A7B0", func_802397B8_ovl_286BD0);
 
