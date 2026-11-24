@@ -156,7 +156,156 @@ found:
 INCLUDE_ASM("asm/nonmatchings/267750", func_80212D78_ovl_25EE90);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/267750", func_80212DE0_ovl_25EE90);
+typedef struct {
+    /* 0x00 */ f32 t;
+    /* 0x04 */ f32 v;
+    /* 0x08 */ f32 outTan;
+    /* 0x0C */ f32 inTan;
+    /* 0x10 */ s16 interp; /* 0 step, 1 linear, 2 Hermite */
+} Key267; /* size 0x14 */
+
+typedef struct {
+    /* 0x0 */ Key267 *keys;
+    /* 0x4 */ s16 n;
+    /* 0x6 */ s16 linearExt; /* 1: extrapolate along the end segment instead of the tangent */
+    /* 0x8 */ s16 pre;       /* before the first key: 0 hold, 1 extrapolate, 2 cycle */
+    /* 0xA */ s16 post;      /* after the last key: same */
+} Curve267;
+
+/* Evaluates a keyframe curve at t. One float x serves as the segment length, the cycle
+ * bounds and the Hermite offset (the original keeps them in one register) */
+f32 func_80212DE0_ovl_25EE90(Curve267 *c, f32 t) {
+    Key267 *k;
+    Key267 *p;
+    s32 lo;
+    s32 hi;
+    s32 mid;
+    f32 x;
+    f32 slope;
+    f32 period;
+    f32 t1;
+    f32 v1;
+    f32 in1;
+    f32 t0;
+    f32 v0;
+    f32 out0;
+    f32 inv;
+    f32 s2;
+    f32 s3;
+    f32 inv2;
+    f32 h1;
+    f32 h2;
+    f32 h10;
+    f32 h11;
+
+    if (c == NULL || c->n == 0) {
+        return 0.0f;
+    }
+    if (t < c->keys[0].t) {
+        switch (c->pre) {
+        case 0:
+            return c->keys[0].v;
+        case 1:
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            k = c->keys;
+            x = k[1].t - k[0].t;
+            if (c->linearExt == 1 && x != 0.0) {
+                slope = (k[1].v - k[0].v) / x;
+            } else {
+                slope = k[0].inTan;
+            }
+            return k[0].v - (k[0].t - t) * slope;
+        case 2:
+            x = c->keys[0].t;
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            period = c->keys[c->n - 1].t - x;
+            while (t < x) {
+                t += period;
+            }
+            break;
+        default:
+            return 0.0f;
+        }
+    }
+    if (c->keys[c->n - 1].t <= t) {
+        switch (c->post) {
+        case 0:
+            return c->keys[c->n - 1].v;
+        case 1:
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            k = &c->keys[c->n - 2];
+            p = &c->keys[c->n - 1];
+            x = p->t - k->t;
+            if (c->linearExt == 1 && x != 0.0) {
+                slope = (p->v - k->v) / x;
+            } else {
+                slope = p->outTan;
+            }
+            return p->v + (t - p->t) * slope;
+        case 2:
+            x = c->keys[c->n - 1].t;
+            if (c->n == 1) {
+                return c->keys[0].v;
+            }
+            period = x - c->keys[0].t;
+            while (x < t) {
+                t -= period;
+            }
+            break;
+        default:
+            return 0.0f;
+        }
+    }
+    lo = 1;
+    hi = c->n - 1;
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        k = &c->keys[mid];
+        if (t < k->t) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    k = &c->keys[lo];
+    t1 = k->t;
+    if (t == t1) {
+        return k->v;
+    }
+    v1 = k->v;
+    in1 = k->inTan;
+    k--;
+    t0 = k->t;
+    v0 = k->v;
+    out0 = k->outTan;
+    switch (k->interp) {
+    case 0:
+        return v0;
+    case 1:
+        return v0 + (v1 - v0) * (t - t0) / (t1 - t0);
+    case 2:
+        inv = 1.0 / (t1 - t0);
+        x = t - t0;
+        s2 = x * x;
+        s3 = s2 * x;
+        inv2 = inv * inv;
+        s3 *= inv2;
+        h1 = 2.0 * s3 * inv;
+        h2 = 3.0 * s2 * inv2;
+        s2 *= inv;
+        h11 = s3 - s2;
+        h10 = h11 - s2 + x;
+        return (h1 - h2) * v0 + v0 + v1 * (-h1 + h2) + out0 * h10 + in1 * h11;
+    default:
+        return 0.0f;
+    }
+}
 
 /* Matrix from scale (0-2), rotation in degrees (3-5) and translation (6-8) */
 void func_802131E8_ovl_25EE90(f32 *srt, f32 m[4][4]) {
@@ -190,7 +339,6 @@ typedef struct {
     f32 **values;
 } TrackIn267;
 
-f32 func_80212DE0_ovl_25EE90(void *curve, f32 t);
 
 static inline void Track267_ApplyValues(f32 *v, f32 m[4][4]) {
     guRotateRPYF(m, v[3], v[4], v[5]);
