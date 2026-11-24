@@ -67,34 +67,33 @@ u32 func_801D9748_ovl_213B10(u32 n) {
 }
 
 /* Index of the entry under pixel x */
-#ifdef NON_MATCHING
-/* Loop structure and the cached buffer pointer differ. */
 u32 func_801D97B8_ovl_213B10(u32 x) {
-    TextBuf *tb = D_801CE8C0;
     u32 i = 0;
     u8 w;
-    u8 c;
 
     while (i < D_801CE8C0->len) {
         w = D_801CE8C0->text[i + 2];
         if (w >= x) {
             return i;
         }
-        c = D_801CE8C0->text[i];
         x -= w;
-        if (c == 0x16) {
-            i = i + 4 + D_801CE8C0->text[i + 3];
-        } else if (c == 0x38) {
+        switch (D_801CE8C0->text[i]) {
+        case 0x16: {
+            /* i + 4 as its own temp: the original adds the length to it, not 4 to the length */
+            u32 k = i + 4;
+            i = k + D_801CE8C0->text[i + 3];
+            break;
+        }
+        case 0x38:
             i += D_801CE8C0->text[i + 3];
-        } else {
-            i += D_801E5C70_ovl_213B10[tb->text[i]];
+            break;
+        default:
+            i += D_801E5C70_ovl_213B10[D_801CE8C0->text[i]];
+            break;
         }
     }
     return i;
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/21C970", func_801D97B8_ovl_213B10);
-#endif
 
 /* Moves the cursor to pixel x */
 void func_801D9860_ovl_213B10(u32 x) {
