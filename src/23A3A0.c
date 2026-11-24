@@ -264,7 +264,7 @@ void func_801D0A8C_ovl_23A3A0(void) {
     for (; n < 5; n++) {
         u8 m = mine->members[n];
 
-        if ((m != 0) & (m < 100)) {
+        if (m != 0 && m < 100) {
             if (max < D_80193BC0[m].c.level) {
                 max = D_80193BC0[m].c.level;
             }
