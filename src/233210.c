@@ -799,7 +799,7 @@ s32 func_801F1700_ovl_22A280(BattleUnit *u) {
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1700_ovl_22A280);
 #endif
 
-s8 func_801F17B8_ovl_22A280(BattleUnit *u) {
+inline s8 func_801F17B8_ovl_22A280(BattleUnit *u) {
     u8 k = func_8016E470(u->attack, u->items[0], u->items[1], u->items[2], u->items[3]);
     u8 e = func_8016F5E0(func_801C8FB8(u));
 
@@ -902,7 +902,37 @@ done:
 INCLUDE_ASM("asm/nonmatchings/233210", func_801F1B98_ovl_22A280);
 #endif
 
-INCLUDE_ASM("asm/nonmatchings/233210", func_801F1F04_ovl_22A280);
+/* func_801F1884 plus the weapon-element term (func_801F17B8) */
+f32 func_801F1F04_ovl_22A280(BattleUnit *a, BattleUnit *b) {
+    u8 k = func_8016E470(a->attack, a->items[0], a->items[1], a->items[2], a->items[3]);
+    u32 e = func_8016DBD8(a->unk48, a->cls);
+    u32 m;
+    f32 p;
+    s32 pen;
+
+    e = (e - 1) % 7;
+    m = 15;
+    if (!(D_801976D9.mode & 0x80)) {
+        m = D_801976D9.mode;
+    }
+    m %= 27;
+    p = D_801F6910_ovl_22A280[e][m];
+    p += func_801F1274_ovl_22A280(k, a);
+    p += func_801F17B8_ovl_22A280(a);
+    p += func_801F1344_ovl_22A280(a);
+    p += func_801F139C_ovl_22A280(a, b);
+    p += func_801F14E8_ovl_22A280(a);
+    if (a == NULL || a->unk3E < 70) {
+        pen = 0;
+    } else if (a->unk3E < 80) {
+        pen = 5;
+    } else if (a->unk3E < 90) {
+        pen = 18;
+    } else {
+        pen = 40;
+    }
+    return p - pen;
+}
 
 inline f32 func_801F22CC_ovl_22A280(BattleUnit *u) {
     f32 base = func_801F14E8_ovl_22A280(u);
