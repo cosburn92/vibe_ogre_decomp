@@ -109,6 +109,18 @@ extern Gfx *D_800E9BA0;
 extern u16 D_800C4BE4; /* next free matrix pool entry */
 #include "gbi_ultra.h"
 
+#define GFX87(a, b)                                                                                \
+    {                                                                                              \
+        Gfx *_g = D_800E9BA0++;                                                                    \
+                                                                                                   \
+        _g->w0 = (a);                                                                              \
+        _g->w1 = (b);                                                                              \
+    }
+
+s32 func_8007338C(void);
+extern void *D_800C4B20; /* z buffer */
+extern void *D_800E8210; /* frame buffer */
+
 typedef struct {
     s16 vscale[4];
     s16 vtrans[4];
@@ -176,7 +188,54 @@ void func_80078674(s16 x0, s16 y0, s16 x1, s16 y1) {
     gDPPipeSync(D_800E9BA0++);
 }
 
-INCLUDE_ASM("asm/nonmatchings/8700", func_8007896C);
+/* When depth clearing is on (func_8007338C), fills (x0, y0) - (x1, y1) of the z buffer with the
+ * maximum depth (the y0 clamp uses the screen width, as in the original), then points the colour
+ * image back at the frame buffer */
+void func_8007896C(s16 x0, s16 y0, s16 x1, s16 y1) {
+    if (func_8007338C()) {
+        if (x0 < 0) {
+            x0 = 0;
+        } else if (x0 >= 320) {
+            x0 = 319;
+        }
+        if (y0 < 0) {
+            y0 = 0;
+        } else if (y0 >= 320) {
+            y0 = 319;
+        }
+        if (x1 < 0) {
+            x1 = 0;
+        } else if (x1 >= 320) {
+            x1 = 319;
+        }
+        if (y1 < 0) {
+            y1 = 0;
+        } else if (y1 >= 240) {
+            y1 = 239;
+        }
+        GFX87(0xE7000000, 0);
+        GFX87(0xE200001C, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE3000A01, 0x300000);
+        GFX87(0xE7000000, 0);
+        GFX87(0xFE000000, (u32)D_800C4B20 - 0x80000000);
+        GFX87(0xFF10013F, (u32)D_800C4B20 - 0x80000000);
+        GFX87(0xF7000000, 0xFFFCFFFC);
+        GFX87(0xE7000000, 0);
+        GFX87(0xF6000000 | _SHIFTL(x1, 14, 10) | _SHIFTL(y1, 2, 10), _SHIFTL(x0, 14, 10) | _SHIFTL(y0, 2, 10));
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xFF10013F, (u32)D_800E8210 - 0x80000000);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE7000000, 0);
+        GFX87(0xE3000A01, 0);
+        GFX87(0xE7000000, 0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/8700", func_80078C6C);
 

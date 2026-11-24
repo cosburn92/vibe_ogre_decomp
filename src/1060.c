@@ -1164,7 +1164,7 @@ void func_8007337C(void) {
     D_800A8213 = 1;
 }
 
-u8 func_8007338C(void) {
+s32 func_8007338C(void) {
     return D_800A8213;
 }
 
