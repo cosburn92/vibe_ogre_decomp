@@ -455,25 +455,38 @@ void func_801CA704_ovl_087200(u16 r) {
     func_801CE374_ovl_087200();
 }
 
+/* Clears flag 0x20 of the members of slot record u (see ClearMemberFlag4) */
+static inline void ClearMemberFlag20(u8 u) {
+    s32 k;
+
+    for (k = 0; k < 9; k++) {
+        s32 o;
+        u8 m;
+
+        o = u * 54;
+        m = (D_80196AF8 + o + k)[0x1180];
+        if (m != 0xFF) {
+            o = m * 2;
+            (D_80196AF8 + o)[0x1872] &= ~0x20;
+        }
+    }
+}
+
 /* Removes the unit in grid cell (r, c) of the organize screen: clears its slot record, shifts the
  * cell behind it forward for columns 1-2, and drops its members' 0x20 flag */
-#ifdef NON_MATCHING
-/* The logic matches. The original swaps a2/a3 (the 0xFF constant against the record offset) and uses base + index order on the 0x117E and 0x1872 adds. */
 void func_801CA80C_ovl_087200(u16 r, u16 c) {
     u8 *row = D_80196AF8 + 0x10D4 + r * 14;
     u8 *cell = row + c;
     u8 u = cell[2];
     s32 off;
-    s32 k;
-    u8 m;
     u8 t;
 
     if (u == 0xFF) {
         return;
     }
     off = u * 54;
-    D_80196AF8[off + 0x117D] = 0;
-    D_80196AF8[off + 0x117E] = 0xFF;
+    (D_80196AF8 + off)[0x117D] = 0;
+    (D_80196AF8 + off)[0x117E] = 0xFF;
     cell[2] = 0xFF;
     FIELD(D_80196AF8, s32, 0x2C0)++;
     if ((u16)(c - 1) < 2) {
@@ -482,16 +495,8 @@ void func_801CA80C_ovl_087200(u16 r, u16 c) {
         cell[2] = t;
     }
     row[8]--;
-    for (k = 0; k < 9; k++) {
-        m = (D_80196AF8 + off + k)[0x1180];
-        if (m != 0xFF) {
-            (D_80196AF8 + m * 2)[0x1872] &= ~0x20;
-        }
-    }
+    ClearMemberFlag20(u);
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/B48F0", func_801CA80C_ovl_087200);
-#endif
 
 /* Marks every unit placed in the ten grid rows as deployed (flag 8, counting down the free total),
  * recomputes each row's value and refreshes the lists */
