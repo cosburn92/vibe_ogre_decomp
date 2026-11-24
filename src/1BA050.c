@@ -768,18 +768,23 @@ s32 func_802222E0_ovl_1BA050(ScriptCtx *ctx) {
 }
 
 #ifdef NON_MATCHING
-/* Branch layout differs by one instruction. */
+/* Same length. The original fills the state == 1 test as beql with the r = 0 from the case body
+ * and gives the default path its own "j end; move v0,s1"; GCC here uses beq with the move in the
+ * delay slot (statement orders, if/else and default-return forms tried). */
 s32 func_80222328_ovl_1BA050(ScriptCtx *ctx) {
     s32 r = 1;
 
-    if (ctx->state == 0) {
+    switch (ctx->state) {
+    case 0:
         if (func_80227F68_ovl_1BA050(*(u16 *)(ctx->pc + 2))) {
             ctx->state = 1;
         }
-    } else if (ctx->state == 1) {
+        break;
+    case 1:
         r = 0;
         ctx->state = 0;
         ctx->pc += 4;
+        break;
     }
     return r;
 }
