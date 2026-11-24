@@ -1267,8 +1267,6 @@ inline void LocationGetStageValue(u16 loc, s8 *value, u8 *side) {
 }
 
 /* v with bit 15: item v & 0x7FFF into the item stock, else consumable v (max 99 each) */
-#ifdef NON_MATCHING
-/* Logic is complete; the target walks the count bytes with a pointer and indexes the ids. */
 void InventoryAdd(u16 v, u8 flag) {
     u16 id = v & 0x7FFF;
     s32 i;
@@ -1276,8 +1274,9 @@ void InventoryAdd(u16 v, u8 flag) {
     if (v & 0x8000) {
         for (i = 0; i < 0x116; i++) {
             if (D_80196B00[i].id == id) {
-                if (++D_80196B00[i].count >= 100) {
-                    D_80196B00[i].count = 99;
+                u8 *c = &D_80196B00[i].count;
+                if (++*c >= 100) {
+                    *c = 99;
                 }
                 break;
             }
@@ -1297,9 +1296,9 @@ void InventoryAdd(u16 v, u8 flag) {
     } else {
         for (i = 0; i < 0x28; i++) {
             if (D_80193AC0[i].id == id) {
-                D_80193AC0[i].count++;
+                D_80193AC0[i].count += 1;
                 if (flag) {
-                    D_80193AC0[i].equipped++;
+                    D_80193AC0[i].equipped += 1;
                 }
                 if (D_80193AC0[i].count >= 100) {
                     D_80193AC0[i].count = 99;
@@ -1327,9 +1326,6 @@ void InventoryAdd(u16 v, u8 flag) {
         }
     }
 }
-#else
-INCLUDE_ASM("asm/nonmatchings/12AE10", InventoryAdd);
-#endif
 
 inline void func_801DC910_ovl_101CE0(void) {
     s32 i;
